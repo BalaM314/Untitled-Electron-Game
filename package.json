@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/BalaM314/Untitled-Electron-Game/issues"
   },
-  "homepage": "https://github.com/BalaM314/Untitled-Electron-Game#readme"
+  "homepage": "https://github.com/BalaM314/Untitled-Electron-Game#readme",
+  "devDependencies": {
+    "electron": "^13.1.9"
+  }
 }
