@@ -1,0 +1,9 @@
+{
+    "compilerOptions": {
+        "lib": [
+            "ES2021"
+        ],
+        "target": "ES6",
+        "removeComments": false
+    }
+}
