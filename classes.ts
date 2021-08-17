@@ -48,8 +48,8 @@ class ChunkedDataStorage {
 		this.seed = seed ? seed : 0;
 		this.format = consts.VERSION;
 	}
-	getChunk(x:number, y:number){
-		return this.storage.get(`${x},${y}`);
+	getChunk(chunkX:number, chunkY:number){
+		return this.storage.get(`${chunkX},${chunkY}`);
 	}
 	generateChunk(x:number, y:number){
 		this.storage.set(`${x},${y}`, 
@@ -63,15 +63,30 @@ class ChunkedDataStorage {
 			Math.floor((pixelY/consts.TILE_SIZE)/consts.CHUNK_SIZE)
 		).tileAt(Math.floor(pixelX/consts.TILE_SIZE), Math.floor(pixelY/consts.TILE_SIZE));
 	}
+	tileAt2(tileX:number, tileY:number):Tile{
+		return this.getChunk(
+			Math.floor(tileX/consts.CHUNK_SIZE),
+			Math.floor(tileY/consts.CHUNK_SIZE)
+		).tileAt(tileX, tileY);
+	}
+	writeTile(tileX:number, tileY:number, tile:Tile):boolean {
+		if(this.getChunk(tileX,tileY)){
+			this.getChunk(tileX,tileY).setTile(tileX, tileY, tile);
+			return true;
+		}
+		return false;
+	}
 }
 
 interface Level {
 	items: Item[];
+	buildings: Building[];
 }
 class Level extends ChunkedDataStorage {
 	constructor(seed){
 		super(seed);
 		this.items = [];
+		this.buildings = [];
 	}
 	buildingIDAt(pixelX:number, pixelY:number):BuildingID{
 		return this.getChunk(
@@ -81,6 +96,27 @@ class Level extends ChunkedDataStorage {
 	}
 	addItem(x:number, y:number, id:ItemID){
 		this.items.push(new Item(x, y, id, this));
+	}
+	update(){
+		for(var item of this.items){
+			item.update();
+		}
+	}
+	writeBuilding(tileX:number, tileY:number, buildingID:BuildingID):boolean {
+		if(this.getChunk(tileX,tileY)){
+			this.getChunk(tileX,tileY).setBuilding(tileX, tileY, buildingID);
+			return true;
+		}
+		return false;
+	}
+	buildBuilding(tileX:number, tileY:number, building):boolean {
+		if(this.getChunk(tileX,tileY)){
+			let tempBuilding:Building = new building();
+			this.buildings.push(tempBuilding);
+			this.getChunk(tileX,tileY).setBuilding(tileX, tileY, tempBuilding.id);
+			return true;
+		}
+		return false;
 	}
 }
 
@@ -180,12 +216,19 @@ class Chunk {
 	buildingAt(x:number, y:number):BuildingID {
 		return this.layers[1]?.[y]?.[x] ?? null;
 	}
-	setTile(x:number, y:number, tile:Tile):void {
-		console.log(arguments);
+	setTile(x:number, y:number, tile:Tile):boolean {
 		if(this.tileAt(x, y) == null){
-			return;
+			return false;
 		}
 		this.layers[0][y][x] = tile;
+		return true;
+	}
+	setBuilding(x:number, y:number, buildingId:BuildingID):boolean {
+		if(this.tileAt(x, y) == null){
+			return false;
+		}
+		this.layers[1][y][x] = buildingId;
+		return true;
 	}
 	display(){
 		console.log(`%c Base layer of chunk [${this.x},${this.y}]`, `font-weight: bold;`);
