@@ -36,6 +36,13 @@ const rands = {
 	hill_y: 11,
 }
 
+let Game = {
+	scroll: {
+		x: -300,
+		y: -300
+	}
+};
+
 interface ChunkedDataStorage {
 	storage: Map<string, Chunk>;
 	seed: number;

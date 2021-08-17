@@ -10,6 +10,12 @@ const rands = {
     hill_x: 89,
     hill_y: 11,
 };
+let Game = {
+    scroll: {
+        x: -300,
+        y: -300
+    }
+};
 class ChunkedDataStorage {
     constructor(seed) {
         this.storage = new Map();
