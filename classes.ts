@@ -48,30 +48,36 @@ class ChunkedDataStorage {
 		this.seed = seed ? seed : 0;
 		this.format = consts.VERSION;
 	}
-	getChunk(chunkX:number, chunkY:number){
-		return this.storage.get(`${chunkX},${chunkY}`);
+	getChunk(tileX:number, tileY:number):Chunk{
+		if(this.storage.get(`${Math.floor(tileX / consts.CHUNK_SIZE)},${Math.floor(tileY / consts.CHUNK_SIZE)}`)){
+			return this.storage.get(`${Math.floor(tileX / consts.CHUNK_SIZE)},${Math.floor(tileY / consts.CHUNK_SIZE)}`);
+		} else {
+			return this.generateChunk(Math.floor(tileX / consts.CHUNK_SIZE),Math.floor(tileY / consts.CHUNK_SIZE));
+		}
 	}
 	generateChunk(x:number, y:number){
 		this.storage.set(`${x},${y}`, 
 			new Chunk(x, y, this.seed)
 			.generate()
 		);
+		console.log(`generated chunk ${x}, ${y}`)
+		return this.storage.get(`${x},${y}`);
 	}
 	tileAt(pixelX:number, pixelY:number):Tile{
 		return this.getChunk(
-			Math.floor((pixelX/consts.TILE_SIZE)/consts.CHUNK_SIZE),
-			Math.floor((pixelY/consts.TILE_SIZE)/consts.CHUNK_SIZE)
-		).tileAt(Math.floor(pixelX/consts.TILE_SIZE), Math.floor(pixelY/consts.TILE_SIZE));
+			Math.floor(pixelX/consts.TILE_SIZE),
+			Math.floor(pixelY/consts.TILE_SIZE)
+		).tileAt(tileToChunk(pixelX/consts.TILE_SIZE), tileToChunk(pixelY/consts.TILE_SIZE));
 	}
 	tileAt2(tileX:number, tileY:number):Tile{
 		return this.getChunk(
 			Math.floor(tileX/consts.CHUNK_SIZE),
 			Math.floor(tileY/consts.CHUNK_SIZE)
-		).tileAt(tileX, tileY);
+		).tileAt(tileToChunk(tileX), tileToChunk(tileY));
 	}
 	writeTile(tileX:number, tileY:number, tile:Tile):boolean {
 		if(this.getChunk(tileX,tileY)){
-			this.getChunk(tileX,tileY).setTile(tileX, tileY, tile);
+			this.getChunk(tileX,tileY).setTile(tileToChunk(tileX), tileToChunk(tileY), tile);
 			return true;
 		}
 		return false;
@@ -83,19 +89,21 @@ interface Level {
 	buildings: Building[];
 }
 class Level extends ChunkedDataStorage {
-	constructor(seed){
+	constructor(seed:number){
 		super(seed);
 		this.items = [];
 		this.buildings = [];
 	}
 	buildingIDAt(pixelX:number, pixelY:number):BuildingID{
 		return this.getChunk(
-			Math.floor((pixelX/consts.TILE_SIZE)/consts.CHUNK_SIZE),
-			Math.floor((pixelY/consts.TILE_SIZE)/consts.CHUNK_SIZE)
-		).buildingAt(Math.floor(pixelX/consts.TILE_SIZE), Math.floor(pixelY/consts.TILE_SIZE));
+			Math.floor(pixelX/consts.TILE_SIZE),
+			Math.floor(pixelY/consts.TILE_SIZE)
+		).buildingAt(tileToChunk(pixelX/consts.TILE_SIZE), tileToChunk(pixelY/consts.TILE_SIZE));
 	}
 	addItem(x:number, y:number, id:ItemID){
-		this.items.push(new Item(x, y, id, this));
+		let tempitem = new Item(x, y, id, this);
+		this.items.push(tempitem);
+		return tempitem;
 	}
 	update(){
 		for(var item of this.items){
@@ -104,16 +112,16 @@ class Level extends ChunkedDataStorage {
 	}
 	writeBuilding(tileX:number, tileY:number, buildingID:BuildingID):boolean {
 		if(this.getChunk(tileX,tileY)){
-			this.getChunk(tileX,tileY).setBuilding(tileX, tileY, buildingID);
+			this.getChunk(tileX,tileY).setBuilding(tileToChunk(tileX), tileToChunk(tileY), buildingID);
 			return true;
 		}
 		return false;
 	}
-	buildBuilding(tileX:number, tileY:number, building):boolean {
+	buildBuilding(tileX:number, tileY:number, building:any):boolean {
 		if(this.getChunk(tileX,tileY)){
-			let tempBuilding:Building = new building();
+			let tempBuilding:Building = new building();//because eventually we'll have different building classes ex; class Furnace extends Building; not sure if ts supports this
 			this.buildings.push(tempBuilding);
-			this.getChunk(tileX,tileY).setBuilding(tileX, tileY, tempBuilding.id);
+			this.getChunk(tileX,tileY).setBuilding(tileToChunk(tileX), tileToChunk(tileY), tempBuilding.id);
 			return true;
 		}
 		return false;

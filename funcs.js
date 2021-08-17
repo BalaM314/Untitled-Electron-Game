@@ -42,3 +42,12 @@ function range(start, end) {
     }
     return temp;
 }
+function tileToChunk(tileCoord) {
+    tileCoord = Math.floor(tileCoord);
+    if (tileCoord < 0) {
+        return (tileCoord % consts.CHUNK_SIZE) + consts.CHUNK_SIZE;
+    }
+    else {
+        return tileCoord % consts.CHUNK_SIZE;
+    }
+}

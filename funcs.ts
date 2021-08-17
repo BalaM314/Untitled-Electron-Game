@@ -53,3 +53,18 @@ function range(start:number, end:number){
 	}
 	return temp;
 }
+
+
+
+
+
+
+
+function tileToChunk(tileCoord:number):number{
+	tileCoord = Math.floor(tileCoord);
+	if(tileCoord < 0){
+		return (tileCoord % consts.CHUNK_SIZE) + consts.CHUNK_SIZE;
+	} else {
+		return tileCoord % consts.CHUNK_SIZE;
+	}
+}
