@@ -1,3 +1,9 @@
+var ItemID;
+(function (ItemID) {
+    ItemID[ItemID["base:null"] = 0] = "base:null";
+    ItemID[ItemID["base:coal"] = 1] = "base:coal";
+    ItemID[ItemID["base:iron"] = 2] = "base:iron";
+})(ItemID || (ItemID = {}));
 const rands = {
     x_prime: 1299689,
     y_prime: 1156709,
@@ -17,6 +23,21 @@ class ChunkedDataStorage {
         this.storage.set(`${x},${y}`, new Chunk(x, y, this.seed)
             .generate());
     }
+    tileAt(pixelX, pixelY) {
+        return this.getChunk(Math.floor((pixelX / consts.TILE_SIZE) / consts.CHUNK_SIZE), Math.floor((pixelY / consts.TILE_SIZE) / consts.CHUNK_SIZE)).tileAt(Math.floor(pixelX / consts.TILE_SIZE), Math.floor(pixelY / consts.TILE_SIZE));
+    }
+}
+class Level extends ChunkedDataStorage {
+    constructor(seed) {
+        super(seed);
+        this.items = [];
+    }
+    buildingIDAt(pixelX, pixelY) {
+        return this.getChunk(Math.floor((pixelX / consts.TILE_SIZE) / consts.CHUNK_SIZE), Math.floor((pixelY / consts.TILE_SIZE) / consts.CHUNK_SIZE)).buildingAt(Math.floor(pixelX / consts.TILE_SIZE), Math.floor(pixelY / consts.TILE_SIZE));
+    }
+    addItem(x, y, id) {
+        this.items.push(new Item(x, y, id, this));
+    }
 }
 class Chunk {
     constructor(x, y, seed) {
@@ -34,16 +55,33 @@ class Chunk {
             null,
             null //Reserved
         ];
-        for (var layer in this.layers) {
-            this.layers[layer] = [];
-            for (let x = 0; x < consts.CHUNK_SIZE; x++) {
-                this.layers[layer][x] = [];
-                for (let z = 0; z < consts.CHUNK_SIZE; z++) {
-                    this.layers[layer][x].push(0xFF);
-                }
+        this.layers[0] = [];
+        for (let x = 0; x < consts.CHUNK_SIZE; x++) {
+            this.layers[0][x] = [];
+            for (let z = 0; z < consts.CHUNK_SIZE; z++) {
+                this.layers[0][x].push(0xFF);
             }
         }
-        this.chunkSeed = 0;
+        this.layers[1] = [];
+        for (let x = 0; x < consts.CHUNK_SIZE; x++) {
+            this.layers[1][x] = [];
+            for (let z = 0; z < consts.CHUNK_SIZE; z++) {
+                this.layers[1][x].push(0xFFFF);
+            }
+        }
+        this.layers[2] = [];
+        for (let x = 0; x < consts.CHUNK_SIZE; x++) {
+            this.layers[2][x] = [];
+            for (let z = 0; z < consts.CHUNK_SIZE; z++) {
+                this.layers[2][x].push(null);
+            }
+        }
+        this.chunkSeed = Math.abs(Math.round((this.x * rands.x_prime) +
+            (this.y * rands.y_prime) +
+            (Math.pow(this.seed % 32, (this.x + this.y) % 10) % 16384) +
+            Math.pow(this.seed, 4) +
+            123456789
+                % 2147483648)); //did I pull this out of my butt? yes.
         return this;
     }
     generate() {
@@ -53,12 +91,6 @@ class Chunk {
                 this.layers[0][row][tile] = 0x00;
             }
         }
-        this.chunkSeed = Math.abs(Math.round((this.x * rands.x_prime) +
-            (this.y * rands.y_prime) +
-            (Math.pow(this.seed % 32, (this.x + this.y) % 10) % 16384) +
-            Math.pow(this.seed, 4) +
-            123456789
-                % 2147483648)); //did I pull this out of my butt? yes.
         this.setTile((this.chunkSeed - rands.hill_x) % consts.CHUNK_SIZE, (this.chunkSeed - rands.hill_y) % consts.CHUNK_SIZE, 0x02);
         this.setTile((this.chunkSeed - rands.hill_x) % consts.CHUNK_SIZE + 1, (this.chunkSeed - rands.hill_y) % consts.CHUNK_SIZE, 0x01);
         this.setTile((this.chunkSeed - rands.hill_x) % consts.CHUNK_SIZE - 1, (this.chunkSeed - rands.hill_y) % consts.CHUNK_SIZE, 0x01);
@@ -77,6 +109,10 @@ class Chunk {
         var _a, _b, _c;
         return (_c = (_b = (_a = this.layers[0]) === null || _a === void 0 ? void 0 : _a[y]) === null || _b === void 0 ? void 0 : _b[x]) !== null && _c !== void 0 ? _c : null;
     }
+    buildingAt(x, y) {
+        var _a, _b, _c;
+        return (_c = (_b = (_a = this.layers[1]) === null || _a === void 0 ? void 0 : _a[y]) === null || _b === void 0 ? void 0 : _b[x]) !== null && _c !== void 0 ? _c : null;
+    }
     setTile(x, y, tile) {
         console.log(arguments);
         if (this.tileAt(x, y) == null) {
@@ -90,6 +126,56 @@ class Chunk {
     }
 }
 class Item {
+    constructor(x, y, id, level) {
+        this.id = id;
+        this.x = x;
+        this.y = y;
+        this.level = level;
+    }
+    update() {
+        if (this.level.buildingIDAt(this.x, this.y) % 0x100 == 0x01) { //this is basically bit math that says "is the last byte == 01". In other words, "Is this item on a conveyor?"
+            switch (this.level.buildingIDAt(this.x, this.y) >> 8) { //bit masks ftw, this just grabs the first byte
+                //yes I know there's no need to write the ids in hex but why the heck not
+                case 0x00:
+                    this.y = (Math.floor(this.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE / 2;
+                    this.x += consts.buildings.conveyor.SPEED;
+                    break;
+                case 0x01:
+                    this.x = (Math.floor(this.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE / 2;
+                    this.y += consts.buildings.conveyor.SPEED;
+                    break;
+                case 0x02:
+                    this.x -= consts.buildings.conveyor.SPEED;
+                    this.y = (Math.floor(this.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE / 2;
+                    break;
+                case 0x03:
+                    this.x = (Math.floor(this.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE / 2;
+                    this.y -= consts.buildings.conveyor.SPEED;
+                    break;
+                case 0x04:
+                    break;
+                case 0x05:
+                    break;
+                case 0x06:
+                    break;
+                case 0x07:
+                    break;
+                case 0x08:
+                    break;
+                case 0x09:
+                    break;
+                case 0x0A:
+                    break;
+                case 0x0B:
+                    break;
+            }
+        }
+    }
 }
 class Building {
+    constructor(tileX, tileY, id) {
+        this.x = tileX;
+        this.y = tileY;
+        this.id = id;
+    }
 }
