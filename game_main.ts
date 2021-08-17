@@ -2,20 +2,24 @@ const consts = {
 	VERSION: "alpha 0.0.0",
 	CHUNK_SIZE: 16,
     TILE_SIZE: 30,
-    DISPLAY_TILE_SIZE: 90,
+    DISPLAY_SCALE: 1,
+    get DISPLAY_TILE_SIZE(){
+			return this.TILE_SIZE * this.DISPLAY_SCALE;
+    },
     buildings: {
-        conveyor: {
-            SPEED: 1
-        }
+			conveyor: {
+					SPEED: 1
+			}
     }
 }
+
 var settings = {
 	
 };
 
 
 
-let level1 = new Level(314);
+let level1 = new Level(311);
 
 level1.generateChunk(0, 0);
 level1.generateChunk(1, 0);
@@ -35,25 +39,43 @@ level1.writeBuilding(0, -1, 0x0001);
 level1.writeBuilding(1, -1, 0x0101);
 
 level1.addItem(15, 15, ItemID["base:null"]);
-function start(){
-    const ctx = (document.getElementById("main_canvas") as HTMLCanvasElement).getContext("2d");
-    setInterval(_ => {
-        level1.update();
-        // document.getElementById("item").style.setProperty("--pos-x", level1.items[0].x.toString() + "px");
-        // document.getElementById("item").style.setProperty("--pos-y", level1.items[0].y.toString() + "px");
-        ctx.clearRect(0, 0, 600, 600);
-        ctx.strokeRect(300, 300, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
-        ctx.strokeRect(300, 300 + consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
-        ctx.strokeRect(300 + consts.DISPLAY_TILE_SIZE, 300, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
-        ctx.strokeRect(300, 300 - consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
-        ctx.strokeRect(300 - consts.DISPLAY_TILE_SIZE, 300, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
-        ctx.strokeRect(300 + consts.DISPLAY_TILE_SIZE, 300 + consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
-        ctx.strokeRect(300 + consts.DISPLAY_TILE_SIZE, 300 - consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
-        ctx.strokeRect(300 - consts.DISPLAY_TILE_SIZE, 300 + consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
-        ctx.strokeRect(300 - consts.DISPLAY_TILE_SIZE, 300 - consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
-        ctx.fillRect(295 + level1.items[0].x*3, 295 + level1.items[0].y*3, 10, 10);
-    }, 1000/30);
+const ctx = (document.getElementById("main_canvas") as HTMLCanvasElement).getContext("2d");
+const overlayCtx = (document.getElementById("secondary_canvas") as HTMLCanvasElement).getContext("2d");
+function loop(){
+	level1.update();
+	// document.getElementById("item").style.setProperty("--pos-x", level1.items[0].x.toString() + "px");
+	// document.getElementById("item").style.setProperty("--pos-y", level1.items[0].y.toString() + "px");
+	ctx.clearRect(0, 0, 600, 600);
+	// ctx.strokeRect(300, 300, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
+	// ctx.strokeRect(300, 300 + consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
+	// ctx.strokeRect(300 + consts.DISPLAY_TILE_SIZE, 300, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
+	// ctx.strokeRect(300, 300 - consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
+	// ctx.strokeRect(300 - consts.DISPLAY_TILE_SIZE, 300, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
+	// ctx.strokeRect(300 + consts.DISPLAY_TILE_SIZE, 300 + consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
+	// ctx.strokeRect(300 + consts.DISPLAY_TILE_SIZE, 300 - consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
+	// ctx.strokeRect(300 - consts.DISPLAY_TILE_SIZE, 300 + consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
+	// ctx.strokeRect(300 - consts.DISPLAY_TILE_SIZE, 300 - consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
+	level1.display(true);
 }
 
+let placedBuildingID = 0x0000;
+document.body.onmousedown = (e:MouseEvent) => {
+	console.log(e);
+	level1.writeBuilding((e.x + Game.scroll.x) / consts.DISPLAY_TILE_SIZE, (e.y + Game.scroll.y) / consts.DISPLAY_TILE_SIZE, placedBuildingID);
+}
 
-start();
+document.body.onkeydown = (e:KeyboardEvent) => {
+	switch(e.key){
+		case "ArrowRight":
+			placedBuildingID = 0x0001; break;
+		case "ArrowDown":
+			placedBuildingID = 0x0101; break;
+		case "ArrowLeft":
+			placedBuildingID = 0x0201; break;
+		case "ArrowUp":
+			placedBuildingID = 0x0301; break;
+	}
+}
+
+//loop();
+setInterval(loop, 1000/30);

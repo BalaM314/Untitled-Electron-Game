@@ -133,6 +133,18 @@ class Level extends ChunkedDataStorage {
 		}
 		return false;
 	}
+	display(debug:boolean, _ctx?:CanvasRenderingContext2D):void {
+		_ctx = _ctx ?? ctx;
+
+		//Currently we will just display every chunk that exists. Obviously this is not sustainable.
+		for(var chunk of this.storage.values()){
+			chunk.display(true);
+		}
+
+		for(let item of this.items){
+			item.display(debug);
+		}
+	}
 }
 
 interface Chunk {
@@ -245,9 +257,92 @@ class Chunk {
 		this.layers[1][y][x] = buildingId;
 		return true;
 	}
-	display(){
+	displayToConsole(){
 		console.log(`%c Base layer of chunk [${this.x},${this.y}]`, `font-weight: bold;`);
 		console.table(this.layers[0]);
+	}
+	display(debug:boolean){
+		for(var y in this.layers[0]){
+			for(var x in this.layers[0][y]){
+				this.displayTile(parseInt(x), parseInt(y));
+				this.displayBuilding(parseInt(x), parseInt(y));
+			}
+		}
+		if(debug){
+			overlayCtx.strokeStyle = "#0000FF";
+			overlayCtx.strokeRect(this.x * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE - Game.scroll.x, this.y  * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE - Game.scroll.y, consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE, consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE);
+		}
+	}
+	displayTile(x:number, y:number){
+		let pixelX = ((this.x * consts.CHUNK_SIZE) + x) * consts.DISPLAY_TILE_SIZE - Game.scroll.x;
+		let pixelY = ((this.y * consts.CHUNK_SIZE) + y) * consts.DISPLAY_TILE_SIZE - Game.scroll.y;
+		switch(this.tileAt(x, y)){
+			case 0x00:
+				ctx.fillStyle = "#00CC33";
+				rect(pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
+				break;
+			case 0x01:
+				ctx.fillStyle = "#008822";
+				rect(pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
+				break;
+			case 0x02:
+				ctx.fillStyle = "#22222";
+				rect(pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
+				break;
+			case 0xFF:
+				ctx.fillStyle = "#FF00FF";
+				rect(pixelX, pixelY, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2);
+				rect(pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY + consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2);
+				ctx.fillStyle = "#000000";
+				rect(pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2);
+				rect(pixelX, pixelY + consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2);
+				break;
+		}
+		ctx.strokeStyle = "#000000";
+		ctx.lineWidth = 1;
+		ctx.strokeRect(pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
+	}
+	displayBuilding(x:number, y:number){
+		let pixelX = ((this.x * consts.CHUNK_SIZE) + x) * consts.DISPLAY_TILE_SIZE - Game.scroll.x;
+		let pixelY = ((this.y * consts.CHUNK_SIZE) + y) * consts.DISPLAY_TILE_SIZE - Game.scroll.y;
+		switch(this.buildingAt(x, y)){
+			case 0x0001:
+				ctx.beginPath();
+				ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.9, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.6, pixelY + consts.DISPLAY_TILE_SIZE * 0.3);
+				ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.9, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.6, pixelY + consts.DISPLAY_TILE_SIZE * 0.7);
+				ctx.stroke();
+				break;
+			case 0x0101:
+				ctx.beginPath();
+				ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.1);
+				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.9);
+				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.3, pixelY + consts.DISPLAY_TILE_SIZE * 0.6);
+				ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.9);
+				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.7, pixelY + consts.DISPLAY_TILE_SIZE * 0.6);
+				ctx.stroke();
+				break;
+			case 0x0201:
+				ctx.beginPath();
+				ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.9, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.6, pixelY + consts.DISPLAY_TILE_SIZE * 0.3);
+				ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.6, pixelY + consts.DISPLAY_TILE_SIZE * 0.7);
+				ctx.stroke();
+				break;
+			case 0x0301:
+				ctx.beginPath();
+				ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.9);
+				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.1);
+				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.3, pixelY + consts.DISPLAY_TILE_SIZE * 0.4);
+				ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.1);
+				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.7, pixelY + consts.DISPLAY_TILE_SIZE * 0.4);
+				ctx.stroke();
+				break;				
+		}
 	}
 }
 
@@ -310,6 +405,18 @@ class Item {
 					break;
 			}
 		}
+	}
+	display(debug?:boolean, _ctx?:CanvasRenderingContext2D){
+		_ctx = _ctx ?? ctx;
+		switch(this.id){
+			case ItemID["base:null"]:
+				ctx.fillStyle = "#FF00FF";break;
+			case ItemID["base:coal"]:
+				ctx.fillStyle = "#000000";break;
+			case ItemID["base:iron"]:
+				ctx.fillStyle = "#663300";break;
+		}
+		_ctx.fillRect((this.x * consts.DISPLAY_SCALE) - 5 - Game.scroll.x, (this.y * consts.DISPLAY_SCALE) - 5 - Game.scroll.y, 10, 10);
 	}
 }
 

@@ -2,7 +2,13 @@
 
 
 
+/**
+ * Utility Functions
+ * 
+ * 
+ */
 
+//.protptype.
 interface Array<T> {
 	last: Function
 }
@@ -11,6 +17,8 @@ interface Array<T> {
 }
 
 
+
+//general function
 function sq(x:number):number{
 	return x * x;
 }
@@ -54,11 +62,36 @@ function range(start:number, end:number){
 	return temp;
 }
 
+/**
+ * Drawing Functions
+ * 
+ */
+
+enum rectMode {
+	CENTER,
+	CORNER
+}
+
+function rect(x:number, y:number, w:number, h:number, mode?:rectMode, _ctx?:CanvasRenderingContext2D){
+	_ctx = _ctx ?? ctx;
+	mode = mode ?? rectMode.CORNER;
+	if(mode == rectMode.CENTER){
+		_ctx.fillRect(x - w/2, y - w/2, w, h);
+	} else if(mode == rectMode.CORNER){
+		_ctx.fillRect(x, y, w, h);
+	} else {
+		console.warn("invalid mode to rect()");
+	}
+}
 
 
 
 
 
+
+/**
+ * Game-related functions
+ */
 
 function tileToChunk(tileCoord:number):number{
 	tileCoord = Math.floor(tileCoord);

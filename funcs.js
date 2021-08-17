@@ -1,6 +1,12 @@
+/**
+ * Utility Functions
+ *
+ *
+ */
 (Array).prototype.last = function () {
     return this[this.length - 1];
 };
+//general function
 function sq(x) {
     return x * x;
 }
@@ -42,6 +48,31 @@ function range(start, end) {
     }
     return temp;
 }
+/**
+ * Drawing Functions
+ *
+ */
+var rectMode;
+(function (rectMode) {
+    rectMode[rectMode["CENTER"] = 0] = "CENTER";
+    rectMode[rectMode["CORNER"] = 1] = "CORNER";
+})(rectMode || (rectMode = {}));
+function rect(x, y, w, h, mode, _ctx) {
+    _ctx = _ctx !== null && _ctx !== void 0 ? _ctx : ctx;
+    mode = mode !== null && mode !== void 0 ? mode : rectMode.CORNER;
+    if (mode == rectMode.CENTER) {
+        _ctx.fillRect(x - w / 2, y - w / 2, w, h);
+    }
+    else if (mode == rectMode.CORNER) {
+        _ctx.fillRect(x, y, w, h);
+    }
+    else {
+        console.warn("invalid mode to rect()");
+    }
+}
+/**
+ * Game-related functions
+ */
 function tileToChunk(tileCoord) {
     tileCoord = Math.floor(tileCoord);
     if (tileCoord < 0) {
