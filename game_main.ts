@@ -61,7 +61,11 @@ function loop(){
 let placedBuildingID = 0x0000;
 document.body.onmousedown = (e:MouseEvent) => {
 	console.log(e);
-	level1.writeBuilding((e.x + Game.scroll.x) / consts.DISPLAY_TILE_SIZE, (e.y + Game.scroll.y) / consts.DISPLAY_TILE_SIZE, placedBuildingID);
+	if(e.ctrlKey){
+		level1.addItem(e.x + Game.scroll.x, e.y + Game.scroll.y, "base:iron");
+	} else {
+		level1.writeBuilding((e.x + Game.scroll.x) / consts.DISPLAY_TILE_SIZE, (e.y + Game.scroll.y) / consts.DISPLAY_TILE_SIZE, placedBuildingID);
+	}
 }
 
 document.body.onkeydown = (e:KeyboardEvent) => {
