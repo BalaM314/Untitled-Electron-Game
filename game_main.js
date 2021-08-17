@@ -46,6 +46,7 @@ function loop() {
     // ctx.strokeRect(300 - consts.DISPLAY_TILE_SIZE, 300 + consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
     // ctx.strokeRect(300 - consts.DISPLAY_TILE_SIZE, 300 - consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
     level1.display(true);
+    level1.displayGhostBuilding((mouseX + Game.scroll.x) / consts.DISPLAY_TILE_SIZE, (mouseY + Game.scroll.y) / consts.DISPLAY_TILE_SIZE, placedBuildingID);
 }
 let placedBuildingID = 0x0001;
 document.body.onmousedown = (e) => {
@@ -77,7 +78,7 @@ document.body.onkeydown = (e) => {
             break;
     }
 };
-//loop();
+// loop();
 setInterval(loop, 1000 / 30);
 setTimeout(_ => {
     alert("Welcome to Conveyor belt simulator 2021!\n Click to place a belt. \nUse arrow keys to change direction of placed belts. \nCtrl+click to place an item.");

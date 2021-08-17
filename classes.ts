@@ -117,6 +117,9 @@ class Level extends ChunkedDataStorage {
 			item.update();
 		}
 	}
+	displayGhostBuilding(tileX:number, tileY:number, buildingID:BuildingID){
+		this.getChunk(tileX, tileY).displayBuilding(tileToChunk(tileX), tileToChunk(tileY), buildingID, true);
+	}
 	writeBuilding(tileX:number, tileY:number, buildingID:BuildingID):boolean {
 		if(this.getChunk(tileX,tileY)){
 			this.getChunk(tileX,tileY).setBuilding(tileToChunk(tileX), tileToChunk(tileY), buildingID);
@@ -265,7 +268,7 @@ class Chunk {
 		for(var y in this.layers[0]){
 			for(var x in this.layers[0][y]){
 				this.displayTile(parseInt(x), parseInt(y));
-				this.displayBuilding(parseInt(x), parseInt(y));
+				this.displayBuilding(parseInt(x), parseInt(y), this.buildingAt(parseInt(x), parseInt(y)));
 			}
 		}
 		if(debug){
@@ -302,10 +305,11 @@ class Chunk {
 		ctx.lineWidth = 1;
 		ctx.strokeRect(pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
 	}
-	displayBuilding(x:number, y:number){
+	displayBuilding(x:number, y:number, buildingID:BuildingID, isGhost?:boolean){
 		let pixelX = ((this.x * consts.CHUNK_SIZE) + x) * consts.DISPLAY_TILE_SIZE - Game.scroll.x;
 		let pixelY = ((this.y * consts.CHUNK_SIZE) + y) * consts.DISPLAY_TILE_SIZE - Game.scroll.y;
-		switch(this.buildingAt(x, y)){
+		ctx.strokeStyle = isGhost ? "#888888" : "#000000";
+		switch(buildingID){
 			case 0x0001:
 				ctx.beginPath();
 				ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);

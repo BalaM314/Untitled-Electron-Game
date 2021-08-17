@@ -56,6 +56,7 @@ function loop(){
 	// ctx.strokeRect(300 - consts.DISPLAY_TILE_SIZE, 300 + consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
 	// ctx.strokeRect(300 - consts.DISPLAY_TILE_SIZE, 300 - consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
 	level1.display(true);
+	level1.displayGhostBuilding((mouseX + Game.scroll.x) / consts.DISPLAY_TILE_SIZE, (mouseY + Game.scroll.y) / consts.DISPLAY_TILE_SIZE, placedBuildingID);
 }
 
 let placedBuildingID:BuildingID = 0x0001;
@@ -67,6 +68,8 @@ document.body.onmousedown = (e:MouseEvent) => {
 		level1.writeBuilding((e.x + Game.scroll.x) / consts.DISPLAY_TILE_SIZE, (e.y + Game.scroll.y) / consts.DISPLAY_TILE_SIZE, placedBuildingID);
 	}
 }
+
+
 
 document.body.onkeydown = (e:KeyboardEvent) => {
 	switch(e.key){
@@ -81,7 +84,7 @@ document.body.onkeydown = (e:KeyboardEvent) => {
 	}
 }
 
-//loop();
+// loop();
 setInterval(loop, 1000/30);
 
 setTimeout(_ => {

@@ -16,7 +16,12 @@ interface Array<T> {
 	return this[this.length - 1];
 }
 
-
+let mouseX = 0;
+let mouseY = 0;
+window.onmousemove = (e:MouseEvent) => {
+	mouseX = e.x;
+	mouseY = e.y;
+}
 
 //general function
 function sq(x:number):number{
