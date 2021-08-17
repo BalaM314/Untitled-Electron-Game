@@ -70,13 +70,13 @@ document.body.onmousedown = (e:MouseEvent) => {
 
 document.body.onkeydown = (e:KeyboardEvent) => {
 	switch(e.key){
-		case "ArrowRight":
+		case "ArrowRight": case "d":
 			placedBuildingID = 0x0001; break;
-		case "ArrowDown":
+		case "ArrowDown": case "s":
 			placedBuildingID = 0x0101; break;
-		case "ArrowLeft":
+		case "ArrowLeft": case "a":
 			placedBuildingID = 0x0201; break;
-		case "ArrowUp":
+		case "ArrowUp": case "w":
 			placedBuildingID = 0x0301; break;
 	}
 }

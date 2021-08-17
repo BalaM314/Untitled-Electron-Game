@@ -60,15 +60,19 @@ document.body.onmousedown = (e) => {
 document.body.onkeydown = (e) => {
     switch (e.key) {
         case "ArrowRight":
+        case "d":
             placedBuildingID = 0x0001;
             break;
         case "ArrowDown":
+        case "s":
             placedBuildingID = 0x0101;
             break;
         case "ArrowLeft":
+        case "a":
             placedBuildingID = 0x0201;
             break;
         case "ArrowUp":
+        case "w":
             placedBuildingID = 0x0301;
             break;
     }
