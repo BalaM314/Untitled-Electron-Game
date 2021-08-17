@@ -58,11 +58,11 @@ function loop(){
 	level1.display(true);
 }
 
-let placedBuildingID = 0x0000;
+let placedBuildingID:BuildingID = 0x0001;
 document.body.onmousedown = (e:MouseEvent) => {
 	console.log(e);
 	if(e.ctrlKey){
-		level1.addItem(e.x + Game.scroll.x, e.y + Game.scroll.y, "base:iron");
+		level1.addItem(e.x + Game.scroll.x, e.y + Game.scroll.y, ItemID["base:iron"]);
 	} else {
 		level1.writeBuilding((e.x + Game.scroll.x) / consts.DISPLAY_TILE_SIZE, (e.y + Game.scroll.y) / consts.DISPLAY_TILE_SIZE, placedBuildingID);
 	}
@@ -83,3 +83,7 @@ document.body.onkeydown = (e:KeyboardEvent) => {
 
 //loop();
 setInterval(loop, 1000/30);
+
+setTimeout(_ => {
+	alert("Welcome to Conveyor belt simulator 2021!\n Click to place a belt. \nUse arrow keys to change direction of placed belts. \nCtrl+click to place an item.");
+}, 500);
