@@ -109,5 +109,6 @@ Click to place a building.
 Press 2 for a miner and 3 for a trash can.
 Use arrow keys to change direction of placed belts.
 Ctrl+click to place an item.
+Use Shift+WASD to scroll.
 	`);
 }, 500);
