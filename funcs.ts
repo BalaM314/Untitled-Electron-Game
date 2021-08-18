@@ -9,12 +9,12 @@
  */
 
 //.protptype.
-interface Array<T> {
+/*interface Array<T> {
 	last: Function
 }
 (Array).prototype.last = function():any{
 	return this[this.length - 1];
-}
+}*/
 
 let mouseX = 0;
 let mouseY = 0;

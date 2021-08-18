@@ -104,20 +104,23 @@ class Level extends ChunkedDataStorage {
         return false;
     }
     buildBuilding(tileX, tileY, building) {
+        var tempBuilding;
         switch (building) {
             case 0x0002:
-                if (!Miner.canBuildAt(tileX, tileY, this)) {
-                    return false;
-                }
-                let tempBuilding = new Miner(tileX, tileY, 0x0002, this); //typescript go brrrrr
-                this.buildings.push(tempBuilding);
-                this.getChunk(tileX, tileY).setBuilding(tileToChunk(tileX), tileToChunk(tileY), tempBuilding.id);
-                return true;
+                if (!Miner.canBuildAt(tileX, tileY, this))
+                    return;
+                tempBuilding = new Miner(tileX, tileY, 0x0002, this); //typescript go brrrrr
+                break;
+            case 0x0003:
+                tempBuilding = new TrashCan(tileX, tileY, 0x0003, this); //typescript go brrrrr
                 break;
             default:
                 return this.writeBuilding(tileX, tileY, building);
                 break;
         }
+        this.buildings.push(tempBuilding);
+        this.getChunk(tileX, tileY).setBuilding(tileToChunk(tileX), tileToChunk(tileY), tempBuilding.id);
+        return true;
     }
     display(debug, _ctx) {
         _ctx = _ctx !== null && _ctx !== void 0 ? _ctx : ctx;
@@ -230,7 +233,7 @@ class Chunk {
         }
         for (var y in this.layers[0]) {
             for (var x in this.layers[0][y]) {
-                this.displayBuilding(parseInt(x), parseInt(y), this.buildingAt(parseInt(x), parseInt(y)));
+                this.displayBuilding(parseInt(x), parseInt(y), this.buildingAt(tileToChunk(parseInt(x)), tileToChunk(parseInt(y))));
             }
         }
         if (debug) {
@@ -323,10 +326,12 @@ class Chunk {
                 ctx.stroke();
                 break;
             case 0x0002:
-                // ctx.beginPath();
-                // ctx.ellipse(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.5, consts.DISPLAY_TILE_SIZE * 0.3, consts.DISPLAY_TILE_SIZE * 0.3, 0, 0, Math.PI * 2);
-                // ctx.fill();
                 rect(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.5, consts.DISPLAY_TILE_SIZE * 0.6, consts.DISPLAY_TILE_SIZE * 0.6, rectMode.CENTER);
+                break;
+            case 0x0003:
+                rect(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.5, consts.DISPLAY_TILE_SIZE * 0.6, consts.DISPLAY_TILE_SIZE * 0.6, rectMode.CENTER);
+                rect(pixelX + consts.DISPLAY_TILE_SIZE * 0.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.1, consts.DISPLAY_TILE_SIZE * 0.8, consts.DISPLAY_TILE_SIZE * 0.1, rectMode.CORNER);
+                console.log(buildingID);
                 break;
         }
     }
@@ -449,8 +454,8 @@ class Miner extends Building {
 class TrashCan extends Building {
     update() {
         for (var item in this.level.items) {
-            if ((this.level.items[item].x - (this.x + consts.TILE_SIZE / 2) * consts.TILE_SIZE < consts.TILE_SIZE * 0.5) &&
-                (this.level.items[item].y - (this.y + consts.TILE_SIZE / 2) * consts.TILE_SIZE < consts.TILE_SIZE * 0.5)) {
+            if ((Math.abs(this.level.items[item].x - (this.x * consts.TILE_SIZE + consts.TILE_SIZE / 2)) < consts.TILE_SIZE * 0.5) &&
+                (Math.abs(this.level.items[item].y - (this.y * consts.TILE_SIZE + consts.TILE_SIZE / 2)) < consts.TILE_SIZE * 0.5)) {
                 this.level.items.splice(parseInt(item), 1);
             }
         }
