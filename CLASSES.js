@@ -74,6 +74,9 @@ class Level extends ChunkedDataStorage {
         for (var item of this.items) {
             item.update();
         }
+        for (var building of this.buildings) {
+            building.update();
+        }
     }
     displayGhostBuilding(tileX, tileY, buildingID) {
         if (this.getChunk(tileX, tileY, true) == null) {
@@ -106,7 +109,7 @@ class Level extends ChunkedDataStorage {
                 if (!Miner.canBuildAt(tileX, tileY, this)) {
                     return false;
                 }
-                let tempBuilding = new Miner(tileX, tileY, 0x0002); //typescript go brrrrr
+                let tempBuilding = new Miner(tileX, tileY, 0x0002, this); //typescript go brrrrr
                 this.buildings.push(tempBuilding);
                 this.getChunk(tileX, tileY).setBuilding(tileToChunk(tileX), tileToChunk(tileY), tempBuilding.id);
                 return true;
@@ -323,7 +326,7 @@ class Chunk {
                 // ctx.beginPath();
                 // ctx.ellipse(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.5, consts.DISPLAY_TILE_SIZE * 0.3, consts.DISPLAY_TILE_SIZE * 0.3, 0, 0, Math.PI * 2);
                 // ctx.fill();
-                rect(pixelX, pixelY, consts.DISPLAY_TILE_SIZE * 0.6, consts.DISPLAY_TILE_SIZE * 0.6, rectMode.CENTER);
+                rect(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.5, consts.DISPLAY_TILE_SIZE * 0.6, consts.DISPLAY_TILE_SIZE * 0.6, rectMode.CENTER);
                 break;
         }
     }
@@ -391,14 +394,65 @@ class Item {
     }
 }
 class Building {
-    constructor(tileX, tileY, id) {
+    constructor(tileX, tileY, id, level) {
         this.x = tileX;
         this.y = tileY;
         this.id = id;
+        this.level = level;
+    }
+    update() {
+    }
+    break() {
+        this.level.buildings.splice(this.level.buildings.indexOf(this), 1);
     }
 }
 class Miner extends Building {
+    constructor(tileX, tileY, id, level) {
+        super(tileX, tileY, id, level);
+        this.timer = 30;
+        this.itemBuffer = 0;
+        this.miningItem = ItemID["base:coal"];
+    }
     static canBuildAt(tileX, tileY, level) {
         return level.tileAt2(tileX, tileY) == 0x01 || level.tileAt2(tileX, tileY) == 0x02;
+    }
+    update() {
+        if (this.level.buildingIDAt2(this.x, this.y) != this.id) {
+            return this.break();
+        }
+        if (this.timer > 0) {
+            this.timer--;
+        }
+        else {
+            this.timer = 30;
+            this.spawnItem();
+        }
+    }
+    spawnItem() {
+        if (this.level.buildingIDAt2(this.x + 1, this.y) % 0x100 == 0x01) {
+            this.level.addItem(this.x * consts.TILE_SIZE + consts.TILE_SIZE * 1.1, this.y * consts.TILE_SIZE + consts.TILE_SIZE * 0.5, this.miningItem);
+        }
+        else if (this.level.buildingIDAt2(this.x, this.y + 1) % 0x100 == 0x01) {
+            this.level.addItem(this.x * consts.TILE_SIZE + consts.TILE_SIZE * 0.5, this.y * consts.TILE_SIZE + consts.TILE_SIZE * 1.1, this.miningItem);
+        }
+        else if (this.level.buildingIDAt2(this.x - 1, this.y) % 0x100 == 0x01) {
+            this.level.addItem(this.x * consts.TILE_SIZE - consts.TILE_SIZE * 0.1, this.y * consts.TILE_SIZE + consts.TILE_SIZE * 0.5, this.miningItem);
+        }
+        else if (this.level.buildingIDAt2(this.x, this.y - 1) % 0x100 == 0x01) {
+            this.level.addItem(this.x * consts.TILE_SIZE + consts.TILE_SIZE * 0.5, this.y * consts.TILE_SIZE - consts.TILE_SIZE * 0.1, this.miningItem);
+        }
+        else {
+            this.itemBuffer++;
+        }
+    }
+}
+class TrashCan extends Building {
+    update() {
+        for (var item in this.level.items) {
+            if ((this.level.items[item].x - (this.x + consts.TILE_SIZE / 2) * consts.TILE_SIZE < consts.TILE_SIZE * 0.5) &&
+                (this.level.items[item].y - (this.y + consts.TILE_SIZE / 2) * consts.TILE_SIZE < consts.TILE_SIZE * 0.5)) {
+                this.level.items.splice(parseInt(item), 1);
+            }
+        }
     }
 }
