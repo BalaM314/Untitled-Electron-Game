@@ -495,7 +495,9 @@ class Building {
 		this.level = level;
 	}
 	update(){
-
+		if(this.level.buildingIDAt2(this.x, this.y) != this.id){
+			return this.break();
+		}
 	}
 	break(){
 		this.level.buildings.splice(this.level.buildings.indexOf(this), 1);
@@ -546,8 +548,11 @@ class Miner extends Building {
 
 
 
-class TrashCan extends Building{
+class TrashCan extends Building {
 	update(){
+		if(this.level.buildingIDAt2(this.x, this.y) != this.id){
+			return this.break();
+		}
 		for(var item in this.level.items){
 			if(
 				(Math.abs(this.level.items[item].x - (this.x * consts.TILE_SIZE + consts.TILE_SIZE / 2)) < consts.TILE_SIZE * 0.6) &&
