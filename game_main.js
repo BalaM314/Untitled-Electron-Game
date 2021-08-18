@@ -76,7 +76,7 @@ document.body.onkeydown = (e) => {
         case "w":
             placedBuildingID = 0x0301;
             break;
-        case "1":
+        case "2":
             placedBuildingID = 0x0002;
             break;
     }

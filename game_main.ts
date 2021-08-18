@@ -81,7 +81,7 @@ document.body.onkeydown = (e:KeyboardEvent) => {
 			placedBuildingID = 0x0201; break;
 		case "ArrowUp": case "w":
 			placedBuildingID = 0x0301; break;
-		case "1":
+		case "2":
 			placedBuildingID = 0x0002; break;
 	}
 }
