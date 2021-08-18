@@ -94,5 +94,11 @@ document.body.onkeydown = (e:KeyboardEvent) => {
 setInterval(loop, 1000/30);
 
 setTimeout(_ => {
-	alert("Welcome to Conveyor belt simulator 2021!\n Click to place a belt. \nUse arrow keys to change direction of placed belts. \nCtrl+click to place an item.");
+	alert(`
+Welcome to Conveyor belt simulator 2021!
+Click to place a building.
+Press 2 for a miner and 3 for a trash can.
+Use arrow keys to change direction of placed belts.
+Ctrl+click to place an item.
+	`);
 }, 500);
