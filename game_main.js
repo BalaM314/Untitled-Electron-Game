@@ -36,6 +36,7 @@ function loop() {
     // document.getElementById("item").style.setProperty("--pos-x", level1.items[0].x.toString() + "px");
     // document.getElementById("item").style.setProperty("--pos-y", level1.items[0].y.toString() + "px");
     ctx.clearRect(0, 0, 1200, 1200);
+    overlayCtx.clearRect(0, 0, 1200, 1200);
     // ctx.strokeRect(300, 300, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
     // ctx.strokeRect(300, 300 + consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
     // ctx.strokeRect(300 + consts.DISPLAY_TILE_SIZE, 300, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
@@ -84,6 +85,18 @@ document.body.onkeydown = (e) => {
             break;
         case "0":
             placedBuildingID = 0xFFFF;
+            break;
+        case "W":
+            Game.scroll.y -= 5;
+            break;
+        case "A":
+            Game.scroll.x -= 5;
+            break;
+        case "S":
+            Game.scroll.y += 5;
+            break;
+        case "D":
+            Game.scroll.x += 5;
             break;
     }
 };
