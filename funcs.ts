@@ -108,3 +108,25 @@ function tileToChunk(tileCoord:number):number{
 		return tileCoord % consts.CHUNK_SIZE;
 	}
 }
+
+var interval1;
+
+function onConsoleOpen(){
+	alert("%c Hey there! It looks like you're checking out the console.\nIf you want to view the source code, *please do it at* https://github.com/BalaM314/Untitled-Electron-Game \n Make sure to view the .ts files as the .js files are compiled and thus look weird.")
+	cancelAnimationFrame(interval1);
+}
+
+function isConsoleOpen(){
+	interval1 = requestAnimationFrame(_ => {
+		let x = /lol/;
+		x.toString = function(){
+			onConsoleOpen();
+			return "[object TestingConsoleOpen]";
+		};
+		//yes really. This is **probably** a bug.
+		console.log({e: x});
+	});
+}
+
+
+isConsoleOpen();
