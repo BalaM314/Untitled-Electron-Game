@@ -45,7 +45,7 @@ function loop(){
 	level1.update();
 	// document.getElementById("item").style.setProperty("--pos-x", level1.items[0].x.toString() + "px");
 	// document.getElementById("item").style.setProperty("--pos-y", level1.items[0].y.toString() + "px");
-	ctx.clearRect(0, 0, 600, 600);
+	ctx.clearRect(0, 0, 1200, 1200);
 	// ctx.strokeRect(300, 300, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
 	// ctx.strokeRect(300, 300 + consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
 	// ctx.strokeRect(300 + consts.DISPLAY_TILE_SIZE, 300, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
@@ -59,13 +59,13 @@ function loop(){
 	level1.displayGhostBuilding((mouseX + Game.scroll.x) / consts.DISPLAY_TILE_SIZE, (mouseY + Game.scroll.y) / consts.DISPLAY_TILE_SIZE, placedBuildingID);
 }
 
-let placedBuildingID:BuildingID = 0x0001;
+let placedBuildingID:BuildingID = 0x0002;
 document.body.onmousedown = (e:MouseEvent) => {
 	console.log(e);
 	if(e.ctrlKey){
 		level1.addItem(e.x + Game.scroll.x, e.y + Game.scroll.y, ItemID["base:iron"]);
 	} else {
-		level1.writeBuilding((e.x + Game.scroll.x) / consts.DISPLAY_TILE_SIZE, (e.y + Game.scroll.y) / consts.DISPLAY_TILE_SIZE, placedBuildingID);
+		level1.buildBuilding((e.x + Game.scroll.x) / consts.DISPLAY_TILE_SIZE, (e.y + Game.scroll.y) / consts.DISPLAY_TILE_SIZE, placedBuildingID);
 	}
 }
 
@@ -81,6 +81,8 @@ document.body.onkeydown = (e:KeyboardEvent) => {
 			placedBuildingID = 0x0201; break;
 		case "ArrowUp": case "w":
 			placedBuildingID = 0x0301; break;
+		case "1":
+			placedBuildingID = 0x0002; break;
 	}
 }
 

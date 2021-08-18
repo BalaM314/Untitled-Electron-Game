@@ -18,6 +18,7 @@ type BuildingID =
 0x0901 |	//Conveyor Belt Facing Up->Left
 0x0A01 |	//Conveyor Belt Facing Right->Up
 0x0B01 |	//Conveyor Belt Facing Left->Up
+0x0002 |	//Miner
 0xFFFF ;	//Unset
 
 
@@ -55,11 +56,13 @@ class ChunkedDataStorage {
 		this.seed = seed ? seed : 0;
 		this.format = consts.VERSION;
 	}
-	getChunk(tileX:number, tileY:number):Chunk{
+	getChunk(tileX:number, tileY:number, dontGenerateChunk?:boolean):Chunk{
 		if(this.storage.get(`${Math.floor(tileX / consts.CHUNK_SIZE)},${Math.floor(tileY / consts.CHUNK_SIZE)}`)){
 			return this.storage.get(`${Math.floor(tileX / consts.CHUNK_SIZE)},${Math.floor(tileY / consts.CHUNK_SIZE)}`);
-		} else {
+		} else if(!dontGenerateChunk){
 			return this.generateChunk(Math.floor(tileX / consts.CHUNK_SIZE),Math.floor(tileY / consts.CHUNK_SIZE));
+		} else {
+			return null;
 		}
 	}
 	generateChunk(x:number, y:number){
@@ -78,8 +81,8 @@ class ChunkedDataStorage {
 	}
 	tileAt2(tileX:number, tileY:number):Tile{
 		return this.getChunk(
-			Math.floor(tileX/consts.CHUNK_SIZE),
-			Math.floor(tileY/consts.CHUNK_SIZE)
+			Math.floor(tileX),
+			Math.floor(tileY)
 		).tileAt(tileToChunk(tileX), tileToChunk(tileY));
 	}
 	writeTile(tileX:number, tileY:number, tile:Tile):boolean {
@@ -107,6 +110,12 @@ class Level extends ChunkedDataStorage {
 			Math.floor(pixelY/consts.TILE_SIZE)
 		).buildingAt(tileToChunk(pixelX/consts.TILE_SIZE), tileToChunk(pixelY/consts.TILE_SIZE));
 	}
+	buildingIDAt2(tileX:number, tileY:number):BuildingID{
+		return this.getChunk(
+			Math.floor(tileX),
+			Math.floor(tileY)
+		).buildingAt(tileToChunk(tileX), tileToChunk(tileY));
+	}
 	addItem(x:number, y:number, id:ItemID){
 		let tempitem = new Item(x, y, id, this);
 		this.items.push(tempitem);
@@ -118,7 +127,21 @@ class Level extends ChunkedDataStorage {
 		}
 	}
 	displayGhostBuilding(tileX:number, tileY:number, buildingID:BuildingID){
-		this.getChunk(tileX, tileY).displayBuilding(tileToChunk(tileX), tileToChunk(tileY), buildingID, true);
+		if(this.getChunk(tileX, tileY, true) == null){
+			return;
+		}
+		switch(buildingID){
+			case 0x0002:
+				if(Miner.canBuildAt(tileX, tileY, this)){
+					this.getChunk(tileX, tileY).displayBuilding(tileToChunk(tileX), tileToChunk(tileY), buildingID, 1);
+				} else {
+					this.getChunk(tileX, tileY).displayBuilding(tileToChunk(tileX), tileToChunk(tileY), buildingID, 2);
+				}
+			break;
+			default:
+				this.getChunk(tileX, tileY).displayBuilding(tileToChunk(tileX), tileToChunk(tileY), buildingID, 1);
+			break;
+		}
 	}
 	writeBuilding(tileX:number, tileY:number, buildingID:BuildingID):boolean {
 		if(this.getChunk(tileX,tileY)){
@@ -127,14 +150,19 @@ class Level extends ChunkedDataStorage {
 		}
 		return false;
 	}
-	buildBuilding(tileX:number, tileY:number, building:any):boolean {
-		if(this.getChunk(tileX,tileY)){
-			let tempBuilding:Building = new building();//because eventually we'll have different building classes ex; class Furnace extends Building; not sure if ts supports this
-			this.buildings.push(tempBuilding);
-			this.getChunk(tileX,tileY).setBuilding(tileToChunk(tileX), tileToChunk(tileY), tempBuilding.id);
-			return true;
+	buildBuilding(tileX:number, tileY:number, building:BuildingID):boolean {
+		switch(building){
+			case 0x0002:
+				if(!Miner.canBuildAt(tileX, tileY, this)){return false;}
+				let tempBuilding = new Miner(tileX, tileY, 0x0002);//typescript go brrrrr
+				this.buildings.push(tempBuilding);
+				this.getChunk(tileX,tileY).setBuilding(tileToChunk(tileX), tileToChunk(tileY), tempBuilding.id);
+				return true;
+			break;
+			default:
+				return this.writeBuilding(tileX, tileY, building);
+			break;
 		}
-		return false;
 	}
 	display(debug:boolean, _ctx?:CanvasRenderingContext2D):void {
 		_ctx = _ctx ?? ctx;
@@ -268,6 +296,10 @@ class Chunk {
 		for(var y in this.layers[0]){
 			for(var x in this.layers[0][y]){
 				this.displayTile(parseInt(x), parseInt(y));
+			}
+		}
+		for(var y in this.layers[0]){
+			for(var x in this.layers[0][y]){
 				this.displayBuilding(parseInt(x), parseInt(y), this.buildingAt(parseInt(x), parseInt(y)));
 			}
 		}
@@ -305,10 +337,20 @@ class Chunk {
 		ctx.lineWidth = 1;
 		ctx.strokeRect(pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
 	}
-	displayBuilding(x:number, y:number, buildingID:BuildingID, isGhost?:boolean){
+	displayBuilding(x:number, y:number, buildingID:BuildingID, isGhost?:number){
+		if(buildingID == 0xFFFF){return;}
 		let pixelX = ((this.x * consts.CHUNK_SIZE) + x) * consts.DISPLAY_TILE_SIZE - Game.scroll.x;
 		let pixelY = ((this.y * consts.CHUNK_SIZE) + y) * consts.DISPLAY_TILE_SIZE - Game.scroll.y;
-		ctx.strokeStyle = isGhost ? "#888888" : "#000000";
+		if(isGhost == 2){
+			ctx.strokeStyle = "#EE6666";
+			ctx.fillStyle = "#EE6666";
+		} else if(isGhost == 1){
+			ctx.strokeStyle = "#888888";
+			ctx.fillStyle = "#888888";
+		} else {
+			ctx.strokeStyle = "#000000";
+			ctx.fillStyle = "#000000";
+		}
 		switch(buildingID){
 			case 0x0001:
 				ctx.beginPath();
@@ -345,7 +387,13 @@ class Chunk {
 				ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.1);
 				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.7, pixelY + consts.DISPLAY_TILE_SIZE * 0.4);
 				ctx.stroke();
-				break;				
+				break;
+			case 0x0002:
+				// ctx.beginPath();
+				// ctx.ellipse(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.5, consts.DISPLAY_TILE_SIZE * 0.3, consts.DISPLAY_TILE_SIZE * 0.3, 0, 0, Math.PI * 2);
+				// ctx.fill();
+				rect(pixelX, pixelY, consts.DISPLAY_TILE_SIZE * 0.6, consts.DISPLAY_TILE_SIZE * 0.6, rectMode.CENTER);
+				break;
 		}
 	}
 }
@@ -434,5 +482,12 @@ class Building {
 		this.x = tileX;
 		this.y = tileY;
 		this.id = id;
+	}
+}
+
+
+class Miner extends Building {
+	static canBuildAt(tileX:number, tileY:number, level:Level):boolean {
+		return level.tileAt2(tileX, tileY) == 0x01 || level.tileAt2(tileX, tileY) == 0x02;
 	}
 }

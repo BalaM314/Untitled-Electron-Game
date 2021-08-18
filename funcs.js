@@ -76,6 +76,9 @@ function rect(x, y, w, h, mode, _ctx) {
         console.warn("invalid mode to rect()");
     }
 }
+function ellipse(x, y, w, h) {
+    ctx.ellipse(x, y, w, h, 0, 0, Math.PI * 2);
+}
 /**
  * Game-related functions
  */

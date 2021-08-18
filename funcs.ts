@@ -89,7 +89,9 @@ function rect(x:number, y:number, w:number, h:number, mode?:rectMode, _ctx?:Canv
 	}
 }
 
-
+function ellipse(x, y, w, h){
+	ctx.ellipse(x, y, w, h, 0, 0, Math.PI * 2);
+}
 
 
 
