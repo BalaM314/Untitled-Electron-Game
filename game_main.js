@@ -48,7 +48,7 @@ function loop() {
     level1.display(true);
     level1.displayGhostBuilding((mouseX + Game.scroll.x) / consts.DISPLAY_TILE_SIZE, (mouseY + Game.scroll.y) / consts.DISPLAY_TILE_SIZE, placedBuildingID);
 }
-let placedBuildingID = 0x0002;
+let placedBuildingID = 0x0001;
 document.body.onmousedown = (e) => {
     console.log(e);
     if (e.ctrlKey) {
