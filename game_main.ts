@@ -34,9 +34,9 @@ level1.writeBuilding(1, 1, 0x0201);
 level1.writeBuilding(0, 1, 0x0201);
 level1.writeBuilding(-1, 1, 0x0301);
 level1.writeBuilding(-1, 0, 0x0301);
-level1.buildBuilding(-1, -1, 0x0003);
-level1.buildBuilding(-1, -2, 0x0002);
-level1.buildBuilding(0, -2, 0x0101);
+level1.buildBuilding(-1, -1, 0x0001);
+// level1.buildBuilding(-1, -2, 0x0002);
+// level1.buildBuilding(0, -2, 0x0101);
 level1.writeBuilding(0, -1, 0x0001);
 level1.writeBuilding(1, -1, 0x0101);
 

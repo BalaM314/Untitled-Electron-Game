@@ -360,6 +360,8 @@ class Chunk {
 			ctx.fillStyle = "#000000";
 		}
 		switch(buildingID){
+
+
 			case 0x0001:
 				ctx.beginPath();
 				ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
@@ -396,6 +398,88 @@ class Chunk {
 				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.7, pixelY + consts.DISPLAY_TILE_SIZE * 0.4);
 				ctx.stroke();
 				break;
+			case 0x0401:
+				ctx.beginPath();
+				ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.9);
+				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.9, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.6, pixelY + consts.DISPLAY_TILE_SIZE * 0.3);
+				ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.9, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.6, pixelY + consts.DISPLAY_TILE_SIZE * 0.7);
+				ctx.stroke();
+				break;
+			case 0x0501:
+				ctx.beginPath();
+				ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.1);
+				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.9, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.6, pixelY + consts.DISPLAY_TILE_SIZE * 0.3);
+				ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.9, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.6, pixelY + consts.DISPLAY_TILE_SIZE * 0.7);
+				ctx.stroke();
+				break;
+			case 0x0601:
+				ctx.beginPath();
+				ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.9, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.9);
+				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.3, pixelY + consts.DISPLAY_TILE_SIZE * 0.6);
+				ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.9);
+				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.7, pixelY + consts.DISPLAY_TILE_SIZE * 0.6);
+				ctx.stroke();
+				break;
+			case 0x0701:
+				ctx.beginPath();
+				ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.9);
+				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.3, pixelY + consts.DISPLAY_TILE_SIZE * 0.6);
+				ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.9);
+				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.7, pixelY + consts.DISPLAY_TILE_SIZE * 0.6);
+				ctx.stroke();
+				break;
+			case 0x0801:
+				ctx.beginPath();
+				ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.9);
+				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.6, pixelY + consts.DISPLAY_TILE_SIZE * 0.3);
+				ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.6, pixelY + consts.DISPLAY_TILE_SIZE * 0.7);
+				ctx.stroke();
+				break;
+			case 0x0901:
+				ctx.beginPath();
+				ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.1);
+				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.6, pixelY + consts.DISPLAY_TILE_SIZE * 0.3);
+				ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.6, pixelY + consts.DISPLAY_TILE_SIZE * 0.7);
+				ctx.stroke();
+				break;
+			case 0x0A01:
+				ctx.beginPath();
+				ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.9, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.1);
+				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.3, pixelY + consts.DISPLAY_TILE_SIZE * 0.4);
+				ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.1);
+				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.7, pixelY + consts.DISPLAY_TILE_SIZE * 0.4);
+				ctx.stroke();
+				break;
+			case 0x0B01:
+				ctx.beginPath();
+				ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.1);
+				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.3, pixelY + consts.DISPLAY_TILE_SIZE * 0.4);
+				ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.1);
+				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.7, pixelY + consts.DISPLAY_TILE_SIZE * 0.4);
+				ctx.stroke();
+				break;
+				
+			
 			case 0x0002:
 				rect(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.5, consts.DISPLAY_TILE_SIZE * 0.6, consts.DISPLAY_TILE_SIZE * 0.6, rectMode.CENTER);
 				break;
@@ -441,28 +525,76 @@ class Item {
 					this.y -= consts.buildings.conveyor.SPEED;
 					break;
 				case 0x04:
-
+					if(this.x % consts.TILE_SIZE >= consts.TILE_SIZE * 0.5 && this.y % consts.TILE_SIZE == consts.TILE_SIZE * 0.5){
+						this.x ++;
+						this.y = (Math.floor(this.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+					} else if(this.x % consts.TILE_SIZE == consts.TILE_SIZE * 0.5 && this.y % consts.TILE_SIZE >= consts.TILE_SIZE * 0.5){
+						this.x = (Math.floor(this.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+						this.y --;
+					}
 					break;
 				case 0x05:
-
+					if(this.x % consts.TILE_SIZE >= consts.TILE_SIZE * 0.5 && this.y % consts.TILE_SIZE == consts.TILE_SIZE * 0.5){
+						this.x ++;
+						this.y = (Math.floor(this.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+					} else if(this.x % consts.TILE_SIZE == consts.TILE_SIZE * 0.5 && this.y % consts.TILE_SIZE <= consts.TILE_SIZE * 0.5){
+						this.x = (Math.floor(this.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+						this.y ++;
+					}
 					break;
 				case 0x06:
-
+					if(this.x % consts.TILE_SIZE == consts.TILE_SIZE * 0.5 && this.y % consts.TILE_SIZE >= consts.TILE_SIZE * 0.5){
+						this.x = (Math.floor(this.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+						this.y ++;
+					} else if(this.x % consts.TILE_SIZE > consts.TILE_SIZE * 0.5 && this.y % consts.TILE_SIZE == consts.TILE_SIZE * 0.5){
+						this.x --;
+						this.y = (Math.floor(this.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+					}
 					break;
 				case 0x07:
-
+					if(this.x % consts.TILE_SIZE == consts.TILE_SIZE * 0.5 && this.y % consts.TILE_SIZE >= consts.TILE_SIZE * 0.5){
+						this.x = (Math.floor(this.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+						this.y ++;
+					} else if(this.x % consts.TILE_SIZE < consts.TILE_SIZE * 0.5 && this.y % consts.TILE_SIZE == consts.TILE_SIZE * 0.5){
+						this.x ++;
+						this.y = (Math.floor(this.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+					}
 					break;
 				case 0x08:
-
+					if(this.x % consts.TILE_SIZE <= consts.TILE_SIZE * 0.5 && this.y % consts.TILE_SIZE == consts.TILE_SIZE * 0.5){
+						this.x --;
+						this.y = (Math.floor(this.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+					} else if(this.x % consts.TILE_SIZE == consts.TILE_SIZE * 0.5 && this.y % consts.TILE_SIZE >= consts.TILE_SIZE * 0.5){
+						this.x = (Math.floor(this.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+						this.y --;
+					}
 					break;
 				case 0x09:
-
+					if(this.x % consts.TILE_SIZE <= consts.TILE_SIZE * 0.5 && this.y % consts.TILE_SIZE == consts.TILE_SIZE * 0.5){
+						this.x --;
+						this.y = (Math.floor(this.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+					} else if(this.x % consts.TILE_SIZE == consts.TILE_SIZE * 0.5 && this.y % consts.TILE_SIZE <= consts.TILE_SIZE * 0.5){
+						this.x = (Math.floor(this.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+						this.y ++;
+					}
 					break;
 				case 0x0A:
-
+					if(this.x % consts.TILE_SIZE == consts.TILE_SIZE * 0.5 && this.y % consts.TILE_SIZE <= consts.TILE_SIZE * 0.5){
+						this.x = (Math.floor(this.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+						this.y --;
+					} else if(this.x % consts.TILE_SIZE > consts.TILE_SIZE * 0.5 && this.y % consts.TILE_SIZE == consts.TILE_SIZE * 0.5){
+						this.x --;
+						this.y = (Math.floor(this.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+					}
 					break;
 				case 0x0B:
-
+					if(this.x % consts.TILE_SIZE == consts.TILE_SIZE * 0.5 && this.y % consts.TILE_SIZE <= consts.TILE_SIZE * 0.5){
+						this.x = (Math.floor(this.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+						this.y --;
+					} else if(this.x % consts.TILE_SIZE < consts.TILE_SIZE * 0.5 && this.y % consts.TILE_SIZE == consts.TILE_SIZE * 0.5){
+						this.x ++;
+						this.y = (Math.floor(this.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+					}
 					break;
 			}
 		}
