@@ -9,11 +9,12 @@ const rands = {
     y_prime: 1156709,
     hill_x: 89,
     hill_y: 11,
+    ore_type: 103
 };
 let Game = {
     scroll: {
-        x: -300,
-        y: -300
+        x: 300,
+        y: 300
     }
 };
 class ChunkedDataStorage {
@@ -34,6 +35,9 @@ class ChunkedDataStorage {
         }
     }
     generateChunk(x, y) {
+        if (this.storage.get(`${x},${y}`)) {
+            return;
+        }
         this.storage.set(`${x},${y}`, new Chunk(x, y, this.seed)
             .generate());
         console.log(`generated chunk ${x}, ${y}`);
@@ -51,6 +55,19 @@ class ChunkedDataStorage {
             return true;
         }
         return false;
+    }
+    generateNecessaryChunks() {
+        var xOffset = -Math.floor(Game.scroll.x / (consts.DISPLAY_TILE_SIZE * consts.CHUNK_SIZE));
+        var yOffset = -Math.floor(Game.scroll.y / (consts.DISPLAY_TILE_SIZE * consts.CHUNK_SIZE));
+        this.generateChunk(xOffset - 1, yOffset - 1);
+        this.generateChunk(xOffset, yOffset - 1);
+        this.generateChunk(xOffset + 1, yOffset - 1);
+        this.generateChunk(xOffset - 1, yOffset);
+        this.generateChunk(xOffset, yOffset);
+        this.generateChunk(xOffset + 1, yOffset);
+        this.generateChunk(xOffset - 1, yOffset + 1);
+        this.generateChunk(xOffset, yOffset + 1);
+        this.generateChunk(xOffset + 1, yOffset + 1);
     }
 }
 class Level extends ChunkedDataStorage {
@@ -84,18 +101,13 @@ class Level extends ChunkedDataStorage {
         }
         switch (buildingID) {
             case 0x0002:
-                if (Miner.canBuildAt(tileX, tileY, this)) {
-                    this.getChunk(tileX, tileY).displayBuilding(tileToChunk(tileX), tileToChunk(tileY), buildingID, 1);
-                }
-                else {
-                    this.getChunk(tileX, tileY).displayBuilding(tileToChunk(tileX), tileToChunk(tileY), buildingID, 2);
-                }
+                this.getChunk(tileX, tileY).displayBuilding(tileToChunk(tileX), tileToChunk(tileY), buildingID, Miner.canBuildAt(tileX, tileY, this) ? 1 : 2);
                 break;
             case 0x0001:
             case 0x0101:
             case 0x0201:
             case 0x0301:
-                this.getChunk(tileX, tileY).displayBuilding(tileToChunk(tileX), tileToChunk(tileY), this.getTurnedConveyor(tileX, tileY, buildingID >> 8), 1);
+                this.getChunk(tileX, tileY).displayBuilding(tileToChunk(tileX), tileToChunk(tileY), this.getTurnedConveyor(tileX, tileY, buildingID >> 8), Conveyor.canBuildAt(tileX, tileY, this) ? 1 : 2);
                 break;
             default:
                 this.getChunk(tileX, tileY).displayBuilding(tileToChunk(tileX), tileToChunk(tileY), buildingID, 1);
@@ -215,6 +227,8 @@ class Level extends ChunkedDataStorage {
             case 0x0801:
             case 0x0901:
             case 0x0A01:
+                if (!Conveyor.canBuildAt(tileX, tileY, this))
+                    return;
                 return this.writeBuilding(tileX, tileY, this.getTurnedConveyor(tileX, tileY, building >> 8));
                 break;
             default:
@@ -229,7 +243,7 @@ class Level extends ChunkedDataStorage {
         _ctx = _ctx !== null && _ctx !== void 0 ? _ctx : ctx;
         //Currently we will just display every chunk that exists. Obviously this is not sustainable.
         for (var chunk of this.storage.values()) {
-            chunk.display(true);
+            chunk.display(debug);
         }
         for (let item of this.items) {
             item.display(debug);
@@ -240,13 +254,10 @@ class Chunk {
     constructor(x, y, seed) {
         this.x = x;
         this.y = y;
-        this.seed = seed;
-        this.chunkSeed = Math.abs(Math.round((x * rands.x_prime) +
-            (y * rands.y_prime) +
-            (Math.pow(seed % 32, (x + y) % 10) % 16384) +
-            Math.pow(seed, 4) +
-            123456789
-                % 2147483648));
+        this.chunkSeed = Math.abs(Math.round(seed * (x ? x : 23) * rands.x_prime +
+            seed * (y ? y : 133) * rands.y_prime +
+            Math.pow((Math.abs(x + y) % 10) + 10, (seed % 10) + 10) +
+            123456789)) % 2147483648;
         this.layers = [
             null,
             null,
@@ -273,38 +284,35 @@ class Chunk {
                 this.layers[2][x].push(null);
             }
         }
-        this.chunkSeed = Math.abs(Math.round((this.x * rands.x_prime) +
-            (this.y * rands.y_prime) +
-            (Math.pow(this.seed % 32, (this.x + this.y) % 10) % 16384) +
-            Math.pow(this.seed, 4) +
-            123456789
-                % 2147483648)); //did I pull this out of my butt? yes.
         return this;
     }
     generate() {
         //Put down the base
+        this.isWet = this.chunkSeed < 134217728 && Math.abs(this.x) > 3 && Math.abs(this.y) > 3;
         for (var row in this.layers[0]) {
             for (var tile in this.layers[0][row]) {
-                this.layers[0][row][tile] = 0x00;
+                this.layers[0][row][tile] = this.isWet ? 0x04 : 0x00;
             }
         }
-        this.setTile((this.chunkSeed - rands.hill_x) % consts.CHUNK_SIZE, (this.chunkSeed - rands.hill_y) % consts.CHUNK_SIZE, 0x02);
-        this.setTile((this.chunkSeed - rands.hill_x) % consts.CHUNK_SIZE + 1, (this.chunkSeed - rands.hill_y) % consts.CHUNK_SIZE, 0x01);
-        this.setTile((this.chunkSeed - rands.hill_x) % consts.CHUNK_SIZE - 1, (this.chunkSeed - rands.hill_y) % consts.CHUNK_SIZE, 0x01);
-        this.setTile((this.chunkSeed - rands.hill_x) % consts.CHUNK_SIZE, (this.chunkSeed - rands.hill_y) % consts.CHUNK_SIZE + 1, 0x01);
-        this.setTile((this.chunkSeed - rands.hill_x) % consts.CHUNK_SIZE, (this.chunkSeed - rands.hill_y) % consts.CHUNK_SIZE - 1, 0x01);
-        this.setTile((this.chunkSeed - rands.hill_x) % consts.CHUNK_SIZE + 1, (this.chunkSeed - rands.hill_y) % consts.CHUNK_SIZE + 1, (this.chunkSeed % 4 > 1) ? 0x01 : 0x00);
-        this.setTile((this.chunkSeed - rands.hill_x) % consts.CHUNK_SIZE + 1, (this.chunkSeed - rands.hill_y) % consts.CHUNK_SIZE - 1, (this.chunkSeed % 8 > 3) ? 0x01 : 0x00);
-        this.setTile((this.chunkSeed - rands.hill_x) % consts.CHUNK_SIZE - 1, (this.chunkSeed - rands.hill_y) % consts.CHUNK_SIZE + 1, (this.chunkSeed % 16 > 7) ? 0x01 : 0x00);
-        this.setTile((this.chunkSeed - rands.hill_x) % consts.CHUNK_SIZE - 1, (this.chunkSeed - rands.hill_y) % consts.CHUNK_SIZE - 1, (this.chunkSeed % 32 > 15) ? 0x01 : 0x00);
+        if (!this.isWet) {
+            this.setTile((this.chunkSeed - rands.hill_x) % consts.CHUNK_SIZE, (this.chunkSeed - rands.hill_y) % consts.CHUNK_SIZE, (((this.chunkSeed - rands.ore_type) % 3) > 1 && (Math.abs(this.x) > 1 || Math.abs(this.y) > 1)) ? 0x03 : 0x02);
+            this.setTile((this.chunkSeed - rands.hill_x) % consts.CHUNK_SIZE + 1, (this.chunkSeed - rands.hill_y) % consts.CHUNK_SIZE, 0x01);
+            this.setTile((this.chunkSeed - rands.hill_x) % consts.CHUNK_SIZE - 1, (this.chunkSeed - rands.hill_y) % consts.CHUNK_SIZE, 0x01);
+            this.setTile((this.chunkSeed - rands.hill_x) % consts.CHUNK_SIZE, (this.chunkSeed - rands.hill_y) % consts.CHUNK_SIZE + 1, 0x01);
+            this.setTile((this.chunkSeed - rands.hill_x) % consts.CHUNK_SIZE, (this.chunkSeed - rands.hill_y) % consts.CHUNK_SIZE - 1, 0x01);
+            this.setTile((this.chunkSeed - rands.hill_x) % consts.CHUNK_SIZE + 1, (this.chunkSeed - rands.hill_y) % consts.CHUNK_SIZE + 1, (this.chunkSeed % 4 > 1) ? 0x01 : 0x00);
+            this.setTile((this.chunkSeed - rands.hill_x) % consts.CHUNK_SIZE + 1, (this.chunkSeed - rands.hill_y) % consts.CHUNK_SIZE - 1, (this.chunkSeed % 8 > 3) ? 0x01 : 0x00);
+            this.setTile((this.chunkSeed - rands.hill_x) % consts.CHUNK_SIZE - 1, (this.chunkSeed - rands.hill_y) % consts.CHUNK_SIZE + 1, (this.chunkSeed % 16 > 7) ? 0x01 : 0x00);
+            this.setTile((this.chunkSeed - rands.hill_x) % consts.CHUNK_SIZE - 1, (this.chunkSeed - rands.hill_y) % consts.CHUNK_SIZE - 1, (this.chunkSeed % 32 > 15) ? 0x01 : 0x00);
+        }
         return this;
     }
     update() {
         return this;
     }
-    tileAt(x, y) {
+    tileAt(tileX, tileY) {
         var _a, _b, _c;
-        return (_c = (_b = (_a = this.layers[0]) === null || _a === void 0 ? void 0 : _a[y]) === null || _b === void 0 ? void 0 : _b[x]) !== null && _c !== void 0 ? _c : null;
+        return (_c = (_b = (_a = this.layers[0]) === null || _a === void 0 ? void 0 : _a[tileY]) === null || _b === void 0 ? void 0 : _b[tileX]) !== null && _c !== void 0 ? _c : null;
     }
     buildingAt(x, y) {
         var _a, _b, _c;
@@ -329,6 +337,12 @@ class Chunk {
         console.table(this.layers[0]);
     }
     display(debug) {
+        if (Game.scroll.x + this.x * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE > 1201 ||
+            Game.scroll.x + this.x * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE < -1 - consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE ||
+            Game.scroll.y + this.y * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE > 1201 ||
+            Game.scroll.y + this.y * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE < -1 - consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE) {
+            return false;
+        } //if offscreen return immediately
         for (var y in this.layers[0]) {
             for (var x in this.layers[0][y]) {
                 this.displayTile(parseInt(x), parseInt(y));
@@ -341,23 +355,37 @@ class Chunk {
         }
         if (debug) {
             overlayCtx.strokeStyle = "#0000FF";
-            overlayCtx.strokeRect(this.x * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE - Game.scroll.x, this.y * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE - Game.scroll.y, consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE, consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE);
+            overlayCtx.strokeRect(this.x * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE + Game.scroll.x, this.y * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE + Game.scroll.y, consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE, consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE);
+            overlayCtx.font = "40px sans-serif";
+            overlayCtx.fillText(this.chunkSeed.toString(), this.x * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE + (consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE * 0.5) + Game.scroll.x, this.y * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE + (consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE * 0.5) + Game.scroll.y);
         }
     }
     displayTile(x, y) {
-        let pixelX = ((this.x * consts.CHUNK_SIZE) + x) * consts.DISPLAY_TILE_SIZE - Game.scroll.x;
-        let pixelY = ((this.y * consts.CHUNK_SIZE) + y) * consts.DISPLAY_TILE_SIZE - Game.scroll.y;
+        let pixelX = ((this.x * consts.CHUNK_SIZE) + x) * consts.DISPLAY_TILE_SIZE + Game.scroll.x;
+        let pixelY = ((this.y * consts.CHUNK_SIZE) + y) * consts.DISPLAY_TILE_SIZE + Game.scroll.y;
         switch (this.tileAt(x, y)) {
             case 0x00:
                 ctx.fillStyle = "#00CC33";
                 rect(pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
                 break;
             case 0x01:
-                ctx.fillStyle = "#008822";
+                ctx.fillStyle = "#999999";
                 rect(pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
                 break;
             case 0x02:
-                ctx.fillStyle = "#22222";
+                ctx.fillStyle = "#666666";
+                rect(pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
+                ctx.fillStyle = "#000000";
+                ellipse(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.5, consts.DISPLAY_TILE_SIZE * 0.25, consts.DISPLAY_TILE_SIZE * 0.25);
+                break;
+            case 0x03:
+                ctx.fillStyle = "#222222";
+                rect(pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
+                ctx.fillStyle = "#CBCDCD";
+                ellipse(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.5, consts.DISPLAY_TILE_SIZE * 0.25, consts.DISPLAY_TILE_SIZE * 0.25);
+                break;
+            case 0x04:
+                ctx.fillStyle = "#0033CC";
                 rect(pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
                 break;
             case 0xFF:
@@ -368,6 +396,16 @@ class Chunk {
                 rect(pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2);
                 rect(pixelX, pixelY + consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2);
                 break;
+            default:
+                ctx.fillStyle = "#FF00FF";
+                rect(pixelX, pixelY, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2);
+                rect(pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY + consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2);
+                ctx.fillStyle = "#000000";
+                rect(pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2);
+                rect(pixelX, pixelY + consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2);
+                ctx.font = "15px sans-serif";
+                ctx.fillStyle = "#00FF00";
+                ctx.fillText(this.tileAt(x, y).toString(), pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY + consts.DISPLAY_TILE_SIZE / 2);
         }
         ctx.strokeStyle = "#000000";
         ctx.lineWidth = 1;
@@ -377,8 +415,8 @@ class Chunk {
         if (buildingID == 0xFFFF) {
             return;
         }
-        let pixelX = ((this.x * consts.CHUNK_SIZE) + x) * consts.DISPLAY_TILE_SIZE - Game.scroll.x;
-        let pixelY = ((this.y * consts.CHUNK_SIZE) + y) * consts.DISPLAY_TILE_SIZE - Game.scroll.y;
+        let pixelX = ((this.x * consts.CHUNK_SIZE) + x) * consts.DISPLAY_TILE_SIZE + Game.scroll.x;
+        let pixelY = ((this.y * consts.CHUNK_SIZE) + y) * consts.DISPLAY_TILE_SIZE + Game.scroll.y;
         if (isGhost == 2) {
             ctx.strokeStyle = "#EE6666";
             ctx.fillStyle = "#EE6666";
@@ -641,7 +679,7 @@ class Item {
                 ctx.fillStyle = "#663300";
                 break;
         }
-        _ctx.fillRect((this.x * consts.DISPLAY_SCALE) - 5 - Game.scroll.x, (this.y * consts.DISPLAY_SCALE) - 5 - Game.scroll.y, 10, 10);
+        _ctx.fillRect((this.x * consts.DISPLAY_SCALE) - 5 + Game.scroll.x, (this.y * consts.DISPLAY_SCALE) - 5 + Game.scroll.y, 10, 10);
     }
 }
 class Building {
@@ -665,10 +703,10 @@ class Miner extends Building {
         super(tileX, tileY, id, level);
         this.timer = 30;
         this.itemBuffer = 0;
-        this.miningItem = ItemID["base:coal"];
+        this.miningItem = oreFor[level.tileAt2(tileX, tileY)];
     }
     static canBuildAt(tileX, tileY, level) {
-        return level.tileAt2(tileX, tileY) == 0x01 || level.tileAt2(tileX, tileY) == 0x02;
+        return level.tileAt2(tileX, tileY) == 0x02 || level.tileAt2(tileX, tileY) == 0x03;
     }
     update() {
         if (this.level.buildingIDAt2(this.x, this.y) != this.id) {
@@ -700,6 +738,10 @@ class Miner extends Building {
         }
     }
 }
+const oreFor = {
+    0x02: ItemID["base:coal"],
+    0x03: ItemID["base:iron"]
+};
 class TrashCan extends Building {
     update() {
         if (this.level.buildingIDAt2(this.x, this.y) != this.id) {
@@ -711,5 +753,10 @@ class TrashCan extends Building {
                 this.level.items.splice(parseInt(item), 1);
             }
         }
+    }
+}
+class Conveyor {
+    static canBuildAt(tileX, tileY, level) {
+        return level.tileAt2(tileX, tileY) != 0x04;
     }
 }

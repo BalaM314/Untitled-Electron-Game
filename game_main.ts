@@ -19,13 +19,9 @@ var settings = {
 
 
 
-let level1 = new Level(311);
+let level1 = new Level(3141);
 
-level1.generateChunk(0, 0);
-level1.generateChunk(1, 0);
-level1.generateChunk(0, 1);
-level1.generateChunk(-1, 0);
-level1.generateChunk(0, -1);
+level1.generateNecessaryChunks();
 
 
 level1.writeBuilding(0, 0, 0x0301);
@@ -43,8 +39,11 @@ level1.writeBuilding(1, -1, 0x0101);
 level1.addItem(15, 15, ItemID["base:null"]);
 const ctx = (document.getElementById("main_canvas") as HTMLCanvasElement).getContext("2d");
 const overlayCtx = (document.getElementById("secondary_canvas") as HTMLCanvasElement).getContext("2d");
+
 function loop(){
+	let startFrameTime = new Date();
 	level1.update();
+	level1.generateNecessaryChunks();
 	// document.getElementById("item").style.setProperty("--pos-x", level1.items[0].x.toString() + "px");
 	// document.getElementById("item").style.setProperty("--pos-y", level1.items[0].y.toString() + "px");
 	ctx.clearRect(0, 0, 1200, 1200);
@@ -59,53 +58,61 @@ function loop(){
 	// ctx.strokeRect(300 - consts.DISPLAY_TILE_SIZE, 300 + consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
 	// ctx.strokeRect(300 - consts.DISPLAY_TILE_SIZE, 300 - consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
 	level1.display(true);
-	level1.displayGhostBuilding((mouseX + Game.scroll.x) / consts.DISPLAY_TILE_SIZE, (mouseY + Game.scroll.y) / consts.DISPLAY_TILE_SIZE, placedBuildingID);
+	level1.displayGhostBuilding((mouseX - Game.scroll.x) / consts.DISPLAY_TILE_SIZE, (mouseY - Game.scroll.y) / consts.DISPLAY_TILE_SIZE, placedBuildingID);
 	if(mouseIsPressed){
 		handleMouseDown(latestMouseEvent);
 	}
+	if(keysPressed.indexOf("w") != -1){
+		Game.scroll.y += 5;
+	}
+	if(keysPressed.indexOf("a") != -1){
+		Game.scroll.x += 5;
+	}
+	if(keysPressed.indexOf("s") != -1){
+		Game.scroll.y -= 5;
+	}
+	if(keysPressed.indexOf("d") != -1){
+		Game.scroll.x -= 5;
+	}
+	let frameMS = (new Date()).getTime() - startFrameTime.getTime();
+	overlayCtx.font = "30px sans-serif";
+	overlayCtx.fillText(Math.round(constrain(1000/frameMS, 0, 60)) + " fps", 0, 50);
+	
+	requestAnimationFrame(loop);
 }
 
 let placedBuildingID:BuildingID = 0x0001;
 let handleMouseDown = (e:MouseEvent) => {
-	console.log(e);
 	if(e.ctrlKey){
-		level1.addItem(e.x + Game.scroll.x, e.y + Game.scroll.y, ItemID["base:iron"]);
+		level1.addItem(e.x - Game.scroll.x, e.y - Game.scroll.y, ItemID["base:iron"]);
 	} else {
-		level1.buildBuilding(Math.floor((e.x + Game.scroll.x) / consts.DISPLAY_TILE_SIZE), Math.floor((e.y + Game.scroll.y) / consts.DISPLAY_TILE_SIZE), placedBuildingID);
+		level1.buildBuilding(Math.floor((e.x - Game.scroll.x) / consts.DISPLAY_TILE_SIZE), Math.floor((e.y - Game.scroll.y) / consts.DISPLAY_TILE_SIZE), placedBuildingID);
 	}
 }
 
 
 
-document.body.onkeypress = (e:KeyboardEvent) => {
+window.onkeypress = (e:KeyboardEvent) => {
 	switch(e.key){
-		case "ArrowRight": case "d":
+		case "ArrowRight":
 			placedBuildingID = 0x0001; break;
-		case "ArrowDown": case "s":
+		case "ArrowDown":
 			placedBuildingID = 0x0101; break;
-		case "ArrowLeft": case "a":
+		case "ArrowLeft":
 			placedBuildingID = 0x0201; break;
-		case "ArrowUp": case "w":
+		case "ArrowUp":
 			placedBuildingID = 0x0301; break;
 		case "2":
 			placedBuildingID = 0x0002; break;
 		case "3":
 			placedBuildingID = 0x0003; break;
 		case "0":
-			placedBuildingID = 0xFFFF; break;
-		case "W":
-			Game.scroll.y -= 5; break;
-		case "A":
-			Game.scroll.x -= 5; break;
-		case "S":
-			Game.scroll.y += 5; break;
-		case "D":
-			Game.scroll.x += 5; break;		
+			placedBuildingID = 0xFFFF; break;		
 	}
 }
 
-// loop();
-setInterval(loop, 1000/30);
+loop();
+//setInterval(loop, 1000/30);
 
 setTimeout(_ => {
 	alert(`
@@ -114,6 +121,6 @@ Click to place a building.
 Press 2 for a miner and 3 for a trash can.
 Use arrow keys to change direction of placed belts.
 Ctrl+click to place an item.
-Use Shift+WASD to scroll.
+Use WASD to scroll.
 	`);
 }, 500);

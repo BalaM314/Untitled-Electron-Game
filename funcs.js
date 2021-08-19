@@ -21,16 +21,37 @@ window.onmousemove = (e) => {
 };
 let keysPressed = [];
 window.onkeydown = (e) => {
+    switch (e.key) {
+        case "ArrowRight":
+            placedBuildingID = 0x0001;
+            return;
+        case "ArrowDown":
+            placedBuildingID = 0x0101;
+            return;
+        case "ArrowLeft":
+            placedBuildingID = 0x0201;
+            return;
+        case "ArrowUp":
+            placedBuildingID = 0x0301;
+            return;
+        case "2":
+            placedBuildingID = 0x0002;
+            return;
+        case "3":
+            placedBuildingID = 0x0003;
+            return;
+        case "0":
+            placedBuildingID = 0xFFFF;
+            return;
+    }
     if (keysPressed.indexOf(e.key) == -1) {
         keysPressed.push(e.key);
     }
-    console.log(keysPressed);
 };
 window.onkeyup = (e) => {
     if (keysPressed.indexOf(e.key) != -1) {
         keysPressed.splice(keysPressed.indexOf(e.key), 1);
     }
-    console.log(keysPressed);
 };
 window.onmousedown = (e) => { mouseIsPressed = true; latestMouseEvent = e; };
 window.onmouseup = (e) => { mouseIsPressed = false; latestMouseEvent = e; };
@@ -76,6 +97,13 @@ function range(start, end) {
     }
     return temp;
 }
+function constrain(x, min, max) {
+    if (x > max)
+        return max;
+    if (x < min)
+        return min;
+    return x;
+}
 /**
  * Drawing Functions
  *
@@ -99,7 +127,9 @@ function rect(x, y, w, h, mode, _ctx) {
     }
 }
 function ellipse(x, y, w, h) {
+    ctx.beginPath();
     ctx.ellipse(x, y, w, h, 0, 0, Math.PI * 2);
+    ctx.fill();
 }
 /**
  * Game-related functions

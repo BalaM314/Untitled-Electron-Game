@@ -27,16 +27,30 @@ window.onmousemove = (e:MouseEvent) => {
 }
 let keysPressed = [];
 window.onkeydown = (e:KeyboardEvent) => {
+	switch(e.key){
+		case "ArrowRight":
+			placedBuildingID = 0x0001; return;
+		case "ArrowDown":
+			placedBuildingID = 0x0101; return;
+		case "ArrowLeft":
+			placedBuildingID = 0x0201; return;
+		case "ArrowUp":
+			placedBuildingID = 0x0301; return;
+		case "2":
+			placedBuildingID = 0x0002; return;
+		case "3":
+			placedBuildingID = 0x0003; return;
+		case "0":
+			placedBuildingID = 0xFFFF; return;		
+	}
 	if(keysPressed.indexOf(e.key) == -1){
 		keysPressed.push(e.key);
 	}
-	console.log(keysPressed);
 }
 window.onkeyup = (e:KeyboardEvent) => {
 	if(keysPressed.indexOf(e.key) != -1){
 		keysPressed.splice(keysPressed.indexOf(e.key), 1);
 	}
-	console.log(keysPressed);
 }
 
 window.onmousedown = (e:MouseEvent) => {mouseIsPressed = true; latestMouseEvent = e;}
@@ -88,6 +102,12 @@ function range(start:number, end:number){
 	return temp;
 }
 
+function constrain(x:number, min:number, max:number){
+	if(x > max) return max;
+	if(x < min) return min;
+	return x;
+}
+
 /**
  * Drawing Functions
  * 
@@ -111,7 +131,9 @@ function rect(x:number, y:number, w:number, h:number, mode?:rectMode, _ctx?:Canv
 }
 
 function ellipse(x, y, w, h){
+	ctx.beginPath();
 	ctx.ellipse(x, y, w, h, 0, 0, Math.PI * 2);
+	ctx.fill();
 }
 
 
@@ -157,6 +179,5 @@ function isConsoleOpen(){
 		console.log({e: x});
 	});
 }
-
 
 isConsoleOpen();
