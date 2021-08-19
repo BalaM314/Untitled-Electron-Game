@@ -60,10 +60,13 @@ function loop(){
 	// ctx.strokeRect(300 - consts.DISPLAY_TILE_SIZE, 300 - consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
 	level1.display(true);
 	level1.displayGhostBuilding((mouseX + Game.scroll.x) / consts.DISPLAY_TILE_SIZE, (mouseY + Game.scroll.y) / consts.DISPLAY_TILE_SIZE, placedBuildingID);
+	if(mouseIsPressed){
+		handleMouseDown(latestMouseEvent);
+	}
 }
 
 let placedBuildingID:BuildingID = 0x0001;
-document.body.onmousedown = (e:MouseEvent) => {
+let handleMouseDown = (e:MouseEvent) => {
 	console.log(e);
 	if(e.ctrlKey){
 		level1.addItem(e.x + Game.scroll.x, e.y + Game.scroll.y, ItemID["base:iron"]);
@@ -74,7 +77,7 @@ document.body.onmousedown = (e:MouseEvent) => {
 
 
 
-document.body.onkeydown = (e:KeyboardEvent) => {
+document.body.onkeypress = (e:KeyboardEvent) => {
 	switch(e.key){
 		case "ArrowRight": case "d":
 			placedBuildingID = 0x0001; break;

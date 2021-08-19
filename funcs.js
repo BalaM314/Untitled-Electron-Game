@@ -12,10 +12,28 @@
 }*/
 let mouseX = 0;
 let mouseY = 0;
+let mouseIsPressed = false;
+let latestMouseEvent = null;
 window.onmousemove = (e) => {
     mouseX = e.x;
     mouseY = e.y;
+    latestMouseEvent = e;
 };
+let keysPressed = [];
+window.onkeydown = (e) => {
+    if (keysPressed.indexOf(e.key) == -1) {
+        keysPressed.push(e.key);
+    }
+    console.log(keysPressed);
+};
+window.onkeyup = (e) => {
+    if (keysPressed.indexOf(e.key) != -1) {
+        keysPressed.splice(keysPressed.indexOf(e.key), 1);
+    }
+    console.log(keysPressed);
+};
+window.onmousedown = (e) => { mouseIsPressed = true; latestMouseEvent = e; };
+window.onmouseup = (e) => { mouseIsPressed = false; latestMouseEvent = e; };
 //general function
 function sq(x) {
     return x * x;

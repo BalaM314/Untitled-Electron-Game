@@ -18,10 +18,31 @@
 
 let mouseX = 0;
 let mouseY = 0;
+let mouseIsPressed = false;
+let latestMouseEvent = null;
 window.onmousemove = (e:MouseEvent) => {
 	mouseX = e.x;
 	mouseY = e.y;
+	latestMouseEvent = e;
 }
+let keysPressed = [];
+window.onkeydown = (e:KeyboardEvent) => {
+	if(keysPressed.indexOf(e.key) == -1){
+		keysPressed.push(e.key);
+	}
+	console.log(keysPressed);
+}
+window.onkeyup = (e:KeyboardEvent) => {
+	if(keysPressed.indexOf(e.key) != -1){
+		keysPressed.splice(keysPressed.indexOf(e.key), 1);
+	}
+	console.log(keysPressed);
+}
+
+window.onmousedown = (e:MouseEvent) => {mouseIsPressed = true; latestMouseEvent = e;}
+window.onmouseup = (e:MouseEvent) => {mouseIsPressed = false; latestMouseEvent = e;}
+
+
 
 //general function
 function sq(x:number):number{
