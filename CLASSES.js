@@ -706,7 +706,7 @@ class Miner extends Building {
         this.miningItem = oreFor[level.tileAt2(tileX, tileY)];
     }
     static canBuildAt(tileX, tileY, level) {
-        return level.tileAt2(tileX, tileY) == 0x02 || level.tileAt2(tileX, tileY) == 0x03;
+        return (level.tileAt2(tileX, tileY) == 0x02 || level.tileAt2(tileX, tileY) == 0x03) && level.buildingIDAt2(tileX, tileY) != 0x0002;
     }
     update() {
         if (this.level.buildingIDAt2(this.x, this.y) != this.id) {
