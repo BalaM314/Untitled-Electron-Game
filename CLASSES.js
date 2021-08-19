@@ -91,10 +91,100 @@ class Level extends ChunkedDataStorage {
                     this.getChunk(tileX, tileY).displayBuilding(tileToChunk(tileX), tileToChunk(tileY), buildingID, 2);
                 }
                 break;
+            case 0x0001:
+            case 0x0101:
+            case 0x0201:
+            case 0x0301:
+                this.getChunk(tileX, tileY).displayBuilding(tileToChunk(tileX), tileToChunk(tileY), this.getTurnedConveyor(tileX, tileY, buildingID >> 8), 1);
+                break;
             default:
                 this.getChunk(tileX, tileY).displayBuilding(tileToChunk(tileX), tileToChunk(tileY), buildingID, 1);
                 break;
         }
+    }
+    getTurnedConveyor(tileX, tileY, conveyorType) {
+        tileX = Math.floor(tileX);
+        tileY = Math.floor(tileY);
+        let topConveyor = this.buildingIDAt2(tileX, tileY - 1);
+        topConveyor = topConveyor == 0x0101 || topConveyor == 0x0601 || topConveyor == 0x0701;
+        let rightConveyor = this.buildingIDAt2(tileX + 1, tileY);
+        rightConveyor = rightConveyor == 0x0201 || rightConveyor == 0x0801 || rightConveyor == 0x0901;
+        let leftConveyor = this.buildingIDAt2(tileX - 1, tileY);
+        leftConveyor = leftConveyor == 0x0001 || leftConveyor == 0x0401 || leftConveyor == 0x0501;
+        let bottomConveyor = this.buildingIDAt2(tileX, tileY + 1);
+        bottomConveyor = bottomConveyor == 0x0301 || bottomConveyor == 0x0A01 || bottomConveyor == 0x0B01;
+        let buildingID = 0xFFFF;
+        switch (conveyorType) {
+            case 0:
+                if (leftConveyor) {
+                    buildingID = 0x0001;
+                }
+                else if (topConveyor && bottomConveyor) {
+                    buildingID = 0x0001;
+                }
+                else if (topConveyor) {
+                    buildingID = 0x0501;
+                }
+                else if (bottomConveyor) {
+                    buildingID = 0x0401;
+                }
+                else {
+                    buildingID = 0x0001;
+                }
+                break;
+            case 1:
+                if (topConveyor) {
+                    buildingID = 0x0101;
+                }
+                else if (leftConveyor && rightConveyor) {
+                    buildingID = 0x0101;
+                }
+                else if (leftConveyor) {
+                    buildingID = 0x0701;
+                }
+                else if (rightConveyor) {
+                    buildingID = 0x0601;
+                }
+                else {
+                    buildingID = 0x0101;
+                }
+                break;
+            case 2:
+                if (rightConveyor) {
+                    buildingID = 0x0201;
+                }
+                else if (topConveyor && bottomConveyor) {
+                    buildingID = 0x0201;
+                }
+                else if (topConveyor) {
+                    buildingID = 0x0901;
+                }
+                else if (bottomConveyor) {
+                    buildingID = 0x0801;
+                }
+                else {
+                    buildingID = 0x0201;
+                }
+                break;
+            case 3:
+                if (bottomConveyor) {
+                    buildingID = 0x0301;
+                }
+                else if (leftConveyor && rightConveyor) {
+                    buildingID = 0x0301;
+                }
+                else if (leftConveyor) {
+                    buildingID = 0x0B01;
+                }
+                else if (rightConveyor) {
+                    buildingID = 0x0A01;
+                }
+                else {
+                    buildingID = 0x0301;
+                }
+                break;
+        }
+        return buildingID;
     }
     writeBuilding(tileX, tileY, buildingID) {
         if (this.getChunk(tileX, tileY)) {
@@ -113,6 +203,19 @@ class Level extends ChunkedDataStorage {
                 break;
             case 0x0003:
                 tempBuilding = new TrashCan(tileX, tileY, 0x0003, this); //typescript go brrrrr
+                break;
+            case 0x0001:
+            case 0x0101:
+            case 0x0201:
+            case 0x0301:
+            case 0x0401:
+            case 0x0501:
+            case 0x0601:
+            case 0x0701:
+            case 0x0801:
+            case 0x0901:
+            case 0x0A01:
+                return this.writeBuilding(tileX, tileY, this.getTurnedConveyor(tileX, tileY, building >> 8));
                 break;
             default:
                 return this.writeBuilding(tileX, tileY, building);
