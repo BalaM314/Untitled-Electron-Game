@@ -121,12 +121,21 @@ function ellipse(x, y, w, h){
  * Game-related functions
  */
 
-function tileToChunk(tileCoord:number):number{
+function tileToChunk(tileCoord:number):number {
 	tileCoord = Math.floor(tileCoord);
 	if(tileCoord < 0){
 		return (tileCoord % consts.CHUNK_SIZE) + consts.CHUNK_SIZE;
 	} else {
 		return tileCoord % consts.CHUNK_SIZE;
+	}
+}
+
+function pixelToTile(pixelCoord:number):number {
+	pixelCoord = Math.floor(pixelCoord);
+	if(pixelCoord < 0){
+		return (pixelCoord % consts.TILE_SIZE) + consts.TILE_SIZE;
+	} else {
+		return pixelCoord % consts.TILE_SIZE;
 	}
 }
 

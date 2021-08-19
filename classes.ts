@@ -599,73 +599,73 @@ class Item {
 					this.y -= consts.buildings.conveyor.SPEED;
 					break;
 				case 0x04:
-					if(this.x % consts.TILE_SIZE >= consts.TILE_SIZE * 0.5 && this.y % consts.TILE_SIZE == consts.TILE_SIZE * 0.5){
+					if(pixelToTile(this.x) >= consts.TILE_SIZE * 0.5 && pixelToTile(this.y) == consts.TILE_SIZE * 0.5){
 						this.x ++;
 						this.y = (Math.floor(this.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
-					} else if(this.x % consts.TILE_SIZE == consts.TILE_SIZE * 0.5 && this.y % consts.TILE_SIZE >= consts.TILE_SIZE * 0.5){
+					} else if(pixelToTile(this.x) == consts.TILE_SIZE * 0.5 && pixelToTile(this.y) >= consts.TILE_SIZE * 0.5){
 						this.x = (Math.floor(this.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
 						this.y --;
 					}
 					break;
 				case 0x05:
-					if(this.x % consts.TILE_SIZE >= consts.TILE_SIZE * 0.5 && this.y % consts.TILE_SIZE == consts.TILE_SIZE * 0.5){
+					if(pixelToTile(this.x) >= consts.TILE_SIZE * 0.5 && pixelToTile(this.y) == consts.TILE_SIZE * 0.5){
 						this.x ++;
 						this.y = (Math.floor(this.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
-					} else if(this.x % consts.TILE_SIZE == consts.TILE_SIZE * 0.5 && this.y % consts.TILE_SIZE <= consts.TILE_SIZE * 0.5){
+					} else if(pixelToTile(this.x) == consts.TILE_SIZE * 0.5 && pixelToTile(this.y) <= consts.TILE_SIZE * 0.5){
 						this.x = (Math.floor(this.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
 						this.y ++;
 					}
 					break;
 				case 0x06:
-					if(this.x % consts.TILE_SIZE == consts.TILE_SIZE * 0.5 && this.y % consts.TILE_SIZE >= consts.TILE_SIZE * 0.5){
+					if(pixelToTile(this.x) == consts.TILE_SIZE * 0.5 && pixelToTile(this.y) >= consts.TILE_SIZE * 0.5){
 						this.x = (Math.floor(this.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
 						this.y ++;
-					} else if(this.x % consts.TILE_SIZE > consts.TILE_SIZE * 0.5 && this.y % consts.TILE_SIZE == consts.TILE_SIZE * 0.5){
+					} else if(pixelToTile(this.x) > consts.TILE_SIZE * 0.5 && pixelToTile(this.y) == consts.TILE_SIZE * 0.5){
 						this.x --;
 						this.y = (Math.floor(this.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
 					}
 					break;
 				case 0x07:
-					if(this.x % consts.TILE_SIZE == consts.TILE_SIZE * 0.5 && this.y % consts.TILE_SIZE >= consts.TILE_SIZE * 0.5){
+					if(pixelToTile(this.x) == consts.TILE_SIZE * 0.5 && pixelToTile(this.y) >= consts.TILE_SIZE * 0.5){
 						this.x = (Math.floor(this.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
 						this.y ++;
-					} else if(this.x % consts.TILE_SIZE < consts.TILE_SIZE * 0.5 && this.y % consts.TILE_SIZE == consts.TILE_SIZE * 0.5){
+					} else if(pixelToTile(this.x) < consts.TILE_SIZE * 0.5 && pixelToTile(this.y) == consts.TILE_SIZE * 0.5){
 						this.x ++;
 						this.y = (Math.floor(this.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
 					}
 					break;
 				case 0x08:
-					if(this.x % consts.TILE_SIZE <= consts.TILE_SIZE * 0.5 && this.y % consts.TILE_SIZE == consts.TILE_SIZE * 0.5){
+					if(pixelToTile(this.x) <= consts.TILE_SIZE * 0.5 && pixelToTile(this.y) == consts.TILE_SIZE * 0.5){
 						this.x --;
 						this.y = (Math.floor(this.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
-					} else if(this.x % consts.TILE_SIZE == consts.TILE_SIZE * 0.5 && this.y % consts.TILE_SIZE >= consts.TILE_SIZE * 0.5){
+					} else if(pixelToTile(this.x) == consts.TILE_SIZE * 0.5 && pixelToTile(this.y) >= consts.TILE_SIZE * 0.5){
 						this.x = (Math.floor(this.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
 						this.y --;
 					}
 					break;
 				case 0x09:
-					if(this.x % consts.TILE_SIZE <= consts.TILE_SIZE * 0.5 && this.y % consts.TILE_SIZE == consts.TILE_SIZE * 0.5){
+					if(pixelToTile(this.x) <= consts.TILE_SIZE * 0.5 && pixelToTile(this.y) == consts.TILE_SIZE * 0.5){
 						this.x --;
 						this.y = (Math.floor(this.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
-					} else if(this.x % consts.TILE_SIZE == consts.TILE_SIZE * 0.5 && this.y % consts.TILE_SIZE <= consts.TILE_SIZE * 0.5){
+					} else if(pixelToTile(this.x) == consts.TILE_SIZE * 0.5 && pixelToTile(this.y) <= consts.TILE_SIZE * 0.5){
 						this.x = (Math.floor(this.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
 						this.y ++;
 					}
 					break;
 				case 0x0A:
-					if(this.x % consts.TILE_SIZE == consts.TILE_SIZE * 0.5 && this.y % consts.TILE_SIZE <= consts.TILE_SIZE * 0.5){
+					if(pixelToTile(this.x) == consts.TILE_SIZE * 0.5 && pixelToTile(this.y) <= consts.TILE_SIZE * 0.5){
 						this.x = (Math.floor(this.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
 						this.y --;
-					} else if(this.x % consts.TILE_SIZE > consts.TILE_SIZE * 0.5 && this.y % consts.TILE_SIZE == consts.TILE_SIZE * 0.5){
+					} else if(pixelToTile(this.x) > consts.TILE_SIZE * 0.5 && pixelToTile(this.y) == consts.TILE_SIZE * 0.5){
 						this.x --;
 						this.y = (Math.floor(this.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
 					}
 					break;
 				case 0x0B:
-					if(this.x % consts.TILE_SIZE == consts.TILE_SIZE * 0.5 && this.y % consts.TILE_SIZE <= consts.TILE_SIZE * 0.5){
+					if(pixelToTile(this.x) == consts.TILE_SIZE * 0.5 && pixelToTile(this.y) <= consts.TILE_SIZE * 0.5){
 						this.x = (Math.floor(this.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
 						this.y --;
-					} else if(this.x % consts.TILE_SIZE < consts.TILE_SIZE * 0.5 && this.y % consts.TILE_SIZE == consts.TILE_SIZE * 0.5){
+					} else if(pixelToTile(this.x) < consts.TILE_SIZE * 0.5 && pixelToTile(this.y) == consts.TILE_SIZE * 0.5){
 						this.x ++;
 						this.y = (Math.floor(this.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
 					}

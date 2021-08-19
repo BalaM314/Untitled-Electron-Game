@@ -113,6 +113,15 @@ function tileToChunk(tileCoord) {
         return tileCoord % consts.CHUNK_SIZE;
     }
 }
+function pixelToTile(pixelCoord) {
+    pixelCoord = Math.floor(pixelCoord);
+    if (pixelCoord < 0) {
+        return (pixelCoord % consts.TILE_SIZE) + consts.TILE_SIZE;
+    }
+    else {
+        return pixelCoord % consts.TILE_SIZE;
+    }
+}
 var interval1;
 function onConsoleOpen() {
     console.log("%c Hey there! It looks like you're checking out the console.\nIf you want to view the source code, *please do it at* https://github.com/BalaM314/Untitled-Electron-Game \n Make sure to view the .ts files as the .js files are compiled and thus look weird.", "color: blue; font-size: 30px;");
