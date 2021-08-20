@@ -144,12 +144,8 @@ function ellipse(x, y, w, h){
  */
 
 function tileToChunk(tileCoord:number):number {
-	tileCoord = Math.floor(tileCoord);
-	if(tileCoord < 0){
-		return (tileCoord % consts.CHUNK_SIZE) + consts.CHUNK_SIZE;
-	} else {
-		return tileCoord % consts.CHUNK_SIZE;
-	}
+	tileCoord = Math.floor(tileCoord) % consts.CHUNK_SIZE;
+	return tileCoord + (tileCoord < 0 ? consts.CHUNK_SIZE : 0);
 }
 
 function pixelToTile(pixelCoord:number):number {
