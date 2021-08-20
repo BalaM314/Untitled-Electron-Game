@@ -149,6 +149,8 @@ function zoom(scaleFactor) {
         scaleFactor = 5 / consts.DISPLAY_SCALE;
     }
     consts.DISPLAY_SCALE *= scaleFactor;
+    Game.scroll.x -= (innerWidth * 0.5 * (scaleFactor - 1)) / consts.DISPLAY_SCALE;
+    Game.scroll.y -= (innerHeight * 0.5 * (scaleFactor - 1)) / consts.DISPLAY_SCALE;
 }
 window.onwheel = (e) => {
     zoom(Math.pow(1.001, e.deltaY));

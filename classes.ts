@@ -872,7 +872,7 @@ class Furnace extends Building {
 				this.processingItem = null;
 			}
 		} else if(!this.processingItem){
-			this.timer = 30;
+			this.timer = 29;
 			for(var item in this.level.items){
 				if(
 					(Math.abs(this.level.items[item].x - (this.x * consts.TILE_SIZE + consts.TILE_SIZE / 2)) < consts.TILE_SIZE * 0.6) &&
@@ -889,13 +889,33 @@ class Furnace extends Building {
 		}
 	}
 	spawnItem(id:string){
-		if(this.level.buildingIDAt2(this.x + 1, this.y) % 0x100 == 0x01 && this.level.buildingIDAt2(this.x + 1, this.y) !== 0x0201){
+		if(
+				this.level.buildingIDAt2(this.x + 1, this.y) % 0x100 == 0x01 &&
+				this.level.buildingIDAt2(this.x + 1, this.y) !== 0x0201 &&
+				this.level.buildingIDAt2(this.x + 1, this.y) !== 0x0801 &&
+				this.level.buildingIDAt2(this.x + 1, this.y) !== 0x0901
+		){
 			this.level.addItem(this.x * consts.TILE_SIZE + consts.TILE_SIZE * 1.1, this.y * consts.TILE_SIZE + consts.TILE_SIZE * 0.5, id);
-		} else if(this.level.buildingIDAt2(this.x, this.y + 1) % 0x100 == 0x01 && this.level.buildingIDAt2(this.x, this.y + 1) !== 0x0301){
+		} else if(
+				this.level.buildingIDAt2(this.x, this.y + 1) % 0x100 == 0x01 &&
+				this.level.buildingIDAt2(this.x, this.y + 1) !== 0x0301 &&
+				this.level.buildingIDAt2(this.x, this.y + 1) !== 0x0A01 &&
+				this.level.buildingIDAt2(this.x, this.y + 1) !== 0x0B01
+		){
 			this.level.addItem(this.x * consts.TILE_SIZE + consts.TILE_SIZE * 0.5, this.y * consts.TILE_SIZE + consts.TILE_SIZE * 1.1, id);
-		} else if(this.level.buildingIDAt2(this.x - 1, this.y) % 0x100 == 0x01 && this.level.buildingIDAt2(this.x - 1, this.y) !== 0x0001){
+		} else if(
+				this.level.buildingIDAt2(this.x - 1, this.y) % 0x100 == 0x01 &&
+				this.level.buildingIDAt2(this.x - 1, this.y) !== 0x0001 &&
+				this.level.buildingIDAt2(this.x - 1, this.y) !== 0x0401 &&
+				this.level.buildingIDAt2(this.x - 1, this.y) !== 0x0501
+		){
 			this.level.addItem(this.x * consts.TILE_SIZE - consts.TILE_SIZE * 0.1, this.y * consts.TILE_SIZE + consts.TILE_SIZE * 0.5, id);
-		} else if(this.level.buildingIDAt2(this.x, this.y - 1) % 0x100 == 0x01 && this.level.buildingIDAt2(this.x, this.y - 1) !== 0x0101){
+		} else if(
+				this.level.buildingIDAt2(this.x, this.y - 1) % 0x100 == 0x01 &&
+				this.level.buildingIDAt2(this.x, this.y - 1) !== 0x0101 &&
+				this.level.buildingIDAt2(this.x, this.y - 1) !== 0x0601 &&
+				this.level.buildingIDAt2(this.x, this.y - 1) !== 0x0701
+		){
 			this.level.addItem(this.x * consts.TILE_SIZE + consts.TILE_SIZE * 0.5, this.y * consts.TILE_SIZE - consts.TILE_SIZE * 0.1, id);
 		} else {
 			return false;

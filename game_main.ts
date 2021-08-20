@@ -50,7 +50,7 @@ function loop(){
 	ctx.clearRect(0, 0, innerWidth, innerHeight);
 	overlayCtx.clearRect(0, 0, innerWidth, innerHeight);
 	level1.display(true);
-	level1.displayGhostBuilding((mouseX - Game.scroll.x) / consts.DISPLAY_TILE_SIZE, (mouseY - Game.scroll.y) / consts.DISPLAY_TILE_SIZE, placedBuildingID);
+	level1.displayGhostBuilding((mouseX - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE, (mouseY - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE, placedBuildingID);
 	if(mouseIsPressed){
 		handleMouseDown(latestMouseEvent);
 	}
@@ -69,7 +69,7 @@ function loop(){
 	let frameMS = (new Date()).getTime() - startFrameTime.getTime();
 	overlayCtx.font = "30px sans-serif";
 	overlayCtx.fillText(Math.round(constrain(1000/frameMS, 0, 60)) + " fps", 10, 50);
-	overlayCtx.fillText((Math.round(- Game.scroll.x / consts.DISPLAY_TILE_SIZE).toString() + ", " + Math.round(- Game.scroll.y / consts.DISPLAY_TILE_SIZE).toString()), 10, 100);
+	overlayCtx.fillText((Math.round(- (Game.scroll.x * consts.DISPLAY_SCALE) / consts.DISPLAY_TILE_SIZE).toString() + ", " + Math.round(- (Game.scroll.y * consts.DISPLAY_SCALE) / consts.DISPLAY_TILE_SIZE).toString()), 10, 100);
 	
 	requestAnimationFrame(loop);
 }
@@ -94,9 +94,9 @@ function load(){
 let placedBuildingID:BuildingID = 0x0001;
 let handleMouseDown = (e:MouseEvent) => {
 	if(e.ctrlKey){
-		level1.addItem((e.x / consts.DISPLAY_SCALE) - Game.scroll.x, (e.y / consts.DISPLAY_SCALE) - Game.scroll.y, ItemID.base_null);
+		level1.addItem((e.x / consts.DISPLAY_SCALE) - (Game.scroll.x * consts.DISPLAY_SCALE), (e.y / consts.DISPLAY_SCALE) - (Game.scroll.y * consts.DISPLAY_SCALE), ItemID.base_null);
 	} else {
-		level1.buildBuilding(Math.floor((e.x - Game.scroll.x) / consts.DISPLAY_TILE_SIZE), Math.floor((e.y - Game.scroll.y) / consts.DISPLAY_TILE_SIZE), placedBuildingID);
+		level1.buildBuilding(Math.floor((e.x - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE), Math.floor((e.y - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE), placedBuildingID);
 	}
 }
 
