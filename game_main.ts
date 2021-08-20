@@ -40,21 +40,15 @@ const overlayCtx = (document.getElementById("secondary_canvas") as HTMLCanvasEle
 
 function loop(){
 	let startFrameTime = new Date();
-	level1.update();
+
+	(document.getElementById("main_canvas") as HTMLCanvasElement).width = innerWidth;
+	(document.getElementById("main_canvas") as HTMLCanvasElement).height = innerHeight;
+	(document.getElementById("secondary_canvas") as HTMLCanvasElement).width = innerWidth;
+	(document.getElementById("secondary_canvas") as HTMLCanvasElement).height = innerHeight;
 	level1.generateNecessaryChunks();
-	// document.getElementById("item").style.setProperty("--pos-x", level1.items[0].x.toString() + "px");
-	// document.getElementById("item").style.setProperty("--pos-y", level1.items[0].y.toString() + "px");
+	level1.update();
 	ctx.clearRect(0, 0, innerWidth, innerHeight);
 	overlayCtx.clearRect(0, 0, innerWidth, innerHeight);
-	// ctx.strokeRect(300, 300, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
-	// ctx.strokeRect(300, 300 + consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
-	// ctx.strokeRect(300 + consts.DISPLAY_TILE_SIZE, 300, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
-	// ctx.strokeRect(300, 300 - consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
-	// ctx.strokeRect(300 - consts.DISPLAY_TILE_SIZE, 300, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
-	// ctx.strokeRect(300 + consts.DISPLAY_TILE_SIZE, 300 + consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
-	// ctx.strokeRect(300 + consts.DISPLAY_TILE_SIZE, 300 - consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
-	// ctx.strokeRect(300 - consts.DISPLAY_TILE_SIZE, 300 + consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
-	// ctx.strokeRect(300 - consts.DISPLAY_TILE_SIZE, 300 - consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
 	level1.display(true);
 	level1.displayGhostBuilding((mouseX - Game.scroll.x) / consts.DISPLAY_TILE_SIZE, (mouseY - Game.scroll.y) / consts.DISPLAY_TILE_SIZE, placedBuildingID);
 	if(mouseIsPressed){
@@ -112,13 +106,8 @@ window.onkeypress = (e:KeyboardEvent) => {
 	}
 }
 
-(document.getElementById("main_canvas") as HTMLCanvasElement).width = innerWidth;
-(document.getElementById("main_canvas") as HTMLCanvasElement).height = innerHeight;
-(document.getElementById("secondary_canvas") as HTMLCanvasElement).width = innerWidth;
-(document.getElementById("secondary_canvas") as HTMLCanvasElement).height = innerHeight;
 
-loop();
-//setInterval(loop, 1000/30);
+start();
 
 setTimeout(_ => {
 	alert(`

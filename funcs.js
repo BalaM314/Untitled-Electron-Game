@@ -114,8 +114,8 @@ var rectMode;
     rectMode[rectMode["CORNER"] = 1] = "CORNER";
 })(rectMode || (rectMode = {}));
 function rect(x, y, w, h, mode, _ctx) {
-    _ctx = _ctx !== null && _ctx !== void 0 ? _ctx : ctx;
-    mode = mode !== null && mode !== void 0 ? mode : rectMode.CORNER;
+    _ctx = _ctx ?? ctx;
+    mode = mode ?? rectMode.CORNER;
     if (mode == rectMode.CENTER) {
         _ctx.fillRect(x - w / 2, y - w / 2, w, h);
     }
@@ -134,6 +134,72 @@ function ellipse(x, y, w, h) {
 /**
  * Game-related functions
  */
+function loadTextures() {
+    return new Promise((resolve, reject) => {
+        let imagesToLoad = [
+            "0x0001", "0x0101", "0x0201", "0x0301", "0x0401", "0x0501", "0x0601", "0x0701", "0x0801", "0x0901", "0x0A01", "0x0B01",
+            "0x0002",
+            "0x0003",
+            "0x0004"
+        ];
+        let textures = new Map();
+        let imagesNotLoaded = imagesToLoad.length;
+        for (var image of imagesToLoad) {
+            let currentImage = new Image();
+            textures.set(eval(image), currentImage);
+            currentImage.src = image.length == 6 ? `assets/textures/building/${image}.png` : `assets/textures/tile/${image}.png`;
+            currentImage.onload = _ => {
+                imagesNotLoaded--;
+                if (imagesNotLoaded <= 0) {
+                    console.log("done loading");
+                    resolve(textures);
+                }
+            };
+            currentImage.onerror = _ => {
+                reject("unable to load image " + currentImage.src);
+            };
+        }
+        console.log("waiting for images to load");
+    });
+}
+;
+var loadComplete = false;
+function load() {
+    document.getElementById("main_canvas").width = innerWidth;
+    document.getElementById("main_canvas").height = innerHeight;
+    document.getElementById("secondary_canvas").width = innerWidth;
+    document.getElementById("secondary_canvas").height = innerHeight;
+    ctx.fillStyle = "#0033FF";
+    ctx.fillRect(0, 0, innerWidth, innerHeight);
+    ctx.font = "40px sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillStyle = "#000000";
+    ctx.fillText("Loading...", innerWidth / 2, innerHeight / 2);
+    loadTextures()
+        .catch((err) => {
+        ctx.font = "40px sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillStyle = "#000000";
+        ctx.fillStyle = "#0033FF";
+        ctx.fillRect(0, 0, innerWidth, innerHeight);
+        ctx.fillStyle = "#000000";
+        ctx.fillText("An error has occurred while loading:\n" + err, innerWidth / 2, innerHeight / 2);
+    })
+        .then((_textures) => {
+        textures = _textures;
+        loadComplete = true;
+    });
+}
+function start() {
+    load();
+    setTimeout(() => {
+        if (loadComplete) {
+            loop();
+        }
+    }, 100);
+}
 function tileToChunk(tileCoord) {
     tileCoord = Math.floor(tileCoord) % consts.CHUNK_SIZE;
     return tileCoord + (tileCoord < 0 ? consts.CHUNK_SIZE : 0);

@@ -4,7 +4,7 @@
             "ES2021",
             "DOM"
         ],
-        "target": "ES6",
+        "target": "ES2021",
         "removeComments": false
     }
 }

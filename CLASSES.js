@@ -1,3 +1,4 @@
+let textures = null;
 const rands = {
     x_prime: 1299689,
     y_prime: 1156709,
@@ -250,7 +251,7 @@ class Level extends ChunkedDataStorage {
         return true;
     }
     display(debug, _ctx) {
-        _ctx = _ctx !== null && _ctx !== void 0 ? _ctx : ctx;
+        _ctx = _ctx ?? ctx;
         //Currently we will just display every chunk that exists. Obviously this is not sustainable.
         for (var chunk of this.storage.values()) {
             chunk.display(debug);
@@ -335,12 +336,10 @@ class Chunk {
         return this;
     }
     tileAt(tileX, tileY) {
-        var _a, _b, _c;
-        return (_c = (_b = (_a = this.layers[0]) === null || _a === void 0 ? void 0 : _a[tileY]) === null || _b === void 0 ? void 0 : _b[tileX]) !== null && _c !== void 0 ? _c : null;
+        return this.layers[0]?.[tileY]?.[tileX] ?? null;
     }
     buildingAt(x, y) {
-        var _a, _b, _c;
-        return (_c = (_b = (_a = this.layers[1]) === null || _a === void 0 ? void 0 : _a[y]) === null || _b === void 0 ? void 0 : _b[x]) !== null && _c !== void 0 ? _c : null;
+        return this.layers[1]?.[y]?.[x] ?? null;
     }
     setTile(x, y, tile) {
         if (this.tileAt(x, y) == null) {
@@ -452,16 +451,11 @@ class Chunk {
             ctx.lineWidth = 1;
         }
         else {
-            ctx.lineWidth = 2;
-            switch (buildingID) {
-                case 0x0002:
-                    ctx.fillStyle = "#3366CC";
-                    ctx.strokeStyle = "#3366CC";
-                    break;
-                default:
-                    ctx.fillStyle = "#000000";
-                    ctx.strokeStyle = "#000000";
-                    break;
+            try {
+                return ctx.drawImage(textures.get(buildingID), pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
+            }
+            catch (err) {
+                console.error("couldn't draw image " + buildingID);
             }
         }
         switch (buildingID) {
@@ -707,7 +701,7 @@ class Item {
         }
     }
     display(debug, _ctx) {
-        _ctx = _ctx !== null && _ctx !== void 0 ? _ctx : ctx;
+        _ctx = _ctx ?? ctx;
         switch (this.id) {
             case 0 /* base_null */:
                 ctx.fillStyle = "#FF00FF";

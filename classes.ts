@@ -27,6 +27,8 @@ type BuildingID =
 
 
 
+let textures = null;
+
 const enum ItemID {
 	"base_null",
 	"base_coalOre",
@@ -501,21 +503,13 @@ class Chunk {
 			ctx.fillStyle = "#888888";
 			ctx.lineWidth = 1;
 		} else {
-			ctx.lineWidth = 2;
-			switch(buildingID){
-				case 0x0002:
-					ctx.fillStyle = "#3366CC";
-					ctx.strokeStyle = "#3366CC";
-					break;
-				default:
-					ctx.fillStyle = "#000000";
-					ctx.strokeStyle = "#000000";
-					break;
+			try {
+				return ctx.drawImage(textures.get(buildingID), pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
+			} catch(err){
+				console.error("couldn't draw image " + buildingID);
 			}
 		}
 		switch(buildingID){
-
-
 			case 0x0001:
 				ctx.beginPath();
 				ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
@@ -633,7 +627,6 @@ class Chunk {
 				ctx.stroke();
 				break;
 				
-			
 			case 0x0002:
 				rect(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.5, consts.DISPLAY_TILE_SIZE * 0.6, consts.DISPLAY_TILE_SIZE * 0.6, rectMode.CENTER);
 				break;
