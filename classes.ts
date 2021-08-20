@@ -27,14 +27,14 @@ type BuildingID =
 
 
 
-let textures = null;
+let textures = new Map();
 
-const enum ItemID {
-	"base_null",
-	"base_coalOre",
-	"base_coal",
-	"base_ironOre",
-	"base_ironIngot"
+const ItemID =  {
+	"base_null": "base_null",
+	"base_coalOre": "base_coalOre",
+	"base_coal": "base_coal",
+	"base_ironOre": "base_ironOre",
+	"base_ironIngot": "base_ironIngot"
 }
 
 const rands = {
@@ -104,8 +104,8 @@ class ChunkedDataStorage {
 		return false;
 	}
 	generateNecessaryChunks(){
-		var xOffset = - Math.floor(Game.scroll.x / (consts.DISPLAY_TILE_SIZE * consts.CHUNK_SIZE));
-		var yOffset = - Math.floor(Game.scroll.y / (consts.DISPLAY_TILE_SIZE * consts.CHUNK_SIZE));
+		var xOffset = - Math.floor((Game.scroll.x * consts.DISPLAY_SCALE) / (consts.DISPLAY_TILE_SIZE * consts.CHUNK_SIZE));
+		var yOffset = - Math.floor((Game.scroll.y * consts.DISPLAY_SCALE) / (consts.DISPLAY_TILE_SIZE * consts.CHUNK_SIZE));
 		this.generateChunk(xOffset - 1, yOffset - 1);
 		this.generateChunk(xOffset, yOffset - 1);
 		this.generateChunk(xOffset + 1, yOffset - 1);
@@ -146,7 +146,7 @@ class Level extends ChunkedDataStorage {
 			Math.floor(tileY)
 		).buildingAt(tileToChunk(tileX), tileToChunk(tileY));
 	}
-	addItem(x:number, y:number, id:ItemID){
+	addItem(x:number, y:number, id:string){
 		let tempitem = new Item(x, y, id, this);
 		this.items.push(tempitem);
 		return tempitem;
@@ -417,10 +417,10 @@ class Chunk {
 	}
 	display(debug:boolean){
 		if(
-			Game.scroll.x + this.x * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE > window.innerWidth + 1 ||
-			Game.scroll.x + this.x * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE < -1 - consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE ||
-			Game.scroll.y + this.y * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE > window.innerHeight + 1 ||
-			Game.scroll.y + this.y * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE < -1 - consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE
+			(Game.scroll.x * consts.DISPLAY_SCALE) + this.x * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE > window.innerWidth + 1 ||
+			(Game.scroll.x * consts.DISPLAY_SCALE) + this.x * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE < -1 - consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE ||
+			(Game.scroll.y * consts.DISPLAY_SCALE) + this.y * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE > window.innerHeight + 1 ||
+			(Game.scroll.y * consts.DISPLAY_SCALE) + this.y * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE < -1 - consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE
 		){return false;}//if offscreen return immediately
 		for(var y in this.layers[0]){
 			for(var x in this.layers[0][y]){
@@ -434,14 +434,14 @@ class Chunk {
 		}
 		if(debug){
 			overlayCtx.strokeStyle = "#0000FF";
-			overlayCtx.strokeRect(this.x * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE + Game.scroll.x, this.y  * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE + Game.scroll.y, consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE, consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE);
+			overlayCtx.strokeRect(this.x * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE + (Game.scroll.x * consts.DISPLAY_SCALE), this.y  * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE + (Game.scroll.y * consts.DISPLAY_SCALE), consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE, consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE);
 			overlayCtx.font = "40px sans-serif";
-			//overlayCtx.fillText(this.chunkSeed.toString(), this.x * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE + (consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE * 0.5) + Game.scroll.x, this.y * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE + (consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE * 0.5) + Game.scroll.y);
+			//overlayCtx.fillText(this.chunkSeed.toString(), this.x * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE + (consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE * 0.5) + (Game.scroll.x * consts.DISPLAY_SCALE), this.y * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE + (consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE * 0.5) + (Game.scroll.y * consts.DISPLAY_SCALE));
 		}
 	}
 	displayTile(x:number, y:number){
-		let pixelX = ((this.x * consts.CHUNK_SIZE) + x) * consts.DISPLAY_TILE_SIZE + Game.scroll.x;
-		let pixelY = ((this.y * consts.CHUNK_SIZE) + y) * consts.DISPLAY_TILE_SIZE + Game.scroll.y;
+		let pixelX = ((this.x * consts.CHUNK_SIZE) + x) * consts.DISPLAY_TILE_SIZE + (Game.scroll.x * consts.DISPLAY_SCALE);
+		let pixelY = ((this.y * consts.CHUNK_SIZE) + y) * consts.DISPLAY_TILE_SIZE + (Game.scroll.y * consts.DISPLAY_SCALE);
 		switch(this.tileAt(x, y)){
 			case 0x00:
 				ctx.fillStyle = "#00CC33";
@@ -492,8 +492,8 @@ class Chunk {
 	}
 	displayBuilding(x:number, y:number, buildingID:BuildingID, isGhost?:number){
 		if(buildingID == 0xFFFF){return;}
-		let pixelX = ((this.x * consts.CHUNK_SIZE) + x) * consts.DISPLAY_TILE_SIZE + Game.scroll.x;
-		let pixelY = ((this.y * consts.CHUNK_SIZE) + y) * consts.DISPLAY_TILE_SIZE + Game.scroll.y;
+		let pixelX = ((this.x * consts.CHUNK_SIZE) + x) * consts.DISPLAY_TILE_SIZE + (Game.scroll.x * consts.DISPLAY_SCALE);
+		let pixelY = ((this.y * consts.CHUNK_SIZE) + y) * consts.DISPLAY_TILE_SIZE + (Game.scroll.y * consts.DISPLAY_SCALE);
 		if(isGhost == 2){
 			ctx.strokeStyle = "#EE6666";
 			ctx.fillStyle = "#EE6666";
@@ -503,11 +503,7 @@ class Chunk {
 			ctx.fillStyle = "#888888";
 			ctx.lineWidth = 1;
 		} else {
-			try {
-				return ctx.drawImage(textures.get(buildingID), pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
-			} catch(err){
-				console.error("couldn't draw image " + buildingID);
-			}
+			return ctx.drawImage(textures.get(buildingID.toString()), pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
 		}
 		switch(buildingID){
 			case 0x0001:
@@ -646,13 +642,13 @@ class Chunk {
 }
 
 interface Item {
-	id: ItemID;
+	id: string;
 	x: number;
 	y: number;
 	level: Level;
 }
 class Item {
-	constructor(x:number, y:number, id:ItemID, level:Level){
+	constructor(x:number, y:number, id:string, level:Level){
 		this.id = id;
 		this.x = x;
 		this.y = y;
@@ -755,19 +751,7 @@ class Item {
 	}
 	display(debug?:boolean, _ctx?:CanvasRenderingContext2D){
 		_ctx = _ctx ?? ctx;
-		switch(this.id){
-			case ItemID.base_null:
-				ctx.fillStyle = "#FF00FF";break;
-			case ItemID.base_coalOre:
-				ctx.fillStyle = "#444444";break;
-			case ItemID.base_coal:
-				ctx.fillStyle = "#000000";break;
-			case ItemID.base_ironOre:
-				ctx.fillStyle = "#663300";break;
-			case ItemID.base_ironIngot:
-				ctx.fillStyle = "#CBCDCD";break;
-		}
-		rect((this.x * consts.DISPLAY_SCALE) + Game.scroll.x, (this.y * consts.DISPLAY_SCALE) + Game.scroll.y, 10 * consts.DISPLAY_SCALE, 10 * consts.DISPLAY_SCALE, rectMode.CENTER);
+		_ctx.drawImage(textures.get("item_" + this.id), this.x * consts.DISPLAY_SCALE + (Game.scroll.x * consts.DISPLAY_SCALE) - 8*consts.DISPLAY_SCALE, this.y * consts.DISPLAY_SCALE + (Game.scroll.y * consts.DISPLAY_SCALE) - 8*consts.DISPLAY_SCALE, 16 * consts.DISPLAY_SCALE, 16 * consts.DISPLAY_SCALE);
 	}
 }
 
@@ -798,7 +782,7 @@ class Building {
 interface Miner {
 	timer: number;
 	itemBuffer: number;
-	miningItem: ItemID;
+	miningItem: string;
 	oreFor: any;
 }
 class Miner extends Building {
@@ -842,7 +826,7 @@ const oreFor = {
 	0x03: ItemID.base_ironOre
 };
 
-function smeltFor(item:ItemID){
+function smeltFor(item:string){
 	switch(item){
 		case ItemID.base_coalOre: return ItemID.base_coal;
 		case ItemID.base_ironOre: return ItemID.base_ironIngot;
@@ -904,7 +888,7 @@ class Furnace extends Building {
 			}
 		}
 	}
-	spawnItem(id:ItemID){
+	spawnItem(id:string){
 		if(this.level.buildingIDAt2(this.x + 1, this.y) % 0x100 == 0x01 && this.level.buildingIDAt2(this.x + 1, this.y) !== 0x0201){
 			this.level.addItem(this.x * consts.TILE_SIZE + consts.TILE_SIZE * 1.1, this.y * consts.TILE_SIZE + consts.TILE_SIZE * 0.5, id);
 		} else if(this.level.buildingIDAt2(this.x, this.y + 1) % 0x100 == 0x01 && this.level.buildingIDAt2(this.x, this.y + 1) !== 0x0301){

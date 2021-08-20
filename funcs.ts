@@ -145,71 +145,23 @@ function ellipse(x, y, w, h){
 
 
 function loadTextures (){
-	return new Promise((resolve, reject) => {
-		let imagesToLoad = [
-			"0x0001", "0x0101", "0x0201", "0x0301", "0x0401", "0x0501", "0x0601", "0x0701", "0x0801", "0x0901", "0x0A01", "0x0B01", 
-			"0x0002",
-			"0x0003",
-			"0x0004"
-		];
-		let textures = new Map();
-		let imagesNotLoaded = imagesToLoad.length;
-		for(var image of imagesToLoad){
-			let currentImage = new Image();
-			textures.set(eval(image), currentImage);
-			currentImage.src = image.length == 6 ? `assets/textures/building/${image}.png` : `assets/textures/tile/${image}.png`;
-			currentImage.onload = _ => {
-				imagesNotLoaded --;
-				if(imagesNotLoaded <= 0){
-					console.log("done loading");
-					resolve(textures);
-				}
-			};
-			currentImage.onerror = _ => {
-				reject("unable to load image " + currentImage.src);
-			}
-		}
-		console.log("waiting for images to load");
-	});
+	for(var element of document.getElementById("textures").children){
+		textures.set(element.id, element);
+	}
 };
-var loadComplete = false;
-function load(){
-	(document.getElementById("main_canvas") as HTMLCanvasElement).width = innerWidth;
-	(document.getElementById("main_canvas") as HTMLCanvasElement).height = innerHeight;
-	(document.getElementById("secondary_canvas") as HTMLCanvasElement).width = innerWidth;
-	(document.getElementById("secondary_canvas") as HTMLCanvasElement).height = innerHeight;
-	ctx.fillStyle = "#0033FF";
-	ctx.fillRect(0, 0, innerWidth, innerHeight);
-	ctx.font = "40px sans-serif";
-	ctx.textAlign = "center";
-	ctx.textBaseline = "middle";
-	ctx.fillStyle = "#000000";
-	ctx.fillText("Loading...", innerWidth / 2, innerHeight / 2);
 
-	loadTextures()
-		.catch((err) => {
-			ctx.font = "40px sans-serif";
-			ctx.textAlign = "center";
-			ctx.textBaseline = "middle";
-			ctx.fillStyle = "#000000";
-			ctx.fillStyle = "#0033FF";
-			ctx.fillRect(0, 0, innerWidth, innerHeight);
-			ctx.fillStyle = "#000000";
-			ctx.fillText("An error has occurred while loading:\n" + err, innerWidth / 2, innerHeight / 2);
-		})
-		.then((_textures) => {
-			textures = _textures;
-			loadComplete = true;
-		});
+function zoom(scaleFactor){
+	scaleFactor = constrain(scaleFactor, 0.9, 1.1);
+	if(consts.DISPLAY_SCALE * scaleFactor < 1){
+		scaleFactor = 1 / consts.DISPLAY_SCALE;
+	} else if(consts.DISPLAY_SCALE * scaleFactor > 5){
+		scaleFactor = 5 / consts.DISPLAY_SCALE;
+	}
+	consts.DISPLAY_SCALE *= scaleFactor;
 }
 
-function start(){
-	load();
-	setTimeout(() => {
-		if(loadComplete){
-			loop();
-		}
-	}, 100);
+window.onwheel = (e:WheelEvent) => {
+	zoom(Math.pow(1.001, e.deltaY));
 }
 
 function tileToChunk(tileCoord:number):number {

@@ -1,4 +1,11 @@
-let textures = null;
+let textures = new Map();
+const ItemID = {
+    "base_null": "base_null",
+    "base_coalOre": "base_coalOre",
+    "base_coal": "base_coal",
+    "base_ironOre": "base_ironOre",
+    "base_ironIngot": "base_ironIngot"
+};
 const rands = {
     x_prime: 1299689,
     y_prime: 1156709,
@@ -52,8 +59,8 @@ class ChunkedDataStorage {
         return false;
     }
     generateNecessaryChunks() {
-        var xOffset = -Math.floor(Game.scroll.x / (consts.DISPLAY_TILE_SIZE * consts.CHUNK_SIZE));
-        var yOffset = -Math.floor(Game.scroll.y / (consts.DISPLAY_TILE_SIZE * consts.CHUNK_SIZE));
+        var xOffset = -Math.floor((Game.scroll.x * consts.DISPLAY_SCALE) / (consts.DISPLAY_TILE_SIZE * consts.CHUNK_SIZE));
+        var yOffset = -Math.floor((Game.scroll.y * consts.DISPLAY_SCALE) / (consts.DISPLAY_TILE_SIZE * consts.CHUNK_SIZE));
         this.generateChunk(xOffset - 1, yOffset - 1);
         this.generateChunk(xOffset, yOffset - 1);
         this.generateChunk(xOffset + 1, yOffset - 1);
@@ -360,10 +367,10 @@ class Chunk {
         console.table(this.layers[0]);
     }
     display(debug) {
-        if (Game.scroll.x + this.x * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE > window.innerWidth + 1 ||
-            Game.scroll.x + this.x * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE < -1 - consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE ||
-            Game.scroll.y + this.y * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE > window.innerHeight + 1 ||
-            Game.scroll.y + this.y * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE < -1 - consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE) {
+        if ((Game.scroll.x * consts.DISPLAY_SCALE) + this.x * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE > window.innerWidth + 1 ||
+            (Game.scroll.x * consts.DISPLAY_SCALE) + this.x * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE < -1 - consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE ||
+            (Game.scroll.y * consts.DISPLAY_SCALE) + this.y * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE > window.innerHeight + 1 ||
+            (Game.scroll.y * consts.DISPLAY_SCALE) + this.y * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE < -1 - consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE) {
             return false;
         } //if offscreen return immediately
         for (var y in this.layers[0]) {
@@ -378,14 +385,14 @@ class Chunk {
         }
         if (debug) {
             overlayCtx.strokeStyle = "#0000FF";
-            overlayCtx.strokeRect(this.x * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE + Game.scroll.x, this.y * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE + Game.scroll.y, consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE, consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE);
+            overlayCtx.strokeRect(this.x * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE + (Game.scroll.x * consts.DISPLAY_SCALE), this.y * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE + (Game.scroll.y * consts.DISPLAY_SCALE), consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE, consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE);
             overlayCtx.font = "40px sans-serif";
-            //overlayCtx.fillText(this.chunkSeed.toString(), this.x * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE + (consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE * 0.5) + Game.scroll.x, this.y * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE + (consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE * 0.5) + Game.scroll.y);
+            //overlayCtx.fillText(this.chunkSeed.toString(), this.x * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE + (consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE * 0.5) + (Game.scroll.x * consts.DISPLAY_SCALE), this.y * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE + (consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE * 0.5) + (Game.scroll.y * consts.DISPLAY_SCALE));
         }
     }
     displayTile(x, y) {
-        let pixelX = ((this.x * consts.CHUNK_SIZE) + x) * consts.DISPLAY_TILE_SIZE + Game.scroll.x;
-        let pixelY = ((this.y * consts.CHUNK_SIZE) + y) * consts.DISPLAY_TILE_SIZE + Game.scroll.y;
+        let pixelX = ((this.x * consts.CHUNK_SIZE) + x) * consts.DISPLAY_TILE_SIZE + (Game.scroll.x * consts.DISPLAY_SCALE);
+        let pixelY = ((this.y * consts.CHUNK_SIZE) + y) * consts.DISPLAY_TILE_SIZE + (Game.scroll.y * consts.DISPLAY_SCALE);
         switch (this.tileAt(x, y)) {
             case 0x00:
                 ctx.fillStyle = "#00CC33";
@@ -438,8 +445,8 @@ class Chunk {
         if (buildingID == 0xFFFF) {
             return;
         }
-        let pixelX = ((this.x * consts.CHUNK_SIZE) + x) * consts.DISPLAY_TILE_SIZE + Game.scroll.x;
-        let pixelY = ((this.y * consts.CHUNK_SIZE) + y) * consts.DISPLAY_TILE_SIZE + Game.scroll.y;
+        let pixelX = ((this.x * consts.CHUNK_SIZE) + x) * consts.DISPLAY_TILE_SIZE + (Game.scroll.x * consts.DISPLAY_SCALE);
+        let pixelY = ((this.y * consts.CHUNK_SIZE) + y) * consts.DISPLAY_TILE_SIZE + (Game.scroll.y * consts.DISPLAY_SCALE);
         if (isGhost == 2) {
             ctx.strokeStyle = "#EE6666";
             ctx.fillStyle = "#EE6666";
@@ -451,12 +458,7 @@ class Chunk {
             ctx.lineWidth = 1;
         }
         else {
-            try {
-                return ctx.drawImage(textures.get(buildingID), pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
-            }
-            catch (err) {
-                console.error("couldn't draw image " + buildingID);
-            }
+            return ctx.drawImage(textures.get(buildingID.toString()), pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
         }
         switch (buildingID) {
             case 0x0001:
@@ -702,24 +704,7 @@ class Item {
     }
     display(debug, _ctx) {
         _ctx = _ctx ?? ctx;
-        switch (this.id) {
-            case 0 /* base_null */:
-                ctx.fillStyle = "#FF00FF";
-                break;
-            case 1 /* base_coalOre */:
-                ctx.fillStyle = "#444444";
-                break;
-            case 2 /* base_coal */:
-                ctx.fillStyle = "#000000";
-                break;
-            case 3 /* base_ironOre */:
-                ctx.fillStyle = "#663300";
-                break;
-            case 4 /* base_ironIngot */:
-                ctx.fillStyle = "#CBCDCD";
-                break;
-        }
-        rect((this.x * consts.DISPLAY_SCALE) + Game.scroll.x, (this.y * consts.DISPLAY_SCALE) + Game.scroll.y, 10 * consts.DISPLAY_SCALE, 10 * consts.DISPLAY_SCALE, rectMode.CENTER);
+        _ctx.drawImage(textures.get("item_" + this.id), this.x * consts.DISPLAY_SCALE + (Game.scroll.x * consts.DISPLAY_SCALE) - 8 * consts.DISPLAY_SCALE, this.y * consts.DISPLAY_SCALE + (Game.scroll.y * consts.DISPLAY_SCALE) - 8 * consts.DISPLAY_SCALE, 16 * consts.DISPLAY_SCALE, 16 * consts.DISPLAY_SCALE);
     }
 }
 class Building {
@@ -779,13 +764,13 @@ class Miner extends Building {
     }
 }
 const oreFor = {
-    0x02: 1 /* base_coalOre */,
-    0x03: 3 /* base_ironOre */
+    0x02: ItemID.base_coalOre,
+    0x03: ItemID.base_ironOre
 };
 function smeltFor(item) {
     switch (item) {
-        case 1 /* base_coalOre */: return 2 /* base_coal */;
-        case 3 /* base_ironOre */: return 4 /* base_ironIngot */;
+        case ItemID.base_coalOre: return ItemID.base_coal;
+        case ItemID.base_ironOre: return ItemID.base_ironIngot;
     }
     return null;
 } //but theres no reason to use a function you can just use an object-

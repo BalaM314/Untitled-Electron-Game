@@ -74,6 +74,23 @@ function loop(){
 	requestAnimationFrame(loop);
 }
 
+
+function load(){
+	(document.getElementById("main_canvas") as HTMLCanvasElement).width = innerWidth;
+	(document.getElementById("main_canvas") as HTMLCanvasElement).height = innerHeight;
+	(document.getElementById("secondary_canvas") as HTMLCanvasElement).width = innerWidth;
+	(document.getElementById("secondary_canvas") as HTMLCanvasElement).height = innerHeight;
+	ctx.fillStyle = "#0033FF";
+	ctx.fillRect(0, 0, innerWidth, innerHeight);
+	ctx.font = "40px sans-serif";
+	ctx.textAlign = "center";
+	ctx.textBaseline = "middle";
+	ctx.fillStyle = "#000000";
+	ctx.fillText("Loading...", innerWidth / 2, innerHeight / 2);
+	loadTextures();
+	setTimeout(loop, 100);
+}
+
 let placedBuildingID:BuildingID = 0x0001;
 let handleMouseDown = (e:MouseEvent) => {
 	if(e.ctrlKey){
@@ -106,8 +123,7 @@ window.onkeypress = (e:KeyboardEvent) => {
 	}
 }
 
-
-start();
+load();
 
 setTimeout(_ => {
 	alert(`

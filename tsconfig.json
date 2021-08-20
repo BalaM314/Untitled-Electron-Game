@@ -2,6 +2,7 @@
     "compilerOptions": {
         "lib": [
             "ES2021",
+            "DOM.Iterable",
             "DOM"
         ],
         "target": "ES2021",
