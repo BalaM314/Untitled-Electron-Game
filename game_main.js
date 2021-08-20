@@ -65,7 +65,8 @@ function loop() {
     }
     let frameMS = (new Date()).getTime() - startFrameTime.getTime();
     overlayCtx.font = "30px sans-serif";
-    overlayCtx.fillText(Math.round(constrain(1000 / frameMS, 0, 60)) + " fps", 0, 50);
+    overlayCtx.fillText(Math.round(constrain(1000 / frameMS, 0, 60)) + " fps", 10, 50);
+    overlayCtx.fillText((Math.round(-Game.scroll.x / consts.DISPLAY_TILE_SIZE).toString() + ", " + Math.round(-Game.scroll.y / consts.DISPLAY_TILE_SIZE).toString()), 10, 100);
     requestAnimationFrame(loop);
 }
 let placedBuildingID = 0x0001;
