@@ -139,13 +139,8 @@ function tileToChunk(tileCoord) {
     return tileCoord + (tileCoord < 0 ? consts.CHUNK_SIZE : 0);
 }
 function pixelToTile(pixelCoord) {
-    pixelCoord = Math.floor(pixelCoord);
-    if (pixelCoord < 0) {
-        return (pixelCoord % consts.TILE_SIZE) + consts.TILE_SIZE;
-    }
-    else {
-        return pixelCoord % consts.TILE_SIZE;
-    }
+    pixelCoord = Math.floor(pixelCoord) % consts.TILE_SIZE;
+    return pixelCoord + (pixelCoord < 0 ? consts.TILE_SIZE : 0);
 }
 var interval1;
 function onConsoleOpen() {

@@ -149,12 +149,8 @@ function tileToChunk(tileCoord:number):number {
 }
 
 function pixelToTile(pixelCoord:number):number {
-	pixelCoord = Math.floor(pixelCoord);
-	if(pixelCoord < 0){
-		return (pixelCoord % consts.TILE_SIZE) + consts.TILE_SIZE;
-	} else {
-		return pixelCoord % consts.TILE_SIZE;
-	}
+	pixelCoord = Math.floor(pixelCoord) % consts.TILE_SIZE;
+	return pixelCoord + (pixelCoord < 0 ? consts.TILE_SIZE : 0);
 }
 
 var interval1;

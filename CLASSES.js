@@ -444,12 +444,15 @@ class Chunk {
         if (isGhost == 2) {
             ctx.strokeStyle = "#EE6666";
             ctx.fillStyle = "#EE6666";
+            ctx.lineWidth = 2;
         }
         else if (isGhost == 1) {
             ctx.strokeStyle = "#888888";
             ctx.fillStyle = "#888888";
+            ctx.lineWidth = 1;
         }
         else {
+            ctx.lineWidth = 2;
             switch (buildingID) {
                 case 0x0002:
                     ctx.fillStyle = "#3366CC";
@@ -722,7 +725,7 @@ class Item {
                 ctx.fillStyle = "#CBCDCD";
                 break;
         }
-        _ctx.fillRect((this.x * consts.DISPLAY_SCALE) - 5 + Game.scroll.x, (this.y * consts.DISPLAY_SCALE) - 5 + Game.scroll.y, 10, 10);
+        rect((this.x * consts.DISPLAY_SCALE) + Game.scroll.x, (this.y * consts.DISPLAY_SCALE) + Game.scroll.y, 10 * consts.DISPLAY_SCALE, 10 * consts.DISPLAY_SCALE, rectMode.CENTER);
     }
 }
 class Building {

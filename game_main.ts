@@ -83,7 +83,7 @@ function loop(){
 let placedBuildingID:BuildingID = 0x0001;
 let handleMouseDown = (e:MouseEvent) => {
 	if(e.ctrlKey){
-		level1.addItem(e.x - Game.scroll.x, e.y - Game.scroll.y, ItemID.base_null);
+		level1.addItem((e.x / consts.DISPLAY_SCALE) - Game.scroll.x, (e.y / consts.DISPLAY_SCALE) - Game.scroll.y, ItemID.base_null);
 	} else {
 		level1.buildBuilding(Math.floor((e.x - Game.scroll.x) / consts.DISPLAY_TILE_SIZE), Math.floor((e.y - Game.scroll.y) / consts.DISPLAY_TILE_SIZE), placedBuildingID);
 	}
