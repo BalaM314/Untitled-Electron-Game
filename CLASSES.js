@@ -1,9 +1,3 @@
-var ItemID;
-(function (ItemID) {
-    ItemID[ItemID["base:null"] = 0] = "base:null";
-    ItemID[ItemID["base:coal"] = 1] = "base:coal";
-    ItemID[ItemID["base:iron"] = 2] = "base:iron";
-})(ItemID || (ItemID = {}));
 const rands = {
     x_prime: 1299689,
     y_prime: 1156709,
@@ -68,6 +62,12 @@ class ChunkedDataStorage {
         this.generateChunk(xOffset - 1, yOffset + 1);
         this.generateChunk(xOffset, yOffset + 1);
         this.generateChunk(xOffset + 1, yOffset + 1);
+        this.generateChunk(xOffset + 2, yOffset - 1);
+        this.generateChunk(xOffset + 2, yOffset);
+        this.generateChunk(xOffset + 2, yOffset + 1);
+        this.generateChunk(xOffset + 3, yOffset - 1);
+        this.generateChunk(xOffset + 3, yOffset);
+        this.generateChunk(xOffset + 3, yOffset + 1);
     }
 }
 class Level extends ChunkedDataStorage {
@@ -96,10 +96,15 @@ class Level extends ChunkedDataStorage {
         }
     }
     displayGhostBuilding(tileX, tileY, buildingID) {
+        tileX = Math.floor(tileX);
+        tileY = Math.floor(tileY);
         if (this.getChunk(tileX, tileY, true) == null) {
             return;
         }
         switch (buildingID) {
+            case 0x0004:
+                this.getChunk(tileX, tileY).displayBuilding(tileToChunk(tileX), tileToChunk(tileY), buildingID, Furnace.canBuildAt(tileX, tileY, this) ? 1 : 2);
+                break;
             case 0x0002:
                 this.getChunk(tileX, tileY).displayBuilding(tileToChunk(tileX), tileToChunk(tileY), buildingID, Miner.canBuildAt(tileX, tileY, this) ? 1 : 2);
                 break;
@@ -208,13 +213,18 @@ class Level extends ChunkedDataStorage {
     buildBuilding(tileX, tileY, building) {
         var tempBuilding;
         switch (building) {
+            case 0x0004:
+                tempBuilding = new Furnace(tileX, tileY, 0x0004, this); //typecsript go brrrrr
+                if (!Furnace.canBuildAt(tileX, tileY, this))
+                    return;
+                break;
+            case 0x0003:
+                tempBuilding = new TrashCan(tileX, tileY, 0x0003, this); //typescript go brrrrr
+                break;
             case 0x0002:
                 if (!Miner.canBuildAt(tileX, tileY, this))
                     return;
                 tempBuilding = new Miner(tileX, tileY, 0x0002, this); //typescript go brrrrr
-                break;
-            case 0x0003:
-                tempBuilding = new TrashCan(tileX, tileY, 0x0003, this); //typescript go brrrrr
                 break;
             case 0x0001:
             case 0x0101:
@@ -305,6 +315,20 @@ class Chunk {
             this.setTile((this.chunkSeed - rands.hill_x) % consts.CHUNK_SIZE - 1, (this.chunkSeed - rands.hill_y) % consts.CHUNK_SIZE + 1, (this.chunkSeed % 16 > 7) ? 0x01 : 0x00);
             this.setTile((this.chunkSeed - rands.hill_x) % consts.CHUNK_SIZE - 1, (this.chunkSeed - rands.hill_y) % consts.CHUNK_SIZE - 1, (this.chunkSeed % 32 > 15) ? 0x01 : 0x00);
         }
+        if (this.isWet) {
+            this.setTile(7, 7, 0x02);
+            this.setTile(8, 7, 0x03);
+            this.setTile(7, 8, 0x03);
+            this.setTile(8, 8, 0x02);
+            this.setTile(6, 7, 0x01);
+            this.setTile(7, 6, 0x01);
+            this.setTile(6, 8, 0x01);
+            this.setTile(8, 6, 0x01);
+            this.setTile(8, 9, 0x01);
+            this.setTile(9, 8, 0x01);
+            this.setTile(7, 9, 0x01);
+            this.setTile(9, 7, 0x01);
+        }
         return this;
     }
     update() {
@@ -337,9 +361,9 @@ class Chunk {
         console.table(this.layers[0]);
     }
     display(debug) {
-        if (Game.scroll.x + this.x * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE > 1201 ||
+        if (Game.scroll.x + this.x * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE > window.innerWidth + 1 ||
             Game.scroll.x + this.x * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE < -1 - consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE ||
-            Game.scroll.y + this.y * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE > 1201 ||
+            Game.scroll.y + this.y * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE > window.innerHeight + 1 ||
             Game.scroll.y + this.y * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE < -1 - consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE) {
             return false;
         } //if offscreen return immediately
@@ -426,8 +450,16 @@ class Chunk {
             ctx.fillStyle = "#888888";
         }
         else {
-            ctx.strokeStyle = "#000000";
-            ctx.fillStyle = "#000000";
+            switch (buildingID) {
+                case 0x0002:
+                    ctx.fillStyle = "#3366CC";
+                    ctx.strokeStyle = "#3366CC";
+                    break;
+                default:
+                    ctx.fillStyle = "#000000";
+                    ctx.strokeStyle = "#000000";
+                    break;
+            }
         }
         switch (buildingID) {
             case 0x0001:
@@ -553,6 +585,11 @@ class Chunk {
                 rect(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.5, consts.DISPLAY_TILE_SIZE * 0.6, consts.DISPLAY_TILE_SIZE * 0.6, rectMode.CENTER);
                 rect(pixelX + consts.DISPLAY_TILE_SIZE * 0.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.1, consts.DISPLAY_TILE_SIZE * 0.8, consts.DISPLAY_TILE_SIZE * 0.1, rectMode.CORNER);
                 break;
+            case 0x0004:
+                rect(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.5, consts.DISPLAY_TILE_SIZE * 0.8, consts.DISPLAY_TILE_SIZE * 0.8, rectMode.CENTER);
+                ctx.fillStyle = "#FFCC11";
+                rect(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.5, consts.DISPLAY_TILE_SIZE * 0.4, consts.DISPLAY_TILE_SIZE * 0.4, rectMode.CENTER);
+                break;
         }
     }
 }
@@ -669,14 +706,20 @@ class Item {
     display(debug, _ctx) {
         _ctx = _ctx !== null && _ctx !== void 0 ? _ctx : ctx;
         switch (this.id) {
-            case ItemID["base:null"]:
+            case 0 /* base_null */:
                 ctx.fillStyle = "#FF00FF";
                 break;
-            case ItemID["base:coal"]:
+            case 1 /* base_coalOre */:
+                ctx.fillStyle = "#444444";
+                break;
+            case 2 /* base_coal */:
                 ctx.fillStyle = "#000000";
                 break;
-            case ItemID["base:iron"]:
+            case 3 /* base_ironOre */:
                 ctx.fillStyle = "#663300";
+                break;
+            case 4 /* base_ironIngot */:
+                ctx.fillStyle = "#CBCDCD";
                 break;
         }
         _ctx.fillRect((this.x * consts.DISPLAY_SCALE) - 5 + Game.scroll.x, (this.y * consts.DISPLAY_SCALE) - 5 + Game.scroll.y, 10, 10);
@@ -721,16 +764,16 @@ class Miner extends Building {
         }
     }
     spawnItem() {
-        if (this.level.buildingIDAt2(this.x + 1, this.y) % 0x100 == 0x01) {
+        if (this.level.buildingIDAt2(this.x + 1, this.y) % 0x100 == 0x01 && this.level.buildingIDAt2(this.x + 1, this.y) !== 0x0201) {
             this.level.addItem(this.x * consts.TILE_SIZE + consts.TILE_SIZE * 1.1, this.y * consts.TILE_SIZE + consts.TILE_SIZE * 0.5, this.miningItem);
         }
-        else if (this.level.buildingIDAt2(this.x, this.y + 1) % 0x100 == 0x01) {
+        else if (this.level.buildingIDAt2(this.x, this.y + 1) % 0x100 == 0x01 && this.level.buildingIDAt2(this.x, this.y + 1) !== 0x0301) {
             this.level.addItem(this.x * consts.TILE_SIZE + consts.TILE_SIZE * 0.5, this.y * consts.TILE_SIZE + consts.TILE_SIZE * 1.1, this.miningItem);
         }
-        else if (this.level.buildingIDAt2(this.x - 1, this.y) % 0x100 == 0x01) {
+        else if (this.level.buildingIDAt2(this.x - 1, this.y) % 0x100 == 0x01 && this.level.buildingIDAt2(this.x - 1, this.y) !== 0x0001) {
             this.level.addItem(this.x * consts.TILE_SIZE - consts.TILE_SIZE * 0.1, this.y * consts.TILE_SIZE + consts.TILE_SIZE * 0.5, this.miningItem);
         }
-        else if (this.level.buildingIDAt2(this.x, this.y - 1) % 0x100 == 0x01) {
+        else if (this.level.buildingIDAt2(this.x, this.y - 1) % 0x100 == 0x01 && this.level.buildingIDAt2(this.x, this.y - 1) !== 0x0101) {
             this.level.addItem(this.x * consts.TILE_SIZE + consts.TILE_SIZE * 0.5, this.y * consts.TILE_SIZE - consts.TILE_SIZE * 0.1, this.miningItem);
         }
         else {
@@ -739,9 +782,17 @@ class Miner extends Building {
     }
 }
 const oreFor = {
-    0x02: ItemID["base:coal"],
-    0x03: ItemID["base:iron"]
+    0x02: 1 /* base_coalOre */,
+    0x03: 3 /* base_ironOre */
 };
+function smeltFor(item) {
+    switch (item) {
+        case 1 /* base_coalOre */: return 2 /* base_coal */;
+        case 3 /* base_ironOre */: return 4 /* base_ironIngot */;
+    }
+    return null;
+} //but theres no reason to use a function you can just use an object-
+//Typescript said no u
 class TrashCan extends Building {
     update() {
         if (this.level.buildingIDAt2(this.x, this.y) != this.id) {
@@ -753,6 +804,57 @@ class TrashCan extends Building {
                 this.level.items.splice(parseInt(item), 1);
             }
         }
+    }
+}
+class Furnace extends Building {
+    static canBuildAt(tileX, tileY, level) {
+        return level.tileAt2(tileX, tileY) == 0x01 && level.buildingIDAt2(tileX, tileY) !== 0x0004;
+    }
+    update() {
+        if (this.level.buildingIDAt2(this.x, this.y) != this.id) {
+            return this.break();
+        }
+        if (this.timer > 0 && this.processingItem) {
+            this.timer--;
+        }
+        else if (this.timer <= 0 && this.processingItem) {
+            if (this.spawnItem(smeltFor(this.processingItem.id))) {
+                this.timer = 30;
+                this.processingItem = null;
+            }
+        }
+        else if (!this.processingItem) {
+            this.timer = 30;
+            for (var item in this.level.items) {
+                if ((Math.abs(this.level.items[item].x - (this.x * consts.TILE_SIZE + consts.TILE_SIZE / 2)) < consts.TILE_SIZE * 0.6) &&
+                    (Math.abs(this.level.items[item].y - (this.y * consts.TILE_SIZE + consts.TILE_SIZE / 2)) < consts.TILE_SIZE * 0.6) &&
+                    smeltFor(this.level.items[item].id)) {
+                    this.level.items[item].x = (this.x + 0.5) * consts.TILE_SIZE;
+                    this.level.items[item].y = (this.y + 0.5) * consts.TILE_SIZE;
+                    this.processingItem = this.level.items[item];
+                    this.level.items.splice(parseInt(item), 1);
+                    return;
+                }
+            }
+        }
+    }
+    spawnItem(id) {
+        if (this.level.buildingIDAt2(this.x + 1, this.y) % 0x100 == 0x01 && this.level.buildingIDAt2(this.x + 1, this.y) !== 0x0201) {
+            this.level.addItem(this.x * consts.TILE_SIZE + consts.TILE_SIZE * 1.1, this.y * consts.TILE_SIZE + consts.TILE_SIZE * 0.5, id);
+        }
+        else if (this.level.buildingIDAt2(this.x, this.y + 1) % 0x100 == 0x01 && this.level.buildingIDAt2(this.x, this.y + 1) !== 0x0301) {
+            this.level.addItem(this.x * consts.TILE_SIZE + consts.TILE_SIZE * 0.5, this.y * consts.TILE_SIZE + consts.TILE_SIZE * 1.1, id);
+        }
+        else if (this.level.buildingIDAt2(this.x - 1, this.y) % 0x100 == 0x01 && this.level.buildingIDAt2(this.x - 1, this.y) !== 0x0001) {
+            this.level.addItem(this.x * consts.TILE_SIZE - consts.TILE_SIZE * 0.1, this.y * consts.TILE_SIZE + consts.TILE_SIZE * 0.5, id);
+        }
+        else if (this.level.buildingIDAt2(this.x, this.y - 1) % 0x100 == 0x01 && this.level.buildingIDAt2(this.x, this.y - 1) !== 0x0101) {
+            this.level.addItem(this.x * consts.TILE_SIZE + consts.TILE_SIZE * 0.5, this.y * consts.TILE_SIZE - consts.TILE_SIZE * 0.1, id);
+        }
+        else {
+            return false;
+        }
+        return true;
     }
 }
 class Conveyor {

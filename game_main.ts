@@ -36,7 +36,7 @@ level1.buildBuilding(-1, -1, 0x0001);
 level1.writeBuilding(0, -1, 0x0001);
 level1.writeBuilding(1, -1, 0x0101);
 
-level1.addItem(15, 15, ItemID["base:null"]);
+level1.addItem(15, 15, ItemID.base_null);
 const ctx = (document.getElementById("main_canvas") as HTMLCanvasElement).getContext("2d");
 const overlayCtx = (document.getElementById("secondary_canvas") as HTMLCanvasElement).getContext("2d");
 
@@ -46,8 +46,8 @@ function loop(){
 	level1.generateNecessaryChunks();
 	// document.getElementById("item").style.setProperty("--pos-x", level1.items[0].x.toString() + "px");
 	// document.getElementById("item").style.setProperty("--pos-y", level1.items[0].y.toString() + "px");
-	ctx.clearRect(0, 0, 1200, 1200);
-	overlayCtx.clearRect(0, 0, 1200, 1200);
+	ctx.clearRect(0, 0, innerWidth, innerHeight);
+	overlayCtx.clearRect(0, 0, innerWidth, innerHeight);
 	// ctx.strokeRect(300, 300, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
 	// ctx.strokeRect(300, 300 + consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
 	// ctx.strokeRect(300 + consts.DISPLAY_TILE_SIZE, 300, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
@@ -84,7 +84,7 @@ function loop(){
 let placedBuildingID:BuildingID = 0x0001;
 let handleMouseDown = (e:MouseEvent) => {
 	if(e.ctrlKey){
-		level1.addItem(e.x - Game.scroll.x, e.y - Game.scroll.y, ItemID["base:iron"]);
+		level1.addItem(e.x - Game.scroll.x, e.y - Game.scroll.y, ItemID.base_null);
 	} else {
 		level1.buildBuilding(Math.floor((e.x - Game.scroll.x) / consts.DISPLAY_TILE_SIZE), Math.floor((e.y - Game.scroll.y) / consts.DISPLAY_TILE_SIZE), placedBuildingID);
 	}
@@ -106,10 +106,17 @@ window.onkeypress = (e:KeyboardEvent) => {
 			placedBuildingID = 0x0002; break;
 		case "3":
 			placedBuildingID = 0x0003; break;
+		case "4":
+			placedBuildingID = 0x0004; break;
 		case "0":
 			placedBuildingID = 0xFFFF; break;		
 	}
 }
+
+(document.getElementById("main_canvas") as HTMLCanvasElement).width = innerWidth;
+(document.getElementById("main_canvas") as HTMLCanvasElement).height = innerHeight;
+(document.getElementById("secondary_canvas") as HTMLCanvasElement).width = innerWidth;
+(document.getElementById("secondary_canvas") as HTMLCanvasElement).height = innerHeight;
 
 loop();
 //setInterval(loop, 1000/30);
