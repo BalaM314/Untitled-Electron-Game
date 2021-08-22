@@ -142,13 +142,16 @@ function ellipse(x, y, w, h){
 /**
  * Game-related functions
  */
-
-
-function loadTextures (){
+let alerts = [];
+function _alert(x){
+	alerts.push(x);
+}
+function loadTextures(){
 	for(var element of document.getElementById("textures").children){
 		textures.set(element.id, element);
 	}
 };
+
 
 function zoom(scaleFactor){
 	scaleFactor = constrain(scaleFactor, 0.9, 1.1);
