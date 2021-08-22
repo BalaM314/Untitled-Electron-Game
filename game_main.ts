@@ -88,7 +88,17 @@ function load(){
 	ctx.fillStyle = "#000000";
 	ctx.fillText("Loading...", innerWidth / 2, innerHeight / 2);
 	loadTextures();
-	setTimeout(loop, 100);
+	setTimeout(checkload, 100);
+}
+
+let loadedtextures = 0;
+
+function checkload(){
+	if(loadedtextures == document.getElementById("textures").children.length){
+		loop();
+	} else {
+		setTimeout(checkload, 100);
+	}
 }
 
 let placedBuildingID:BuildingID = 0x0001;
