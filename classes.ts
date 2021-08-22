@@ -276,7 +276,7 @@ class Level extends ChunkedDataStorage {
 				}
 				tempBuilding = new Furnace(tileX, tileY, 0x0004, this);//typecsript go brrrrr
 				if(Game.tutorial.furnace.placedcorrectly){
-					_alert("The Furnace converts raw ores into their smelted forms. Simply point a conveyor belt carrying ores at it and provide another belt for it to output onto.");
+					_alert("The Furnace converts raw ores into their smelted forms. Simply point a conveyor belt carrying ores at it and \n>provide another belt<\m for it to output onto.");
 					Game.tutorial.furnace.placedcorrectly = false;
 				}
 			break;
@@ -297,7 +297,7 @@ class Level extends ChunkedDataStorage {
 				};
 				tempBuilding = new Miner(tileX, tileY, 0x0002, this);//typescript go brrrrr
 				if(Game.tutorial.miner.placedcorrectly){
-					_alert("🎉🎉\nThe Miner mines ore nodes, producing two ore per second. It auto-outputs to adjacent conveyor belts. Also, ore nodes are infinite.\nBe warned, the miner will continue producing ore forever, which could lead to lag.");
+					_alert("🎉🎉\nThe Miner mines ore nodes, producing one ore per second. \n>It auto-outputs to adjacent conveyor belts.<\nAlso, ore nodes are infinite.\nBe warned, the miner will continue producing ore forever, which could lead to lag.");
 					Game.tutorial.miner.placedcorrectly = false;
 				}
 			break;
@@ -310,7 +310,7 @@ class Level extends ChunkedDataStorage {
 					return;
 				}
 				if(Game.tutorial.conveyor.placedcorrectly){
-					_alert("Conveyors are the way to move items around. If it isn't obvious, they can be chained. \nYou can use the arrow keys to change the direction of placed belts. \nThey're also the way to put items in machines.\nSpeaking of which, let's try automating coal: Place a Miner(2 key).");
+					_alert("Conveyors are the way to move items around. If it isn't obvious, they can be chained. \nYou can use the arrow keys to change the direction of placed belts. \nTry making a belt chain, then putting a debug item on it with Ctrl+click.");
 					Game.tutorial.conveyor.placedcorrectly = false;
 				}
 				return this.writeBuilding(tileX, tileY, this.getTurnedConveyor(tileX, tileY, building >> 8));
@@ -337,7 +337,9 @@ class Level extends ChunkedDataStorage {
 	}
 }
 
-interface Chunk {
+
+
+class Chunk {
 	layers: [
 		Tile[][],
 		BuildingID[][],
@@ -347,10 +349,6 @@ interface Chunk {
 	x: number;
 	y: number;
 	isWet: boolean;
-}
-
-
-class Chunk {
 	constructor(x:number, y:number, seed:number){
 		this.x = x;
 		this.y = y;
@@ -685,20 +683,29 @@ class Chunk {
 	}
 }
 
-interface Item {
+
+class Item {
 	id: string;
 	x: number;
 	y: number;
 	level: Level;
-}
-class Item {
+	startY: number | undefined;
+	startX: number | undefined;
 	constructor(x:number, y:number, id:string, level:Level){
 		this.id = id;
 		this.x = x;
 		this.y = y;
 		this.level = level;
+		if(this.id == ItemID.base_null){
+			this.startX = x;
+			this.startY = y;
+		}
 	}
 	update(){
+		if(Game.tutorial.conveyor.beltchain && ((Math.abs(this.startX - this.x) + 1 > consts.TILE_SIZE * 2) || (Math.abs(this.startY - this.y) + 1 > consts.TILE_SIZE * 2))){
+			_alert("Nice!\nConveyor belts are also the way to put items in machines.\nSpeaking of which, let's try automating coal: Place a Miner(2 key).");
+			Game.tutorial.conveyor.beltchain = false;
+		}
 		if(this.level.buildingIDAt(this.x, this.y) % 0x100 == 0x01){//this is basically bit math that says "is the last byte == 01". In other words, "Is this item on a conveyor?"
 			switch(this.level.buildingIDAt(this.x, this.y) >> 8){//bit masks ftw, this just grabs the first byte
 				//yes I know there's no need to write the ids in hex but why the heck not
@@ -853,11 +860,19 @@ class Building {
 		} else {
 			return false;
 		}
-		if(id == ItemID.base_coal){
+		if(id == ItemID.base_coal && Game.tutorial.item.coal){
 			_alert("Congratulations! You just automated coal!");
+			Game.tutorial.item.coal = false;
 			setTimeout(() => {
 				_alert("Try doing the same thing for iron: Iron nodes are whiteish and are a bit further from the center of the map.\nUse WASD to scroll.");
 			}, 3000);
+		}
+		if(id == ItemID.base_ironIngot && Game.tutorial.item.iron){
+			_alert("Nice job!\nWell, that's all the content this game has to offer right now. I would tell you to automate steel, but it doesn't exist yet.\nThis game is currently in alpha, check back later for more updates!");
+			Game.tutorial.item.iron = false;
+			setTimeout(() => {
+				_alert("Oh, also, you technically beat the game. Just saying.");
+			}, 1000);
 		}
 		return true;
 	}
@@ -888,7 +903,7 @@ interface Miner {
 class Miner extends Building {
 	constructor(tileX:number, tileY:number, id:BuildingID, level:Level){
 		super(tileX, tileY, id, level);
-		this.timer = 30;
+		this.timer = 61;
 		this.itemBuffer = 0;
 		this.miningItem = oreFor[level.tileAt2(tileX, tileY)];
 	}
@@ -902,10 +917,10 @@ class Miner extends Building {
 		if(this.timer > 0){
 			this.timer --;
 		} else {
-			this.timer = 30;
+			this.timer = 61;
 			if(this.spawnItem(this.miningItem)){
 				if(Game.tutorial.miner.firstoutput){
-					_alert("Nice!\nThis is just coal ore though, not coal. Try placing a furnace(4 key).");
+					_alert("Nice!\nThis is just coal ore though, not coal. Try placing a furnace(4 key).\nOh also, remember you can scroll to zoom in on that sweet coal ore texture.");
 					Game.tutorial.miner.firstoutput = false;
 				}
 			};

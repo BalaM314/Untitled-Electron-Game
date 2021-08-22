@@ -10,6 +10,7 @@ let Game = {
     tutorial: {
         conveyor: {
             placedcorrectly: true,
+            beltchain: true,
             cantbeplacedonwater: true
         },
         miner: {
@@ -23,6 +24,10 @@ let Game = {
         furnace: {
             cantbeplacedongrass: true,
             placedcorrectly: true
+        },
+        item: {
+            coal: true,
+            iron: true
         }
     }
 };
@@ -153,14 +158,14 @@ let handleMouseDown = (e) => {
                         alert(`
 Welcome to Untitled Electron Game!
 This is a game about... well I don't really know, but it has items, conveyor belts, and machines. Guess you could call it a factory game?
-Click to place a building.
-Use 1-4 to choose the type of building.
-Use arrow keys to change the direction of placed belts
-Ctrl+click to place an item.(For debug)
-Use WASD to scroll.
 
 For now there's no real goal, but I suggest you automate iron and coal production.
-To get started, place a conveyor belt.
+>To get started, place a conveyor belt.<
+
+Controls:
+Click to place a building.
+Use 1-4 to choose the type of building.
+Use WASD to move around the map and mouse wheel to zoom.
 						`);
                     }, 500);
                 }
