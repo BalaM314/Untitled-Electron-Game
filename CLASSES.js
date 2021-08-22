@@ -722,104 +722,6 @@ class Building {
     break() {
         this.level.buildings.splice(this.level.buildings.indexOf(this), 1);
     }
-}
-class Miner extends Building {
-    constructor(tileX, tileY, id, level) {
-        super(tileX, tileY, id, level);
-        this.timer = 30;
-        this.itemBuffer = 0;
-        this.miningItem = oreFor[level.tileAt2(tileX, tileY)];
-    }
-    static canBuildAt(tileX, tileY, level) {
-        return (level.tileAt2(tileX, tileY) == 0x02 || level.tileAt2(tileX, tileY) == 0x03) && level.buildingIDAt2(tileX, tileY) != 0x0002;
-    }
-    update() {
-        if (this.level.buildingIDAt2(this.x, this.y) != this.id) {
-            return this.break();
-        }
-        if (this.timer > 0) {
-            this.timer--;
-        }
-        else {
-            this.timer = 30;
-            this.spawnItem();
-        }
-    }
-    spawnItem() {
-        if (this.level.buildingIDAt2(this.x + 1, this.y) % 0x100 == 0x01 && this.level.buildingIDAt2(this.x + 1, this.y) !== 0x0201) {
-            this.level.addItem(this.x * consts.TILE_SIZE + consts.TILE_SIZE * 1.1, this.y * consts.TILE_SIZE + consts.TILE_SIZE * 0.5, this.miningItem);
-        }
-        else if (this.level.buildingIDAt2(this.x, this.y + 1) % 0x100 == 0x01 && this.level.buildingIDAt2(this.x, this.y + 1) !== 0x0301) {
-            this.level.addItem(this.x * consts.TILE_SIZE + consts.TILE_SIZE * 0.5, this.y * consts.TILE_SIZE + consts.TILE_SIZE * 1.1, this.miningItem);
-        }
-        else if (this.level.buildingIDAt2(this.x - 1, this.y) % 0x100 == 0x01 && this.level.buildingIDAt2(this.x - 1, this.y) !== 0x0001) {
-            this.level.addItem(this.x * consts.TILE_SIZE - consts.TILE_SIZE * 0.1, this.y * consts.TILE_SIZE + consts.TILE_SIZE * 0.5, this.miningItem);
-        }
-        else if (this.level.buildingIDAt2(this.x, this.y - 1) % 0x100 == 0x01 && this.level.buildingIDAt2(this.x, this.y - 1) !== 0x0101) {
-            this.level.addItem(this.x * consts.TILE_SIZE + consts.TILE_SIZE * 0.5, this.y * consts.TILE_SIZE - consts.TILE_SIZE * 0.1, this.miningItem);
-        }
-        else {
-            this.itemBuffer++;
-        }
-    }
-}
-const oreFor = {
-    0x02: ItemID.base_coalOre,
-    0x03: ItemID.base_ironOre
-};
-function smeltFor(item) {
-    switch (item) {
-        case ItemID.base_coalOre: return ItemID.base_coal;
-        case ItemID.base_ironOre: return ItemID.base_ironIngot;
-    }
-    return null;
-} //but theres no reason to use a function you can just use an object-
-//Typescript said no u
-class TrashCan extends Building {
-    update() {
-        if (this.level.buildingIDAt2(this.x, this.y) != this.id) {
-            return this.break();
-        }
-        for (var item in this.level.items) {
-            if ((Math.abs(this.level.items[item].x - (this.x * consts.TILE_SIZE + consts.TILE_SIZE / 2)) < consts.TILE_SIZE * 0.6) &&
-                (Math.abs(this.level.items[item].y - (this.y * consts.TILE_SIZE + consts.TILE_SIZE / 2)) < consts.TILE_SIZE * 0.6)) {
-                this.level.items.splice(parseInt(item), 1);
-            }
-        }
-    }
-}
-class Furnace extends Building {
-    static canBuildAt(tileX, tileY, level) {
-        return level.tileAt2(tileX, tileY) == 0x01 && level.buildingIDAt2(tileX, tileY) !== 0x0004;
-    }
-    update() {
-        if (this.level.buildingIDAt2(this.x, this.y) != this.id) {
-            return this.break();
-        }
-        if (this.timer > 0 && this.processingItem) {
-            this.timer--;
-        }
-        else if (this.timer <= 0 && this.processingItem) {
-            if (this.spawnItem(smeltFor(this.processingItem.id))) {
-                this.timer = 30;
-                this.processingItem = null;
-            }
-        }
-        else if (!this.processingItem) {
-            this.timer = 29;
-            for (var item in this.level.items) {
-                if ((Math.abs(this.level.items[item].x - (this.x * consts.TILE_SIZE + consts.TILE_SIZE / 2)) < consts.TILE_SIZE * 0.6) &&
-                    (Math.abs(this.level.items[item].y - (this.y * consts.TILE_SIZE + consts.TILE_SIZE / 2)) < consts.TILE_SIZE * 0.6) &&
-                    smeltFor(this.level.items[item].id)) {
-                    this.level.items[item].x = (this.x + 0.5) * consts.TILE_SIZE;
-                    this.level.items[item].y = (this.y + 0.5) * consts.TILE_SIZE;
-                    this.processingItem = this.level.items[item];
-                    this.level.items.splice(parseInt(item), 1);
-                    return;
-                }
-            }
-        }
-    }
     spawnItem(id) {
         if (this.level.buildingIDAt2(this.x + 1, this.y) % 0x100 == 0x01 &&
             this.level.buildingIDAt2(this.x + 1, this.y) !== 0x0201 &&
@@ -849,6 +751,109 @@ class Furnace extends Building {
             return false;
         }
         return true;
+    }
+    grabItem(filter, callback, remove) {
+        for (var item in this.level.items) {
+            if ((Math.abs(this.level.items[item].x - (this.x * consts.TILE_SIZE + consts.TILE_SIZE / 2)) < consts.TILE_SIZE * 0.6) &&
+                (Math.abs(this.level.items[item].y - (this.y * consts.TILE_SIZE + consts.TILE_SIZE / 2)) < consts.TILE_SIZE * 0.6) &&
+                filter(this.level.items[item])) {
+                callback(this.level.items[item]);
+                if (remove) {
+                    this.level.items.splice(parseInt(item), 1);
+                }
+                return;
+            }
+        }
+    }
+}
+class Miner extends Building {
+    constructor(tileX, tileY, id, level) {
+        super(tileX, tileY, id, level);
+        this.timer = 30;
+        this.itemBuffer = 0;
+        this.miningItem = oreFor[level.tileAt2(tileX, tileY)];
+    }
+    static canBuildAt(tileX, tileY, level) {
+        return (level.tileAt2(tileX, tileY) == 0x02 || level.tileAt2(tileX, tileY) == 0x03) && level.buildingIDAt2(tileX, tileY) != 0x0002;
+    }
+    update() {
+        if (this.level.buildingIDAt2(this.x, this.y) != this.id) {
+            return this.break();
+        }
+        if (this.timer > 0) {
+            this.timer--;
+        }
+        else {
+            this.timer = 30;
+            this.spawnItem(this.miningItem);
+        }
+    }
+}
+const oreFor = {
+    0x02: ItemID.base_coalOre,
+    0x03: ItemID.base_ironOre
+};
+function smeltFor(item) {
+    switch (item) {
+        case ItemID.base_coalOre: return ItemID.base_coal;
+        case ItemID.base_ironOre: return ItemID.base_ironIngot;
+    }
+    return null;
+} //but theres no reason to use a function you can just use an object-
+//Typescript said no u
+class TrashCan extends Building {
+    update() {
+        if (this.level.buildingIDAt2(this.x, this.y) != this.id) {
+            return this.break();
+        }
+        for (var item in this.level.items) {
+            if ((Math.abs(this.level.items[item].x - (this.x * consts.TILE_SIZE + consts.TILE_SIZE / 2)) < consts.TILE_SIZE * 0.6) &&
+                (Math.abs(this.level.items[item].y - (this.y * consts.TILE_SIZE + consts.TILE_SIZE / 2)) < consts.TILE_SIZE * 0.6)) {
+                this.level.items.splice(parseInt(item), 1);
+            }
+        }
+    }
+}
+class Furnace extends Building {
+    constructor(tileX, tileY, id, level) {
+        super(tileX, tileY, id, level);
+        this.timer = 29;
+    }
+    static canBuildAt(tileX, tileY, level) {
+        return level.tileAt2(tileX, tileY) == 0x01 && level.buildingIDAt2(tileX, tileY) !== 0x0004;
+    }
+    update() {
+        if (this.level.buildingIDAt2(this.x, this.y) != this.id) {
+            return this.break();
+        }
+        if (this.timer > 0 && this.processingItem) {
+            this.timer--;
+        }
+        else if (this.timer <= 0 && this.processingItem) {
+            if (this.spawnItem(smeltFor(this.processingItem.id))) {
+                this.timer = 30;
+                this.processingItem = null;
+            }
+        }
+        else if (!this.processingItem) {
+            this.grabItem(smeltFor, (item) => {
+                debugger;
+                this.processingItem = item;
+            }, true);
+            // for(var item in this.level.items){
+            // 	if(
+            // 		(Math.abs(this.level.items[item].x - (this.x * consts.TILE_SIZE + consts.TILE_SIZE / 2)) < consts.TILE_SIZE * 0.6) &&
+            // 		(Math.abs(this.level.items[item].y - (this.y * consts.TILE_SIZE + consts.TILE_SIZE / 2)) < consts.TILE_SIZE * 0.6) &&
+            // 		smeltFor(this.level.items[item].id)
+            // 	){
+            // 		this.level.items[item].x = (this.x + 0.5) * consts.TILE_SIZE;
+            // 		this.level.items[item].y = (this.y + 0.5) * consts.TILE_SIZE;
+            // 		this.processingItem = this.level.items[item];
+            // 		this.level.items.splice(parseInt(item), 1);
+            // 		return;
+            // 	}
+            // }
+        }
     }
 }
 class Conveyor {
