@@ -7,6 +7,9 @@ let Game = {
         x: 300,
         y: 300
     },
+    persistent: {
+        tutorialenabled: true
+    },
     tutorial: {
         conveyor: {
             placedcorrectly: true,
@@ -32,14 +35,24 @@ let Game = {
     }
 };
 var GAME_STATE = "title";
-const ctx = document.getElementById("main_canvas").getContext("2d");
+const ctx = document.getElementById("layer1_canvas").getContext("2d");
+const ctx2 = document.getElementById("layer2_canvas").getContext("2d");
 const overlayCtx = document.getElementById("secondary_canvas").getContext("2d");
 let level1 = new Level(3141);
 level1.generateNecessaryChunks();
+let fps = [0, 0, 0, 0, 0, 0];
 function runLevel(level) {
     let startFrameTime = new Date();
-    document.getElementById("main_canvas").width = innerWidth;
-    document.getElementById("main_canvas").height = innerHeight;
+    let currentFrame = {
+        tooltip: true,
+        debug: settings.debug,
+        cps: 0,
+        chunktime: []
+    };
+    document.getElementById("layer1_canvas").width = innerWidth;
+    document.getElementById("layer1_canvas").height = innerHeight;
+    document.getElementById("layer2_canvas").width = innerWidth;
+    document.getElementById("layer2_canvas").height = innerHeight;
     document.getElementById("secondary_canvas").width = innerWidth;
     document.getElementById("secondary_canvas").height = innerHeight;
     level.generateNecessaryChunks();
@@ -47,13 +60,21 @@ function runLevel(level) {
     //display
     ctx.clearRect(0, 0, innerWidth, innerHeight);
     overlayCtx.clearRect(0, 0, innerWidth, innerHeight);
-    level.display(settings.debug);
+    level.display(currentFrame);
     level.displayGhostBuilding((mouseX - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE, (mouseY - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE, placedBuildingID);
+    if (keysPressed.indexOf("Shift") != -1) {
+        level.displayTooltip(mouseX, mouseY, currentFrame);
+    }
     //display overlays
     overlayCtx.font = "30px sans-serif";
+    overlayCtx.fillStyle = "#000000";
     overlayCtx.fillText((Math.round(-(Game.scroll.x * consts.DISPLAY_SCALE) / consts.DISPLAY_TILE_SIZE).toString() + ", " + Math.round(-(Game.scroll.y * consts.DISPLAY_SCALE) / consts.DISPLAY_TILE_SIZE).toString()), 10, 100);
     let frameMS = (new Date()).getTime() - startFrameTime.getTime();
-    overlayCtx.fillText(Math.round(constrain(1000 / frameMS, 0, 60)) + " fps", 10, 50);
+    fps.splice(0, 1);
+    fps.push(frameMS);
+    let avgFPS = Math.round(constrain(5000 / (fps[0] + fps[1] + fps[2] + fps[3] + fps[4]), 0, 60));
+    overlayCtx.fillText(avgFPS + " fps", 10, 50);
+    overlayCtx.fillText("C: " + currentFrame.chunktime[0], 10, 150);
 }
 function handleKeysPressed() {
     if (keysPressed.indexOf("w") != -1) {
@@ -71,8 +92,10 @@ function handleKeysPressed() {
 }
 function main_loop() {
     try {
-        document.getElementById("main_canvas").width = innerWidth;
-        document.getElementById("main_canvas").height = innerHeight;
+        document.getElementById("layer1_canvas").width = innerWidth;
+        document.getElementById("layer1_canvas").width = innerWidth;
+        document.getElementById("layer2_canvas").height = innerHeight;
+        document.getElementById("layer2_canvas").height = innerHeight;
         document.getElementById("secondary_canvas").width = innerWidth;
         document.getElementById("secondary_canvas").height = innerHeight;
         switch (GAME_STATE) {
@@ -108,7 +131,7 @@ function main_loop() {
     }
 }
 function runTitle() {
-    ctx.fillStyle = "#0033FF";
+    ctx.fillStyle = "#0033CC";
     ctx.fillRect(0, 0, innerWidth, innerHeight);
     ctx.font = "70px sans-serif";
     ctx.textAlign = "center";
@@ -130,7 +153,7 @@ function runTitle() {
     ctx.fillText("Settings", innerWidth / 2, innerHeight * 0.85);
 }
 function runSettings() {
-    ctx.fillStyle = "#0033FF";
+    ctx.fillStyle = "#0033CC";
     ctx.fillRect(0, 0, innerWidth, innerHeight);
     ctx.font = "70px sans-serif";
     ctx.textAlign = "center";
@@ -142,11 +165,20 @@ function runSettings() {
     ctx.fillStyle = "#FF0000";
     ctx.font = "50px sans-serif";
     ctx.fillText("❌", innerWidth * 0.945, innerHeight * 0.055);
+    ctx.strokeRect(innerWidth * 0.25, innerHeight * 0.5, innerWidth * 0.25, innerHeight * 0.2);
+    ctx.strokeRect(innerWidth * 0.51, innerHeight * 0.5, innerWidth * 0.25, innerHeight * 0.2);
+    ctx.fillStyle = "#0000FF";
+    rect(innerWidth * 0.25, innerHeight * 0.5, innerWidth * 0.25, innerHeight * 0.2, rectMode.CORNER);
+    rect(innerWidth * 0.51, innerHeight * 0.5, innerWidth * 0.25, innerHeight * 0.2, rectMode.CORNER);
+    ctx.fillStyle = "#FFFFFF";
+    ctx.fillText("Tutorial: " + Game.persistent.tutorialenabled, innerWidth * 0.375, innerHeight * 0.6);
+    ctx.fillText("Place Holder", innerWidth * 0.625, innerHeight * 0.6);
 }
 ;
 function load() {
     GAME_STATE = "game";
-    //possibly display an eror here?
+    //possibly display an eror here if the textures haven't loaded?
+    document.getElementById("toolbar").classList.remove("hidden");
     loadTextures();
     checkload();
 }
@@ -164,7 +196,7 @@ let handleMouseDown = (e) => {
     switch (GAME_STATE) {
         case "game":
             if (e.ctrlKey) {
-                level1.addItem((e.x / consts.DISPLAY_SCALE) - (Game.scroll.x * consts.DISPLAY_SCALE), (e.y / consts.DISPLAY_SCALE) - (Game.scroll.y * consts.DISPLAY_SCALE), ItemID.base_null);
+                level1.addItem((e.x - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_SCALE, (e.y - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_SCALE, ItemID.base_null);
                 mouseIsPressed = false;
             }
             else {
@@ -176,8 +208,9 @@ let handleMouseDown = (e) => {
                 if (e.y > innerHeight / 2 && e.y < innerHeight * 0.7) {
                     mouseIsPressed = false;
                     load();
-                    setTimeout(() => {
-                        alert(`
+                    if (Game.persistent.tutorialenabled) {
+                        setTimeout(() => {
+                            alert(`
 Welcome to Untitled Electron Game!
 This is a game about... well I don't really know, but it has items, conveyor belts, and machines. Guess you could call it a factory game?
 
@@ -189,7 +222,8 @@ Click to place a building.
 Use 1-4 to choose the type of building.
 Use WASD to move around the map and mouse wheel to zoom.
 						`);
-                    }, 500);
+                        }, 500);
+                    }
                 }
                 if (e.y > innerHeight * 0.75 && e.y < innerHeight * 0.95) {
                     GAME_STATE = "settings";
@@ -198,7 +232,12 @@ Use WASD to move around the map and mouse wheel to zoom.
             break;
         case "settings":
             if (e.y < innerHeight * 0.1 && e.y > innerHeight * 0.01 && e.x > innerWidth * 0.9 && e.x < innerWidth * 0.99) {
+                localStorage.setItem("persistentStorage", JSON.stringify(Game.persistent));
                 GAME_STATE = "title";
+            }
+            if (e.y > innerHeight * 0.5 && e.y < innerHeight * 0.7 && e.x > innerWidth * 0.25 && e.x < innerWidth * 0.51) {
+                Game.persistent.tutorialenabled = !Game.persistent.tutorialenabled;
+                mouseIsPressed = false;
             }
             break;
     }
@@ -217,6 +256,9 @@ window.onkeypress = (e) => {
         case "ArrowUp":
             placedBuildingID = 0x0301;
             break;
+        case "1":
+            placedBuildingID = 0x0001;
+            break;
         case "2":
             placedBuildingID = 0x0002;
             break;
@@ -230,5 +272,19 @@ window.onkeypress = (e) => {
             placedBuildingID = 0xFFFF;
             break;
     }
+    if (parseInt(e.key)) {
+        for (var x of document.getElementById("toolbar").children) {
+            x.classList.remove("selected");
+        }
+        document.getElementById("toolbar").children[parseInt(e.key) - 1].classList.add("selected");
+    }
 };
+try {
+    assert(localStorage.getItem("persistentStorage"));
+    Game.persistent = JSON.parse(localStorage.getItem("persistentStorage"));
+}
+catch (err) {
+    console.warn("Invalid persistent settings!\nIf this is your first time visiting this site, nothing to worry about.");
+    localStorage.setItem("persistentStorage", "{\"tutorialenabled\": true}");
+}
 main_loop();

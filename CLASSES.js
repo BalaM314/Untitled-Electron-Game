@@ -1,4 +1,26 @@
 let textures = new Map();
+const names = {
+    tile: {
+        0x00: "Grass",
+        0x01: "Stone",
+        0x02: "Coal Ore Node",
+        0x03: "Iron Ore Node",
+        0x04: "Water"
+    },
+    building: {
+        0x01: "Conveyor Belt",
+        0x02: "Miner",
+        0x03: "Trash Can",
+        0x04: "Furnace"
+    },
+    item: {
+        "base_null": "Debug Item",
+        "base_coalOre": "Coal Ore",
+        "base_coal": "Coal",
+        "base_ironOre": "Iron Ore",
+        "base_ironIngot": "Iron Ingot"
+    }
+};
 const ItemID = {
     "base_null": "base_null",
     "base_coalOre": "base_coalOre",
@@ -231,28 +253,28 @@ class Level extends ChunkedDataStorage {
         switch (building) {
             case 0x0004:
                 if (!Furnace.canBuildAt(tileX, tileY, this)) {
-                    if (Game.tutorial.furnace.cantbeplacedongrass) {
+                    if (Game.tutorial.furnace.cantbeplacedongrass && Game.persistent.tutorialenabled) {
                         _alert("The Furnace generates a lot of heat and is pretty heavy, so you can only place it on stone.");
                         Game.tutorial.furnace.cantbeplacedongrass = false;
                     }
                     return;
                 }
                 tempBuilding = new Furnace(tileX, tileY, 0x0004, this); //typecsript go brrrrr
-                if (Game.tutorial.furnace.placedcorrectly) {
+                if (Game.tutorial.furnace.placedcorrectly && Game.persistent.tutorialenabled) {
                     _alert("The Furnace converts raw ores into their smelted forms. Simply point a conveyor belt carrying ores at it and \n>provide another belt<\m for it to output onto.");
                     Game.tutorial.furnace.placedcorrectly = false;
                 }
                 break;
             case 0x0003:
                 tempBuilding = new TrashCan(tileX, tileY, 0x0003, this); //typescript go brrrrr
-                if (Game.tutorial.trashcan.placedcorrectly) {
+                if (Game.tutorial.trashcan.placedcorrectly && Game.persistent.tutorialenabled) {
                     _alert("The Trash Can is pretty simple: it deletes all items it receives.");
                     Game.tutorial.trashcan.placedcorrectly = false;
                 }
                 break;
             case 0x0002:
                 if (!Miner.canBuildAt(tileX, tileY, this)) {
-                    if (Game.tutorial.miner.cantbeplacedongrass) {
+                    if (Game.tutorial.miner.cantbeplacedongrass && Game.persistent.tutorialenabled) {
                         _alert("The Miner can only be placed on a resource node.");
                         Game.tutorial.miner.cantbeplacedongrass = false;
                     }
@@ -260,7 +282,7 @@ class Level extends ChunkedDataStorage {
                 }
                 ;
                 tempBuilding = new Miner(tileX, tileY, 0x0002, this); //typescript go brrrrr
-                if (Game.tutorial.miner.placedcorrectly) {
+                if (Game.tutorial.miner.placedcorrectly && Game.persistent.tutorialenabled) {
                     _alert("🎉🎉\nThe Miner mines ore nodes, producing one ore per second. \n>It auto-outputs to adjacent conveyor belts.<\nAlso, ore nodes are infinite.\nBe warned, the miner will continue producing ore forever, which could lead to lag.");
                     Game.tutorial.miner.placedcorrectly = false;
                 }
@@ -277,13 +299,13 @@ class Level extends ChunkedDataStorage {
             case 0x0901:
             case 0x0A01:
                 if (!Conveyor.canBuildAt(tileX, tileY, this)) {
-                    if (Game.tutorial.conveyor.cantbeplacedonwater) {
+                    if (Game.tutorial.conveyor.cantbeplacedonwater && Game.persistent.tutorialenabled) {
                         _alert("Conveyors don't float!\nYes, I know, then water chunks are useless... I'll add pontoons in a future update.");
                         Game.tutorial.conveyor.cantbeplacedonwater = false;
                     }
                     return;
                 }
-                if (Game.tutorial.conveyor.placedcorrectly) {
+                if (Game.tutorial.conveyor.placedcorrectly && Game.persistent.tutorialenabled) {
                     _alert("Conveyors are the way to move items around. If it isn't obvious, they can be chained. \nYou can use the arrow keys to change the direction of placed belts. \nTry making a belt chain, then putting a debug item on it with Ctrl+click.");
                     Game.tutorial.conveyor.placedcorrectly = false;
                 }
@@ -297,15 +319,40 @@ class Level extends ChunkedDataStorage {
         this.getChunk(tileX, tileY).setBuilding(tileToChunk(tileX), tileToChunk(tileY), tempBuilding.id);
         return true;
     }
-    display(debug, _ctx) {
-        _ctx = _ctx ?? ctx;
-        //Currently we will just display every chunk that exists. Obviously this is not sustainable.
-        for (var chunk of this.storage.values()) {
-            chunk.display(debug);
-        }
+    display(currentframe) {
         for (let item of this.items) {
-            item.display(debug);
+            item.display(currentframe);
         }
+        //Insta returns in the display method if offscreen.
+        for (var chunk of this.storage.values()) {
+            chunk.display(currentframe);
+        }
+    }
+    displayTooltip(mousex, mousey, currentframe) {
+        if (!currentframe.tooltip) {
+            return;
+        }
+        var x = (mousex - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_SCALE;
+        var y = (mousey - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_SCALE;
+        overlayCtx.font = "16px monospace";
+        if (this.buildingIDAt(x, y) !== 0xFFFF) {
+            let buildingID = this.buildingIDAt(x, y) % 0x100;
+            overlayCtx.fillStyle = "#0033CC";
+            overlayCtx.fillRect(mousex, mousey, names.building[buildingID].length * 10, 16);
+            overlayCtx.strokeStyle = "#000000";
+            overlayCtx.strokeRect(mousex, mousey, names.building[buildingID].length * 10, 16);
+            overlayCtx.fillStyle = "#FFFFFF";
+            overlayCtx.fillText(names.building[buildingID], mousex + 2, mousey + 10);
+            return;
+        }
+        let tileID = this.tileAt(x, y);
+        overlayCtx.fillStyle = "#0033CC";
+        overlayCtx.fillRect(mousex, mousey, names.tile[tileID].length * 10, 16);
+        overlayCtx.strokeStyle = "#000000";
+        overlayCtx.strokeRect(mousex, mousey, names.tile[tileID].length * 10, 16);
+        overlayCtx.fillStyle = "#FFFFFF";
+        overlayCtx.fillText(names.tile[tileID], mousex + 2, mousey + 10);
+        return;
     }
 }
 class Chunk {
@@ -406,24 +453,25 @@ class Chunk {
         console.log(`%c Base layer of chunk [${this.x},${this.y}]`, `font-weight: bold;`);
         console.table(this.layers[0]);
     }
-    display(debug) {
+    display(currentframe) {
         if ((Game.scroll.x * consts.DISPLAY_SCALE) + this.x * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE > window.innerWidth + 1 ||
             (Game.scroll.x * consts.DISPLAY_SCALE) + this.x * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE < -1 - consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE ||
             (Game.scroll.y * consts.DISPLAY_SCALE) + this.y * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE > window.innerHeight + 1 ||
             (Game.scroll.y * consts.DISPLAY_SCALE) + this.y * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE < -1 - consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE) {
             return false;
         } //if offscreen return immediately
-        for (var y in this.layers[0]) {
-            for (var x in this.layers[0][y]) {
-                this.displayTile(parseInt(x), parseInt(y));
+        currentframe.cps++;
+        for (let y = 0; y < this.layers[0].length; y++) {
+            for (let x = 0; x < this.layers[0][y].length; x++) {
+                this.displayTile(x, y);
             }
         }
-        for (var y in this.layers[0]) {
-            for (var x in this.layers[0][y]) {
-                this.displayBuilding(parseInt(x), parseInt(y), this.buildingAt(tileToChunk(parseInt(x)), tileToChunk(parseInt(y))));
+        for (let y = 0; y < this.layers[0].length; y++) {
+            for (let x = 0; x < this.layers[0][y].length; x++) {
+                this.displayBuilding(x, y, this.buildingAt(tileToChunk(x), tileToChunk(x)));
             }
         }
-        if (debug) {
+        if (currentframe.debug) {
             overlayCtx.strokeStyle = "#0000FF";
             overlayCtx.strokeRect(this.x * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE + (Game.scroll.x * consts.DISPLAY_SCALE), this.y * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE + (Game.scroll.y * consts.DISPLAY_SCALE), consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE, consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE);
             overlayCtx.font = "40px sans-serif";
@@ -646,7 +694,7 @@ class Item {
         }
     }
     update() {
-        if (Game.tutorial.conveyor.beltchain && ((Math.abs(this.startX - this.x) + 1 > consts.TILE_SIZE * 2) || (Math.abs(this.startY - this.y) + 1 > consts.TILE_SIZE * 2))) {
+        if (Game.tutorial.conveyor.beltchain && Game.persistent.tutorialenabled && ((Math.abs(this.startX - this.x) + 1 > consts.TILE_SIZE * 2) || (Math.abs(this.startY - this.y) + 1 > consts.TILE_SIZE * 2))) {
             _alert("Nice!\nConveyor belts are also the way to put items in machines.\nSpeaking of which, let's try automating coal: Place a Miner(2 key).");
             Game.tutorial.conveyor.beltchain = false;
         }
@@ -752,9 +800,28 @@ class Item {
             }
         }
     }
-    display(debug, _ctx) {
-        _ctx = _ctx ?? ctx;
-        _ctx.drawImage(textures.get("item_" + this.id), this.x * consts.DISPLAY_SCALE + (Game.scroll.x * consts.DISPLAY_SCALE) - 8 * consts.DISPLAY_SCALE, this.y * consts.DISPLAY_SCALE + (Game.scroll.y * consts.DISPLAY_SCALE) - 8 * consts.DISPLAY_SCALE, 16 * consts.DISPLAY_SCALE, 16 * consts.DISPLAY_SCALE);
+    display(currentframe) {
+        ctx2.drawImage(textures.get("item_" + this.id), this.x * consts.DISPLAY_SCALE + (Game.scroll.x * consts.DISPLAY_SCALE) - 8 * consts.DISPLAY_SCALE, this.y * consts.DISPLAY_SCALE + (Game.scroll.y * consts.DISPLAY_SCALE) - 8 * consts.DISPLAY_SCALE, 16 * consts.DISPLAY_SCALE, 16 * consts.DISPLAY_SCALE);
+        if (keysPressed.indexOf("Shift") != -1) {
+            var x = (mouseX - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_SCALE;
+            var y = (mouseY - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_SCALE;
+            //alert(this.x + " " + this.y + "  " + x + " " + y);
+            if (x > this.x - (8 * consts.DISPLAY_SCALE) &&
+                y > this.y - (8 * consts.DISPLAY_SCALE) &&
+                x < this.x + (8 * consts.DISPLAY_SCALE) &&
+                y < this.y + (8 * consts.DISPLAY_SCALE)) {
+                overlayCtx.font = "16px monospace";
+                overlayCtx.fillStyle = "#0033CC";
+                overlayCtx.fillRect(mouseX, mouseY, names.item[this.id].length * 10, 16);
+                overlayCtx.strokeStyle = "#000000";
+                overlayCtx.strokeRect(mouseX, mouseY, names.item[this.id].length * 10, 16);
+                overlayCtx.fillStyle = "#FFFFFF";
+                overlayCtx.fillText(names.item[this.id], mouseX + 2, mouseY + 10);
+                if (currentframe?.tooltip) {
+                    currentframe.tooltip = false;
+                }
+            }
+        }
     }
 }
 class Building {
@@ -801,14 +868,14 @@ class Building {
         else {
             return false;
         }
-        if (id == ItemID.base_coal && Game.tutorial.item.coal) {
+        if (Game.persistent.tutorialenabled && id == ItemID.base_coal && Game.tutorial.item.coal) {
             _alert("Congratulations! You just automated coal!");
             Game.tutorial.item.coal = false;
             setTimeout(() => {
                 _alert("Try doing the same thing for iron: Iron nodes are whiteish and are a bit further from the center of the map.\nUse WASD to scroll.");
             }, 3000);
         }
-        if (id == ItemID.base_ironIngot && Game.tutorial.item.iron) {
+        if (Game.persistent.tutorialenabled && id == ItemID.base_ironIngot && Game.tutorial.item.iron) {
             _alert("Nice job!\nWell, that's all the content this game has to offer right now. I would tell you to automate steel, but it doesn't exist yet.\nThis game is currently in alpha, check back later for more updates!");
             Game.tutorial.item.iron = false;
             setTimeout(() => {
@@ -851,7 +918,7 @@ class Miner extends Building {
         else {
             this.timer = 61;
             if (this.spawnItem(this.miningItem)) {
-                if (Game.tutorial.miner.firstoutput) {
+                if (Game.tutorial.miner.firstoutput && Game.persistent.tutorialenabled) {
                     _alert("Nice!\nThis is just coal ore though, not coal. Try placing a furnace(4 key).\nOh also, remember you can scroll to zoom in on that sweet coal ore texture.");
                     Game.tutorial.miner.firstoutput = false;
                 }
@@ -870,8 +937,7 @@ function smeltFor(item) {
         case ItemID.base_ironOre: return ItemID.base_ironIngot;
     }
     return null;
-} //but theres no reason to use a function you can just use an object-
-//Typescript said no u
+}
 class TrashCan extends Building {
     update() {
         if (this.level.buildingIDAt2(this.x, this.y) != this.id) {

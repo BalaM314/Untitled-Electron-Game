@@ -34,47 +34,79 @@
         margin-left: calc(var(--pos-x)*2);
         margin-top: calc(var(--pos-y)*2);
       }*/
-      #main_canvas {
+      #layer1_canvas {
         border-right: 2px dashed green;
         border-bottom: 2px dashed green;
         position: absolute;
         z-index: 1;
       }
-      #secondary_canvas {
+      #layer2_canvas {
+        border-right: 2px dashed green;
+        border-bottom: 2px dashed green;
         position: absolute;
         z-index: 2;
+      }
+      #secondary_canvas {
+        position: absolute;
+        z-index: 3;
+      }
+      #toolbar {
+        position: absolute;
+        display: flex;
+        bottom: 20px;
+        width: 60%;
+        left: 20%;
+        right: 20%;
+        top: 90%;
+        --cell-size: calc(10% - 20px - 1%);
+        background-color: rgba(0, 0, 255, 0.2);
+        border-radius: 5%;
+        z-index: 10;
+      }
+      .hidden {
+        margin-top: 10000%;
+      }
+      .selected {
+        border: 5px ridge green;
       }
     </style>
   </head>
   <body>
     <div id="textures" hidden>
-      <img src="assets/textures/building/0x0001.png" id="1" hidden=true onload="loadedtextures ++;">
-      <img src="assets/textures/building/0x0101.png" id="257" hidden=true onload="loadedtextures ++;">
-      <img src="assets/textures/building/0x0201.png" id="513" hidden=true onload="loadedtextures ++;">
-      <img src="assets/textures/building/0x0301.png" id="769" hidden=true onload="loadedtextures ++;">
-      <img src="assets/textures/building/0x0401.png" id="1025" hidden=true onload="loadedtextures ++;">
-      <img src="assets/textures/building/0x0501.png" id="1281" hidden=true onload="loadedtextures ++;">
-      <img src="assets/textures/building/0x0601.png" id="1537" hidden=true onload="loadedtextures ++;">
-      <img src="assets/textures/building/0x0701.png" id="1793" hidden=true onload="loadedtextures ++;">
-      <img src="assets/textures/building/0x0801.png" id="2049" hidden=true onload="loadedtextures ++;">
-      <img src="assets/textures/building/0x0901.png" id="2305" hidden=true onload="loadedtextures ++;">
-      <img src="assets/textures/building/0x0A01.png" id="2561" hidden=true onload="loadedtextures ++;">
-      <img src="assets/textures/building/0x0B01.png" id="2817" hidden=true onload="loadedtextures ++;">
-      <img src="assets/textures/building/0x0002.png" id="2" hidden=true onload="loadedtextures ++;">
-      <img src="assets/textures/building/0x0003.png" id="3" hidden=true onload="loadedtextures ++;">
-      <img src="assets/textures/building/0x0004.png" id="4" hidden=true onload="loadedtextures ++;">
-      <img src="assets/textures/tile/0x00.png" id="t0" hidden=true onload="loadedtextures ++;">
-      <img src="assets/textures/tile/0x01.png" id="t1" hidden=true onload="loadedtextures ++;">
-      <img src="assets/textures/tile/0x02.png" id="t2" hidden=true onload="loadedtextures ++;">
-      <img src="assets/textures/tile/0x03.png" id="t3" hidden=true onload="loadedtextures ++;">
-      <img src="assets/textures/tile/0x04.png" id="t4" hidden=true onload="loadedtextures ++;">
-      <img src="assets/textures/item/base_null.png" id="item_base_null" hidden=true onload="loadedtextures ++;">
-      <img src="assets/textures/item/base_ironOre.png" id="item_base_ironOre" hidden=true onload="loadedtextures ++;">
-      <img src="assets/textures/item/base_coalOre.png" id="item_base_coalOre" hidden=true onload="loadedtextures ++;">
-      <img src="assets/textures/item/base_ironIngot.png" id="item_base_ironIngot" hidden=true onload="loadedtextures ++;">
-      <img src="assets/textures/item/base_coal.png" id="item_base_coal" hidden=true onload="loadedtextures ++;">
+      <img src="assets/textures/building/0x0001.png" id="1" onload="loadedtextures ++;">
+      <img src="assets/textures/building/0x0101.png" id="257" onload="loadedtextures ++;">
+      <img src="assets/textures/building/0x0201.png" id="513" onload="loadedtextures ++;">
+      <img src="assets/textures/building/0x0301.png" id="769" onload="loadedtextures ++;">
+      <img src="assets/textures/building/0x0401.png" id="1025" onload="loadedtextures ++;">
+      <img src="assets/textures/building/0x0501.png" id="1281" onload="loadedtextures ++;">
+      <img src="assets/textures/building/0x0601.png" id="1537" onload="loadedtextures ++;">
+      <img src="assets/textures/building/0x0701.png" id="1793" onload="loadedtextures ++;">
+      <img src="assets/textures/building/0x0801.png" id="2049" onload="loadedtextures ++;">
+      <img src="assets/textures/building/0x0901.png" id="2305" onload="loadedtextures ++;">
+      <img src="assets/textures/building/0x0A01.png" id="2561" onload="loadedtextures ++;">
+      <img src="assets/textures/building/0x0B01.png" id="2817" onload="loadedtextures ++;">
+      <img src="assets/textures/building/0x0002.png" id="2" onload="loadedtextures ++;">
+      <img src="assets/textures/building/0x0003.png" id="3" onload="loadedtextures ++;">
+      <img src="assets/textures/building/0x0004.png" id="4" onload="loadedtextures ++;">
+      <img src="assets/textures/tile/0x00.png" id="t0" onload="loadedtextures ++;">
+      <img src="assets/textures/tile/0x01.png" id="t1" onload="loadedtextures ++;">
+      <img src="assets/textures/tile/0x02.png" id="t2" onload="loadedtextures ++;">
+      <img src="assets/textures/tile/0x03.png" id="t3" onload="loadedtextures ++;">
+      <img src="assets/textures/tile/0x04.png" id="t4" onload="loadedtextures ++;">
+      <img src="assets/textures/item/base_null.png" id="item_base_null" onload="loadedtextures ++;">
+      <img src="assets/textures/item/base_ironOre.png" id="item_base_ironOre" onload="loadedtextures ++;">
+      <img src="assets/textures/item/base_coalOre.png" id="item_base_coalOre" onload="loadedtextures ++;">
+      <img src="assets/textures/item/base_ironIngot.png" id="item_base_ironIngot" onload="loadedtextures ++;">
+      <img src="assets/textures/item/base_coal.png" id="item_base_coal" onload="loadedtextures ++;">
     </div>
     <canvas id="secondary_canvas" width=1200 height=1200></canvas>
-    <canvas id="main_canvas" width=1200 height=1200></canvas>
+    <canvas id="layer2_canvas" width=1200 height=1200></canvas>
+    <canvas id="layer1_canvas" width=1200 height=1200></canvas>
+    <div id="toolbar" class="hidden">
+      <img src="assets/textures/building/0x0001.png" id="1" onload="loadedtextures ++;">
+      <img src="assets/textures/building/0x0002.png" id="2" onload="loadedtextures ++;">
+      <img src="assets/textures/building/0x0003.png" id="3" onload="loadedtextures ++;">
+      <img src="assets/textures/building/0x0004.png" id="4" onload="loadedtextures ++;">
+    </div>
   </body>
 </html>

@@ -55,7 +55,7 @@ window.onkeyup = (e) => {
 };
 window.onmousedown = (e) => { mouseIsPressed = true; latestMouseEvent = e; };
 window.onmouseup = (e) => { mouseIsPressed = false; latestMouseEvent = e; };
-//general function
+//general functions
 function sq(x) {
     return x * x;
 }
@@ -103,6 +103,11 @@ function constrain(x, min, max) {
     if (x < min)
         return min;
     return x;
+}
+function assert(x) {
+    if (!x) {
+        throw new Error(x);
+    }
 }
 /**
  * Drawing Functions

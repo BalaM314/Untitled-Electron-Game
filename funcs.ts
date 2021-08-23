@@ -58,7 +58,7 @@ window.onmouseup = (e:MouseEvent) => {mouseIsPressed = false; latestMouseEvent =
 
 
 
-//general function
+//general functions
 function sq(x:number):number{
 	return x * x;
 }
@@ -106,6 +106,12 @@ function constrain(x:number, min:number, max:number){
 	if(x > max) return max;
 	if(x < min) return min;
 	return x;
+}
+
+function assert(x:any){
+	if(!x){
+		throw new Error(x);
+	}
 }
 
 /**
