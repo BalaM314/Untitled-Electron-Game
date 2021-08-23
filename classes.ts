@@ -29,7 +29,7 @@ type BuildingID =
 
 let textures = new Map();
 
-const ItemID =  {
+const ItemID = {
 	"base_null": "base_null",
 	"base_coalOre": "base_coalOre",
 	"base_coal": "base_coal",
@@ -60,13 +60,10 @@ const consts = {
     }
 }
 
-interface ChunkedDataStorage {
+class ChunkedDataStorage {
 	storage: Map<string, Chunk>;
 	seed: number;
 	format: string;
-}
-
-class ChunkedDataStorage {
 	constructor(seed:number | null){
 		this.storage = new Map();
 		this.seed = seed ? seed : 0;
@@ -132,11 +129,9 @@ class ChunkedDataStorage {
 	}
 }
 
-interface Level {
+class Level extends ChunkedDataStorage {
 	items: Item[];
 	buildings: Building[];
-}
-class Level extends ChunkedDataStorage {
 	constructor(seed:number){
 		super(seed);
 		this.items = [];
@@ -806,13 +801,11 @@ class Item {
 	}
 }
 
-interface Building{
+class Building {
 	x: number;
 	y: number;
 	id: BuildingID;
 	level: Level;
-}
-class Building {
 	constructor(tileX:number, tileY: number, id:BuildingID, level:Level){
 		this.x = tileX;
 		this.y = tileY;
@@ -894,13 +887,11 @@ class Building {
 }
 
 
-interface Miner {
+class Miner extends Building {
 	timer: number;
 	itemBuffer: number;
 	miningItem: string;
 	oreFor: any;
-}
-class Miner extends Building {
 	constructor(tileX:number, tileY:number, id:BuildingID, level:Level){
 		super(tileX, tileY, id, level);
 		this.timer = 61;

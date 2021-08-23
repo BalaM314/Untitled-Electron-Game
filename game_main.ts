@@ -62,12 +62,12 @@ function runLevel(level){
 
 	level.displayGhostBuilding((mouseX - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE, (mouseY - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE, placedBuildingID);
 	
-	let frameMS = (new Date()).getTime() - startFrameTime.getTime();
-
+	
 	//display overlays
 	overlayCtx.font = "30px sans-serif";
-	overlayCtx.fillText(Math.round(constrain(1000/frameMS, 0, 60)) + " fps", 10, 50);
 	overlayCtx.fillText((Math.round(- (Game.scroll.x * consts.DISPLAY_SCALE) / consts.DISPLAY_TILE_SIZE).toString() + ", " + Math.round(- (Game.scroll.y * consts.DISPLAY_SCALE) / consts.DISPLAY_TILE_SIZE).toString()), 10, 100);
+	let frameMS = (new Date()).getTime() - startFrameTime.getTime();
+	overlayCtx.fillText(Math.round(constrain(1000/frameMS, 0, 60)) + " fps", 10, 50);
 }
 
 function handleKeysPressed(){
@@ -100,8 +100,10 @@ function main_loop(){
 			case "game":
 				runLevel(level1);
 				break;
+			case "settings":
+
 			default:
-				throw new Error(GAME_STATE);
+				throw new Error(`Invalid game state "${GAME_STATE}"`);
 		}
 		if(mouseIsPressed){
 			handleMouseDown(latestMouseEvent);
@@ -137,6 +139,10 @@ function runTitle(){
 	ctx.fillStyle = "#0000FF";
 	rect(innerWidth/4, innerHeight * 0.5, innerWidth/2, innerHeight * 0.2, rectMode.CORNER);
 	rect(innerWidth/4, innerHeight * 0.75, innerWidth/2, innerHeight * 0.2, rectMode.CORNER);
+	ctx.strokeStyle = "#000000";
+	ctx.lineWidth = 2;
+	ctx.strokeRect(innerWidth/4, innerHeight * 0.5, innerWidth/2, innerHeight * 0.2);
+	ctx.strokeRect(innerWidth/4, innerHeight * 0.75, innerWidth/2, innerHeight * 0.2);
 	ctx.fillStyle = "#FFFFFF";
 	ctx.font = "40px sans-serif";
 	ctx.fillText("Play", innerWidth/2, innerHeight * 0.6);
