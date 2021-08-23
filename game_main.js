@@ -83,6 +83,8 @@ function main_loop() {
                 runLevel(level1);
                 break;
             case "settings":
+                runSettings();
+                break;
             default:
                 throw new Error(`Invalid game state "${GAME_STATE}"`);
         }
@@ -127,6 +129,21 @@ function runTitle() {
     ctx.fillText("Play", innerWidth / 2, innerHeight * 0.6);
     ctx.fillText("Settings", innerWidth / 2, innerHeight * 0.85);
 }
+function runSettings() {
+    ctx.fillStyle = "#0033FF";
+    ctx.fillRect(0, 0, innerWidth, innerHeight);
+    ctx.font = "70px sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillStyle = "#000000";
+    ctx.fillText("Settings", innerWidth / 2, innerHeight * 0.2);
+    ctx.strokeStyle = "#000000";
+    ctx.strokeRect(innerWidth * 0.9, innerHeight * 0.01, innerWidth * 0.09, innerHeight * 0.09);
+    ctx.fillStyle = "#FF0000";
+    ctx.font = "50px sans-serif";
+    ctx.fillText("❌", innerWidth * 0.945, innerHeight * 0.055);
+}
+;
 function load() {
     GAME_STATE = "game";
     //possibly display an eror here?
@@ -175,8 +192,13 @@ Use WASD to move around the map and mouse wheel to zoom.
                     }, 500);
                 }
                 if (e.y > innerHeight * 0.75 && e.y < innerHeight * 0.95) {
-                    alert("Not yet implemented");
+                    GAME_STATE = "settings";
                 }
+            }
+            break;
+        case "settings":
+            if (e.y < innerHeight * 0.1 && e.y > innerHeight * 0.01 && e.x > innerWidth * 0.9 && e.x < innerWidth * 0.99) {
+                GAME_STATE = "title";
             }
             break;
     }
