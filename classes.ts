@@ -512,7 +512,7 @@ class Chunk {
 		}
 		for(let y = 0; y < this.layers[0].length; y ++){
 			for(let x = 0; x < this.layers[0][y].length; x ++){
-				this.displayBuilding(x, y, this.buildingAt(tileToChunk(x), tileToChunk(x)));
+				this.displayBuilding(x, y, this.buildingAt(tileToChunk(x), tileToChunk(y)));
 			}
 		}
 		if(currentframe.debug){

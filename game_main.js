@@ -118,6 +118,7 @@ function main_loop() {
             handleKeysPressed();
         }
         if (alerts.length) {
+            mouseIsPressed = false;
             for (var _alert of alerts) {
                 alert(_alert); //todo replace with a less annoying custom alert box
             }
