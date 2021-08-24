@@ -294,7 +294,7 @@ class Level extends ChunkedDataStorage {
 				}
 				tempBuilding = new Furnace(tileX, tileY, 0x0004, this);//typecsript go brrrrr
 				if(Game.tutorial.furnace.placedcorrectly && Game.persistent.tutorialenabled){
-					_alert("The Furnace converts raw ores into their smelted forms. Simply point a conveyor belt carrying ores at it and \n>provide another belt<\m for it to output onto.");
+					_alert("The Furnace converts raw ores into their smelted forms. Simply point a conveyor belt carrying ores at it and \n>provide another belt<\n for it to output onto.");
 					Game.tutorial.furnace.placedcorrectly = false;
 				}
 			break;
@@ -328,7 +328,7 @@ class Level extends ChunkedDataStorage {
 					return;
 				}
 				if(Game.tutorial.conveyor.placedcorrectly && Game.persistent.tutorialenabled){
-					_alert("Conveyors are the way to move items around. If it isn't obvious, they can be chained. \nYou can use the arrow keys to change the direction of placed belts. \nTry making a belt chain, then putting a debug item on it with Ctrl+click.");
+					_alert("Conveyors are the way to move items around. \nYou can use the arrow keys to change the direction of placed belts. \nTry making a belt chain, then putting a debug item on it with Ctrl+click.");
 					Game.tutorial.conveyor.placedcorrectly = false;
 				}
 				return this.writeBuilding(tileX, tileY, this.getTurnedConveyor(tileX, tileY, building >> 8));
