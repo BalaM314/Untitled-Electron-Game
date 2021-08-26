@@ -21,6 +21,41 @@ window.onmousemove = (e) => {
 };
 let keysPressed = [];
 window.onkeydown = (e) => {
+    switch (e.key) {
+        case "ArrowRight":
+            placedBuildingID = 0x0001;
+            break;
+        case "ArrowDown":
+            placedBuildingID = 0x0101;
+            break;
+        case "ArrowLeft":
+            placedBuildingID = 0x0201;
+            break;
+        case "ArrowUp":
+            placedBuildingID = 0x0301;
+            break;
+        case "1":
+            placedBuildingID = 0x0001;
+            break;
+        case "2":
+            placedBuildingID = 0x0002;
+            break;
+        case "3":
+            placedBuildingID = 0x0003;
+            break;
+        case "4":
+            placedBuildingID = 0x0004;
+            break;
+        case "0":
+            placedBuildingID = 0xFFFF;
+            break;
+    }
+    if (parseInt(e.key)) {
+        for (var x of document.getElementById("toolbar").children) {
+            x.classList.remove("selected");
+        }
+        document.getElementById("toolbar").children[parseInt(e.key) - 1].classList.add("selected");
+    }
     if (keysPressed.indexOf(e.key.toLowerCase()) == -1) {
         keysPressed.push(e.key.toLowerCase());
     }
