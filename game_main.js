@@ -1,3 +1,4 @@
+'use strict';
 let settings = {
     graphics_mode: 1,
     debug: true
@@ -47,6 +48,7 @@ function runLevel(level) {
         tooltip: true,
         debug: settings.debug,
         cps: 0,
+        tps: 0,
         chunktime: []
     };
     level.generateNecessaryChunks();
@@ -68,7 +70,10 @@ function runLevel(level) {
     fps.push(frameMS);
     let avgFPS = Math.round(constrain(5000 / (fps[0] + fps[1] + fps[2] + fps[3] + fps[4]), 0, 60));
     overlayCtx.fillText(avgFPS + " fps", 10, 50);
-    overlayCtx.fillText("C: " + currentFrame.cps, 10, 150);
+    if (settings.debug) {
+        overlayCtx.fillText("C: " + currentFrame.cps, 10, 150);
+        overlayCtx.fillText("T: " + currentFrame.tps, 10, 200);
+    }
 }
 function handleKeysPressed() {
     if (keysPressed.indexOf("w") != -1) {
@@ -87,8 +92,8 @@ function handleKeysPressed() {
 function main_loop() {
     try {
         document.getElementById("layer1_canvas").width = innerWidth;
-        document.getElementById("layer1_canvas").width = innerWidth;
-        document.getElementById("layer2_canvas").height = innerHeight;
+        document.getElementById("layer1_canvas").height = innerHeight;
+        document.getElementById("layer2_canvas").width = innerWidth;
         document.getElementById("layer2_canvas").height = innerHeight;
         document.getElementById("secondary_canvas").width = innerWidth;
         document.getElementById("secondary_canvas").height = innerHeight;
@@ -174,7 +179,7 @@ function runSettings() {
     rect(innerWidth * 0.51, innerHeight * 0.5, innerWidth * 0.25, innerHeight * 0.2, rectMode.CORNER);
     ctx.fillStyle = "#FFFFFF";
     ctx.fillText("Tutorial: " + Game.persistent.tutorialenabled, innerWidth * 0.375, innerHeight * 0.6);
-    ctx.fillText("Place Holder", innerWidth * 0.625, innerHeight * 0.6);
+    ctx.fillText("Debug: " + settings.debug, innerWidth * 0.625, innerHeight * 0.6);
 }
 ;
 function load() {
@@ -239,6 +244,10 @@ Use WASD to move around the map and mouse wheel to zoom.
             }
             if (e.y > innerHeight * 0.5 && e.y < innerHeight * 0.7 && e.x > innerWidth * 0.25 && e.x < innerWidth * 0.51) {
                 Game.persistent.tutorialenabled = !Game.persistent.tutorialenabled;
+                mouseIsPressed = false;
+            }
+            if (e.y > innerHeight * 0.5 && e.y < innerHeight * 0.7 && e.x > innerWidth * 0.51 && e.x < innerWidth * 0.76) {
+                settings.debug = !settings.debug;
                 mouseIsPressed = false;
             }
             break;

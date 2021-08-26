@@ -135,14 +135,11 @@ enum rectMode {
 }
 
 function rect(x:number, y:number, w:number, h:number, mode?:rectMode, _ctx?:CanvasRenderingContext2D){
-	_ctx = _ctx ?? ctx;
-	mode = mode ?? rectMode.CORNER;
+	if(!_ctx) _ctx = ctx;
 	if(mode == rectMode.CENTER){
 		_ctx.fillRect(x - w/2, y - w/2, w, h);
-	} else if(mode == rectMode.CORNER){
-		_ctx.fillRect(x, y, w, h);
 	} else {
-		console.warn("invalid mode to rect()");
+		_ctx.fillRect(x, y, w, h);
 	}
 }
 

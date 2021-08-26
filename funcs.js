@@ -131,16 +131,13 @@ var rectMode;
     rectMode[rectMode["CORNER"] = 1] = "CORNER";
 })(rectMode || (rectMode = {}));
 function rect(x, y, w, h, mode, _ctx) {
-    _ctx = _ctx ?? ctx;
-    mode = mode ?? rectMode.CORNER;
+    if (!_ctx)
+        _ctx = ctx;
     if (mode == rectMode.CENTER) {
         _ctx.fillRect(x - w / 2, y - w / 2, w, h);
     }
-    else if (mode == rectMode.CORNER) {
-        _ctx.fillRect(x, y, w, h);
-    }
     else {
-        console.warn("invalid mode to rect()");
+        _ctx.fillRect(x, y, w, h);
     }
 }
 function ellipse(x, y, w, h) {
