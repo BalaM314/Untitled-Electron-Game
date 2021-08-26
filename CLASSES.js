@@ -870,17 +870,13 @@ class Building {
         }
         if (Game.persistent.tutorialenabled && id == ItemID.base_coal && Game.tutorial.item.coal) {
             _alert("Congratulations! You just automated coal!");
+            _alert(["Try doing the same thing for iron: Iron nodes are whiteish and are a bit further from the center of the map.\nUse WASD to scroll.", 3000]);
             Game.tutorial.item.coal = false;
-            setTimeout(() => {
-                _alert("Try doing the same thing for iron: Iron nodes are whiteish and are a bit further from the center of the map.\nUse WASD to scroll.");
-            }, 3000);
         }
         if (Game.persistent.tutorialenabled && id == ItemID.base_ironIngot && Game.tutorial.item.iron) {
             _alert("Nice job!\nWell, that's all the content this game has to offer right now. I would tell you to automate steel, but it doesn't exist yet.\nThis game is currently in alpha, check back later for more updates!");
             Game.tutorial.item.iron = false;
-            setTimeout(() => {
-                _alert("Oh, also, you technically beat the game. Just saying.");
-            }, 1000);
+            _alert(["Oh, also, you technically beat the game. Just saying.", 3000]);
         }
         return true;
     }

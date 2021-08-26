@@ -25,31 +25,15 @@ window.onmousemove = (e:MouseEvent) => {
 	mouseY = e.y;
 	latestMouseEvent = e;
 }
-let keysPressed = [];
+let keysPressed:string[] = [];
 window.onkeydown = (e:KeyboardEvent) => {
-	switch(e.key){
-		case "ArrowRight":
-			placedBuildingID = 0x0001; return;
-		case "ArrowDown":
-			placedBuildingID = 0x0101; return;
-		case "ArrowLeft":
-			placedBuildingID = 0x0201; return;
-		case "ArrowUp":
-			placedBuildingID = 0x0301; return;
-		case "2":
-			placedBuildingID = 0x0002; return;
-		case "3":
-			placedBuildingID = 0x0003; return;
-		case "0":
-			placedBuildingID = 0xFFFF; return;		
-	}
-	if(keysPressed.indexOf(e.key) == -1){
-		keysPressed.push(e.key);
+	if(keysPressed.indexOf(e.key.toLowerCase()) == -1){
+		keysPressed.push(e.key.toLowerCase());
 	}
 }
 window.onkeyup = (e:KeyboardEvent) => {
-	if(keysPressed.indexOf(e.key) != -1){
-		keysPressed.splice(keysPressed.indexOf(e.key), 1);
+	if(keysPressed.indexOf(e.key.toLowerCase()) != -1){
+		keysPressed.splice(keysPressed.indexOf(e.key.toLowerCase()), 1);
 	}
 }
 
@@ -149,7 +133,7 @@ function ellipse(x, y, w, h){
  * Game-related functions
  */
 let alerts = [];
-function _alert(x){
+function _alert(x:string | [string,number]){
 	alerts.push(x);
 }
 function loadTextures(){
@@ -172,7 +156,7 @@ function zoom(scaleFactor){
 }
 
 window.onwheel = (e:WheelEvent) => {
-	zoom(Math.pow(1.001, e.deltaY));
+	zoom(Math.pow(1.001, -e.deltaY));
 }
 
 function tileToChunk(tileCoord:number):number {

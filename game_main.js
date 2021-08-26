@@ -49,12 +49,6 @@ function runLevel(level) {
         cps: 0,
         chunktime: []
     };
-    document.getElementById("layer1_canvas").width = innerWidth;
-    document.getElementById("layer1_canvas").height = innerHeight;
-    document.getElementById("layer2_canvas").width = innerWidth;
-    document.getElementById("layer2_canvas").height = innerHeight;
-    document.getElementById("secondary_canvas").width = innerWidth;
-    document.getElementById("secondary_canvas").height = innerHeight;
     level.generateNecessaryChunks();
     level.update();
     //display
@@ -74,7 +68,7 @@ function runLevel(level) {
     fps.push(frameMS);
     let avgFPS = Math.round(constrain(5000 / (fps[0] + fps[1] + fps[2] + fps[3] + fps[4]), 0, 60));
     overlayCtx.fillText(avgFPS + " fps", 10, 50);
-    overlayCtx.fillText("C: " + currentFrame.chunktime[0], 10, 150);
+    overlayCtx.fillText("C: " + currentFrame.cps, 10, 150);
 }
 function handleKeysPressed() {
     if (keysPressed.indexOf("w") != -1) {
@@ -119,8 +113,15 @@ function main_loop() {
         }
         if (alerts.length) {
             mouseIsPressed = false;
-            for (var _alert of alerts) {
-                alert(_alert); //todo replace with a less annoying custom alert box
+            for (var __alert of alerts) {
+                if (alert instanceof Array) {
+                    setTimeout(() => {
+                        _alert(alert[0]);
+                    }, alert[1]);
+                }
+                else {
+                    alert(__alert); //todo replace with a less annoying custom alert box
+                }
             }
             alerts = [];
         }
@@ -248,10 +249,10 @@ window.onkeypress = (e) => {
         case "ArrowRight":
             placedBuildingID = 0x0001;
             break;
-        case "ArrowDown":
+        case "ArrowUown":
             placedBuildingID = 0x0101;
             break;
-        case "ArrowLeft":
+        case "ArrowUeft":
             placedBuildingID = 0x0201;
             break;
         case "ArrowUp":

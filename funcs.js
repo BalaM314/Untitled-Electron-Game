@@ -21,36 +21,13 @@ window.onmousemove = (e) => {
 };
 let keysPressed = [];
 window.onkeydown = (e) => {
-    switch (e.key) {
-        case "ArrowRight":
-            placedBuildingID = 0x0001;
-            return;
-        case "ArrowDown":
-            placedBuildingID = 0x0101;
-            return;
-        case "ArrowLeft":
-            placedBuildingID = 0x0201;
-            return;
-        case "ArrowUp":
-            placedBuildingID = 0x0301;
-            return;
-        case "2":
-            placedBuildingID = 0x0002;
-            return;
-        case "3":
-            placedBuildingID = 0x0003;
-            return;
-        case "0":
-            placedBuildingID = 0xFFFF;
-            return;
-    }
-    if (keysPressed.indexOf(e.key) == -1) {
-        keysPressed.push(e.key);
+    if (keysPressed.indexOf(e.key.toLowerCase()) == -1) {
+        keysPressed.push(e.key.toLowerCase());
     }
 };
 window.onkeyup = (e) => {
-    if (keysPressed.indexOf(e.key) != -1) {
-        keysPressed.splice(keysPressed.indexOf(e.key), 1);
+    if (keysPressed.indexOf(e.key.toLowerCase()) != -1) {
+        keysPressed.splice(keysPressed.indexOf(e.key.toLowerCase()), 1);
     }
 };
 window.onmousedown = (e) => { mouseIsPressed = true; latestMouseEvent = e; };
@@ -162,7 +139,7 @@ function zoom(scaleFactor) {
     Game.scroll.y -= (innerHeight * 0.5 * (scaleFactor - 1)) / consts.DISPLAY_SCALE;
 }
 window.onwheel = (e) => {
-    zoom(Math.pow(1.001, e.deltaY));
+    zoom(Math.pow(1.001, -e.deltaY));
 };
 function tileToChunk(tileCoord) {
     tileCoord = Math.floor(tileCoord) % consts.CHUNK_SIZE;
