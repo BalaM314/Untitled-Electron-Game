@@ -1,11 +1,37 @@
 'use strict';
 
+// TODOS
+// Improve performance by not redrawing everything everytime, but this will need multiple canvases
+// 
+// 
+// 
+// 
+// 
+// 
+// 
+// 
+// 
+// 
+// 
+// 
+// 
+// 
+// 
+// 
+// 
+// 
+
+
 let settings = {
 	graphics_mode: 1,
 	debug: true
 };
 let Game = {
 	scroll: {
+		x: 300,
+		y: 300
+	},
+	pscroll: {
 		x: 300,
 		y: 300
 	},
@@ -57,11 +83,12 @@ function runLevel(level:Level){
 		debug: settings.debug,
 		cps: 0,
 		tps: 0,
+		ee: 0,
 		chunktime: []
 	};
 	level.generateNecessaryChunks();
-	level.update();
-
+	level.update(currentFrame);
+	if(currentFrame.ee > 1) alert(currentFrame.ee);
 	//display
 	ctx.clearRect(0, 0, innerWidth, innerHeight);
 	overlayCtx.clearRect(0, 0, innerWidth, innerHeight);
@@ -83,7 +110,7 @@ function runLevel(level:Level){
 	overlayCtx.fillText(avgFPS + " fps", 10, 50);
 	if(settings.debug){
 		overlayCtx.fillText("C: " + currentFrame.cps, 10, 150);
-		overlayCtx.fillText("T: " + currentFrame.tps, 10, 200);
+		overlayCtx.fillText("T: " + currentFrame.ee, 10, 200);
 	}
 }
 

@@ -172,17 +172,23 @@ class Level extends ChunkedDataStorage {
 			Math.floor(tileY)
 		).buildingAt(tileToChunk(tileX), tileToChunk(tileY));
 	}
+	buildingAt(tileX:number, tileY:number):Building {
+		for(var building of this.buildings){
+			if(building.x == tileX && building.y == tileY) return building;
+		}
+		return null;
+	}
 	addItem(x:number, y:number, id:string){
 		let tempitem = new Item(x, y, id, this);
 		this.items.push(tempitem);
 		return tempitem;
 	}
-	update(){
+	update(currentframe:any){
 		for(var item of this.items){
-			item.update();
+			item.update(currentframe);
 		}
 		for(var building of this.buildings){
-			building.update();
+			building.update(currentframe);
 		}
 	}
 	displayGhostBuilding(tileX:number, tileY:number, buildingID:BuildingID){
@@ -282,7 +288,9 @@ class Level extends ChunkedDataStorage {
 		return false;
 	}
 	buildBuilding(tileX:number, tileY:number, building:BuildingID):boolean {
-		if(this.buildingIDAt2(tileX, tileY) == building) return false;
+		if(this.buildingIDAt2(tileX, tileY) % 0x100 == building % 0x100){
+			this.buildingAt(tileX, tileY)?.break();
+		}
 		var tempBuilding:Building;
 		switch(building){
 			case 0x0004:
@@ -508,6 +516,7 @@ class Chunk {
 		currentframe.cps ++;
 		ctx.strokeStyle = "#000000";
 		ctx.lineWidth = 1;
+		
 		for(let y = 0; y < this.layers[0].length; y ++){
 			for(let x = 0; x < this.layers[0][y].length; x ++){
 				this.displayTile(x, y, currentframe);
@@ -751,7 +760,7 @@ class Item {
 			this.startY = y;
 		}
 	}
-	update(){
+	update(currentframe:any){
 		if(Game.tutorial.conveyor.beltchain && Game.persistent.tutorialenabled && ((Math.abs(this.startX - this.x) + 1 > consts.TILE_SIZE * 2) || (Math.abs(this.startY - this.y) + 1 > consts.TILE_SIZE * 2))){
 			_alert("Nice!\nConveyor belts are also the way to put items in machines.\nSpeaking of which, let's try automating coal: Place a Miner(2 key).");
 			Game.tutorial.conveyor.beltchain = false;
@@ -799,7 +808,7 @@ class Building {
 	static canBuildAt(tileX:number, tileY:number, level:Level){
 		return level.tileAt2(tileX, tileY) != 0x04;
 	}
-	update(){
+	update(currentframe){
 		if(this.level.buildingIDAt2(this.x, this.y) != this.id){
 			return this.break();
 		}
@@ -984,7 +993,7 @@ class Conveyor extends Building {
 		super(tileX, tileY, id, level);
 		this.item = null;
 	}
-	update(){
+	update(currentframe){
 		if(this.level.buildingIDAt2(this.x, this.y) != this.id){
 			return this.break();
 		}
@@ -1019,6 +1028,7 @@ class Conveyor extends Building {
 						this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
 						this.item.y --;
 					}
+					currentframe.ee ++;
 					break;
 				case 0x05:
 					if(pixelToTile(this.item.x) >= consts.TILE_SIZE * 0.5 && pixelToTile(this.item.y) == consts.TILE_SIZE * 0.5){
