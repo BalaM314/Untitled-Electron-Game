@@ -2,7 +2,7 @@
 
 // TODOS
 // Improve performance by not redrawing everything everytime, but this will need multiple canvases
-// 
+// Working on it
 // 
 // 
 // 
@@ -31,10 +31,7 @@ let Game = {
 		x: 300,
 		y: 300
 	},
-	pscroll: {
-		x: 300,
-		y: 300
-	},
+	forceRedraw: true,
 	persistent: {
 		tutorialenabled: true
 	},
@@ -62,12 +59,14 @@ let Game = {
 		}
 	}
 };
-var GAME_STATE = "title";
+var GAME_STATE:"title" | "game" | "settings" = "title";
 
-const ctx = (document.getElementById("layer1_canvas") as HTMLCanvasElement).getContext("2d");
-const ctx2 = (document.getElementById("layer2_canvas") as HTMLCanvasElement).getContext("2d");
-const overlayCtx = (document.getElementById("secondary_canvas") as HTMLCanvasElement).getContext("2d");
-
+const ctx = (document.getElementById("canvas") as HTMLCanvasElement).getContext("2d");//Tiles
+const ctx1 = (document.getElementById("canvas1") as HTMLCanvasElement).getContext("2d");//Ghost buildings
+const ctx2 = (document.getElementById("canvas2") as HTMLCanvasElement).getContext("2d");//Buildings
+const ctx3 = (document.getElementById("canvas3") as HTMLCanvasElement).getContext("2d");//Items
+const ctx4 = (document.getElementById("canvas4") as HTMLCanvasElement).getContext("2d");//Overlays
+const ctxs = [ctx, ctx1, ctx2, ctx3, ctx4];
 
 
 
@@ -76,87 +75,114 @@ level1.generateNecessaryChunks();
 
 let fps = [0, 0, 0, 0, 0, 0];
 
-function runLevel(level:Level){
+function runLevel(level:Level, currentFrame:any){
 	let startFrameTime = new Date();
-	let currentFrame = {
-		tooltip: true,
-		debug: settings.debug,
-		cps: 0,
-		tps: 0,
-		ee: 0,
-		chunktime: []
-	};
 	level.generateNecessaryChunks();
 	level.update(currentFrame);
-	if(currentFrame.ee > 1) alert(currentFrame.ee);
+
 	//display
-	ctx.clearRect(0, 0, innerWidth, innerHeight);
-	overlayCtx.clearRect(0, 0, innerWidth, innerHeight);
+	if(currentFrame.redraw){
+		ctx.clearRect(0, 0, innerWidth, innerHeight);
+		ctx2.clearRect(0, 0, innerWidth, innerHeight);
+		console.log("redraw");
+	}
+	ctx1.clearRect(0, 0, innerWidth, innerHeight);
+	ctx3.clearRect(0, 0, innerWidth, innerHeight);
+	ctx4.clearRect(0, 0, innerWidth, innerHeight);
+
 	level.display(currentFrame);
 
+	
 	level.displayGhostBuilding((mouseX - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE, (mouseY - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE, placedBuildingID);
 	if(keysPressed.indexOf("Shift") != -1){
 		level.displayTooltip(mouseX, mouseY, currentFrame);
 	}
 	
 	//display overlays
-	overlayCtx.font = "30px sans-serif";
-	overlayCtx.fillStyle = "#000000";
-	overlayCtx.fillText((Math.round(- (Game.scroll.x * consts.DISPLAY_SCALE) / consts.DISPLAY_TILE_SIZE).toString() + ", " + Math.round(- (Game.scroll.y * consts.DISPLAY_SCALE) / consts.DISPLAY_TILE_SIZE).toString()), 10, 100);
+	ctx4.font = "30px sans-serif";
+	ctx4.fillStyle = "#000000";
+	ctx4.fillText((Math.round(- (Game.scroll.x * consts.DISPLAY_SCALE) / consts.DISPLAY_TILE_SIZE).toString() + ", " + Math.round(- (Game.scroll.y * consts.DISPLAY_SCALE) / consts.DISPLAY_TILE_SIZE).toString()), 10, 100);
 	let frameMS = (new Date()).getTime() - startFrameTime.getTime();
 	fps.splice(0, 1);
 	fps.push(frameMS);
 	let avgFPS = Math.round(constrain(5000/(fps[0] + fps[1] + fps[2] + fps[3] + fps[4]), 0, 60));
-	overlayCtx.fillText(avgFPS + " fps", 10, 50);
+	ctx4.fillText(avgFPS + " fps", 10, 50);
 	if(settings.debug){
-		overlayCtx.fillText("C: " + currentFrame.cps, 10, 150);
-		overlayCtx.fillText("T: " + currentFrame.ee, 10, 200);
+		ctx4.fillText("C: " + currentFrame.cps, 10, 150);
+		ctx4.fillText("E: " + currentFrame.ee, 10, 200);
 	}
 }
 
-function handleKeysPressed(){
+function handleKeysPressed(currentframe:any){
 	if(keysPressed.indexOf("w") != -1){
 		Game.scroll.y += 5;
+		currentframe.redraw = true;
 	}
 	if(keysPressed.indexOf("a") != -1){
 		Game.scroll.x += 5;
+		currentframe.redraw = true;
 	}
 	if(keysPressed.indexOf("s") != -1){
 		Game.scroll.y -= 5;
+		currentframe.redraw = true;
 	}
 	if(keysPressed.indexOf("d") != -1){
 		Game.scroll.x -= 5;
+		currentframe.redraw = true;
 	}
 }
+
+function fixSizes(){
+	for(var x of ctxs){
+		if(x.canvas.width != window.innerWidth){
+			x.canvas.width = window.innerWidth;
+			Game.forceRedraw = true;
+		}
+		if(x.canvas.height != window.innerHeight){
+			x.canvas.height = window.innerHeight;
+			Game.forceRedraw = true;
+		}
+	}
+}
+var cancel = null;
+
+
+
+
 
 function main_loop(){
 	
 	try {
-		(document.getElementById("layer1_canvas") as HTMLCanvasElement).width = innerWidth;
-		(document.getElementById("layer1_canvas") as HTMLCanvasElement).height = innerHeight;
-		(document.getElementById("layer2_canvas") as HTMLCanvasElement).width = innerWidth;
-		(document.getElementById("layer2_canvas") as HTMLCanvasElement).height = innerHeight;
-		(document.getElementById("secondary_canvas") as HTMLCanvasElement).width = innerWidth;
-		(document.getElementById("secondary_canvas") as HTMLCanvasElement).height = innerHeight;
+		let currentFrame = {
+			tooltip: true,
+			debug: settings.debug,
+			cps: 0,
+			tps: 0,
+			ee: 0,
+			chunktime: [],
+			redraw: Game.forceRedraw
+		};
+		Game.forceRedraw = false;
+		fixSizes();
+		if(mouseIsPressed){
+			handleMouseDown(currentFrame);
+		}
+		if(keysPressed.length > 0){
+			handleKeysPressed(currentFrame);
+		}
 		
 		switch(GAME_STATE){
 			case "title":
 				runTitle();
 				break;
 			case "game":
-				runLevel(level1);
+				runLevel(level1, currentFrame);
 				break;
 			case "settings":
 				runSettings();
 				break;
 			default:
 				throw new Error(`Invalid game state "${GAME_STATE}"`);
-		}
-		if(mouseIsPressed){
-			handleMouseDown(latestMouseEvent);
-		}
-		if(keysPressed.length > 0){
-			handleKeysPressed();
 		}
 		if(alerts.length){
 			mouseIsPressed = false;
@@ -171,9 +197,10 @@ function main_loop(){
 			}
 			alerts = [];
 		}
-		requestAnimationFrame(main_loop);
+		cancel = requestAnimationFrame(main_loop);
 	} catch(err){
 		//todo: display an error screen
+		alert("An error has occurred! Oopsie.\nPlease create an issue on this project's GitHub so I can fix it.\nErr: " + err.message);//todo improve
 		throw err;
 	}
 
@@ -181,6 +208,7 @@ function main_loop(){
 }
 
 function runTitle(){
+	ctx.clearRect(-1, -1, 10000, 10000);
 	ctx.fillStyle = "#0033CC";
 	ctx.fillRect(0, 0, innerWidth, innerHeight);
 	ctx.font = "70px sans-serif";
@@ -204,6 +232,7 @@ function runTitle(){
 }
 
 function runSettings(){
+	ctx.clearRect(-1, -1, 10000, 10000);
 	ctx.fillStyle = "#0033CC";
 	ctx.fillRect(0, 0, innerWidth, innerHeight);
 	ctx.font = "70px sans-serif";
@@ -227,7 +256,8 @@ function runSettings(){
 };
 
 function load(){
-	GAME_STATE = "game";
+	
+	//TODO: add loading GAME_STATE
 	//possibly display an eror here if the textures haven't loaded?
 	document.getElementById("toolbar").classList.remove("hidden");
 	loadTextures();
@@ -238,14 +268,19 @@ let loadedtextures = 0;
 
 function checkload(){
 	if(loadedtextures == document.getElementById("textures").children.length){
-		runLevel(level1);
+		GAME_STATE = "game";
+		Game.forceRedraw = true;
+	} else if(loadedtextures > document.getElementById("textures").children.length){
+		throw new Error("somehow loaded more textures than exist, what the fffffff");
 	} else {
 		setTimeout(checkload, 100);
+		alert(2);
 	}
 }
 
 let placedBuildingID:BuildingID = 0x0001;
-let handleMouseDown = (e:MouseEvent) => {
+let handleMouseDown = (currentFrame:any, e?:MouseEvent) => {
+	e = e ?? latestMouseEvent;
 	switch(GAME_STATE){
 		case "game":
 			if(e.ctrlKey){
@@ -262,7 +297,7 @@ let handleMouseDown = (e:MouseEvent) => {
 					load();
 					if(Game.persistent.tutorialenabled){
 						setTimeout(() => {
-						alert(`
+							alert(`
 Welcome to Untitled Electron Game!
 This is a game about... well I don't really know, but it has items, conveyor belts, and machines. Guess you could call it a factory game?
 
@@ -272,9 +307,9 @@ For now there's no real goal, but I suggest you automate iron and coal productio
 Controls:
 Click to place a building.
 Use 1-4 to choose the type of building.
-Use WASD to move around the map and mouse wheel to zoom.
-						`);
-					}, 500);
+Use WASD to move around the map and mouse wheel to zoom.`
+							);
+						}, 500);
 					}
 				}
 				if(e.y > innerHeight * 0.75 && e.y < innerHeight * 0.95){

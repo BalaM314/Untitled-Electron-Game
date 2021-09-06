@@ -89,18 +89,23 @@ function gcd(x, y) {
     return x;
 }
 function random(min, max) {
-    if (arguments.length > 2) {
-        throw new Error("Too many arguments for random");
+    if (typeof min == "number") {
+        if (arguments.length > 2) {
+            throw new Error("Too many arguments for random");
+        }
+        if (arguments.length == 1) {
+            max = min;
+            min = 0;
+        }
+        if (arguments.length == 0) {
+            min = 0;
+            max = 1;
+        }
+        return Math.random() * (max - min) + min;
     }
-    if (arguments.length == 1) {
-        max = min;
-        min = 0;
+    else if (min instanceof Array) {
+        return min[Math.floor(random(0, min.length + 1))];
     }
-    if (arguments.length == 0) {
-        min = 0;
-        max = 1;
-    }
-    return Math.random() * (max - min) + min;
 }
 function range(start, end) {
     let temp = [];
@@ -171,6 +176,7 @@ function zoom(scaleFactor) {
     Game.scroll.y -= (innerHeight * 0.5 * (scaleFactor - 1)) / consts.DISPLAY_SCALE;
 }
 window.onwheel = (e) => {
+    Game.forceRedraw = true;
     zoom(Math.pow(1.001, -e.deltaY));
 };
 function tileToChunk(tileCoord) {

@@ -90,20 +90,25 @@ function gcd(x:number, y:number):any{
 	}
 	return x;
 }
-function random(min:number,max:number):number{
-	if(arguments.length > 2){
-		throw new Error("Too many arguments for random");
+function random(min:number|any[],max:number):number{
+	if(typeof min == "number"){
+		if(arguments.length > 2){
+			throw new Error("Too many arguments for random");
+		}
+		if(arguments.length == 1){
+			max = min;
+			min = 0;
+		}
+		if(arguments.length == 0){
+			min = 0;
+			max = 1;
+		}
+		return Math.random()*(max-min) + min;
+	} else if(min instanceof Array){
+		return min[Math.floor(random(0, min.length + 1))];
 	}
-	if(arguments.length == 1){
-		max = min;
-		min = 0;
-	}
-	if(arguments.length == 0){
-		min = 0;
-		max = 1;
-	}
-	return Math.random()*(max-min) + min;
 }
+
 function range(start:number, end:number){
 	let temp = [];
 	for(let i = start; i <= end; i ++){
@@ -179,6 +184,7 @@ function zoom(scaleFactor){
 }
 
 window.onwheel = (e:WheelEvent) => {
+	Game.forceRedraw = true;
 	zoom(Math.pow(1.001, -e.deltaY));
 }
 
