@@ -34,21 +34,35 @@
         margin-left: calc(var(--pos-x)*2);
         margin-top: calc(var(--pos-y)*2);
       }*/
-      #layer1_canvas {
+      canvas {
         border-right: 2px dashed green;
         border-bottom: 2px dashed green;
         position: absolute;
+      }
+      #canvas {
         z-index: 1;
       }
-      #layer2_canvas {
-        border-right: 2px dashed green;
-        border-bottom: 2px dashed green;
-        position: absolute;
+      #canvas1 {
         z-index: 2;
       }
-      #secondary_canvas {
-        position: absolute;
+      #canvas2 {
         z-index: 3;
+      }
+      #canvas3 {
+        z-index: 4;
+      }
+      #canvas4 {
+        z-index: 5;
+      }
+
+      #error_background {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background-color: red;
+        text-align: center;
+        font-size: 200%;
+        z-index: 0;
       }
       #toolbar {
         position: absolute;
@@ -99,14 +113,17 @@
       <img src="assets/textures/item/base_ironIngot.png" id="item_base_ironIngot" onload="loadedtextures ++;">
       <img src="assets/textures/item/base_coal.png" id="item_base_coal" onload="loadedtextures ++;">
     </div>
-    <canvas id="secondary_canvas" width=1200 height=1200></canvas>
-    <canvas id="layer2_canvas" width=1200 height=1200></canvas>
-    <canvas id="layer1_canvas" width=1200 height=1200></canvas>
+    <canvas id="canvas" width=1200 height=1200></canvas>
+    <canvas id="canvas1" width=1200 height=1200></canvas>
+    <canvas id="canvas2" width=1200 height=1200></canvas>
+    <canvas id="canvas3" width=1200 height=1200></canvas>
+    <canvas id="canvas4" width=1200 height=1200></canvas>
+    <div id="error_background">Oops! If you're seeing this(for more than a second), something went wrong. Please check the dev console(F12 then console) for any red boxes, take a screenshot, and report it to the <a href="https://github.com/BalaM314/Untitled-Electron-Game/issues">issue tracker.</a></div>
     <div id="toolbar" class="hidden">
-      <img src="assets/textures/building/0x0001.png" id="1" onload="loadedtextures ++;">
-      <img src="assets/textures/building/0x0002.png" id="2" onload="loadedtextures ++;">
-      <img src="assets/textures/building/0x0003.png" id="3" onload="loadedtextures ++;">
-      <img src="assets/textures/building/0x0004.png" id="4" onload="loadedtextures ++;">
+      <img src="assets/textures/building/0x0001.png" id="1">
+      <img src="assets/textures/building/0x0002.png" id="2">
+      <img src="assets/textures/building/0x0003.png" id="3">
+      <img src="assets/textures/building/0x0004.png" id="4">
     </div>
   </body>
 </html>

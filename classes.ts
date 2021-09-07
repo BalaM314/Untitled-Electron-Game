@@ -73,12 +73,12 @@ const consts = {
 	CHUNK_SIZE: 16,
     TILE_SIZE: 30,
     DISPLAY_SCALE: 1,
-    get DISPLAY_TILE_SIZE(){
+		get DISPLAY_TILE_SIZE(){
 			return this.TILE_SIZE * this.DISPLAY_SCALE;
     },
     buildings: {
 			conveyor: {
-					SPEED: 1
+				SPEED: 1
 			}
     }
 }
@@ -127,6 +127,7 @@ class ChunkedDataStorage {
 	writeTile(tileX:number, tileY:number, tile:Tile):boolean {
 		if(this.getChunk(tileX,tileY)){
 			this.getChunk(tileX,tileY).setTile(tileToChunk(tileX), tileToChunk(tileY), tile);
+			Game.forceRedraw = true;
 			return true;
 		}
 		return false;
@@ -172,17 +173,23 @@ class Level extends ChunkedDataStorage {
 			Math.floor(tileY)
 		).buildingAt(tileToChunk(tileX), tileToChunk(tileY));
 	}
+	buildingAt(tileX:number, tileY:number):Building {
+		for(var building of this.buildings){//this is O(n) :(
+			if(building.x == tileX && building.y == tileY) return building;
+		}
+		return null;
+	}
 	addItem(x:number, y:number, id:string){
 		let tempitem = new Item(x, y, id, this);
 		this.items.push(tempitem);
 		return tempitem;
 	}
-	update(){
+	update(currentframe:any){
 		for(var item of this.items){
-			item.update();
+			item.update(currentframe);
 		}
 		for(var building of this.buildings){
-			building.update();
+			building.update(currentframe);
 		}
 	}
 	displayGhostBuilding(tileX:number, tileY:number, buildingID:BuildingID){
@@ -277,11 +284,15 @@ class Level extends ChunkedDataStorage {
 	writeBuilding(tileX:number, tileY:number, buildingID:BuildingID):boolean {
 		if(this.getChunk(tileX,tileY)){
 			this.getChunk(tileX,tileY).setBuilding(tileToChunk(tileX), tileToChunk(tileY), buildingID);
+			Game.forceRedraw = true;
 			return true;
 		}
 		return false;
 	}
 	buildBuilding(tileX:number, tileY:number, building:BuildingID):boolean {
+		if(this.buildingIDAt2(tileX, tileY) % 0x100 == building % 0x100){
+			this.buildingAt(tileX, tileY)?.break();
+		}
 		var tempBuilding:Building;
 		switch(building){
 			case 0x0004:
@@ -292,14 +303,14 @@ class Level extends ChunkedDataStorage {
 					}
 					return;
 				}
-				tempBuilding = new Furnace(tileX, tileY, 0x0004, this);//typecsript go brrrrr
+				tempBuilding = new Furnace(tileX, tileY, 0x0004, this);
 				if(Game.tutorial.furnace.placedcorrectly && Game.persistent.tutorialenabled){
 					_alert("The Furnace converts raw ores into their smelted forms. Simply point a conveyor belt carrying ores at it and \n>provide another belt<\n for it to output onto.");
 					Game.tutorial.furnace.placedcorrectly = false;
 				}
 			break;
 			case 0x0003:
-				tempBuilding = new TrashCan(tileX, tileY, 0x0003, this);//typescript go brrrrr
+				tempBuilding = new TrashCan(tileX, tileY, 0x0003, this);
 				if(Game.tutorial.trashcan.placedcorrectly && Game.persistent.tutorialenabled){
 					_alert("The Trash Can is pretty simple: it deletes all items it receives.");
 					Game.tutorial.trashcan.placedcorrectly = false;
@@ -313,13 +324,13 @@ class Level extends ChunkedDataStorage {
 					}
 					return;
 				};
-				tempBuilding = new Miner(tileX, tileY, 0x0002, this);//typescript go brrrrr
+				tempBuilding = new Miner(tileX, tileY, 0x0002, this);
 				if(Game.tutorial.miner.placedcorrectly && Game.persistent.tutorialenabled){
 					_alert("🎉🎉\nThe Miner mines ore nodes, producing one ore per second. \n>It auto-outputs to adjacent conveyor belts.<\nAlso, ore nodes are infinite.\nBe warned, the miner will continue producing ore forever, which could lead to lag.");
 					Game.tutorial.miner.placedcorrectly = false;
 				}
 			break;
-			case 0x0001: case 0x0101: case 0x0201: case 0x0301: case 0x0401: case 0x0501: case 0x0601: case 0x0701: case 0x0801: case 0x0901: case 0x0A01: 
+			case 0x0001: case 0x0101: case 0x0201: case 0x0301: case 0x0401: case 0x0501: case 0x0601: case 0x0701: case 0x0801: case 0x0901: case 0x0A01: case 0x0B01:
 				if(!Conveyor.canBuildAt(tileX, tileY, this)){
 					if(Game.tutorial.conveyor.cantbeplacedonwater && Game.persistent.tutorialenabled){
 						_alert("Conveyors don't float!\nYes, I know, then water chunks are useless... I'll add pontoons in a future update.");
@@ -331,18 +342,17 @@ class Level extends ChunkedDataStorage {
 					_alert("Conveyors are the way to move items around. \nYou can use the arrow keys to change the direction of placed belts. \nTry making a belt chain, then putting a debug item on it with Ctrl+click.");
 					Game.tutorial.conveyor.placedcorrectly = false;
 				}
-				return this.writeBuilding(tileX, tileY, this.getTurnedConveyor(tileX, tileY, building >> 8));
+				tempBuilding = new Conveyor(tileX, tileY, this.getTurnedConveyor(tileX, tileY, building >> 8), this);
 			break;
 			default:
 				return this.writeBuilding(tileX, tileY, building);
 			break;
 		}
 		this.buildings.push(tempBuilding);
-		this.getChunk(tileX,tileY).setBuilding(tileToChunk(tileX), tileToChunk(tileY), tempBuilding.id);
+		this.writeBuilding(tileX, tileY, tempBuilding.id);
 		return true;
 	}
 	display(currentframe:Object):void {
-
 		for(let item of this.items){
 			item.display(currentframe);
 		}
@@ -351,30 +361,30 @@ class Level extends ChunkedDataStorage {
 		for(var chunk of this.storage.values()){
 			chunk.display(currentframe);
 		}
-
+		
 	}
 	displayTooltip(mousex:number, mousey:number, currentframe:any){
 		if(!currentframe.tooltip){return;}
 		var x = (mousex - (Game.scroll.x * consts.DISPLAY_SCALE))/consts.DISPLAY_SCALE;
 		var y = (mousey - (Game.scroll.y * consts.DISPLAY_SCALE))/consts.DISPLAY_SCALE;
-		overlayCtx.font = "16px monospace";
+		ctx4.font = "16px monospace";
 		if(this.buildingIDAt(x, y) !== 0xFFFF){
 			let buildingID = this.buildingIDAt(x, y) % 0x100;
-			overlayCtx.fillStyle = "#0033CC";
-			overlayCtx.fillRect(mousex, mousey, names.building[buildingID].length * 10, 16);
-			overlayCtx.strokeStyle = "#000000";
-			overlayCtx.strokeRect(mousex, mousey, names.building[buildingID].length * 10, 16);
-			overlayCtx.fillStyle = "#FFFFFF";
-			overlayCtx.fillText(names.building[buildingID], mousex + 2, mousey + 10);
+			ctx4.fillStyle = "#0033CC";
+			ctx4.fillRect(mousex, mousey, names.building[buildingID].length * 10, 16);
+			ctx4.strokeStyle = "#000000";
+			ctx4.strokeRect(mousex, mousey, names.building[buildingID].length * 10, 16);
+			ctx4.fillStyle = "#FFFFFF";
+			ctx4.fillText(names.building[buildingID], mousex + 2, mousey + 10);
 			return;
 		}
 		let tileID = this.tileAt(x, y);
-		overlayCtx.fillStyle = "#0033CC";
-		overlayCtx.fillRect(mousex, mousey, names.tile[tileID].length * 10, 16);
-		overlayCtx.strokeStyle = "#000000";
-		overlayCtx.strokeRect(mousex, mousey, names.tile[tileID].length * 10, 16);
-		overlayCtx.fillStyle = "#FFFFFF";
-		overlayCtx.fillText(names.tile[tileID], mousex + 2, mousey + 10);
+		ctx4.fillStyle = "#0033CC";
+		ctx4.fillRect(mousex, mousey, names.tile[tileID].length * 10, 16);
+		ctx4.strokeStyle = "#000000";
+		ctx4.strokeRect(mousex, mousey, names.tile[tileID].length * 10, 16);
+		ctx4.fillStyle = "#FFFFFF";
+		ctx4.fillText(names.tile[tileID], mousex + 2, mousey + 10);
 		return;
 	}
 }
@@ -493,6 +503,9 @@ class Chunk {
 		this.layers[1][y][x] = buildingId;
 		return true;
 	}
+	/**
+	 * @deprecated
+	 */
 	displayToConsole(){
 		console.log(`%c Base layer of chunk [${this.x},${this.y}]`, `font-weight: bold;`);
 		console.table(this.layers[0]);
@@ -505,27 +518,38 @@ class Chunk {
 			(Game.scroll.y * consts.DISPLAY_SCALE) + this.y * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE < -1 - consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE
 		){return false;}//if offscreen return immediately
 		currentframe.cps ++;
-		for(let y = 0; y < this.layers[0].length; y ++){
-			for(let x = 0; x < this.layers[0][y].length; x ++){
-				this.displayTile(x, y);
+		ctx.strokeStyle = "#000000";
+		ctx.lineWidth = 1;
+		
+		if(currentframe.redraw){
+			for(let y = 0; y < this.layers[0].length; y ++){
+				for(let x = 0; x < this.layers[0][y].length; x ++){
+					this.displayTile(x, y, currentframe);
+				}
 			}
-		}
-		for(let y = 0; y < this.layers[0].length; y ++){
-			for(let x = 0; x < this.layers[0][y].length; x ++){
-				this.displayBuilding(x, y, this.buildingAt(tileToChunk(x), tileToChunk(y)));
+			for(let y = 0; y < this.layers[0].length; y ++){
+				for(let x = 0; x < this.layers[0][y].length; x ++){
+					this.displayBuilding(x, y, this.buildingAt(tileToChunk(x), tileToChunk(y)));
+				}
 			}
 		}
 		if(currentframe.debug){
-			overlayCtx.strokeStyle = "#0000FF";
-			overlayCtx.strokeRect(this.x * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE + (Game.scroll.x * consts.DISPLAY_SCALE), this.y  * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE + (Game.scroll.y * consts.DISPLAY_SCALE), consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE, consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE);
-			overlayCtx.font = "40px sans-serif";
-			//overlayCtx.fillText(this.chunkSeed.toString(), this.x * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE + (consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE * 0.5) + (Game.scroll.x * consts.DISPLAY_SCALE), this.y * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE + (consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE * 0.5) + (Game.scroll.y * consts.DISPLAY_SCALE));
+			ctx4.strokeStyle = "#0000FF";
+			ctx4.strokeRect(this.x * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE + (Game.scroll.x * consts.DISPLAY_SCALE), this.y  * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE + (Game.scroll.y * consts.DISPLAY_SCALE), consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE, consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE);
+			//ctx4.font = "40px sans-serif";
+			//ctx4.fillText(this.chunkSeed.toString(), this.x * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE + (consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE * 0.5) + (Game.scroll.x * consts.DISPLAY_SCALE), this.y * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE + (consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE * 0.5) + (Game.scroll.y * consts.DISPLAY_SCALE));
 		}
 	}
-	displayTile(x:number, y:number){
+	displayTile(x:number, y:number, currentframe){
+		currentframe.tps ++;
 		let pixelX = ((this.x * consts.CHUNK_SIZE) + x) * consts.DISPLAY_TILE_SIZE + (Game.scroll.x * consts.DISPLAY_SCALE);
 		let pixelY = ((this.y * consts.CHUNK_SIZE) + y) * consts.DISPLAY_TILE_SIZE + (Game.scroll.y * consts.DISPLAY_SCALE);
-		ctx.drawImage(textures.get("t" + this.tileAt(x,y).toString()), pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
+		if(settings.graphics_mode || this.tileAt(x,y) != 0x00){
+			ctx.drawImage(textures.get("t" + this.tileAt(x,y).toString()), pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
+		} else {
+			ctx.fillStyle = "#00CC33";
+			rect(pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
+		}
 		/*switch(this.tileAt(x, y)){
 			case 0x00:
 				ctx.fillStyle = "#00CC33";
@@ -571,157 +595,156 @@ class Chunk {
 				ctx.fillText(this.tileAt(x, y).toString(), pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY + consts.DISPLAY_TILE_SIZE / 2);
 		}
 		*/
-		ctx.strokeStyle = "#000000";
-		ctx.lineWidth = 1;
-		ctx.strokeRect(pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
+		if(currentframe.debug) ctx.strokeRect(pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
 	}
 	displayBuilding(x:number, y:number, buildingID:BuildingID, isGhost?:number){
 		if(buildingID == 0xFFFF){return;}
 		let pixelX = ((this.x * consts.CHUNK_SIZE) + x) * consts.DISPLAY_TILE_SIZE + (Game.scroll.x * consts.DISPLAY_SCALE);
 		let pixelY = ((this.y * consts.CHUNK_SIZE) + y) * consts.DISPLAY_TILE_SIZE + (Game.scroll.y * consts.DISPLAY_SCALE);
+		let _ctx = isGhost ? ctx1 : ctx2;
 		if(isGhost == 2){
-			ctx.strokeStyle = "#FF0000";
-			ctx.fillStyle = "#FF0000";
-			ctx.lineWidth = 2;
+			_ctx.strokeStyle = "#FF0000";
+			_ctx.fillStyle = "#FF0000";
+			_ctx.lineWidth = 2;
 		} else if(isGhost == 1){
-			ctx.strokeStyle = "#444444";
-			ctx.fillStyle = "#444444";
-			ctx.lineWidth = 1;
-		} else {
-			return ctx.drawImage(textures.get(buildingID.toString()), pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
+			_ctx.strokeStyle = "#444444";
+			_ctx.fillStyle = "#444444";
+			_ctx.lineWidth = 1;
+		} else if(true){
+			return _ctx.drawImage(textures.get(buildingID.toString()), pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
 		}
 		switch(buildingID){
 			case 0x0001:
-				ctx.beginPath();
-				ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
-				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.9, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
-				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.6, pixelY + consts.DISPLAY_TILE_SIZE * 0.3);
-				ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.9, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
-				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.6, pixelY + consts.DISPLAY_TILE_SIZE * 0.7);
-				ctx.stroke();
+				_ctx.beginPath();
+				_ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+				_ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.9, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+				_ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.6, pixelY + consts.DISPLAY_TILE_SIZE * 0.3);
+				_ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.9, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+				_ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.6, pixelY + consts.DISPLAY_TILE_SIZE * 0.7);
+				_ctx.stroke();
 				break;
 			case 0x0101:
-				ctx.beginPath();
-				ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.1);
-				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.9);
-				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.3, pixelY + consts.DISPLAY_TILE_SIZE * 0.6);
-				ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.9);
-				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.7, pixelY + consts.DISPLAY_TILE_SIZE * 0.6);
-				ctx.stroke();
+				_ctx.beginPath();
+				_ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.1);
+				_ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.9);
+				_ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.3, pixelY + consts.DISPLAY_TILE_SIZE * 0.6);
+				_ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.9);
+				_ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.7, pixelY + consts.DISPLAY_TILE_SIZE * 0.6);
+				_ctx.stroke();
 				break;
 			case 0x0201:
-				ctx.beginPath();
-				ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.9, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
-				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
-				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.4, pixelY + consts.DISPLAY_TILE_SIZE * 0.3);
-				ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
-				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.4, pixelY + consts.DISPLAY_TILE_SIZE * 0.7);
-				ctx.stroke();
+				_ctx.beginPath();
+				_ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.9, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+				_ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+				_ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.4, pixelY + consts.DISPLAY_TILE_SIZE * 0.3);
+				_ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+				_ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.4, pixelY + consts.DISPLAY_TILE_SIZE * 0.7);
+				_ctx.stroke();
 				break;
 			case 0x0301:
-				ctx.beginPath();
-				ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.9);
-				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.1);
-				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.3, pixelY + consts.DISPLAY_TILE_SIZE * 0.4);
-				ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.1);
-				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.7, pixelY + consts.DISPLAY_TILE_SIZE * 0.4);
-				ctx.stroke();
+				_ctx.beginPath();
+				_ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.9);
+				_ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.1);
+				_ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.3, pixelY + consts.DISPLAY_TILE_SIZE * 0.4);
+				_ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.1);
+				_ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.7, pixelY + consts.DISPLAY_TILE_SIZE * 0.4);
+				_ctx.stroke();
 				break;
 			case 0x0401:
-				ctx.beginPath();
-				ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.9);
-				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
-				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.9, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
-				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.6, pixelY + consts.DISPLAY_TILE_SIZE * 0.3);
-				ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.9, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
-				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.6, pixelY + consts.DISPLAY_TILE_SIZE * 0.7);
-				ctx.stroke();
+				_ctx.beginPath();
+				_ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.9);
+				_ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+				_ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.9, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+				_ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.6, pixelY + consts.DISPLAY_TILE_SIZE * 0.3);
+				_ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.9, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+				_ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.6, pixelY + consts.DISPLAY_TILE_SIZE * 0.7);
+				_ctx.stroke();
 				break;
 			case 0x0501:
-				ctx.beginPath();
-				ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.1);
-				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
-				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.9, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
-				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.6, pixelY + consts.DISPLAY_TILE_SIZE * 0.3);
-				ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.9, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
-				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.6, pixelY + consts.DISPLAY_TILE_SIZE * 0.7);
-				ctx.stroke();
+				_ctx.beginPath();
+				_ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.1);
+				_ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+				_ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.9, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+				_ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.6, pixelY + consts.DISPLAY_TILE_SIZE * 0.3);
+				_ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.9, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+				_ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.6, pixelY + consts.DISPLAY_TILE_SIZE * 0.7);
+				_ctx.stroke();
 				break;
 			case 0x0601:
-				ctx.beginPath();
-				ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.9, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
-				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
-				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.9);
-				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.3, pixelY + consts.DISPLAY_TILE_SIZE * 0.6);
-				ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.9);
-				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.7, pixelY + consts.DISPLAY_TILE_SIZE * 0.6);
-				ctx.stroke();
+				_ctx.beginPath();
+				_ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.9, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+				_ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+				_ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.9);
+				_ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.3, pixelY + consts.DISPLAY_TILE_SIZE * 0.6);
+				_ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.9);
+				_ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.7, pixelY + consts.DISPLAY_TILE_SIZE * 0.6);
+				_ctx.stroke();
 				break;
 			case 0x0701:
-				ctx.beginPath();
-				ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
-				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
-				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.9);
-				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.3, pixelY + consts.DISPLAY_TILE_SIZE * 0.6);
-				ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.9);
-				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.7, pixelY + consts.DISPLAY_TILE_SIZE * 0.6);
-				ctx.stroke();
+				_ctx.beginPath();
+				_ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+				_ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+				_ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.9);
+				_ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.3, pixelY + consts.DISPLAY_TILE_SIZE * 0.6);
+				_ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.9);
+				_ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.7, pixelY + consts.DISPLAY_TILE_SIZE * 0.6);
+				_ctx.stroke();
 				break;
 			case 0x0801:
-				ctx.beginPath();
-				ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.9);
-				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
-				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
-				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.4, pixelY + consts.DISPLAY_TILE_SIZE * 0.3);
-				ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
-				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.4, pixelY + consts.DISPLAY_TILE_SIZE * 0.7);
-				ctx.stroke();
+				_ctx.beginPath();
+				_ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.9);
+				_ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+				_ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+				_ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.4, pixelY + consts.DISPLAY_TILE_SIZE * 0.3);
+				_ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+				_ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.4, pixelY + consts.DISPLAY_TILE_SIZE * 0.7);
+				_ctx.stroke();
 				break;
 			case 0x0901:
-				ctx.beginPath();
-				ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.1);
-				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
-				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
-				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.4, pixelY + consts.DISPLAY_TILE_SIZE * 0.3);
-				ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
-				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.4, pixelY + consts.DISPLAY_TILE_SIZE * 0.7);
-				ctx.stroke();
+				_ctx.beginPath();
+				_ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.1);
+				_ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+				_ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+				_ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.4, pixelY + consts.DISPLAY_TILE_SIZE * 0.3);
+				_ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+				_ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.4, pixelY + consts.DISPLAY_TILE_SIZE * 0.7);
+				_ctx.stroke();
 				break;
 			case 0x0A01:
-				ctx.beginPath();
-				ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.9, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
-				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
-				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.1);
-				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.3, pixelY + consts.DISPLAY_TILE_SIZE * 0.4);
-				ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.1);
-				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.7, pixelY + consts.DISPLAY_TILE_SIZE * 0.4);
-				ctx.stroke();
+				_ctx.beginPath();
+				_ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.9, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+				_ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+				_ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.1);
+				_ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.3, pixelY + consts.DISPLAY_TILE_SIZE * 0.4);
+				_ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.1);
+				_ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.7, pixelY + consts.DISPLAY_TILE_SIZE * 0.4);
+				_ctx.stroke();
 				break;
 			case 0x0B01:
-				ctx.beginPath();
-				ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
-				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
-				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.1);
-				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.3, pixelY + consts.DISPLAY_TILE_SIZE * 0.4);
-				ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.1);
-				ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.7, pixelY + consts.DISPLAY_TILE_SIZE * 0.4);
-				ctx.stroke();
+				_ctx.beginPath();
+				_ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+				_ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+				_ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.1);
+				_ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.3, pixelY + consts.DISPLAY_TILE_SIZE * 0.4);
+				_ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.1);
+				_ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.7, pixelY + consts.DISPLAY_TILE_SIZE * 0.4);
+				_ctx.stroke();
 				break;
 				
 			case 0x0002:
-				rect(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.5, consts.DISPLAY_TILE_SIZE * 0.6, consts.DISPLAY_TILE_SIZE * 0.6, rectMode.CENTER);
+				rect(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.5, consts.DISPLAY_TILE_SIZE * 0.6, consts.DISPLAY_TILE_SIZE * 0.6, rectMode.CENTER, _ctx);
 				break;
 			
 			case 0x0003:
-				rect(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.5, consts.DISPLAY_TILE_SIZE * 0.6, consts.DISPLAY_TILE_SIZE * 0.6, rectMode.CENTER);
-				rect(pixelX + consts.DISPLAY_TILE_SIZE * 0.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.1, consts.DISPLAY_TILE_SIZE * 0.8, consts.DISPLAY_TILE_SIZE * 0.1, rectMode.CORNER);
+				rect(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.5, consts.DISPLAY_TILE_SIZE * 0.6, consts.DISPLAY_TILE_SIZE * 0.6, rectMode.CENTER, _ctx);
+				rect(pixelX + consts.DISPLAY_TILE_SIZE * 0.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.1, consts.DISPLAY_TILE_SIZE * 0.8, consts.DISPLAY_TILE_SIZE * 0.1, rectMode.CORNER, _ctx);
 				break;
 			
 			case 0x0004:
-				rect(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.5, consts.DISPLAY_TILE_SIZE * 0.8, consts.DISPLAY_TILE_SIZE * 0.8, rectMode.CENTER);
+				rect(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.5, consts.DISPLAY_TILE_SIZE * 0.8, consts.DISPLAY_TILE_SIZE * 0.8, rectMode.CENTER, _ctx);
 				ctx.fillStyle = "#FFCC11";
-				rect(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.5, consts.DISPLAY_TILE_SIZE * 0.4, consts.DISPLAY_TILE_SIZE * 0.4, rectMode.CENTER);
-				break
+				rect(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.5, consts.DISPLAY_TILE_SIZE * 0.4, consts.DISPLAY_TILE_SIZE * 0.4, rectMode.CENTER, _ctx);
+				break;
 		}
 	}
 }
@@ -744,107 +767,14 @@ class Item {
 			this.startY = y;
 		}
 	}
-	update(){
+	update(currentframe:any){
 		if(Game.tutorial.conveyor.beltchain && Game.persistent.tutorialenabled && ((Math.abs(this.startX - this.x) + 1 > consts.TILE_SIZE * 2) || (Math.abs(this.startY - this.y) + 1 > consts.TILE_SIZE * 2))){
 			_alert("Nice!\nConveyor belts are also the way to put items in machines.\nSpeaking of which, let's try automating coal: Place a Miner(2 key).");
 			Game.tutorial.conveyor.beltchain = false;
 		}
-		if(this.level.buildingIDAt(this.x, this.y) % 0x100 == 0x01){//this is basically bit math that says "is the last byte == 01". In other words, "Is this item on a conveyor?"
-			switch(this.level.buildingIDAt(this.x, this.y) >> 8){//bit masks ftw, this just grabs the first byte
-				//yes I know there's no need to write the ids in hex but why the heck not
-				case 0x00:
-					this.y = (Math.floor(this.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
-					this.x += consts.buildings.conveyor.SPEED;
-					break;
-				case 0x01:
-					this.x = (Math.floor(this.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
-					this.y += consts.buildings.conveyor.SPEED;
-					break;
-				case 0x02:
-					this.x -= consts.buildings.conveyor.SPEED;
-					this.y = (Math.floor(this.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
-					break;
-				case 0x03:
-					this.x = (Math.floor(this.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
-					this.y -= consts.buildings.conveyor.SPEED;
-					break;
-				case 0x04:
-					if(pixelToTile(this.x) >= consts.TILE_SIZE * 0.5 && pixelToTile(this.y) == consts.TILE_SIZE * 0.5){
-						this.x ++;
-						this.y = (Math.floor(this.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
-					} else if(pixelToTile(this.x) == consts.TILE_SIZE * 0.5 && pixelToTile(this.y) >= consts.TILE_SIZE * 0.5){
-						this.x = (Math.floor(this.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
-						this.y --;
-					}
-					break;
-				case 0x05:
-					if(pixelToTile(this.x) >= consts.TILE_SIZE * 0.5 && pixelToTile(this.y) == consts.TILE_SIZE * 0.5){
-						this.x ++;
-						this.y = (Math.floor(this.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
-					} else if(pixelToTile(this.x) == consts.TILE_SIZE * 0.5 && pixelToTile(this.y) <= consts.TILE_SIZE * 0.5){
-						this.x = (Math.floor(this.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
-						this.y ++;
-					}
-					break;
-				case 0x06:
-					if(pixelToTile(this.x) == consts.TILE_SIZE * 0.5 && pixelToTile(this.y) >= consts.TILE_SIZE * 0.5){
-						this.x = (Math.floor(this.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
-						this.y ++;
-					} else if(pixelToTile(this.x) > consts.TILE_SIZE * 0.5 && pixelToTile(this.y) == consts.TILE_SIZE * 0.5){
-						this.x --;
-						this.y = (Math.floor(this.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
-					}
-					break;
-				case 0x07:
-					if(pixelToTile(this.x) == consts.TILE_SIZE * 0.5 && pixelToTile(this.y) >= consts.TILE_SIZE * 0.5){
-						this.x = (Math.floor(this.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
-						this.y ++;
-					} else if(pixelToTile(this.x) < consts.TILE_SIZE * 0.5 && pixelToTile(this.y) == consts.TILE_SIZE * 0.5){
-						this.x ++;
-						this.y = (Math.floor(this.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
-					}
-					break;
-				case 0x08:
-					if(pixelToTile(this.x) <= consts.TILE_SIZE * 0.5 && pixelToTile(this.y) == consts.TILE_SIZE * 0.5){
-						this.x --;
-						this.y = (Math.floor(this.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
-					} else if(pixelToTile(this.x) == consts.TILE_SIZE * 0.5 && pixelToTile(this.y) >= consts.TILE_SIZE * 0.5){
-						this.x = (Math.floor(this.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
-						this.y --;
-					}
-					break;
-				case 0x09:
-					if(pixelToTile(this.x) <= consts.TILE_SIZE * 0.5 && pixelToTile(this.y) == consts.TILE_SIZE * 0.5){
-						this.x --;
-						this.y = (Math.floor(this.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
-					} else if(pixelToTile(this.x) == consts.TILE_SIZE * 0.5 && pixelToTile(this.y) <= consts.TILE_SIZE * 0.5){
-						this.x = (Math.floor(this.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
-						this.y ++;
-					}
-					break;
-				case 0x0A:
-					if(pixelToTile(this.x) == consts.TILE_SIZE * 0.5 && pixelToTile(this.y) <= consts.TILE_SIZE * 0.5){
-						this.x = (Math.floor(this.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
-						this.y --;
-					} else if(pixelToTile(this.x) > consts.TILE_SIZE * 0.5 && pixelToTile(this.y) == consts.TILE_SIZE * 0.5){
-						this.x --;
-						this.y = (Math.floor(this.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
-					}
-					break;
-				case 0x0B:
-					if(pixelToTile(this.x) == consts.TILE_SIZE * 0.5 && pixelToTile(this.y) <= consts.TILE_SIZE * 0.5){
-						this.x = (Math.floor(this.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
-						this.y --;
-					} else if(pixelToTile(this.x) < consts.TILE_SIZE * 0.5 && pixelToTile(this.y) == consts.TILE_SIZE * 0.5){
-						this.x ++;
-						this.y = (Math.floor(this.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
-					}
-					break;
-			}
-		}
 	}
 	display(currentframe:any){
-		ctx2.drawImage(textures.get("item_" + this.id), this.x * consts.DISPLAY_SCALE + (Game.scroll.x * consts.DISPLAY_SCALE) - 8*consts.DISPLAY_SCALE, this.y * consts.DISPLAY_SCALE + (Game.scroll.y * consts.DISPLAY_SCALE) - 8*consts.DISPLAY_SCALE, 16 * consts.DISPLAY_SCALE, 16 * consts.DISPLAY_SCALE);
+		ctx3.drawImage(textures.get("item_" + this.id), this.x * consts.DISPLAY_SCALE + (Game.scroll.x * consts.DISPLAY_SCALE) - 8*consts.DISPLAY_SCALE, this.y * consts.DISPLAY_SCALE + (Game.scroll.y * consts.DISPLAY_SCALE) - 8*consts.DISPLAY_SCALE, 16 * consts.DISPLAY_SCALE, 16 * consts.DISPLAY_SCALE);
 		if(keysPressed.indexOf("Shift") != -1){
 			var x = (mouseX - (Game.scroll.x * consts.DISPLAY_SCALE))/consts.DISPLAY_SCALE;
 			var y = (mouseY - (Game.scroll.y * consts.DISPLAY_SCALE))/consts.DISPLAY_SCALE;
@@ -855,13 +785,13 @@ class Item {
 				x < this.x + (8 * consts.DISPLAY_SCALE) &&
 				y < this.y + (8 * consts.DISPLAY_SCALE)
 			){
-				overlayCtx.font = "16px monospace";
-				overlayCtx.fillStyle = "#0033CC";
-				overlayCtx.fillRect(mouseX, mouseY, names.item[this.id].length * 10, 16);
-				overlayCtx.strokeStyle = "#000000";
-				overlayCtx.strokeRect(mouseX, mouseY, names.item[this.id].length * 10, 16);
-				overlayCtx.fillStyle = "#FFFFFF";
-				overlayCtx.fillText(names.item[this.id], mouseX + 2, mouseY + 10);
+				ctx4.font = "16px monospace";
+				ctx4.fillStyle = "#0033CC";
+				ctx4.fillRect(mouseX, mouseY, names.item[this.id].length * 10, 16);
+				ctx4.strokeStyle = "#000000";
+				ctx4.strokeRect(mouseX, mouseY, names.item[this.id].length * 10, 16);
+				ctx4.fillStyle = "#FFFFFF";
+				ctx4.fillText(names.item[this.id], mouseX + 2, mouseY + 10);
 				if(currentframe?.tooltip){
 					currentframe.tooltip = false;
 				}
@@ -880,9 +810,11 @@ class Building {
 		this.y = tileY;
 		this.id = id;
 		this.level = level;
-		let x = new Promise(() => {});
 	}
-	update(){
+	static canBuildAt(tileX:number, tileY:number, level:Level){
+		return level.tileAt2(tileX, tileY) != 0x04;
+	}
+	update(currentframe){
 		if(this.level.buildingIDAt2(this.x, this.y) != this.id){
 			return this.break();
 		}
@@ -890,33 +822,37 @@ class Building {
 	break(){
 		this.level.buildings.splice(this.level.buildings.indexOf(this), 1);
 	}
-	spawnItem(id:string){
+	spawnItem(id:string){//Note: this is O(n^2). Bad!
 		if(
-				this.level.buildingIDAt2(this.x + 1, this.y) % 0x100 == 0x01 &&
+				this.level.buildingIDAt2(this.x + 1, this.y) % 0x100 === 0x01 &&
 				this.level.buildingIDAt2(this.x + 1, this.y) !== 0x0201 &&
 				this.level.buildingIDAt2(this.x + 1, this.y) !== 0x0801 &&
-				this.level.buildingIDAt2(this.x + 1, this.y) !== 0x0901
+				this.level.buildingIDAt2(this.x + 1, this.y) !== 0x0901 &&
+				(this.level.buildingAt(this.x + 1, this.y) as Conveyor).item == null
 		){
 			this.level.addItem(this.x * consts.TILE_SIZE + consts.TILE_SIZE * 1.1, this.y * consts.TILE_SIZE + consts.TILE_SIZE * 0.5, id);
 		} else if(
-				this.level.buildingIDAt2(this.x, this.y + 1) % 0x100 == 0x01 &&
+				this.level.buildingIDAt2(this.x, this.y + 1) % 0x100 === 0x01 &&
 				this.level.buildingIDAt2(this.x, this.y + 1) !== 0x0301 &&
 				this.level.buildingIDAt2(this.x, this.y + 1) !== 0x0A01 &&
-				this.level.buildingIDAt2(this.x, this.y + 1) !== 0x0B01
+				this.level.buildingIDAt2(this.x, this.y + 1) !== 0x0B01 &&
+				(this.level.buildingAt(this.x, this.y + 1) as Conveyor).item == null
 		){
 			this.level.addItem(this.x * consts.TILE_SIZE + consts.TILE_SIZE * 0.5, this.y * consts.TILE_SIZE + consts.TILE_SIZE * 1.1, id);
 		} else if(
-				this.level.buildingIDAt2(this.x - 1, this.y) % 0x100 == 0x01 &&
+				this.level.buildingIDAt2(this.x - 1, this.y) % 0x100 === 0x01 &&
 				this.level.buildingIDAt2(this.x - 1, this.y) !== 0x0001 &&
 				this.level.buildingIDAt2(this.x - 1, this.y) !== 0x0401 &&
-				this.level.buildingIDAt2(this.x - 1, this.y) !== 0x0501
+				this.level.buildingIDAt2(this.x - 1, this.y) !== 0x0501 &&
+				(this.level.buildingAt(this.x - 1, this.y) as Conveyor).item == null
 		){
 			this.level.addItem(this.x * consts.TILE_SIZE - consts.TILE_SIZE * 0.1, this.y * consts.TILE_SIZE + consts.TILE_SIZE * 0.5, id);
 		} else if(
-				this.level.buildingIDAt2(this.x, this.y - 1) % 0x100 == 0x01 &&
+				this.level.buildingIDAt2(this.x, this.y - 1) % 0x100 === 0x01 &&
 				this.level.buildingIDAt2(this.x, this.y - 1) !== 0x0101 &&
 				this.level.buildingIDAt2(this.x, this.y - 1) !== 0x0601 &&
-				this.level.buildingIDAt2(this.x, this.y - 1) !== 0x0701
+				this.level.buildingIDAt2(this.x, this.y - 1) !== 0x0701 &&
+				(this.level.buildingAt(this.x, this.y - 1) as Conveyor).item == null
 		){
 			this.level.addItem(this.x * consts.TILE_SIZE + consts.TILE_SIZE * 0.5, this.y * consts.TILE_SIZE - consts.TILE_SIZE * 0.1, id);
 		} else {
@@ -937,10 +873,10 @@ class Building {
 	grabItem(filter:(item:Item) => any, callback:(item:Item) => void, remove:boolean){
 		for(var item in this.level.items){
 			if(
-				(Math.abs(this.level.items[item].x - (this.x * consts.TILE_SIZE + consts.TILE_SIZE / 2)) < consts.TILE_SIZE * 0.6) &&
-				(Math.abs(this.level.items[item].y - (this.y * consts.TILE_SIZE + consts.TILE_SIZE / 2)) < consts.TILE_SIZE * 0.6) &&
+				(Math.abs(this.level.items[item].x - (this.x * consts.TILE_SIZE + consts.TILE_SIZE / 2)) <= consts.TILE_SIZE * 0.6) &&
+				(Math.abs(this.level.items[item].y - (this.y * consts.TILE_SIZE + consts.TILE_SIZE / 2)) <= consts.TILE_SIZE * 0.6) &&
 				filter(this.level.items[item])
-			){
+			){//Todo: try to optimize this stuff as much as possible
 				callback(this.level.items[item]);
 				if(remove){
 					this.level.items.splice(parseInt(item), 1);
@@ -964,7 +900,7 @@ class Miner extends Building {
 		this.miningItem = oreFor[level.tileAt2(tileX, tileY)];
 	}
 	static canBuildAt(tileX:number, tileY:number, level:Level):boolean {
-		return (level.tileAt2(tileX, tileY) == 0x02 || level.tileAt2(tileX, tileY) == 0x03) && level.buildingIDAt2(tileX, tileY) != 0x0002;
+		return level.tileAt2(tileX, tileY) == 0x02 || level.tileAt2(tileX, tileY) == 0x03;
 	}
 	update(){
 		if(this.level.buildingIDAt2(this.x, this.y) != this.id){
@@ -975,8 +911,8 @@ class Miner extends Building {
 		} else {
 			this.timer = 61;
 			if(this.spawnItem(this.miningItem)){
-				if(Game.tutorial.miner.firstoutput && Game.persistent.tutorialenabled){
-					_alert("Nice!\nThis is just coal ore though, not coal. Try placing a furnace(4 key).\nOh also, remember you can scroll to zoom in on that sweet coal ore texture.");
+				if(Game.tutorial.miner.firstoutput && Game.persistent.tutorialenabled && this.miningItem == ItemID.base_coalOre){
+					_alert("Nice!\nThis is just coal ore though, not coal. Try placing a furnace(4 key).\nOh also, remember you can scroll to zoom in on that beautiful coal ore texture.");
 					Game.tutorial.miner.firstoutput = false;
 				}
 			};
@@ -1024,7 +960,7 @@ class Furnace extends Building {
 		this.timer = 29;
 	}
 	static canBuildAt(tileX:number, tileY:number, level:Level){
-		return level.tileAt2(tileX, tileY) == 0x01 && level.buildingIDAt2(tileX, tileY) !== 0x0004;
+		return level.tileAt2(tileX, tileY) == 0x01;
 	}
 	update(){
 		if(this.level.buildingIDAt2(this.x, this.y) != this.id){
@@ -1038,30 +974,125 @@ class Furnace extends Building {
 				this.processingItem = null;
 			}
 		} else if(!this.processingItem){
-
 			this.grabItem(smeltFor, (item) => {
 				this.processingItem = item;
 			}, true);
-
-
-			// for(var item in this.level.items){
-			// 	if(
-			// 		(Math.abs(this.level.items[item].x - (this.x * consts.TILE_SIZE + consts.TILE_SIZE / 2)) < consts.TILE_SIZE * 0.6) &&
-			// 		(Math.abs(this.level.items[item].y - (this.y * consts.TILE_SIZE + consts.TILE_SIZE / 2)) < consts.TILE_SIZE * 0.6) &&
-			// 		smeltFor(this.level.items[item].id)
-			// 	){
-			// 		this.level.items[item].x = (this.x + 0.5) * consts.TILE_SIZE;
-			// 		this.level.items[item].y = (this.y + 0.5) * consts.TILE_SIZE;
-			// 		this.processingItem = this.level.items[item];
-			// 		this.level.items.splice(parseInt(item), 1);
-			// 		return;
-			// 	}
-			// }
 		}
 	}
 }
 
-class Conveyor {
+class Conveyor extends Building {
+	item: Item;
+	constructor(tileX:number, tileY:number, id:BuildingID, level:Level){
+		super(tileX, tileY, id, level);
+		this.item = null;
+	}
+	update(currentframe){
+		if(this.level.buildingIDAt2(this.x, this.y) != this.id){
+			return this.break();
+		}
+		if(this.item){
+			if(Math.floor(this.item.x / consts.TILE_SIZE) != this.x || Math.floor(this.item.y / consts.TILE_SIZE) != this.y){
+				if([0x0000, 0xFFFF].indexOf(this.level.buildingIDAt(this.item.x, this.item.y)) == -1){
+					this.item = null;
+				}
+				return;
+			}
+			switch(this.id >> 8){//bit masks ftw, this just grabs the first byte
+				//yes I know there's no need to write the ids in hex but why the heck not
+				case 0x00:
+					this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+					this.item.x += consts.buildings.conveyor.SPEED;
+					break;
+				case 0x01:
+					this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+					this.item.y += consts.buildings.conveyor.SPEED;
+					break;
+				case 0x02:
+					this.item.x -= consts.buildings.conveyor.SPEED;
+					this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+					break;
+				case 0x03:
+					this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+					this.item.y -= consts.buildings.conveyor.SPEED;
+					break;
+				case 0x04:
+					if(pixelToTile(this.item.x) >= consts.TILE_SIZE * 0.5 && pixelToTile(this.item.y) == consts.TILE_SIZE * 0.5){
+						this.item.x ++;
+						this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+					} else if(pixelToTile(this.item.x) == consts.TILE_SIZE * 0.5 && pixelToTile(this.item.y) >= consts.TILE_SIZE * 0.5){
+						this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+						this.item.y --;
+					}
+					break;
+				case 0x05:
+					if(pixelToTile(this.item.x) >= consts.TILE_SIZE * 0.5 && pixelToTile(this.item.y) == consts.TILE_SIZE * 0.5){
+						this.item.x ++;
+						this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+					} else if(pixelToTile(this.item.x) == consts.TILE_SIZE * 0.5 && pixelToTile(this.item.y) <= consts.TILE_SIZE * 0.5){
+						this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+						this.item.y ++;
+					}
+					break;
+				case 0x06:
+					if(pixelToTile(this.item.x) == consts.TILE_SIZE * 0.5 && pixelToTile(this.item.y) >= consts.TILE_SIZE * 0.5){
+						this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+						this.item.y ++;
+					} else if(pixelToTile(this.item.x) > consts.TILE_SIZE * 0.5 && pixelToTile(this.item.y) == consts.TILE_SIZE * 0.5){
+						this.item.x --;
+						this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+					}
+					break;
+				case 0x07:
+					if(pixelToTile(this.item.x) == consts.TILE_SIZE * 0.5 && pixelToTile(this.item.y) >= consts.TILE_SIZE * 0.5){
+						this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+						this.item.y ++;
+					} else if(pixelToTile(this.item.x) < consts.TILE_SIZE * 0.5 && pixelToTile(this.item.y) == consts.TILE_SIZE * 0.5){
+						this.item.x ++;
+						this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+					}
+					break;
+				case 0x08:
+					if(pixelToTile(this.item.x) <= consts.TILE_SIZE * 0.5 && pixelToTile(this.item.y) == consts.TILE_SIZE * 0.5){
+						this.item.x --;
+						this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+					} else if(pixelToTile(this.item.x) == consts.TILE_SIZE * 0.5 && pixelToTile(this.item.y) >= consts.TILE_SIZE * 0.5){
+						this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+						this.item.y --;
+					}
+					break;
+				case 0x09:
+					if(pixelToTile(this.item.x) <= consts.TILE_SIZE * 0.5 && pixelToTile(this.item.y) == consts.TILE_SIZE * 0.5){
+						this.item.x --;
+						this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+					} else if(pixelToTile(this.item.x) == consts.TILE_SIZE * 0.5 && pixelToTile(this.item.y) <= consts.TILE_SIZE * 0.5){
+						this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+						this.item.y ++;
+					}
+					break;
+				case 0x0A:
+					if(pixelToTile(this.item.x) == consts.TILE_SIZE * 0.5 && pixelToTile(this.item.y) <= consts.TILE_SIZE * 0.5){
+						this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+						this.item.y --;
+					} else if(pixelToTile(this.item.x) > consts.TILE_SIZE * 0.5 && pixelToTile(this.item.y) == consts.TILE_SIZE * 0.5){
+						this.item.x --;
+						this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+					}
+					break;
+				case 0x0B:
+					if(pixelToTile(this.item.x) == consts.TILE_SIZE * 0.5 && pixelToTile(this.item.y) <= consts.TILE_SIZE * 0.5){
+						this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+						this.item.y --;
+					} else if(pixelToTile(this.item.x) < consts.TILE_SIZE * 0.5 && pixelToTile(this.item.y) == consts.TILE_SIZE * 0.5){
+						this.item.x ++;
+						this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+					}
+					break;
+			}
+		} else {
+			this.grabItem(() => {return true;}, (item) => {this.item = item;}, false);
+		}
+	}
 	static canBuildAt(tileX:number, tileY:number, level:Level){
 		return level.tileAt2(tileX, tileY) != 0x04;
 	}
