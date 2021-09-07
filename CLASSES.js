@@ -122,7 +122,7 @@ class Level extends ChunkedDataStorage {
         return this.getChunk(Math.floor(tileX), Math.floor(tileY)).buildingAt(tileToChunk(tileX), tileToChunk(tileY));
     }
     buildingAt(tileX, tileY) {
-        for (var building of this.buildings) {
+        for (var building of this.buildings) { //this is O(n) :(
             if (building.x == tileX && building.y == tileY)
                 return building;
         }
@@ -756,7 +756,6 @@ class Building {
         this.y = tileY;
         this.id = id;
         this.level = level;
-        let x = new Promise(() => { });
     }
     static canBuildAt(tileX, tileY, level) {
         return level.tileAt2(tileX, tileY) != 0x04;
@@ -770,28 +769,32 @@ class Building {
         this.level.buildings.splice(this.level.buildings.indexOf(this), 1);
     }
     spawnItem(id) {
-        if (this.level.buildingIDAt2(this.x + 1, this.y) % 0x100 == 0x01 &&
+        if (this.level.buildingIDAt2(this.x + 1, this.y) % 0x100 === 0x01 &&
             this.level.buildingIDAt2(this.x + 1, this.y) !== 0x0201 &&
             this.level.buildingIDAt2(this.x + 1, this.y) !== 0x0801 &&
-            this.level.buildingIDAt2(this.x + 1, this.y) !== 0x0901) {
+            this.level.buildingIDAt2(this.x + 1, this.y) !== 0x0901 &&
+            this.level.buildingAt(this.x + 1, this.y).item == null) {
             this.level.addItem(this.x * consts.TILE_SIZE + consts.TILE_SIZE * 1.1, this.y * consts.TILE_SIZE + consts.TILE_SIZE * 0.5, id);
         }
-        else if (this.level.buildingIDAt2(this.x, this.y + 1) % 0x100 == 0x01 &&
+        else if (this.level.buildingIDAt2(this.x, this.y + 1) % 0x100 === 0x01 &&
             this.level.buildingIDAt2(this.x, this.y + 1) !== 0x0301 &&
             this.level.buildingIDAt2(this.x, this.y + 1) !== 0x0A01 &&
-            this.level.buildingIDAt2(this.x, this.y + 1) !== 0x0B01) {
+            this.level.buildingIDAt2(this.x, this.y + 1) !== 0x0B01 &&
+            this.level.buildingAt(this.x, this.y + 1).item == null) {
             this.level.addItem(this.x * consts.TILE_SIZE + consts.TILE_SIZE * 0.5, this.y * consts.TILE_SIZE + consts.TILE_SIZE * 1.1, id);
         }
-        else if (this.level.buildingIDAt2(this.x - 1, this.y) % 0x100 == 0x01 &&
+        else if (this.level.buildingIDAt2(this.x - 1, this.y) % 0x100 === 0x01 &&
             this.level.buildingIDAt2(this.x - 1, this.y) !== 0x0001 &&
             this.level.buildingIDAt2(this.x - 1, this.y) !== 0x0401 &&
-            this.level.buildingIDAt2(this.x - 1, this.y) !== 0x0501) {
+            this.level.buildingIDAt2(this.x - 1, this.y) !== 0x0501 &&
+            this.level.buildingAt(this.x - 1, this.y).item == null) {
             this.level.addItem(this.x * consts.TILE_SIZE - consts.TILE_SIZE * 0.1, this.y * consts.TILE_SIZE + consts.TILE_SIZE * 0.5, id);
         }
-        else if (this.level.buildingIDAt2(this.x, this.y - 1) % 0x100 == 0x01 &&
+        else if (this.level.buildingIDAt2(this.x, this.y - 1) % 0x100 === 0x01 &&
             this.level.buildingIDAt2(this.x, this.y - 1) !== 0x0101 &&
             this.level.buildingIDAt2(this.x, this.y - 1) !== 0x0601 &&
-            this.level.buildingIDAt2(this.x, this.y - 1) !== 0x0701) {
+            this.level.buildingIDAt2(this.x, this.y - 1) !== 0x0701 &&
+            this.level.buildingAt(this.x, this.y - 1).item == null) {
             this.level.addItem(this.x * consts.TILE_SIZE + consts.TILE_SIZE * 0.5, this.y * consts.TILE_SIZE - consts.TILE_SIZE * 0.1, id);
         }
         else {
@@ -811,9 +814,9 @@ class Building {
     }
     grabItem(filter, callback, remove) {
         for (var item in this.level.items) {
-            if ((Math.abs(this.level.items[item].x - (this.x * consts.TILE_SIZE + consts.TILE_SIZE / 2)) < consts.TILE_SIZE * 0.6) &&
-                (Math.abs(this.level.items[item].y - (this.y * consts.TILE_SIZE + consts.TILE_SIZE / 2)) < consts.TILE_SIZE * 0.6) &&
-                filter(this.level.items[item])) {
+            if ((Math.abs(this.level.items[item].x - (this.x * consts.TILE_SIZE + consts.TILE_SIZE / 2)) <= consts.TILE_SIZE * 0.6) &&
+                (Math.abs(this.level.items[item].y - (this.y * consts.TILE_SIZE + consts.TILE_SIZE / 2)) <= consts.TILE_SIZE * 0.6) &&
+                filter(this.level.items[item])) { //Todo: try to optimize this stuff as much as possible
                 callback(this.level.items[item]);
                 if (remove) {
                     this.level.items.splice(parseInt(item), 1);
@@ -843,8 +846,8 @@ class Miner extends Building {
         else {
             this.timer = 61;
             if (this.spawnItem(this.miningItem)) {
-                if (Game.tutorial.miner.firstoutput && Game.persistent.tutorialenabled) {
-                    _alert("Nice!\nThis is just coal ore though, not coal. Try placing a furnace(4 key).\nOh also, remember you can scroll to zoom in on that sweet coal ore texture.");
+                if (Game.tutorial.miner.firstoutput && Game.persistent.tutorialenabled && this.miningItem == ItemID.base_coalOre) {
+                    _alert("Nice!\nThis is just coal ore though, not coal. Try placing a furnace(4 key).\nOh also, remember you can scroll to zoom in on that beautiful coal ore texture.");
                     Game.tutorial.miner.firstoutput = false;
                 }
             }
@@ -928,7 +931,9 @@ class Conveyor extends Building {
         }
         if (this.item) {
             if (Math.floor(this.item.x / consts.TILE_SIZE) != this.x || Math.floor(this.item.y / consts.TILE_SIZE) != this.y) {
-                this.item = null;
+                if ([0x0000, 0xFFFF].indexOf(this.level.buildingIDAt(this.item.x, this.item.y)) == -1) {
+                    this.item = null;
+                }
                 return;
             }
             switch (this.id >> 8) { //bit masks ftw, this just grabs the first byte
@@ -958,7 +963,6 @@ class Conveyor extends Building {
                         this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE / 2;
                         this.item.y--;
                     }
-                    currentframe.ee++;
                     break;
                 case 0x05:
                     if (pixelToTile(this.item.x) >= consts.TILE_SIZE * 0.5 && pixelToTile(this.item.y) == consts.TILE_SIZE * 0.5) {
@@ -1026,8 +1030,8 @@ class Conveyor extends Building {
                         this.item.y--;
                     }
                     else if (pixelToTile(this.item.x) < consts.TILE_SIZE * 0.5 && pixelToTile(this.item.y) == consts.TILE_SIZE * 0.5) {
-                        this.x++;
-                        this.item.y = (Math.floor(this.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE / 2;
+                        this.item.x++;
+                        this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE / 2;
                     }
                     break;
             }

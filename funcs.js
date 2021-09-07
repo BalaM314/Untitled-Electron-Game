@@ -171,12 +171,15 @@ function zoom(scaleFactor) {
     else if (consts.DISPLAY_SCALE * scaleFactor > 5) {
         scaleFactor = 5 / consts.DISPLAY_SCALE;
     }
+    if ((consts.DISPLAY_SCALE <= 1 && scaleFactor <= 1) || (consts.DISPLAY_SCALE >= 5 && scaleFactor >= 1)) {
+        return;
+    }
+    Game.forceRedraw = true;
     consts.DISPLAY_SCALE *= scaleFactor;
     Game.scroll.x -= (innerWidth * 0.5 * (scaleFactor - 1)) / consts.DISPLAY_SCALE;
     Game.scroll.y -= (innerHeight * 0.5 * (scaleFactor - 1)) / consts.DISPLAY_SCALE;
 }
 window.onwheel = (e) => {
-    Game.forceRedraw = true;
     zoom(Math.pow(1.001, -e.deltaY));
 };
 function tileToChunk(tileCoord) {
