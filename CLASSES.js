@@ -904,19 +904,6 @@ class Furnace extends Building {
             this.grabItem(smeltFor, (item) => {
                 this.processingItem = item;
             }, true);
-            // for(var item in this.level.items){
-            // 	if(
-            // 		(Math.abs(this.level.items[item].x - (this.x * consts.TILE_SIZE + consts.TILE_SIZE / 2)) < consts.TILE_SIZE * 0.6) &&
-            // 		(Math.abs(this.level.items[item].y - (this.y * consts.TILE_SIZE + consts.TILE_SIZE / 2)) < consts.TILE_SIZE * 0.6) &&
-            // 		smeltFor(this.level.items[item].id)
-            // 	){
-            // 		this.level.items[item].x = (this.x + 0.5) * consts.TILE_SIZE;
-            // 		this.level.items[item].y = (this.y + 0.5) * consts.TILE_SIZE;
-            // 		this.processingItem = this.level.items[item];
-            // 		this.level.items.splice(parseInt(item), 1);
-            // 		return;
-            // 	}
-            // }
         }
     }
 }
