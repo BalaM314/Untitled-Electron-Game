@@ -83,16 +83,18 @@ const consts = {
     }
 }
 
-class ChunkedDataStorage {
-	storage: Map<string, Chunk>;
+class ChunkedDataStorage<Layer1,Layer2,Layer3> {
+	storage: Map<string, Chunk<Layer1,Layer2,Layer3>>;
 	seed: number;
 	format: string;
-	constructor(seed:number | null){
-		this.storage = new Map();
+	defaults: {layer1: Layer1, layer2: Layer2, layer3: Layer3};
+	constructor(seed:number | null, defaults: {layer1: Layer1, layer2: Layer2, layer3: Layer3}){
+		this.storage = new Map<string, Chunk<Layer1,Layer2,Layer3>>();
 		this.seed = seed ? seed : 0;
+		this.defaults = defaults;
 		this.format = consts.VERSION;
 	}
-	getChunk(tileX:number, tileY:number, dontGenerateChunk?:boolean):Chunk{
+	getChunk(tileX:number, tileY:number, dontGenerateChunk?:boolean):Chunk<Layer1,Layer2,Layer3>{
 		if(this.storage.get(`${Math.floor(tileX / consts.CHUNK_SIZE)},${Math.floor(tileY / consts.CHUNK_SIZE)}`)){
 			return this.storage.get(`${Math.floor(tileX / consts.CHUNK_SIZE)},${Math.floor(tileY / consts.CHUNK_SIZE)}`);
 		} else if(!dontGenerateChunk){
@@ -106,23 +108,23 @@ class ChunkedDataStorage {
 			return;
 		}
 		this.storage.set(`${x},${y}`, 
-			new Chunk(x, y, this.seed)
+			new Chunk<Layer1,Layer2,Layer3>(x, y, this.seed, this.defaults.layer1, this.defaults.layer2, this.defaults.layer3)
 			.generate()
 		);
 		console.log(`generated chunk ${x}, ${y}`)
 		return this.storage.get(`${x},${y}`);
 	}
-	tileAt(pixelX:number, pixelY:number):Tile{
+	atLayer1ByPixel(pixelX:number, pixelY:number):Layer1{
 		return this.getChunk(
 			Math.floor(pixelX/consts.TILE_SIZE),
 			Math.floor(pixelY/consts.TILE_SIZE)
-		).tileAt(tileToChunk(pixelX/consts.TILE_SIZE), tileToChunk(pixelY/consts.TILE_SIZE));
+		).atLayer1(tileToChunk(pixelX/consts.TILE_SIZE), tileToChunk(pixelY/consts.TILE_SIZE));
 	}
-	tileAt2(tileX:number, tileY:number):Tile{
+	atLayer1ByTile(tileX:number, tileY:number):Layer1{
 		return this.getChunk(
 			Math.floor(tileX),
 			Math.floor(tileY)
-		).tileAt(tileToChunk(tileX), tileToChunk(tileY));
+		).atLayer1(tileToChunk(tileX), tileToChunk(tileY));
 	}
 	writeTile(tileX:number, tileY:number, tile:Tile):boolean {
 		if(this.getChunk(tileX,tileY)){
@@ -153,11 +155,15 @@ class ChunkedDataStorage {
 	}
 }
 
-class Level extends ChunkedDataStorage {
+class Level extends ChunkedDataStorage<Tile, BuildingID, null> {
 	items: Item[];
 	buildings: Building[];
 	constructor(seed:number){
-		super(seed);
+		super(seed, {
+			layer1: 0x00,
+			layer2: 0xFFFF,
+			layer3: null
+		});
 		this.items = [];
 		this.buildings = [];
 	}
@@ -165,13 +171,13 @@ class Level extends ChunkedDataStorage {
 		return this.getChunk(
 			Math.floor(pixelX/consts.TILE_SIZE),
 			Math.floor(pixelY/consts.TILE_SIZE)
-		).buildingAt(tileToChunk(pixelX/consts.TILE_SIZE), tileToChunk(pixelY/consts.TILE_SIZE));
+		).atLayer2(tileToChunk(pixelX/consts.TILE_SIZE), tileToChunk(pixelY/consts.TILE_SIZE));
 	}
 	buildingIDAt2(tileX:number, tileY:number):BuildingID{
 		return this.getChunk(
 			Math.floor(tileX),
 			Math.floor(tileY)
-		).buildingAt(tileToChunk(tileX), tileToChunk(tileY));
+		).atLayer2(tileToChunk(tileX), tileToChunk(tileY));
 	}
 	buildingAt(tileX:number, tileY:number):Building {
 		for(var building of this.buildings){//this is O(n) :(
@@ -378,7 +384,7 @@ class Level extends ChunkedDataStorage {
 			ctx4.fillText(names.building[buildingID], mousex + 2, mousey + 10);
 			return;
 		}
-		let tileID = this.tileAt(x, y);
+		let tileID = this.atLayer1ByPixel(x, y);
 		ctx4.fillStyle = "#0033CC";
 		ctx4.fillRect(mousex, mousey, names.tile[tileID].length * 10, 16);
 		ctx4.strokeStyle = "#000000";
@@ -391,17 +397,17 @@ class Level extends ChunkedDataStorage {
 
 
 
-class Chunk {
+class Chunk<Layer1,Layer2,Layer3> {
 	layers: [
-		Tile[][],
-		BuildingID[][],
-		null[][]
+		Layer1[][],
+		Layer2[][],
+		Layer3[][]
 	];
 	chunkSeed: number;
 	x: number;
 	y: number;
 	isWet: boolean;
-	constructor(x:number, y:number, seed:number){
+	constructor(x:number, y:number, seed:number, defaultValue1:Layer1, defaultValue2:Layer2, defaultValue3:Layer3){
 		this.x = x;
 		this.y = y;
 		this.chunkSeed = Math.abs(Math.round(
@@ -420,7 +426,7 @@ class Chunk {
 		for(let x = 0; x < consts.CHUNK_SIZE; x ++){
 			this.layers[0][x] = [];
 			for(let z = 0; z < consts.CHUNK_SIZE; z ++){
-				this.layers[0][x].push(0xFF);
+				this.layers[0][x].push(defaultValue1);
 			}
 		}
 
@@ -428,7 +434,7 @@ class Chunk {
 		for(let x = 0; x < consts.CHUNK_SIZE; x ++){
 			this.layers[1][x] = [];
 			for(let z = 0; z < consts.CHUNK_SIZE; z ++){
-				this.layers[1][x].push(0xFFFF);
+				this.layers[1][x].push(defaultValue2);
 			}
 		}
 
@@ -436,18 +442,18 @@ class Chunk {
 		for(let x = 0; x < consts.CHUNK_SIZE; x ++){
 			this.layers[2][x] = [];
 			for(let z = 0; z < consts.CHUNK_SIZE; z ++){
-				this.layers[2][x].push(null);
+				this.layers[2][x].push(defaultValue3);
 			}
 		}
 
 		return this;
 	}
-	generate():Chunk {
+	generate():Chunk<Layer1,Layer2,Layer3> {
 		//Put down the base
 		this.isWet = this.chunkSeed < 134217728 && Math.abs(this.x) > 3 && Math.abs(this.y) > 3;
 		for(var row in this.layers[0]){
 			for(var tile in this.layers[0][row]){
-				this.layers[0][row][tile] = this.isWet ? 0x04 : 0x00;
+				this.layers[0][row][tile] = (this.isWet ? 0x04 : 0x00 as any);//TODO: somehow fix this, any bad
 			}
 		}
 
@@ -480,24 +486,24 @@ class Chunk {
 
 		return this;
 	}
-	update():Chunk {
+	update():Chunk<Layer1,Layer2,Layer3> {
 		return this;
 	}
-	tileAt(tileX:number, tileY:number):Tile {
+	atLayer1(tileX:number, tileY:number):Layer1 {
 		return this.layers[0]?.[tileY]?.[tileX] ?? null;
 	}
-	buildingAt(x:number, y:number):BuildingID {
+	atLayer2(x:number, y:number):Layer2 {
 		return this.layers[1]?.[y]?.[x] ?? null;
 	}
-	setTile(x:number, y:number, tile:Tile):boolean {
-		if(this.tileAt(x, y) == null){
+	setTile(x:number, y:number, tile:any):boolean {//todo fix, any bad
+		if(this.atLayer1(x, y) == null){
 			return false;
 		}
 		this.layers[0][y][x] = tile;
 		return true;
 	}
-	setBuilding(x:number, y:number, buildingId:BuildingID):boolean {
-		if(this.tileAt(x, y) == null){
+	setBuilding(x:number, y:number, buildingId:Layer2):boolean {
+		if(this.atLayer1(x, y) == null){
 			return false;
 		}
 		this.layers[1][y][x] = buildingId;
@@ -524,12 +530,12 @@ class Chunk {
 		if(currentframe.redraw){
 			for(let y = 0; y < this.layers[0].length; y ++){
 				for(let x = 0; x < this.layers[0][y].length; x ++){
-					this.displayTile(x, y, currentframe);
+					this.displayTile(x, y, currentframe);//todo fix, any bad
 				}
 			}
 			for(let y = 0; y < this.layers[0].length; y ++){
 				for(let x = 0; x < this.layers[0][y].length; x ++){
-					this.displayBuilding(x, y, this.buildingAt(tileToChunk(x), tileToChunk(y)));
+					this.displayBuilding(x, y, this.atLayer2(tileToChunk(x), tileToChunk(y)) as unknown as BuildingID);//todo fix, any bad
 				}
 			}
 		}
@@ -544,8 +550,8 @@ class Chunk {
 		currentframe.tps ++;
 		let pixelX = ((this.x * consts.CHUNK_SIZE) + x) * consts.DISPLAY_TILE_SIZE + (Game.scroll.x * consts.DISPLAY_SCALE);
 		let pixelY = ((this.y * consts.CHUNK_SIZE) + y) * consts.DISPLAY_TILE_SIZE + (Game.scroll.y * consts.DISPLAY_SCALE);
-		if(settings.graphics_mode || this.tileAt(x,y) != 0x00){
-			ctx.drawImage(textures.get("t" + this.tileAt(x,y).toString()), pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
+		if(settings.graphics_mode || (this.atLayer1(x,y) as any as Tile) != 0x00){
+			ctx.drawImage(textures.get("t" + this.atLayer1(x,y).toString()), pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
 		} else {
 			ctx.fillStyle = "#00CC33";
 			rect(pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
@@ -812,7 +818,7 @@ class Building {
 		this.level = level;
 	}
 	static canBuildAt(tileX:number, tileY:number, level:Level){
-		return level.tileAt2(tileX, tileY) != 0x04;
+		return level.atLayer1ByTile(tileX, tileY) != 0x04;
 	}
 	update(currentframe){
 		if(this.level.buildingIDAt2(this.x, this.y) != this.id){
@@ -897,10 +903,10 @@ class Miner extends Building {
 		super(tileX, tileY, id, level);
 		this.timer = 61;
 		this.itemBuffer = 0;
-		this.miningItem = oreFor[level.tileAt2(tileX, tileY)];
+		this.miningItem = oreFor[level.atLayer1ByTile(tileX, tileY)];
 	}
 	static canBuildAt(tileX:number, tileY:number, level:Level):boolean {
-		return level.tileAt2(tileX, tileY) == 0x02 || level.tileAt2(tileX, tileY) == 0x03;
+		return level.atLayer1ByTile(tileX, tileY) == 0x02 || level.atLayer1ByTile(tileX, tileY) == 0x03;
 	}
 	update(){
 		if(this.level.buildingIDAt2(this.x, this.y) != this.id){
@@ -960,7 +966,7 @@ class Furnace extends Building {
 		this.timer = 29;
 	}
 	static canBuildAt(tileX:number, tileY:number, level:Level){
-		return level.tileAt2(tileX, tileY) == 0x01;
+		return level.atLayer1ByTile(tileX, tileY) == 0x01;
 	}
 	update(){
 		if(this.level.buildingIDAt2(this.x, this.y) != this.id){
@@ -1094,6 +1100,6 @@ class Conveyor extends Building {
 		}
 	}
 	static canBuildAt(tileX:number, tileY:number, level:Level){
-		return level.tileAt2(tileX, tileY) != 0x04;
+		return level.atLayer1ByTile(tileX, tileY) != 0x04;
 	}
 }
