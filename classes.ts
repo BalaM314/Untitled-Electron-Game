@@ -546,8 +546,6 @@ class Chunk<Layer1,Layer2,Layer3> {
 		if(currentframe.debug){
 			ctx4.strokeStyle = "#0000FF";
 			ctx4.strokeRect(this.x * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE + (Game.scroll.x * consts.DISPLAY_SCALE), this.y  * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE + (Game.scroll.y * consts.DISPLAY_SCALE), consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE, consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE);
-			//ctx4.font = "40px sans-serif";
-			//ctx4.fillText(this.chunkSeed.toString(), this.x * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE + (consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE * 0.5) + (Game.scroll.x * consts.DISPLAY_SCALE), this.y * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE + (consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE * 0.5) + (Game.scroll.y * consts.DISPLAY_SCALE));
 		}
 	}
 	displayTile(x:number, y:number, currentframe){
@@ -767,11 +765,15 @@ class Item {
 	level: Level;
 	startY: number | undefined;
 	startX: number | undefined;
+	grabbedBy: Building;
+	deleted: boolean;
 	constructor(x:number, y:number, id:string, level:Level){
 		this.id = id;
 		this.x = x;
 		this.y = y;
 		this.level = level;
+		this.grabbedBy = null;
+		this.deleted = false;
 		if(this.id == ItemID.base_null){
 			this.startX = x;
 			this.startY = y;
@@ -781,6 +783,9 @@ class Item {
 		if(Game.tutorial.conveyor.beltchain && Game.persistent.tutorialenabled && ((Math.abs(this.startX - this.x) + 1 > consts.TILE_SIZE * 2) || (Math.abs(this.startY - this.y) + 1 > consts.TILE_SIZE * 2))){
 			_alert("Nice!\nConveyor belts are also the way to put items in machines.\nSpeaking of which, let's try automating coal: Place a Miner(2 key).");
 			Game.tutorial.conveyor.beltchain = false;
+		}
+		if(this.deleted){
+			//do stuff
 		}
 	}
 	display(currentframe:any){
@@ -832,7 +837,7 @@ class Building {
 	break(){
 		this.level.writeBuilding(this.x, this.y, null);
 	}
-	spawnItem(id:string){//Note: this is O(n^2). Bad!
+	spawnItem(id:string){
 		if(
 				this.level.buildingIDAtTile(this.x + 1, this.y) % 0x100 === 0x01 &&
 				this.level.buildingIDAtTile(this.x + 1, this.y) !== 0x0201 &&
@@ -883,10 +888,11 @@ class Building {
 	grabItem(filter:(item:Item) => any, callback:(item:Item) => void, remove:boolean){
 		for(var item in this.level.items){
 			if(
-				(Math.abs(this.level.items[item].x - (this.x * consts.TILE_SIZE + consts.TILE_SIZE / 2)) <= consts.TILE_SIZE * 0.6) &&
-				(Math.abs(this.level.items[item].y - (this.y * consts.TILE_SIZE + consts.TILE_SIZE / 2)) <= consts.TILE_SIZE * 0.6) &&
+				(Math.abs(this.level.items[item].x - (this.x * consts.TILE_SIZE + consts.TILE_SIZE / 2)) <= consts.TILE_SIZE * 0.5) &&
+				(Math.abs(this.level.items[item].y - (this.y * consts.TILE_SIZE + consts.TILE_SIZE / 2)) <= consts.TILE_SIZE * 0.5) &&
 				filter(this.level.items[item])
 			){//Todo: try to optimize this stuff as much as possible
+				this.level.items[item].grabbedBy = this;
 				callback(this.level.items[item]);
 				if(remove){
 					this.level.items.splice(parseInt(item), 1);
@@ -948,23 +954,14 @@ class TrashCan extends Building {
 		if(this.level.buildingIDAtTile(this.x, this.y) != this.id){
 			return this.break();
 		}
-		for(var item in this.level.items){
-			if(
-				(Math.abs(this.level.items[item].x - (this.x * consts.TILE_SIZE + consts.TILE_SIZE / 2)) < consts.TILE_SIZE * 0.6) &&
-				(Math.abs(this.level.items[item].y - (this.y * consts.TILE_SIZE + consts.TILE_SIZE / 2)) < consts.TILE_SIZE * 0.6)
-			){
-				this.level.items.splice(parseInt(item), 1);
-			}
-		}
+		this.grabItem(_ => {return true}, item => {item.deleted = true;}, true);
 	}
 }
 
-interface Furnace {
-	processingItem: Item;
-	timer: number;
-}
 
 class Furnace extends Building {
+	processingItem: Item;
+	timer: number;
 	constructor(tileX, tileY, id, level){
 		super(tileX, tileY, id, level);
 		this.timer = 29;
@@ -1003,7 +1000,7 @@ class Conveyor extends Building {
 		}
 		if(this.item){
 			if(Math.floor(this.item.x / consts.TILE_SIZE) != this.x || Math.floor(this.item.y / consts.TILE_SIZE) != this.y){
-				if([0x0000, 0xFFFF].indexOf(this.level.buildingIDAtPixel(this.item.x, this.item.y)) == -1){
+				if(this.item.grabbedBy != this || this.item.deleted){
 					this.item = null;
 				}
 				return;
@@ -1033,6 +1030,9 @@ class Conveyor extends Building {
 					} else if(pixelToTile(this.item.x) == consts.TILE_SIZE * 0.5 && pixelToTile(this.item.y) >= consts.TILE_SIZE * 0.5){
 						this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
 						this.item.y --;
+					} else {
+						this.item.x = (this.x + 0.5) * consts.TILE_SIZE;
+						this.item.y = (this.y + 0.5) * consts.TILE_SIZE;
 					}
 					break;
 				case 0x05:
@@ -1042,6 +1042,9 @@ class Conveyor extends Building {
 					} else if(pixelToTile(this.item.x) == consts.TILE_SIZE * 0.5 && pixelToTile(this.item.y) <= consts.TILE_SIZE * 0.5){
 						this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
 						this.item.y ++;
+					} else {
+						this.item.x = (this.x + 0.5) * consts.TILE_SIZE;
+						this.item.y = (this.y + 0.5) * consts.TILE_SIZE;
 					}
 					break;
 				case 0x06:
@@ -1051,6 +1054,9 @@ class Conveyor extends Building {
 					} else if(pixelToTile(this.item.x) > consts.TILE_SIZE * 0.5 && pixelToTile(this.item.y) == consts.TILE_SIZE * 0.5){
 						this.item.x --;
 						this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+					} else {
+						this.item.x = (this.x + 0.5) * consts.TILE_SIZE;
+						this.item.y = (this.y + 0.5) * consts.TILE_SIZE;
 					}
 					break;
 				case 0x07:
@@ -1060,6 +1066,9 @@ class Conveyor extends Building {
 					} else if(pixelToTile(this.item.x) < consts.TILE_SIZE * 0.5 && pixelToTile(this.item.y) == consts.TILE_SIZE * 0.5){
 						this.item.x ++;
 						this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+					} else {
+						this.item.x = (this.x + 0.5) * consts.TILE_SIZE;
+						this.item.y = (this.y + 0.5) * consts.TILE_SIZE;
 					}
 					break;
 				case 0x08:
@@ -1069,6 +1078,9 @@ class Conveyor extends Building {
 					} else if(pixelToTile(this.item.x) == consts.TILE_SIZE * 0.5 && pixelToTile(this.item.y) >= consts.TILE_SIZE * 0.5){
 						this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
 						this.item.y --;
+					} else {
+						this.item.x = (this.x + 0.5) * consts.TILE_SIZE;
+						this.item.y = (this.y + 0.5) * consts.TILE_SIZE;
 					}
 					break;
 				case 0x09:
@@ -1078,6 +1090,9 @@ class Conveyor extends Building {
 					} else if(pixelToTile(this.item.x) == consts.TILE_SIZE * 0.5 && pixelToTile(this.item.y) <= consts.TILE_SIZE * 0.5){
 						this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
 						this.item.y ++;
+					} else {
+						this.item.x = (this.x + 0.5) * consts.TILE_SIZE;
+						this.item.y = (this.y + 0.5) * consts.TILE_SIZE;
 					}
 					break;
 				case 0x0A:
@@ -1087,6 +1102,9 @@ class Conveyor extends Building {
 					} else if(pixelToTile(this.item.x) > consts.TILE_SIZE * 0.5 && pixelToTile(this.item.y) == consts.TILE_SIZE * 0.5){
 						this.item.x --;
 						this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+					} else {
+						this.item.x = (this.x + 0.5) * consts.TILE_SIZE;
+						this.item.y = (this.y + 0.5) * consts.TILE_SIZE;
 					}
 					break;
 				case 0x0B:
@@ -1096,6 +1114,9 @@ class Conveyor extends Building {
 					} else if(pixelToTile(this.item.x) < consts.TILE_SIZE * 0.5 && pixelToTile(this.item.y) == consts.TILE_SIZE * 0.5){
 						this.item.x ++;
 						this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+					} else {
+						this.item.x = (this.x + 0.5) * consts.TILE_SIZE;
+						this.item.y = (this.y + 0.5) * consts.TILE_SIZE;
 					}
 					break;
 			}

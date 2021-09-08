@@ -54,7 +54,7 @@ window.onkeydown = (e) => {
         for (var x of document.getElementById("toolbar").children) {
             x.classList.remove("selected");
         }
-        document.getElementById("toolbar").children[parseInt(e.key) - 1].classList.add("selected");
+        document.getElementById("toolbar").children?.[parseInt(e.key) - 1]?.classList.add("selected");
     }
     if (keysPressed.indexOf(e.key.toLowerCase()) == -1) {
         keysPressed.push(e.key.toLowerCase());
