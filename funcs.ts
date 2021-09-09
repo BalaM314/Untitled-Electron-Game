@@ -44,6 +44,10 @@ window.onkeydown = (e:KeyboardEvent) => {
 			placedBuildingID = 0x0003; break;
 		case "4":
 			placedBuildingID = 0x0004; break;
+		case "5":
+			placedBuildingID = 0x0105; break;
+		case "6":
+			placedBuildingID = 0x0006; break;
 		case "0":
 			placedBuildingID = 0xFFFF; break;		
 	}
@@ -63,8 +67,8 @@ window.onkeyup = (e:KeyboardEvent) => {
 	}
 }
 
-window.onmousedown = (e:MouseEvent) => {mouseIsPressed = true; latestMouseEvent = e;}
-window.onmouseup = (e:MouseEvent) => {mouseIsPressed = false; latestMouseEvent = e;}
+window.onmousedown = (e:MouseEvent) => {mouseIsPressed = true; latestMouseEvent = e; canOverwriteBuilding = true;}
+window.onmouseup = (e:MouseEvent) => {mouseIsPressed = false; latestMouseEvent = e; canOverwriteBuilding = true;}
 
 
 

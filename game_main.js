@@ -252,6 +252,7 @@ function checkload() {
     }
 }
 let placedBuildingID = 0x0001;
+let canOverwriteBuilding = true;
 let handleMouseDown = (currentFrame, e) => {
     e = e ?? latestMouseEvent;
     switch (GAME_STATE) {
@@ -261,7 +262,13 @@ let handleMouseDown = (currentFrame, e) => {
                 mouseIsPressed = false;
             }
             else {
-                level1.buildBuilding(Math.floor((e.x - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE), Math.floor((e.y - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE), placedBuildingID);
+                if (level1.buildingIDAtTile(Math.floor((e.x - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE), Math.floor((e.y - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE)) == placedBuildingID && canOverwriteBuilding) {
+                    level1.buildBuilding(Math.floor((e.x - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE), Math.floor((e.y - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE), placedBuildingID);
+                    canOverwriteBuilding = false;
+                }
+                else {
+                    level1.buildBuilding(Math.floor((e.x - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE), Math.floor((e.y - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE), placedBuildingID);
+                }
             }
             break;
         case "title":

@@ -7,6 +7,7 @@ type Tile =
 0x04 |	//water
 0xFF ;  //Unset
 type BuildingID = 
+//0x0000 is invalid
 0x0001 |	//Conveyor Belt Facing Right
 0x0101 |	//Conveyor Belt Facing Down
 0x0201 |	//Conveyor Belt Facing Left
@@ -22,6 +23,11 @@ type BuildingID =
 0x0002 |	//Miner
 0x0003 |	//Trash Can
 0x0004 |	//Furnace
+0x0005 |	//Extractor Facing Right
+0x0105 |	//Extractor Facing Down
+0x0205 |	//Extractor Facing Left
+0x0305 |	//Extractor Facing Up
+0x0006 |	//Chest
 0xFFFF ;	//Unset
 
 
@@ -41,7 +47,9 @@ const names = {
 		0x01: "Conveyor Belt",
 		0x02: "Miner",
 		0x03: "Trash Can",
-		0x04: "Furnace"
+		0x04: "Furnace",
+		0x05: "Extractor",
+		0x06: "Chest"
 	},
 	item: {
 		"base_null": "Debug Item",
@@ -203,6 +211,12 @@ class Level extends ChunkedDataStorage<Tile, Building, null> {
 			return;
 		}
 		switch(buildingID){
+			case 0x0006:
+				this.getChunk(tileX, tileY).displayBuilding(tileToChunk(tileX), tileToChunk(tileY), buildingID, Chest.canBuildAt(tileX, tileY, this) ? 1 : 2);
+			break;
+			case 0x0005: case 0x0105: case 0x0205: case 0x0305:
+				this.getChunk(tileX, tileY).displayBuilding(tileToChunk(tileX), tileToChunk(tileY), buildingID, Extractor.canBuildAt(tileX, tileY, this) ? 1 : 2);
+			break;
 			case 0x0004:
 				this.getChunk(tileX, tileY).displayBuilding(tileToChunk(tileX), tileToChunk(tileY), buildingID, Furnace.canBuildAt(tileX, tileY, this) ? 1 : 2);
 			break;
@@ -299,6 +313,18 @@ class Level extends ChunkedDataStorage<Tile, Building, null> {
 		}
 		var tempBuilding:Building;
 		switch(building){
+			case 0x0006:
+				if(!Chest.canBuildAt(tileX, tileY, this)){
+					return;
+				}
+				tempBuilding = new Chest(tileX, tileY, building, this);
+				break;
+			case 0x0005: case 0x0105: case 0x0205: case 0x0305:
+				if(!Extractor.canBuildAt(tileX, tileY, this)){
+					return;
+				}
+				tempBuilding = new Extractor(tileX, tileY, building, this);
+				break;
 			case 0x0004:
 				if(!Furnace.canBuildAt(tileX, tileY, this)){
 					if(Game.tutorial.furnace.cantbeplacedongrass && Game.persistent.tutorialenabled){
@@ -829,13 +855,8 @@ class Building {
 	static canBuildAt(tileX:number, tileY:number, level:Level){
 		return level.atLayer1ByTile(tileX, tileY) != 0x04;
 	}
-	update(currentframe){
-		if(this.level.buildingIDAtTile(this.x, this.y) != this.id){
-			return this.break();
-		}
-	}
 	break(){
-		this.level.writeBuilding(this.x, this.y, null);
+		
 	}
 	spawnItem(id:string){
 		if(
@@ -888,10 +909,10 @@ class Building {
 	grabItem(filter:(item:Item) => any, callback:(item:Item) => void, remove:boolean){
 		for(var item in this.level.items){
 			if(
-				(Math.abs(this.level.items[item].x - (this.x * consts.TILE_SIZE + consts.TILE_SIZE / 2)) <= consts.TILE_SIZE * 0.5) &&
-				(Math.abs(this.level.items[item].y - (this.y * consts.TILE_SIZE + consts.TILE_SIZE / 2)) <= consts.TILE_SIZE * 0.5) &&
+				(Math.abs(this.level.items[item].x - ((this.x + 0.5) * consts.TILE_SIZE)) <= consts.TILE_SIZE * 0.5) &&
+				(Math.abs(this.level.items[item].y - ((this.y + 0.5) * consts.TILE_SIZE)) <= consts.TILE_SIZE * 0.5) &&
 				filter(this.level.items[item])
-			){//Todo: try to optimize this stuff as much as possible
+			){
 				this.level.items[item].grabbedBy = this;
 				callback(this.level.items[item]);
 				if(remove){
@@ -906,22 +927,17 @@ class Building {
 
 class Miner extends Building {
 	timer: number;
-	itemBuffer: number;
 	miningItem: string;
 	oreFor: any;
 	constructor(tileX:number, tileY:number, id:BuildingID, level:Level){
 		super(tileX, tileY, id, level);
 		this.timer = 61;
-		this.itemBuffer = 0;
 		this.miningItem = oreFor[level.atLayer1ByTile(tileX, tileY)];
 	}
 	static canBuildAt(tileX:number, tileY:number, level:Level):boolean {
 		return level.atLayer1ByTile(tileX, tileY) == 0x02 || level.atLayer1ByTile(tileX, tileY) == 0x03;
 	}
 	update(){
-		if(this.level.buildingIDAtTile(this.x, this.y) != this.id){
-			return this.break();
-		}
 		if(this.timer > 0){
 			this.timer --;
 		} else {
@@ -931,7 +947,7 @@ class Miner extends Building {
 					_alert("Nice!\nThis is just coal ore though, not coal. Try placing a furnace(4 key).\nOh also, remember you can scroll to zoom in on that beautiful coal ore texture.");
 					Game.tutorial.miner.firstoutput = false;
 				}
-			};
+			}
 		}
 	}
 }
@@ -951,9 +967,6 @@ function smeltFor(item:Item | string){
 
 class TrashCan extends Building {
 	update(){
-		if(this.level.buildingIDAtTile(this.x, this.y) != this.id){
-			return this.break();
-		}
 		this.grabItem(_ => {return true}, item => {item.deleted = true;}, true);
 	}
 }
@@ -970,9 +983,6 @@ class Furnace extends Building {
 		return level.atLayer1ByTile(tileX, tileY) == 0x01;
 	}
 	update(){
-		if(this.level.buildingIDAtTile(this.x, this.y) != this.id){
-			return this.break();
-		}
 		if(this.timer > 0 && this.processingItem){
 			this.timer --;
 		} else if(this.timer <= 0 && this.processingItem){
@@ -994,11 +1004,14 @@ class Conveyor extends Building {
 		super(tileX, tileY, id, level);
 		this.item = null;
 	}
-	update(currentframe){
-		if(this.level.buildingIDAtTile(this.x, this.y) != this.id){
-			return this.break();
+	break(){
+		if(this.item instanceof Item && this.item.grabbedBy == this){
+			this.item.grabbedBy = null;
 		}
-		if(this.item){
+		this.item = null;
+	}
+	update(currentframe){
+		if(this.item instanceof Item){
 			if(Math.floor(this.item.x / consts.TILE_SIZE) != this.x || Math.floor(this.item.y / consts.TILE_SIZE) != this.y){
 				if(this.item.grabbedBy != this || this.item.deleted){
 					this.item = null;
@@ -1120,11 +1133,72 @@ class Conveyor extends Building {
 					}
 					break;
 			}
-		} else {
+		} else if(this.item === null) {
 			this.grabItem(() => {return true;}, (item) => {this.item = item;}, false);
 		}
 	}
 	static canBuildAt(tileX:number, tileY:number, level:Level){
 		return level.atLayer1ByTile(tileX, tileY) != 0x04;
+	}
+}
+
+class Extractor extends Conveyor {
+	update(currentFrame){
+		if(!this.item){
+			if(
+				this.id == 0x0005 &&
+				this.level.buildingAt(this.x - 1, this.y) instanceof Chest &&
+				(this.level.buildingAt(this.x - 1, this.y) as Chest).inventory?.length != 0
+			){
+				this.item = (this.level.buildingAt(this.x - 1, this.y) as Chest).removeItem();
+			} else if(
+				this.id == 0x0105 &&
+				this.level.buildingAt(this.x, this.y - 1) instanceof Chest &&
+				(this.level.buildingAt(this.x, this.y - 1) as Chest).inventory?.length != 0
+			){
+				this.item = (this.level.buildingAt(this.x, this.y - 1) as Chest).removeItem();
+			} else if(
+				this.id == 0x0205 &&
+				this.level.buildingAt(this.x + 1, this.y) instanceof Chest &&
+				(this.level.buildingAt(this.x + 1, this.y) as Chest).inventory?.length != 0
+			){
+				this.item = (this.level.buildingAt(this.x + 1, this.y) as Chest).removeItem();
+			} else if(
+				this.id == 0x0305 &&
+				this.level.buildingAt(this.x, this.y + 1) instanceof Chest &&
+				(this.level.buildingAt(this.x, this.y + 1) as Chest).inventory?.length != 0
+			){
+				this.item = (this.level.buildingAt(this.x, this.y + 1) as Chest).removeItem();
+			} else {
+				return;
+			}
+			this.item.grabbedBy = this;
+			this.item.x = (this.x + 0.5) * consts.TILE_SIZE;
+			this.item.y = (this.y + 0.5) * consts.TILE_SIZE;
+			this.level.items.push(this.item);
+		} else {
+			super.update(currentFrame);
+		}
+	}
+}
+
+class Chest extends Building {
+	inventory: any;
+	constructor(tileX:number, tileY: number, id:BuildingID, level:Level){
+		super(tileX, tileY, id, level);
+		this.inventory = [];
+		this.inventory.MAX_LENGTH = 64;
+	}
+	update(){
+		if(this.inventory.length < this.inventory.MAX_LENGTH){
+			this.grabItem(() => {return true;}, (item:Item) => {this.inventory.push(item);}, true);
+		}
+	}
+	removeItem():Item {
+		if(this.inventory.length > 0){
+			return this.inventory.pop();
+		} else {
+			return null;
+		}
 	}
 }

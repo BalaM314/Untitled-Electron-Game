@@ -46,6 +46,12 @@ window.onkeydown = (e) => {
         case "4":
             placedBuildingID = 0x0004;
             break;
+        case "5":
+            placedBuildingID = 0x0105;
+            break;
+        case "6":
+            placedBuildingID = 0x0006;
+            break;
         case "0":
             placedBuildingID = 0xFFFF;
             break;
@@ -65,8 +71,8 @@ window.onkeyup = (e) => {
         keysPressed.splice(keysPressed.indexOf(e.key.toLowerCase()), 1);
     }
 };
-window.onmousedown = (e) => { mouseIsPressed = true; latestMouseEvent = e; };
-window.onmouseup = (e) => { mouseIsPressed = false; latestMouseEvent = e; };
+window.onmousedown = (e) => { mouseIsPressed = true; latestMouseEvent = e; canOverwriteBuilding = true; };
+window.onmouseup = (e) => { mouseIsPressed = false; latestMouseEvent = e; canOverwriteBuilding = true; };
 //general functions
 function sq(x) {
     return x * x;

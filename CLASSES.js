@@ -11,7 +11,9 @@ const names = {
         0x01: "Conveyor Belt",
         0x02: "Miner",
         0x03: "Trash Can",
-        0x04: "Furnace"
+        0x04: "Furnace",
+        0x05: "Extractor",
+        0x06: "Chest"
     },
     item: {
         "base_null": "Debug Item",
@@ -148,6 +150,15 @@ class Level extends ChunkedDataStorage {
             return;
         }
         switch (buildingID) {
+            case 0x0006:
+                this.getChunk(tileX, tileY).displayBuilding(tileToChunk(tileX), tileToChunk(tileY), buildingID, Chest.canBuildAt(tileX, tileY, this) ? 1 : 2);
+                break;
+            case 0x0005:
+            case 0x0105:
+            case 0x0205:
+            case 0x0305:
+                this.getChunk(tileX, tileY).displayBuilding(tileToChunk(tileX), tileToChunk(tileY), buildingID, Extractor.canBuildAt(tileX, tileY, this) ? 1 : 2);
+                break;
             case 0x0004:
                 this.getChunk(tileX, tileY).displayBuilding(tileToChunk(tileX), tileToChunk(tileY), buildingID, Furnace.canBuildAt(tileX, tileY, this) ? 1 : 2);
                 break;
@@ -263,6 +274,21 @@ class Level extends ChunkedDataStorage {
         }
         var tempBuilding;
         switch (building) {
+            case 0x0006:
+                if (!Chest.canBuildAt(tileX, tileY, this)) {
+                    return;
+                }
+                tempBuilding = new Chest(tileX, tileY, building, this);
+                break;
+            case 0x0005:
+            case 0x0105:
+            case 0x0205:
+            case 0x0305:
+                if (!Extractor.canBuildAt(tileX, tileY, this)) {
+                    return;
+                }
+                tempBuilding = new Extractor(tileX, tileY, building, this);
+                break;
             case 0x0004:
                 if (!Furnace.canBuildAt(tileX, tileY, this)) {
                     if (Game.tutorial.furnace.cantbeplacedongrass && Game.persistent.tutorialenabled) {
@@ -769,13 +795,7 @@ class Building {
     static canBuildAt(tileX, tileY, level) {
         return level.atLayer1ByTile(tileX, tileY) != 0x04;
     }
-    update(currentframe) {
-        if (this.level.buildingIDAtTile(this.x, this.y) != this.id) {
-            return this.break();
-        }
-    }
     break() {
-        this.level.writeBuilding(this.x, this.y, null);
     }
     spawnItem(id) {
         if (this.level.buildingIDAtTile(this.x + 1, this.y) % 0x100 === 0x01 &&
@@ -823,9 +843,9 @@ class Building {
     }
     grabItem(filter, callback, remove) {
         for (var item in this.level.items) {
-            if ((Math.abs(this.level.items[item].x - (this.x * consts.TILE_SIZE + consts.TILE_SIZE / 2)) <= consts.TILE_SIZE * 0.5) &&
-                (Math.abs(this.level.items[item].y - (this.y * consts.TILE_SIZE + consts.TILE_SIZE / 2)) <= consts.TILE_SIZE * 0.5) &&
-                filter(this.level.items[item])) { //Todo: try to optimize this stuff as much as possible
+            if ((Math.abs(this.level.items[item].x - ((this.x + 0.5) * consts.TILE_SIZE)) <= consts.TILE_SIZE * 0.5) &&
+                (Math.abs(this.level.items[item].y - ((this.y + 0.5) * consts.TILE_SIZE)) <= consts.TILE_SIZE * 0.5) &&
+                filter(this.level.items[item])) {
                 this.level.items[item].grabbedBy = this;
                 callback(this.level.items[item]);
                 if (remove) {
@@ -840,16 +860,12 @@ class Miner extends Building {
     constructor(tileX, tileY, id, level) {
         super(tileX, tileY, id, level);
         this.timer = 61;
-        this.itemBuffer = 0;
         this.miningItem = oreFor[level.atLayer1ByTile(tileX, tileY)];
     }
     static canBuildAt(tileX, tileY, level) {
         return level.atLayer1ByTile(tileX, tileY) == 0x02 || level.atLayer1ByTile(tileX, tileY) == 0x03;
     }
     update() {
-        if (this.level.buildingIDAtTile(this.x, this.y) != this.id) {
-            return this.break();
-        }
         if (this.timer > 0) {
             this.timer--;
         }
@@ -861,7 +877,6 @@ class Miner extends Building {
                     Game.tutorial.miner.firstoutput = false;
                 }
             }
-            ;
         }
     }
 }
@@ -878,9 +893,6 @@ function smeltFor(item) {
 }
 class TrashCan extends Building {
     update() {
-        if (this.level.buildingIDAtTile(this.x, this.y) != this.id) {
-            return this.break();
-        }
         this.grabItem(_ => { return true; }, item => { item.deleted = true; }, true);
     }
 }
@@ -893,9 +905,6 @@ class Furnace extends Building {
         return level.atLayer1ByTile(tileX, tileY) == 0x01;
     }
     update() {
-        if (this.level.buildingIDAtTile(this.x, this.y) != this.id) {
-            return this.break();
-        }
         if (this.timer > 0 && this.processingItem) {
             this.timer--;
         }
@@ -917,11 +926,14 @@ class Conveyor extends Building {
         super(tileX, tileY, id, level);
         this.item = null;
     }
-    update(currentframe) {
-        if (this.level.buildingIDAtTile(this.x, this.y) != this.id) {
-            return this.break();
+    break() {
+        if (this.item instanceof Item && this.item.grabbedBy == this) {
+            this.item.grabbedBy = null;
         }
-        if (this.item) {
+        this.item = null;
+    }
+    update(currentframe) {
+        if (this.item instanceof Item) {
             if (Math.floor(this.item.x / consts.TILE_SIZE) != this.x || Math.floor(this.item.y / consts.TILE_SIZE) != this.y) {
                 if (this.item.grabbedBy != this || this.item.deleted) {
                     this.item = null;
@@ -1060,11 +1072,67 @@ class Conveyor extends Building {
                     break;
             }
         }
-        else {
+        else if (this.item === null) {
             this.grabItem(() => { return true; }, (item) => { this.item = item; }, false);
         }
     }
     static canBuildAt(tileX, tileY, level) {
         return level.atLayer1ByTile(tileX, tileY) != 0x04;
+    }
+}
+class Extractor extends Conveyor {
+    update(currentFrame) {
+        if (!this.item) {
+            if (this.id == 0x0005 &&
+                this.level.buildingAt(this.x - 1, this.y) instanceof Chest &&
+                this.level.buildingAt(this.x - 1, this.y).inventory?.length != 0) {
+                this.item = this.level.buildingAt(this.x - 1, this.y).removeItem();
+            }
+            else if (this.id == 0x0105 &&
+                this.level.buildingAt(this.x, this.y - 1) instanceof Chest &&
+                this.level.buildingAt(this.x, this.y - 1).inventory?.length != 0) {
+                this.item = this.level.buildingAt(this.x, this.y - 1).removeItem();
+            }
+            else if (this.id == 0x0205 &&
+                this.level.buildingAt(this.x + 1, this.y) instanceof Chest &&
+                this.level.buildingAt(this.x + 1, this.y).inventory?.length != 0) {
+                this.item = this.level.buildingAt(this.x + 1, this.y).removeItem();
+            }
+            else if (this.id == 0x0305 &&
+                this.level.buildingAt(this.x, this.y + 1) instanceof Chest &&
+                this.level.buildingAt(this.x, this.y + 1).inventory?.length != 0) {
+                this.item = this.level.buildingAt(this.x, this.y + 1).removeItem();
+            }
+            else {
+                return;
+            }
+            this.item.grabbedBy = this;
+            this.item.x = (this.x + 0.5) * consts.TILE_SIZE;
+            this.item.y = (this.y + 0.5) * consts.TILE_SIZE;
+            this.level.items.push(this.item);
+        }
+        else {
+            super.update(currentFrame);
+        }
+    }
+}
+class Chest extends Building {
+    constructor(tileX, tileY, id, level) {
+        super(tileX, tileY, id, level);
+        this.inventory = [];
+        this.inventory.MAX_LENGTH = 64;
+    }
+    update() {
+        if (this.inventory.length < this.inventory.MAX_LENGTH) {
+            this.grabItem(() => { return true; }, (item) => { this.inventory.push(item); }, true);
+        }
+    }
+    removeItem() {
+        if (this.inventory.length > 0) {
+            return this.inventory.pop();
+        }
+        else {
+            return null;
+        }
     }
 }
