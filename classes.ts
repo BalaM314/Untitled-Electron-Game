@@ -30,6 +30,8 @@ type BuildingID =
 0x0006 |	//Chest
 0xFFFF ;	//Unset
 
+type RawBuildingID = 0x0001 | 0x0002 | 0x0003 | 0x0004 | 0x0005 | 0x0006 | 0xFFFF;
+
 
 
 
@@ -1133,7 +1135,7 @@ class Conveyor extends Building {
 					}
 					break;
 			}
-		} else if(this.item === null) {
+		} else {
 			this.grabItem(() => {return true;}, (item) => {this.item = item;}, false);
 		}
 	}
@@ -1170,15 +1172,14 @@ class Extractor extends Conveyor {
 			){
 				this.item = (this.level.buildingAt(this.x, this.y + 1) as Chest).removeItem();
 			} else {
-				return;
+				return super.update(currentFrame);
 			}
 			this.item.grabbedBy = this;
 			this.item.x = (this.x + 0.5) * consts.TILE_SIZE;
 			this.item.y = (this.y + 0.5) * consts.TILE_SIZE;
 			this.level.items.push(this.item);
-		} else {
-			super.update(currentFrame);
 		}
+		super.update(currentFrame);
 	}
 }
 

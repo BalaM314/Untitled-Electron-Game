@@ -23,37 +23,37 @@ let keysPressed = [];
 window.onkeydown = (e) => {
     switch (e.key) {
         case "ArrowRight":
-            placedBuildingID = 0x0001;
+            placedBuilding.direction = 0x000;
             break;
         case "ArrowDown":
-            placedBuildingID = 0x0101;
+            placedBuilding.direction = 0x100;
             break;
         case "ArrowLeft":
-            placedBuildingID = 0x0201;
+            placedBuilding.direction = 0x200;
             break;
         case "ArrowUp":
-            placedBuildingID = 0x0301;
+            placedBuilding.direction = 0x300;
             break;
         case "1":
-            placedBuildingID = 0x0001;
+            placedBuilding.type = 0x0001;
             break;
         case "2":
-            placedBuildingID = 0x0002;
+            placedBuilding.type = 0x0002;
             break;
         case "3":
-            placedBuildingID = 0x0003;
+            placedBuilding.type = 0x0003;
             break;
         case "4":
-            placedBuildingID = 0x0004;
+            placedBuilding.type = 0x0004;
             break;
         case "5":
-            placedBuildingID = 0x0105;
+            placedBuilding.type = 0x0005;
             break;
         case "6":
-            placedBuildingID = 0x0006;
+            placedBuilding.type = 0x0006;
             break;
         case "0":
-            placedBuildingID = 0xFFFF;
+            placedBuilding.type = 0xFFFF;
             break;
     }
     if (parseInt(e.key)) {
