@@ -52,6 +52,9 @@ window.onkeydown = (e) => {
         case "6":
             placedBuilding.type = 0x0006;
             break;
+        case "7":
+            placedBuilding.type = 0x0007;
+            break;
         case "0":
             placedBuilding.type = 0xFFFF;
             break;

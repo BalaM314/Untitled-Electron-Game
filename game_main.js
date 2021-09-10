@@ -248,7 +248,7 @@ function checkload() {
     }
     else {
         setTimeout(checkload, 100);
-        alert(2);
+        alert("Not all textures have loaded!\nYou may have a slow internet connection, or the game may just be broken.\nClick OK to try again.");
     }
 }
 let placedBuilding = {

@@ -13,7 +13,7 @@ const names = {
         0x03: "Trash Can",
         0x04: "Furnace",
         0x05: "Extractor",
-        0x06: "Chest"
+        0x06: "Storage"
     },
     item: {
         "base_null": "Debug Item",
@@ -150,8 +150,11 @@ class Level extends ChunkedDataStorage {
             return;
         }
         switch (buildingID) {
+            case 0x0007:
+                this.getChunk(tileX, tileY).displayBuilding(tileToChunk(tileX), tileToChunk(tileY), buildingID, AlloySmelter.canBuildAt(tileX, tileY, this) ? 1 : 2);
+                break;
             case 0x0006:
-                this.getChunk(tileX, tileY).displayBuilding(tileToChunk(tileX), tileToChunk(tileY), buildingID, Chest.canBuildAt(tileX, tileY, this) ? 1 : 2);
+                this.getChunk(tileX, tileY).displayBuilding(tileToChunk(tileX), tileToChunk(tileY), buildingID, StorageBuilding.canBuildAt(tileX, tileY, this) ? 1 : 2);
                 break;
             case 0x0005:
             case 0x0105:
@@ -274,11 +277,17 @@ class Level extends ChunkedDataStorage {
         }
         var tempBuilding;
         switch (building) {
-            case 0x0006:
-                if (!Chest.canBuildAt(tileX, tileY, this)) {
+            case 0x0007:
+                if (!AlloySmelter.canBuildAt(tileX, tileY, this)) {
                     return;
                 }
-                tempBuilding = new Chest(tileX, tileY, building, this);
+                tempBuilding = new AlloySmelter(tileX, tileY, building, this);
+                break;
+            case 0x0006:
+                if (!StorageBuilding.canBuildAt(tileX, tileY, this)) {
+                    return;
+                }
+                tempBuilding = new StorageBuilding(tileX, tileY, building, this);
                 break;
             case 0x0005:
             case 0x0105:
@@ -604,8 +613,11 @@ class Chunk {
             _ctx.fillStyle = "#444444";
             _ctx.lineWidth = 1;
         }
-        else if (true) {
+        else if (textures.get(buildingID.toString())) {
             return _ctx.drawImage(textures.get(buildingID.toString()), pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
+        }
+        else {
+            throw "MissingTextureError: " + buildingID.toString();
         }
         switch (buildingID) {
             case 0x0001:
@@ -733,8 +745,29 @@ class Chunk {
                 break;
             case 0x0004:
                 rect(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.5, consts.DISPLAY_TILE_SIZE * 0.8, consts.DISPLAY_TILE_SIZE * 0.8, rectMode.CENTER, _ctx);
-                ctx.fillStyle = "#FFCC11";
+                _ctx.fillStyle = "#FFCC11";
                 rect(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.5, consts.DISPLAY_TILE_SIZE * 0.4, consts.DISPLAY_TILE_SIZE * 0.4, rectMode.CENTER, _ctx);
+                break;
+            case 0x0006:
+                rect(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.5, consts.DISPLAY_TILE_SIZE * 0.8, consts.DISPLAY_TILE_SIZE * 0.8, rectMode.CENTER, _ctx);
+                _ctx.fillStyle = "#CCCCCC";
+                rect(pixelX + consts.DISPLAY_TILE_SIZE * 0.45, pixelY + consts.DISPLAY_TILE_SIZE * 0.1, consts.DISPLAY_TILE_SIZE * 0.1, consts.DISPLAY_TILE_SIZE * 0.3, rectMode.CORNER, _ctx);
+                break;
+            case 0x0007:
+                rect(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.5, consts.DISPLAY_TILE_SIZE * 0.8, consts.DISPLAY_TILE_SIZE * 0.8, rectMode.CENTER, _ctx);
+                _ctx.fillStyle = "#FF0000";
+                rect(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.5, consts.DISPLAY_TILE_SIZE * 0.4, consts.DISPLAY_TILE_SIZE * 0.4, rectMode.CENTER, _ctx);
+                break;
+            default:
+                _ctx.fillStyle = "#FF00FF";
+                rect(pixelX, pixelY, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
+                rect(pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY + consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
+                _ctx.fillStyle = "#000000";
+                rect(pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
+                rect(pixelX, pixelY + consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
+                _ctx.font = "15px sans-serif";
+                _ctx.fillStyle = "#00FF00";
+                _ctx.fillText(buildingID.toString(), pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY + consts.DISPLAY_TILE_SIZE / 2);
                 break;
         }
     }
@@ -798,6 +831,7 @@ class Building {
     break() {
     }
     spawnItem(id) {
+        id ??= "base_null";
         if (this.level.buildingIDAtTile(this.x + 1, this.y) % 0x100 === 0x01 &&
             this.level.buildingIDAtTile(this.x + 1, this.y) !== 0x0201 &&
             this.level.buildingIDAtTile(this.x + 1, this.y) !== 0x0801 &&
@@ -1084,22 +1118,22 @@ class Extractor extends Conveyor {
     update(currentFrame) {
         if (!this.item) {
             if (this.id == 0x0005 &&
-                this.level.buildingAt(this.x - 1, this.y) instanceof Chest &&
+                this.level.buildingAt(this.x - 1, this.y) instanceof StorageBuilding &&
                 this.level.buildingAt(this.x - 1, this.y).inventory?.length != 0) {
                 this.item = this.level.buildingAt(this.x - 1, this.y).removeItem();
             }
             else if (this.id == 0x0105 &&
-                this.level.buildingAt(this.x, this.y - 1) instanceof Chest &&
+                this.level.buildingAt(this.x, this.y - 1) instanceof StorageBuilding &&
                 this.level.buildingAt(this.x, this.y - 1).inventory?.length != 0) {
                 this.item = this.level.buildingAt(this.x, this.y - 1).removeItem();
             }
             else if (this.id == 0x0205 &&
-                this.level.buildingAt(this.x + 1, this.y) instanceof Chest &&
+                this.level.buildingAt(this.x + 1, this.y) instanceof StorageBuilding &&
                 this.level.buildingAt(this.x + 1, this.y).inventory?.length != 0) {
                 this.item = this.level.buildingAt(this.x + 1, this.y).removeItem();
             }
             else if (this.id == 0x0305 &&
-                this.level.buildingAt(this.x, this.y + 1) instanceof Chest &&
+                this.level.buildingAt(this.x, this.y + 1) instanceof StorageBuilding &&
                 this.level.buildingAt(this.x, this.y + 1).inventory?.length != 0) {
                 this.item = this.level.buildingAt(this.x, this.y + 1).removeItem();
             }
@@ -1114,7 +1148,7 @@ class Extractor extends Conveyor {
         super.update(currentFrame);
     }
 }
-class Chest extends Building {
+class StorageBuilding extends Building {
     constructor(tileX, tileY, id, level) {
         super(tileX, tileY, id, level);
         this.inventory = [];
@@ -1131,6 +1165,45 @@ class Chest extends Building {
         }
         else {
             return null;
+        }
+    }
+}
+let alloysFor = {
+    "base_coal&base_ironIngot": "base_steelIngot",
+    "base_ironIngot&base_coal": "base_steelIngot"
+};
+class AlloySmelter extends Building {
+    constructor(tileX, tileY, id, level) {
+        super(tileX, tileY, id, level);
+        this.timer = 240;
+        this.item1 = null;
+        this.item2 = null;
+        this.processing = false;
+    }
+    update() {
+        if (!this.item1) {
+            this.grabItem((item) => { return item.id != this.item2?.id; }, (item) => { this.item1 = item; }, true);
+        }
+        if (!this.item2) {
+            this.grabItem((item) => { return item.id != this.item1?.id; }, (item) => { this.item2 = item; }, true);
+        }
+        if (this.item1 instanceof Item && this.item2 instanceof Item) {
+            if (alloysFor[`${this.item1.id}&${this.item2.id}`]) {
+                this.processing = true;
+            }
+        }
+        if (this.processing) {
+            if (this.timer > 0) {
+                this.timer--;
+            }
+            else {
+                if (this.spawnItem(alloysFor[`${this.item1.id}&${this.item2.id}`])) {
+                    this.timer = 240;
+                    this.item1 = null;
+                    this.item2 = null;
+                    this.processing = false;
+                }
+            }
         }
     }
 }
