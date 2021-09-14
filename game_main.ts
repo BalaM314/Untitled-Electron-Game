@@ -1,8 +1,8 @@
 'use strict';
 
 // TODOS
-// Improve performance by not redrawing everything everytime, but this will need multiple canvases
-// Working on it
+// Make extractor always pull from belt behind, use as splitter
+// 
 // 
 // 
 // 
