@@ -1090,7 +1090,15 @@ class Conveyor extends Building {
 		}
 		this.item = null;
 	}
-	update(currentframe){
+	removeItem(){
+		if(this.item){
+			let temp = this.item;
+			this.item = null;
+			return temp;
+		}
+		return null;
+	}
+	update(currentframe, nograb?:boolean){
 		if(this.item instanceof Item){
 			if(Math.floor(this.item.x / consts.TILE_SIZE) != this.x || Math.floor(this.item.y / consts.TILE_SIZE) != this.y){
 				if(this.item.grabbedBy != this || this.item.deleted){
@@ -1213,7 +1221,7 @@ class Conveyor extends Building {
 					}
 					break;
 			}
-		} else {
+		} else if(!nograb){
 			this.grabItem(() => {return true;}, (item) => {this.item = item;}, false);
 		}
 	}
@@ -1224,46 +1232,48 @@ class Conveyor extends Building {
 
 class Extractor extends Conveyor {
 	update(currentFrame){
+		//AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAa
+		//TODO: make this more readable, probably rewrite with a switch statement
 		if(!this.item){
 			if(
 				this.id == 0x0005 &&
-				this.level.buildingAt(this.x - 1, this.y) instanceof StorageBuilding &&
-				(this.level.buildingAt(this.x - 1, this.y) as StorageBuilding).inventory?.length != 0
+				(this.level.buildingAt(this.x - 1, this.y)?.id % 0x100 == 1 || this.level.buildingAt(this.x - 1, this.y) instanceof StorageBuilding) &&
+				((this.level.buildingAt(this.x - 1, this.y) as StorageBuilding).inventory?.length > 0 || (this.level.buildingAt(this.x - 1, this.y) as Conveyor).item)
 			){
-				this.item = (this.level.buildingAt(this.x - 1, this.y) as StorageBuilding).removeItem();
+				this.item = (this.level.buildingAt(this.x - 1, this.y) as StorageBuilding | Conveyor).removeItem();
 				this.item.x = (this.x) * consts.TILE_SIZE;
 				this.item.y = (this.y + 0.5) * consts.TILE_SIZE;
 			} else if(
 				this.id == 0x0105 &&
-				this.level.buildingAt(this.x, this.y - 1) instanceof StorageBuilding &&
-				(this.level.buildingAt(this.x, this.y - 1) as StorageBuilding).inventory?.length != 0
+				(this.level.buildingAt(this.x, this.y - 1)?.id % 0x100 == 1 || this.level.buildingAt(this.x, this.y - 1) instanceof StorageBuilding) &&
+				((this.level.buildingAt(this.x, this.y - 1) as StorageBuilding).inventory?.length > 0 || (this.level.buildingAt(this.x, this.y - 1) as Conveyor).item)
 			){
-				this.item = (this.level.buildingAt(this.x, this.y - 1) as StorageBuilding).removeItem();
+				this.item = (this.level.buildingAt(this.x, this.y - 1) as StorageBuilding | Conveyor).removeItem();
 				this.item.x = (this.x + 0.5) * consts.TILE_SIZE;
 				this.item.y = (this.y) * consts.TILE_SIZE;
 			} else if(
 				this.id == 0x0205 &&
-				this.level.buildingAt(this.x + 1, this.y) instanceof StorageBuilding &&
-				(this.level.buildingAt(this.x + 1, this.y) as StorageBuilding).inventory?.length != 0
+				(this.level.buildingAt(this.x + 1, this.y)?.id % 0x100 == 1 || this.level.buildingAt(this.x + 1, this.y) instanceof StorageBuilding) &&
+				((this.level.buildingAt(this.x + 1, this.y) as StorageBuilding).inventory?.length > 0 || (this.level.buildingAt(this.x + 1, this.y) as Conveyor).item)
 			){
-				this.item = (this.level.buildingAt(this.x + 1, this.y) as StorageBuilding).removeItem();
+				this.item = (this.level.buildingAt(this.x + 1, this.y) as StorageBuilding | Conveyor).removeItem();
 				this.item.x = (this.x + 0.9) * consts.TILE_SIZE;
 				this.item.y = (this.y + 0.5) * consts.TILE_SIZE;
 			} else if(
 				this.id == 0x0305 &&
-				this.level.buildingAt(this.x, this.y + 1) instanceof StorageBuilding &&
-				(this.level.buildingAt(this.x, this.y + 1) as StorageBuilding).inventory?.length != 0
+				(this.level.buildingAt(this.x, this.y + 1)?.id % 0x100 == 1 || this.level.buildingAt(this.x, this.y + 1) instanceof StorageBuilding) &&
+				((this.level.buildingAt(this.x, this.y + 1) as StorageBuilding).inventory?.length > 0 || (this.level.buildingAt(this.x, this.y + 1) as Conveyor).item)
 			){
-				this.item = (this.level.buildingAt(this.x, this.y + 1) as StorageBuilding).removeItem();
+				this.item = (this.level.buildingAt(this.x, this.y + 1) as StorageBuilding | Conveyor).removeItem();
 				this.item.x = (this.x + 0.5) * consts.TILE_SIZE;
 				this.item.y = (this.y + 0.9) * consts.TILE_SIZE;
 			} else {
-				return super.update(currentFrame);
+				return super.update(currentFrame, false);
 			}
 			this.item.grabbedBy = this;
 			this.level.items.push(this.item);
 		}
-		super.update(currentFrame);
+		super.update(currentFrame, true);
 	}
 }
 
