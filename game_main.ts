@@ -1,9 +1,9 @@
 'use strict';
 
 // TODOS
-// Make extractor always pull from belt behind, use as splitter
-// 
-// 
+// Resolve critical gameplay issue:
+// Given the 2D grid layout, it is not currently possible to parallelize crafting of the Alloy Smelter with more than 2.
+// Solution: totally change how extractors work.
 // 
 // 
 // 
