@@ -1231,30 +1231,36 @@ class Extractor extends Conveyor {
 				(this.level.buildingAt(this.x - 1, this.y) as StorageBuilding).inventory?.length != 0
 			){
 				this.item = (this.level.buildingAt(this.x - 1, this.y) as StorageBuilding).removeItem();
+				this.item.x = (this.x) * consts.TILE_SIZE;
+				this.item.y = (this.y + 0.5) * consts.TILE_SIZE;
 			} else if(
 				this.id == 0x0105 &&
 				this.level.buildingAt(this.x, this.y - 1) instanceof StorageBuilding &&
 				(this.level.buildingAt(this.x, this.y - 1) as StorageBuilding).inventory?.length != 0
 			){
 				this.item = (this.level.buildingAt(this.x, this.y - 1) as StorageBuilding).removeItem();
+				this.item.x = (this.x + 0.5) * consts.TILE_SIZE;
+				this.item.y = (this.y) * consts.TILE_SIZE;
 			} else if(
 				this.id == 0x0205 &&
 				this.level.buildingAt(this.x + 1, this.y) instanceof StorageBuilding &&
 				(this.level.buildingAt(this.x + 1, this.y) as StorageBuilding).inventory?.length != 0
 			){
 				this.item = (this.level.buildingAt(this.x + 1, this.y) as StorageBuilding).removeItem();
+				this.item.x = (this.x + 0.9) * consts.TILE_SIZE;
+				this.item.y = (this.y + 0.5) * consts.TILE_SIZE;
 			} else if(
 				this.id == 0x0305 &&
 				this.level.buildingAt(this.x, this.y + 1) instanceof StorageBuilding &&
 				(this.level.buildingAt(this.x, this.y + 1) as StorageBuilding).inventory?.length != 0
 			){
 				this.item = (this.level.buildingAt(this.x, this.y + 1) as StorageBuilding).removeItem();
+				this.item.x = (this.x + 0.5) * consts.TILE_SIZE;
+				this.item.y = (this.y + 0.9) * consts.TILE_SIZE;
 			} else {
 				return super.update(currentFrame);
 			}
 			this.item.grabbedBy = this;
-			this.item.x = (this.x + 0.5) * consts.TILE_SIZE;
-			this.item.y = (this.y + 0.5) * consts.TILE_SIZE;
 			this.level.items.push(this.item);
 		}
 		super.update(currentFrame);
