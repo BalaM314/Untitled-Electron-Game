@@ -23,38 +23,47 @@ let keysPressed = [];
 window.onkeydown = (e) => {
     switch (e.key) {
         case "ArrowRight":
-            placedBuildingID = 0x0001;
+            placedBuilding.direction = 0x000;
             break;
         case "ArrowDown":
-            placedBuildingID = 0x0101;
+            placedBuilding.direction = 0x100;
             break;
         case "ArrowLeft":
-            placedBuildingID = 0x0201;
+            placedBuilding.direction = 0x200;
             break;
         case "ArrowUp":
-            placedBuildingID = 0x0301;
+            placedBuilding.direction = 0x300;
             break;
         case "1":
-            placedBuildingID = 0x0001;
+            placedBuilding.type = 0x0001;
             break;
         case "2":
-            placedBuildingID = 0x0002;
+            placedBuilding.type = 0x0002;
             break;
         case "3":
-            placedBuildingID = 0x0003;
+            placedBuilding.type = 0x0003;
             break;
         case "4":
-            placedBuildingID = 0x0004;
+            placedBuilding.type = 0x0004;
+            break;
+        case "5":
+            placedBuilding.type = 0x0005;
+            break;
+        case "6":
+            placedBuilding.type = 0x0006;
+            break;
+        case "7":
+            placedBuilding.type = 0x0007;
             break;
         case "0":
-            placedBuildingID = 0xFFFF;
+            placedBuilding.type = 0xFFFF;
             break;
     }
     if (parseInt(e.key)) {
         for (var x of document.getElementById("toolbar").children) {
             x.classList.remove("selected");
         }
-        document.getElementById("toolbar").children[parseInt(e.key) - 1].classList.add("selected");
+        document.getElementById("toolbar").children?.[parseInt(e.key) - 1]?.classList.add("selected");
     }
     if (keysPressed.indexOf(e.key.toLowerCase()) == -1) {
         keysPressed.push(e.key.toLowerCase());
@@ -65,8 +74,8 @@ window.onkeyup = (e) => {
         keysPressed.splice(keysPressed.indexOf(e.key.toLowerCase()), 1);
     }
 };
-window.onmousedown = (e) => { mouseIsPressed = true; latestMouseEvent = e; };
-window.onmouseup = (e) => { mouseIsPressed = false; latestMouseEvent = e; };
+window.onmousedown = (e) => { mouseIsPressed = true; latestMouseEvent = e; canOverwriteBuilding = true; };
+window.onmouseup = (e) => { mouseIsPressed = false; latestMouseEvent = e; canOverwriteBuilding = true; };
 //general functions
 function sq(x) {
     return x * x;

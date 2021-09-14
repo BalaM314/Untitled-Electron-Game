@@ -7,6 +7,7 @@ type Tile =
 0x04 |	//water
 0xFF ;  //Unset
 type BuildingID = 
+//0x0000 is invalid
 0x0001 |	//Conveyor Belt Facing Right
 0x0101 |	//Conveyor Belt Facing Down
 0x0201 |	//Conveyor Belt Facing Left
@@ -22,7 +23,15 @@ type BuildingID =
 0x0002 |	//Miner
 0x0003 |	//Trash Can
 0x0004 |	//Furnace
+0x0005 |	//Extractor Facing Right
+0x0105 |	//Extractor Facing Down
+0x0205 |	//Extractor Facing Left
+0x0305 |	//Extractor Facing Up
+0x0006 |	//Chest
+0x0007 |	//Alloy Smelter
 0xFFFF ;	//Unset
+
+type RawBuildingID = 0x0001 | 0x0002 | 0x0003 | 0x0004 | 0x0005 | 0x0006 | 0x0007 | 0xFFFF;
 
 
 
@@ -41,7 +50,9 @@ const names = {
 		0x01: "Conveyor Belt",
 		0x02: "Miner",
 		0x03: "Trash Can",
-		0x04: "Furnace"
+		0x04: "Furnace",
+		0x05: "Extractor",
+		0x06: "Storage"
 	},
 	item: {
 		"base_null": "Debug Item",
@@ -83,16 +94,18 @@ const consts = {
     }
 }
 
-class ChunkedDataStorage {
-	storage: Map<string, Chunk>;
+class ChunkedDataStorage<Layer1,Layer2,Layer3> {
+	storage: Map<string, Chunk<Layer1,Layer2,Layer3>>;
 	seed: number;
 	format: string;
-	constructor(seed:number | null){
-		this.storage = new Map();
+	defaults: {layer1: Layer1, layer2: Layer2, layer3: Layer3};
+	constructor(seed:number | null, defaults: {layer1: Layer1, layer2: Layer2, layer3: Layer3}){
+		this.storage = new Map<string, Chunk<Layer1,Layer2,Layer3>>();
 		this.seed = seed ? seed : 0;
+		this.defaults = defaults;
 		this.format = consts.VERSION;
 	}
-	getChunk(tileX:number, tileY:number, dontGenerateChunk?:boolean):Chunk{
+	getChunk(tileX:number, tileY:number, dontGenerateChunk?:boolean):Chunk<Layer1,Layer2,Layer3>{
 		if(this.storage.get(`${Math.floor(tileX / consts.CHUNK_SIZE)},${Math.floor(tileY / consts.CHUNK_SIZE)}`)){
 			return this.storage.get(`${Math.floor(tileX / consts.CHUNK_SIZE)},${Math.floor(tileY / consts.CHUNK_SIZE)}`);
 		} else if(!dontGenerateChunk){
@@ -106,27 +119,27 @@ class ChunkedDataStorage {
 			return;
 		}
 		this.storage.set(`${x},${y}`, 
-			new Chunk(x, y, this.seed)
+			new Chunk<Layer1,Layer2,Layer3>(x, y, this.seed, this.defaults.layer1, this.defaults.layer2, this.defaults.layer3)
 			.generate()
 		);
 		console.log(`generated chunk ${x}, ${y}`)
 		return this.storage.get(`${x},${y}`);
 	}
-	tileAt(pixelX:number, pixelY:number):Tile{
+	atLayer1ByPixel(pixelX:number, pixelY:number):Layer1{
 		return this.getChunk(
 			Math.floor(pixelX/consts.TILE_SIZE),
 			Math.floor(pixelY/consts.TILE_SIZE)
-		).tileAt(tileToChunk(pixelX/consts.TILE_SIZE), tileToChunk(pixelY/consts.TILE_SIZE));
+		).atLayer1(tileToChunk(pixelX/consts.TILE_SIZE), tileToChunk(pixelY/consts.TILE_SIZE));
 	}
-	tileAt2(tileX:number, tileY:number):Tile{
+	atLayer1ByTile(tileX:number, tileY:number):Layer1{
 		return this.getChunk(
 			Math.floor(tileX),
 			Math.floor(tileY)
-		).tileAt(tileToChunk(tileX), tileToChunk(tileY));
+		).atLayer1(tileToChunk(tileX), tileToChunk(tileY));
 	}
 	writeTile(tileX:number, tileY:number, tile:Tile):boolean {
 		if(this.getChunk(tileX,tileY)){
-			this.getChunk(tileX,tileY).setTile(tileToChunk(tileX), tileToChunk(tileY), tile);
+			this.getChunk(tileX,tileY).setLayer1(tileToChunk(tileX), tileToChunk(tileY), tile);
 			Game.forceRedraw = true;
 			return true;
 		}
@@ -153,31 +166,33 @@ class ChunkedDataStorage {
 	}
 }
 
-class Level extends ChunkedDataStorage {
+class Level extends ChunkedDataStorage<Tile, Building, null> {
 	items: Item[];
-	buildings: Building[];
 	constructor(seed:number){
-		super(seed);
+		super(seed, {
+			layer1: 0x00,
+			layer2: null,
+			layer3: null
+		});
 		this.items = [];
-		this.buildings = [];
 	}
-	buildingIDAt(pixelX:number, pixelY:number):BuildingID{
+	buildingIDAtPixel(pixelX:number, pixelY:number):BuildingID {
 		return this.getChunk(
 			Math.floor(pixelX/consts.TILE_SIZE),
 			Math.floor(pixelY/consts.TILE_SIZE)
-		).buildingAt(tileToChunk(pixelX/consts.TILE_SIZE), tileToChunk(pixelY/consts.TILE_SIZE));
+		).atLayer2(tileToChunk(pixelX/consts.TILE_SIZE), tileToChunk(pixelY/consts.TILE_SIZE))?.id ?? 0xFFFF;
 	}
-	buildingIDAt2(tileX:number, tileY:number):BuildingID{
+	buildingIDAtTile(tileX:number, tileY:number):BuildingID {
 		return this.getChunk(
 			Math.floor(tileX),
 			Math.floor(tileY)
-		).buildingAt(tileToChunk(tileX), tileToChunk(tileY));
+		).atLayer2(tileToChunk(tileX), tileToChunk(tileY))?.id ?? 0xFFFF;
 	}
 	buildingAt(tileX:number, tileY:number):Building {
-		for(var building of this.buildings){//this is O(n) :(
-			if(building.x == tileX && building.y == tileY) return building;
-		}
-		return null;
+		return this.getChunk(
+			Math.floor(tileX),
+			Math.floor(tileY)
+		).atLayer2(tileToChunk(tileX), tileToChunk(tileY));
 	}
 	addItem(x:number, y:number, id:string){
 		let tempitem = new Item(x, y, id, this);
@@ -188,8 +203,8 @@ class Level extends ChunkedDataStorage {
 		for(var item of this.items){
 			item.update(currentframe);
 		}
-		for(var building of this.buildings){
-			building.update(currentframe);
+		for(var chunk of level1.storage.values()){
+			chunk.update();
 		}
 	}
 	displayGhostBuilding(tileX:number, tileY:number, buildingID:BuildingID){
@@ -199,6 +214,15 @@ class Level extends ChunkedDataStorage {
 			return;
 		}
 		switch(buildingID){
+			case 0x0007:
+				this.getChunk(tileX, tileY).displayBuilding(tileToChunk(tileX), tileToChunk(tileY), buildingID, AlloySmelter.canBuildAt(tileX, tileY, this) ? 1 : 2);
+			break;
+			case 0x0006:
+				this.getChunk(tileX, tileY).displayBuilding(tileToChunk(tileX), tileToChunk(tileY), buildingID, StorageBuilding.canBuildAt(tileX, tileY, this) ? 1 : 2);
+			break;
+			case 0x0005: case 0x0105: case 0x0205: case 0x0305:
+				this.getChunk(tileX, tileY).displayBuilding(tileToChunk(tileX), tileToChunk(tileY), buildingID, Extractor.canBuildAt(tileX, tileY, this) ? 1 : 2);
+			break;
 			case 0x0004:
 				this.getChunk(tileX, tileY).displayBuilding(tileToChunk(tileX), tileToChunk(tileY), buildingID, Furnace.canBuildAt(tileX, tileY, this) ? 1 : 2);
 			break;
@@ -216,13 +240,13 @@ class Level extends ChunkedDataStorage {
 	getTurnedConveyor(tileX:number, tileY:number, conveyorType:number){
 		tileX = Math.floor(tileX);
 		tileY = Math.floor(tileY);
-		let topConveyor:BuildingID | boolean = this.buildingIDAt2(tileX, tileY - 1);
+		let topConveyor:BuildingID | boolean = this.buildingIDAtTile(tileX, tileY - 1);
 		topConveyor = topConveyor == 0x0101 || topConveyor == 0x0601 || topConveyor == 0x0701;
-		let rightConveyor:BuildingID | boolean = this.buildingIDAt2(tileX + 1, tileY);
+		let rightConveyor:BuildingID | boolean = this.buildingIDAtTile(tileX + 1, tileY);
 		rightConveyor = rightConveyor == 0x0201 || rightConveyor == 0x0801 || rightConveyor == 0x0901;
-		let leftConveyor:BuildingID | boolean = this.buildingIDAt2(tileX - 1, tileY);
+		let leftConveyor:BuildingID | boolean = this.buildingIDAtTile(tileX - 1, tileY);
 		leftConveyor = leftConveyor == 0x0001 || leftConveyor == 0x0401 || leftConveyor == 0x0501;
-		let bottomConveyor:BuildingID | boolean = this.buildingIDAt2(tileX, tileY + 1);
+		let bottomConveyor:BuildingID | boolean = this.buildingIDAtTile(tileX, tileY + 1);
 		bottomConveyor = bottomConveyor == 0x0301 || bottomConveyor == 0x0A01 || bottomConveyor == 0x0B01;
 		let buildingID:BuildingID = 0xFFFF;
 		switch(conveyorType){
@@ -281,20 +305,38 @@ class Level extends ChunkedDataStorage {
 		}
 		return buildingID;
 	}
-	writeBuilding(tileX:number, tileY:number, buildingID:BuildingID):boolean {
+	writeBuilding(tileX:number, tileY:number, building:Building):boolean {
 		if(this.getChunk(tileX,tileY)){
-			this.getChunk(tileX,tileY).setBuilding(tileToChunk(tileX), tileToChunk(tileY), buildingID);
+			this.getChunk(tileX,tileY).setLayer2(tileToChunk(tileX), tileToChunk(tileY), building);
 			Game.forceRedraw = true;
 			return true;
 		}
 		return false;
 	}
 	buildBuilding(tileX:number, tileY:number, building:BuildingID):boolean {
-		if(this.buildingIDAt2(tileX, tileY) % 0x100 == building % 0x100){
+		if(this.buildingIDAtTile(tileX, tileY) % 0x100 == building % 0x100){
 			this.buildingAt(tileX, tileY)?.break();
 		}
 		var tempBuilding:Building;
 		switch(building){
+			case 0x0007:
+				if(!AlloySmelter.canBuildAt(tileX, tileY, this)){
+					return;
+				}
+				tempBuilding = new AlloySmelter(tileX, tileY, building, this);
+				break;
+			case 0x0006:
+				if(!StorageBuilding.canBuildAt(tileX, tileY, this)){
+					return;
+				}
+				tempBuilding = new StorageBuilding(tileX, tileY, building, this);
+				break;
+			case 0x0005: case 0x0105: case 0x0205: case 0x0305:
+				if(!Extractor.canBuildAt(tileX, tileY, this)){
+					return;
+				}
+				tempBuilding = new Extractor(tileX, tileY, building, this);
+				break;
 			case 0x0004:
 				if(!Furnace.canBuildAt(tileX, tileY, this)){
 					if(Game.tutorial.furnace.cantbeplacedongrass && Game.persistent.tutorialenabled){
@@ -345,11 +387,10 @@ class Level extends ChunkedDataStorage {
 				tempBuilding = new Conveyor(tileX, tileY, this.getTurnedConveyor(tileX, tileY, building >> 8), this);
 			break;
 			default:
-				return this.writeBuilding(tileX, tileY, building);
+				return this.writeBuilding(tileX, tileY, new Building(tileX, tileY, building, this));
 			break;
 		}
-		this.buildings.push(tempBuilding);
-		this.writeBuilding(tileX, tileY, tempBuilding.id);
+		this.writeBuilding(tileX, tileY, tempBuilding);
 		return true;
 	}
 	display(currentframe:Object):void {
@@ -368,8 +409,8 @@ class Level extends ChunkedDataStorage {
 		var x = (mousex - (Game.scroll.x * consts.DISPLAY_SCALE))/consts.DISPLAY_SCALE;
 		var y = (mousey - (Game.scroll.y * consts.DISPLAY_SCALE))/consts.DISPLAY_SCALE;
 		ctx4.font = "16px monospace";
-		if(this.buildingIDAt(x, y) !== 0xFFFF){
-			let buildingID = this.buildingIDAt(x, y) % 0x100;
+		if(this.buildingIDAtPixel(x, y) !== 0xFFFF){
+			let buildingID = this.buildingIDAtPixel(x, y) % 0x100;
 			ctx4.fillStyle = "#0033CC";
 			ctx4.fillRect(mousex, mousey, names.building[buildingID].length * 10, 16);
 			ctx4.strokeStyle = "#000000";
@@ -378,7 +419,7 @@ class Level extends ChunkedDataStorage {
 			ctx4.fillText(names.building[buildingID], mousex + 2, mousey + 10);
 			return;
 		}
-		let tileID = this.tileAt(x, y);
+		let tileID = this.atLayer1ByPixel(x, y);
 		ctx4.fillStyle = "#0033CC";
 		ctx4.fillRect(mousex, mousey, names.tile[tileID].length * 10, 16);
 		ctx4.strokeStyle = "#000000";
@@ -391,17 +432,17 @@ class Level extends ChunkedDataStorage {
 
 
 
-class Chunk {
+class Chunk<Layer1,Layer2,Layer3> {
 	layers: [
-		Tile[][],
-		BuildingID[][],
-		null[][]
+		Layer1[][],
+		Layer2[][],
+		Layer3[][]
 	];
 	chunkSeed: number;
 	x: number;
 	y: number;
 	isWet: boolean;
-	constructor(x:number, y:number, seed:number){
+	constructor(x:number, y:number, seed:number, defaultValue1:Layer1, defaultValue2:Layer2, defaultValue3:Layer3){
 		this.x = x;
 		this.y = y;
 		this.chunkSeed = Math.abs(Math.round(
@@ -420,7 +461,7 @@ class Chunk {
 		for(let x = 0; x < consts.CHUNK_SIZE; x ++){
 			this.layers[0][x] = [];
 			for(let z = 0; z < consts.CHUNK_SIZE; z ++){
-				this.layers[0][x].push(0xFF);
+				this.layers[0][x].push(defaultValue1);
 			}
 		}
 
@@ -428,7 +469,7 @@ class Chunk {
 		for(let x = 0; x < consts.CHUNK_SIZE; x ++){
 			this.layers[1][x] = [];
 			for(let z = 0; z < consts.CHUNK_SIZE; z ++){
-				this.layers[1][x].push(0xFFFF);
+				this.layers[1][x].push(defaultValue2);
 			}
 		}
 
@@ -436,71 +477,78 @@ class Chunk {
 		for(let x = 0; x < consts.CHUNK_SIZE; x ++){
 			this.layers[2][x] = [];
 			for(let z = 0; z < consts.CHUNK_SIZE; z ++){
-				this.layers[2][x].push(null);
+				this.layers[2][x].push(defaultValue3);
 			}
 		}
 
 		return this;
 	}
-	generate():Chunk {
+	generate():Chunk<Layer1,Layer2,Layer3> {
 		//Put down the base
 		this.isWet = this.chunkSeed < 134217728 && Math.abs(this.x) > 3 && Math.abs(this.y) > 3;
 		for(var row in this.layers[0]){
 			for(var tile in this.layers[0][row]){
-				this.layers[0][row][tile] = this.isWet ? 0x04 : 0x00;
+				this.layers[0][row][tile] = (this.isWet ? 0x04 : 0x00 as any);//TODO: somehow fix this, any bad
 			}
 		}
 
 		if(!this.isWet){
-			this.setTile((this.chunkSeed - rands.hill_x) % consts.CHUNK_SIZE, (this.chunkSeed - rands.hill_y) % consts.CHUNK_SIZE, (((this.chunkSeed - rands.ore_type) % 3) > 1 && (Math.abs(this.x) > 1 || Math.abs(this.y) > 1)) ? 0x03 : 0x02);
-			this.setTile((this.chunkSeed - rands.hill_x) % consts.CHUNK_SIZE + 1, (this.chunkSeed - rands.hill_y) % consts.CHUNK_SIZE, 0x01);
-			this.setTile((this.chunkSeed - rands.hill_x) % consts.CHUNK_SIZE - 1, (this.chunkSeed - rands.hill_y) % consts.CHUNK_SIZE, 0x01);
-			this.setTile((this.chunkSeed - rands.hill_x) % consts.CHUNK_SIZE, (this.chunkSeed - rands.hill_y) % consts.CHUNK_SIZE + 1, 0x01);
-			this.setTile((this.chunkSeed - rands.hill_x) % consts.CHUNK_SIZE, (this.chunkSeed - rands.hill_y) % consts.CHUNK_SIZE - 1, 0x01);
-			this.setTile((this.chunkSeed - rands.hill_x) % consts.CHUNK_SIZE + 1, (this.chunkSeed - rands.hill_y) % consts.CHUNK_SIZE + 1, (this.chunkSeed % 4 > 1) ? 0x01 : 0x00);
-			this.setTile((this.chunkSeed - rands.hill_x) % consts.CHUNK_SIZE + 1, (this.chunkSeed - rands.hill_y) % consts.CHUNK_SIZE - 1, (this.chunkSeed % 8 > 3) ? 0x01 : 0x00);
-			this.setTile((this.chunkSeed - rands.hill_x) % consts.CHUNK_SIZE - 1, (this.chunkSeed - rands.hill_y) % consts.CHUNK_SIZE + 1, (this.chunkSeed % 16 > 7) ? 0x01 : 0x00);
-			this.setTile((this.chunkSeed - rands.hill_x) % consts.CHUNK_SIZE - 1, (this.chunkSeed - rands.hill_y) % consts.CHUNK_SIZE - 1, (this.chunkSeed % 32 > 15) ? 0x01 : 0x00);
+			this.setLayer1((this.chunkSeed - rands.hill_x) % consts.CHUNK_SIZE, (this.chunkSeed - rands.hill_y) % consts.CHUNK_SIZE, (((this.chunkSeed - rands.ore_type) % 3) > 1 && (Math.abs(this.x) > 1 || Math.abs(this.y) > 1)) ? 0x03 : 0x02);
+			this.setLayer1((this.chunkSeed - rands.hill_x) % consts.CHUNK_SIZE + 1, (this.chunkSeed - rands.hill_y) % consts.CHUNK_SIZE, 0x01);
+			this.setLayer1((this.chunkSeed - rands.hill_x) % consts.CHUNK_SIZE - 1, (this.chunkSeed - rands.hill_y) % consts.CHUNK_SIZE, 0x01);
+			this.setLayer1((this.chunkSeed - rands.hill_x) % consts.CHUNK_SIZE, (this.chunkSeed - rands.hill_y) % consts.CHUNK_SIZE + 1, 0x01);
+			this.setLayer1((this.chunkSeed - rands.hill_x) % consts.CHUNK_SIZE, (this.chunkSeed - rands.hill_y) % consts.CHUNK_SIZE - 1, 0x01);
+			this.setLayer1((this.chunkSeed - rands.hill_x) % consts.CHUNK_SIZE + 1, (this.chunkSeed - rands.hill_y) % consts.CHUNK_SIZE + 1, (this.chunkSeed % 4 > 1) ? 0x01 : 0x00);
+			this.setLayer1((this.chunkSeed - rands.hill_x) % consts.CHUNK_SIZE + 1, (this.chunkSeed - rands.hill_y) % consts.CHUNK_SIZE - 1, (this.chunkSeed % 8 > 3) ? 0x01 : 0x00);
+			this.setLayer1((this.chunkSeed - rands.hill_x) % consts.CHUNK_SIZE - 1, (this.chunkSeed - rands.hill_y) % consts.CHUNK_SIZE + 1, (this.chunkSeed % 16 > 7) ? 0x01 : 0x00);
+			this.setLayer1((this.chunkSeed - rands.hill_x) % consts.CHUNK_SIZE - 1, (this.chunkSeed - rands.hill_y) % consts.CHUNK_SIZE - 1, (this.chunkSeed % 32 > 15) ? 0x01 : 0x00);
 		}
 
 		if(this.isWet){
-			this.setTile(7, 7, 0x02);
-			this.setTile(8, 7, 0x03);
-			this.setTile(7, 8, 0x03);
-			this.setTile(8, 8, 0x02);
-			this.setTile(6, 7, 0x01);
-			this.setTile(7, 6, 0x01);
-			this.setTile(6, 8, 0x01);
-			this.setTile(8, 6, 0x01);
-			this.setTile(8, 9, 0x01);
-			this.setTile(9, 8, 0x01);
-			this.setTile(7, 9, 0x01);
-			this.setTile(9, 7, 0x01);
+			this.setLayer1(7, 7, 0x02);
+			this.setLayer1(8, 7, 0x03);
+			this.setLayer1(7, 8, 0x03);
+			this.setLayer1(8, 8, 0x02);
+			this.setLayer1(6, 7, 0x01);
+			this.setLayer1(7, 6, 0x01);
+			this.setLayer1(6, 8, 0x01);
+			this.setLayer1(8, 6, 0x01);
+			this.setLayer1(8, 9, 0x01);
+			this.setLayer1(9, 8, 0x01);
+			this.setLayer1(7, 9, 0x01);
+			this.setLayer1(9, 7, 0x01);
 		}
 
 		return this;
 	}
-	update():Chunk {
+	update():Chunk<Layer1,Layer2,Layer3> {
+		for(var row of this.layers[1] as any[][]){
+			for(var value of row){
+				if(typeof value?.update == "function"){
+					value.update();
+				}
+			}
+		}
 		return this;
 	}
-	tileAt(tileX:number, tileY:number):Tile {
+	atLayer1(tileX:number, tileY:number):Layer1 {
 		return this.layers[0]?.[tileY]?.[tileX] ?? null;
 	}
-	buildingAt(x:number, y:number):BuildingID {
+	atLayer2(x:number, y:number):Layer2 {
 		return this.layers[1]?.[y]?.[x] ?? null;
 	}
-	setTile(x:number, y:number, tile:Tile):boolean {
-		if(this.tileAt(x, y) == null){
+	setLayer1(x:number, y:number, value:any):boolean {//todo fix, any bad
+		if(this.atLayer1(x, y) == null){
 			return false;
 		}
-		this.layers[0][y][x] = tile;
+		this.layers[0][y][x] = value;
 		return true;
 	}
-	setBuilding(x:number, y:number, buildingId:BuildingID):boolean {
-		if(this.tileAt(x, y) == null){
+	setLayer2(x:number, y:number, value:Layer2):boolean {
+		if(this.atLayer1(x, y) == null){
 			return false;
 		}
-		this.layers[1][y][x] = buildingId;
+		this.layers[1][y][x] = value;
 		return true;
 	}
 	/**
@@ -524,28 +572,26 @@ class Chunk {
 		if(currentframe.redraw){
 			for(let y = 0; y < this.layers[0].length; y ++){
 				for(let x = 0; x < this.layers[0][y].length; x ++){
-					this.displayTile(x, y, currentframe);
+					this.displayTile(x, y, currentframe);//todo fix, any bad
 				}
 			}
 			for(let y = 0; y < this.layers[0].length; y ++){
 				for(let x = 0; x < this.layers[0][y].length; x ++){
-					this.displayBuilding(x, y, this.buildingAt(tileToChunk(x), tileToChunk(y)));
+					this.displayBuilding(x, y, (this.atLayer2(tileToChunk(x), tileToChunk(y)) as unknown as Building)?.id ?? 0xFFFF);//todo fix, any bad
 				}
 			}
 		}
 		if(currentframe.debug){
 			ctx4.strokeStyle = "#0000FF";
 			ctx4.strokeRect(this.x * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE + (Game.scroll.x * consts.DISPLAY_SCALE), this.y  * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE + (Game.scroll.y * consts.DISPLAY_SCALE), consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE, consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE);
-			//ctx4.font = "40px sans-serif";
-			//ctx4.fillText(this.chunkSeed.toString(), this.x * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE + (consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE * 0.5) + (Game.scroll.x * consts.DISPLAY_SCALE), this.y * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE + (consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE * 0.5) + (Game.scroll.y * consts.DISPLAY_SCALE));
 		}
 	}
 	displayTile(x:number, y:number, currentframe){
 		currentframe.tps ++;
 		let pixelX = ((this.x * consts.CHUNK_SIZE) + x) * consts.DISPLAY_TILE_SIZE + (Game.scroll.x * consts.DISPLAY_SCALE);
 		let pixelY = ((this.y * consts.CHUNK_SIZE) + y) * consts.DISPLAY_TILE_SIZE + (Game.scroll.y * consts.DISPLAY_SCALE);
-		if(settings.graphics_mode || this.tileAt(x,y) != 0x00){
-			ctx.drawImage(textures.get("t" + this.tileAt(x,y).toString()), pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
+		if(settings.graphics_mode || (this.atLayer1(x,y) as any as Tile) != 0x00){
+			ctx.drawImage(textures.get("t" + this.atLayer1(x,y).toString()), pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
 		} else {
 			ctx.fillStyle = "#00CC33";
 			rect(pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
@@ -610,10 +656,12 @@ class Chunk {
 			_ctx.strokeStyle = "#444444";
 			_ctx.fillStyle = "#444444";
 			_ctx.lineWidth = 1;
-		} else if(true){
+		} else if(textures.get(buildingID.toString())){
 			return _ctx.drawImage(textures.get(buildingID.toString()), pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
+		} else {
+			throw "MissingTextureError: " + buildingID.toString();
 		}
-		switch(buildingID){
+		switch(buildingID as any){//TypeScript dum dum
 			case 0x0001:
 				_ctx.beginPath();
 				_ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
@@ -742,8 +790,73 @@ class Chunk {
 			
 			case 0x0004:
 				rect(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.5, consts.DISPLAY_TILE_SIZE * 0.8, consts.DISPLAY_TILE_SIZE * 0.8, rectMode.CENTER, _ctx);
-				ctx.fillStyle = "#FFCC11";
+				_ctx.fillStyle = "#FFCC11";
 				rect(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.5, consts.DISPLAY_TILE_SIZE * 0.4, consts.DISPLAY_TILE_SIZE * 0.4, rectMode.CENTER, _ctx);
+				break;
+
+			case 0x0005:
+				_ctx.fillRect(pixelX + consts.DISPLAY_TILE_SIZE * 0.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.2, consts.DISPLAY_TILE_SIZE * 0.2, consts.DISPLAY_TILE_SIZE * 0.6);
+				_ctx.beginPath();
+				_ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+				_ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.9, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+				_ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.6, pixelY + consts.DISPLAY_TILE_SIZE * 0.3);
+				_ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.9, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+				_ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.6, pixelY + consts.DISPLAY_TILE_SIZE * 0.7);
+				_ctx.stroke();
+				break;
+			case 0x0105:
+				_ctx.fillRect(pixelX + consts.DISPLAY_TILE_SIZE * 0.2, pixelY + consts.DISPLAY_TILE_SIZE * 0.1, consts.DISPLAY_TILE_SIZE * 0.6, consts.DISPLAY_TILE_SIZE * 0.2);
+				_ctx.beginPath();
+				_ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.1);
+				_ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.9);
+				_ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.3, pixelY + consts.DISPLAY_TILE_SIZE * 0.6);
+				_ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.9);
+				_ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.7, pixelY + consts.DISPLAY_TILE_SIZE * 0.6);
+				_ctx.stroke();
+				break;
+			case 0x0205:
+				_ctx.fillRect(pixelX + consts.DISPLAY_TILE_SIZE * 0.7, pixelY + consts.DISPLAY_TILE_SIZE * 0.2, consts.DISPLAY_TILE_SIZE * 0.2, consts.DISPLAY_TILE_SIZE * 0.6);
+				_ctx.beginPath();
+				_ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.9, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+				_ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+				_ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.4, pixelY + consts.DISPLAY_TILE_SIZE * 0.3);
+				_ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+				_ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.4, pixelY + consts.DISPLAY_TILE_SIZE * 0.7);
+				_ctx.stroke();
+				break;
+			case 0x0305:
+				_ctx.fillRect(pixelX + consts.DISPLAY_TILE_SIZE * 0.2, pixelY + consts.DISPLAY_TILE_SIZE * 0.7, consts.DISPLAY_TILE_SIZE * 0.6, consts.DISPLAY_TILE_SIZE * 0.2);
+				_ctx.beginPath();
+				_ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.9);
+				_ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.1);
+				_ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.3, pixelY + consts.DISPLAY_TILE_SIZE * 0.4);
+				_ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.1);
+				_ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.7, pixelY + consts.DISPLAY_TILE_SIZE * 0.4);
+				_ctx.stroke();
+				break;
+			
+			case 0x0006:
+				rect(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.5, consts.DISPLAY_TILE_SIZE * 0.8, consts.DISPLAY_TILE_SIZE * 0.8, rectMode.CENTER, _ctx);
+				_ctx.fillStyle = "#CCCCCC";
+				rect(pixelX + consts.DISPLAY_TILE_SIZE * 0.45, pixelY + consts.DISPLAY_TILE_SIZE * 0.1, consts.DISPLAY_TILE_SIZE * 0.1, consts.DISPLAY_TILE_SIZE * 0.3, rectMode.CORNER, _ctx);
+				break;
+			
+			case 0x0007:
+				rect(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.5, consts.DISPLAY_TILE_SIZE * 0.8, consts.DISPLAY_TILE_SIZE * 0.8, rectMode.CENTER, _ctx);
+				_ctx.fillStyle = "#FF0000";
+				rect(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.5, consts.DISPLAY_TILE_SIZE * 0.4, consts.DISPLAY_TILE_SIZE * 0.4, rectMode.CENTER, _ctx);
+				break;
+
+			default:
+				_ctx.fillStyle = "#FF00FF";
+				rect(pixelX, pixelY, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
+				rect(pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY + consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
+				_ctx.fillStyle = "#000000";
+				rect(pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
+				rect(pixelX, pixelY + consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
+				_ctx.font = "15px sans-serif";
+				_ctx.fillStyle = "#00FF00";
+				_ctx.fillText(buildingID.toString(), pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY + consts.DISPLAY_TILE_SIZE / 2);
 				break;
 		}
 	}
@@ -757,11 +870,15 @@ class Item {
 	level: Level;
 	startY: number | undefined;
 	startX: number | undefined;
+	grabbedBy: Building;
+	deleted: boolean;
 	constructor(x:number, y:number, id:string, level:Level){
 		this.id = id;
 		this.x = x;
 		this.y = y;
 		this.level = level;
+		this.grabbedBy = null;
+		this.deleted = false;
 		if(this.id == ItemID.base_null){
 			this.startX = x;
 			this.startY = y;
@@ -771,6 +888,9 @@ class Item {
 		if(Game.tutorial.conveyor.beltchain && Game.persistent.tutorialenabled && ((Math.abs(this.startX - this.x) + 1 > consts.TILE_SIZE * 2) || (Math.abs(this.startY - this.y) + 1 > consts.TILE_SIZE * 2))){
 			_alert("Nice!\nConveyor belts are also the way to put items in machines.\nSpeaking of which, let's try automating coal: Place a Miner(2 key).");
 			Game.tutorial.conveyor.beltchain = false;
+		}
+		if(this.deleted){
+			//do stuff
 		}
 	}
 	display(currentframe:any){
@@ -812,46 +932,42 @@ class Building {
 		this.level = level;
 	}
 	static canBuildAt(tileX:number, tileY:number, level:Level){
-		return level.tileAt2(tileX, tileY) != 0x04;
-	}
-	update(currentframe){
-		if(this.level.buildingIDAt2(this.x, this.y) != this.id){
-			return this.break();
-		}
+		return level.atLayer1ByTile(tileX, tileY) != 0x04;
 	}
 	break(){
-		this.level.buildings.splice(this.level.buildings.indexOf(this), 1);
+		
 	}
-	spawnItem(id:string){//Note: this is O(n^2). Bad!
+	spawnItem(id:string){
+		id ??= "base_null";
 		if(
-				this.level.buildingIDAt2(this.x + 1, this.y) % 0x100 === 0x01 &&
-				this.level.buildingIDAt2(this.x + 1, this.y) !== 0x0201 &&
-				this.level.buildingIDAt2(this.x + 1, this.y) !== 0x0801 &&
-				this.level.buildingIDAt2(this.x + 1, this.y) !== 0x0901 &&
+				this.level.buildingIDAtTile(this.x + 1, this.y) % 0x100 === 0x01 &&
+				this.level.buildingIDAtTile(this.x + 1, this.y) !== 0x0201 &&
+				this.level.buildingIDAtTile(this.x + 1, this.y) !== 0x0801 &&
+				this.level.buildingIDAtTile(this.x + 1, this.y) !== 0x0901 &&
 				(this.level.buildingAt(this.x + 1, this.y) as Conveyor).item == null
 		){
 			this.level.addItem(this.x * consts.TILE_SIZE + consts.TILE_SIZE * 1.1, this.y * consts.TILE_SIZE + consts.TILE_SIZE * 0.5, id);
 		} else if(
-				this.level.buildingIDAt2(this.x, this.y + 1) % 0x100 === 0x01 &&
-				this.level.buildingIDAt2(this.x, this.y + 1) !== 0x0301 &&
-				this.level.buildingIDAt2(this.x, this.y + 1) !== 0x0A01 &&
-				this.level.buildingIDAt2(this.x, this.y + 1) !== 0x0B01 &&
+				this.level.buildingIDAtTile(this.x, this.y + 1) % 0x100 === 0x01 &&
+				this.level.buildingIDAtTile(this.x, this.y + 1) !== 0x0301 &&
+				this.level.buildingIDAtTile(this.x, this.y + 1) !== 0x0A01 &&
+				this.level.buildingIDAtTile(this.x, this.y + 1) !== 0x0B01 &&
 				(this.level.buildingAt(this.x, this.y + 1) as Conveyor).item == null
 		){
 			this.level.addItem(this.x * consts.TILE_SIZE + consts.TILE_SIZE * 0.5, this.y * consts.TILE_SIZE + consts.TILE_SIZE * 1.1, id);
 		} else if(
-				this.level.buildingIDAt2(this.x - 1, this.y) % 0x100 === 0x01 &&
-				this.level.buildingIDAt2(this.x - 1, this.y) !== 0x0001 &&
-				this.level.buildingIDAt2(this.x - 1, this.y) !== 0x0401 &&
-				this.level.buildingIDAt2(this.x - 1, this.y) !== 0x0501 &&
+				this.level.buildingIDAtTile(this.x - 1, this.y) % 0x100 === 0x01 &&
+				this.level.buildingIDAtTile(this.x - 1, this.y) !== 0x0001 &&
+				this.level.buildingIDAtTile(this.x - 1, this.y) !== 0x0401 &&
+				this.level.buildingIDAtTile(this.x - 1, this.y) !== 0x0501 &&
 				(this.level.buildingAt(this.x - 1, this.y) as Conveyor).item == null
 		){
 			this.level.addItem(this.x * consts.TILE_SIZE - consts.TILE_SIZE * 0.1, this.y * consts.TILE_SIZE + consts.TILE_SIZE * 0.5, id);
 		} else if(
-				this.level.buildingIDAt2(this.x, this.y - 1) % 0x100 === 0x01 &&
-				this.level.buildingIDAt2(this.x, this.y - 1) !== 0x0101 &&
-				this.level.buildingIDAt2(this.x, this.y - 1) !== 0x0601 &&
-				this.level.buildingIDAt2(this.x, this.y - 1) !== 0x0701 &&
+				this.level.buildingIDAtTile(this.x, this.y - 1) % 0x100 === 0x01 &&
+				this.level.buildingIDAtTile(this.x, this.y - 1) !== 0x0101 &&
+				this.level.buildingIDAtTile(this.x, this.y - 1) !== 0x0601 &&
+				this.level.buildingIDAtTile(this.x, this.y - 1) !== 0x0701 &&
 				(this.level.buildingAt(this.x, this.y - 1) as Conveyor).item == null
 		){
 			this.level.addItem(this.x * consts.TILE_SIZE + consts.TILE_SIZE * 0.5, this.y * consts.TILE_SIZE - consts.TILE_SIZE * 0.1, id);
@@ -873,10 +989,11 @@ class Building {
 	grabItem(filter:(item:Item) => any, callback:(item:Item) => void, remove:boolean){
 		for(var item in this.level.items){
 			if(
-				(Math.abs(this.level.items[item].x - (this.x * consts.TILE_SIZE + consts.TILE_SIZE / 2)) <= consts.TILE_SIZE * 0.6) &&
-				(Math.abs(this.level.items[item].y - (this.y * consts.TILE_SIZE + consts.TILE_SIZE / 2)) <= consts.TILE_SIZE * 0.6) &&
+				(Math.abs(this.level.items[item].x - ((this.x + 0.5) * consts.TILE_SIZE)) <= consts.TILE_SIZE * 0.5) &&
+				(Math.abs(this.level.items[item].y - ((this.y + 0.5) * consts.TILE_SIZE)) <= consts.TILE_SIZE * 0.5) &&
 				filter(this.level.items[item])
-			){//Todo: try to optimize this stuff as much as possible
+			){
+				this.level.items[item].grabbedBy = this;
 				callback(this.level.items[item]);
 				if(remove){
 					this.level.items.splice(parseInt(item), 1);
@@ -890,22 +1007,17 @@ class Building {
 
 class Miner extends Building {
 	timer: number;
-	itemBuffer: number;
 	miningItem: string;
 	oreFor: any;
 	constructor(tileX:number, tileY:number, id:BuildingID, level:Level){
 		super(tileX, tileY, id, level);
 		this.timer = 61;
-		this.itemBuffer = 0;
-		this.miningItem = oreFor[level.tileAt2(tileX, tileY)];
+		this.miningItem = oreFor[level.atLayer1ByTile(tileX, tileY)];
 	}
 	static canBuildAt(tileX:number, tileY:number, level:Level):boolean {
-		return level.tileAt2(tileX, tileY) == 0x02 || level.tileAt2(tileX, tileY) == 0x03;
+		return level.atLayer1ByTile(tileX, tileY) == 0x02 || level.atLayer1ByTile(tileX, tileY) == 0x03;
 	}
 	update(){
-		if(this.level.buildingIDAt2(this.x, this.y) != this.id){
-			return this.break();
-		}
 		if(this.timer > 0){
 			this.timer --;
 		} else {
@@ -915,7 +1027,7 @@ class Miner extends Building {
 					_alert("Nice!\nThis is just coal ore though, not coal. Try placing a furnace(4 key).\nOh also, remember you can scroll to zoom in on that beautiful coal ore texture.");
 					Game.tutorial.miner.firstoutput = false;
 				}
-			};
+			}
 		}
 	}
 }
@@ -935,37 +1047,22 @@ function smeltFor(item:Item | string){
 
 class TrashCan extends Building {
 	update(){
-		if(this.level.buildingIDAt2(this.x, this.y) != this.id){
-			return this.break();
-		}
-		for(var item in this.level.items){
-			if(
-				(Math.abs(this.level.items[item].x - (this.x * consts.TILE_SIZE + consts.TILE_SIZE / 2)) < consts.TILE_SIZE * 0.6) &&
-				(Math.abs(this.level.items[item].y - (this.y * consts.TILE_SIZE + consts.TILE_SIZE / 2)) < consts.TILE_SIZE * 0.6)
-			){
-				this.level.items.splice(parseInt(item), 1);
-			}
-		}
+		this.grabItem(_ => {return true}, item => {item.deleted = true;}, true);
 	}
 }
 
-interface Furnace {
-	processingItem: Item;
-	timer: number;
-}
 
 class Furnace extends Building {
+	processingItem: Item;
+	timer: number;
 	constructor(tileX, tileY, id, level){
 		super(tileX, tileY, id, level);
 		this.timer = 29;
 	}
 	static canBuildAt(tileX:number, tileY:number, level:Level){
-		return level.tileAt2(tileX, tileY) == 0x01;
+		return level.atLayer1ByTile(tileX, tileY) == 0x01;
 	}
 	update(){
-		if(this.level.buildingIDAt2(this.x, this.y) != this.id){
-			return this.break();
-		}
 		if(this.timer > 0 && this.processingItem){
 			this.timer --;
 		} else if(this.timer <= 0 && this.processingItem){
@@ -987,13 +1084,16 @@ class Conveyor extends Building {
 		super(tileX, tileY, id, level);
 		this.item = null;
 	}
-	update(currentframe){
-		if(this.level.buildingIDAt2(this.x, this.y) != this.id){
-			return this.break();
+	break(){
+		if(this.item instanceof Item && this.item.grabbedBy == this){
+			this.item.grabbedBy = null;
 		}
-		if(this.item){
+		this.item = null;
+	}
+	update(currentframe){
+		if(this.item instanceof Item){
 			if(Math.floor(this.item.x / consts.TILE_SIZE) != this.x || Math.floor(this.item.y / consts.TILE_SIZE) != this.y){
-				if([0x0000, 0xFFFF].indexOf(this.level.buildingIDAt(this.item.x, this.item.y)) == -1){
+				if(this.item.grabbedBy != this || this.item.deleted){
 					this.item = null;
 				}
 				return;
@@ -1023,6 +1123,9 @@ class Conveyor extends Building {
 					} else if(pixelToTile(this.item.x) == consts.TILE_SIZE * 0.5 && pixelToTile(this.item.y) >= consts.TILE_SIZE * 0.5){
 						this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
 						this.item.y --;
+					} else {
+						this.item.x = (this.x + 0.5) * consts.TILE_SIZE;
+						this.item.y = (this.y + 0.5) * consts.TILE_SIZE;
 					}
 					break;
 				case 0x05:
@@ -1032,6 +1135,9 @@ class Conveyor extends Building {
 					} else if(pixelToTile(this.item.x) == consts.TILE_SIZE * 0.5 && pixelToTile(this.item.y) <= consts.TILE_SIZE * 0.5){
 						this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
 						this.item.y ++;
+					} else {
+						this.item.x = (this.x + 0.5) * consts.TILE_SIZE;
+						this.item.y = (this.y + 0.5) * consts.TILE_SIZE;
 					}
 					break;
 				case 0x06:
@@ -1041,6 +1147,9 @@ class Conveyor extends Building {
 					} else if(pixelToTile(this.item.x) > consts.TILE_SIZE * 0.5 && pixelToTile(this.item.y) == consts.TILE_SIZE * 0.5){
 						this.item.x --;
 						this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+					} else {
+						this.item.x = (this.x + 0.5) * consts.TILE_SIZE;
+						this.item.y = (this.y + 0.5) * consts.TILE_SIZE;
 					}
 					break;
 				case 0x07:
@@ -1050,6 +1159,9 @@ class Conveyor extends Building {
 					} else if(pixelToTile(this.item.x) < consts.TILE_SIZE * 0.5 && pixelToTile(this.item.y) == consts.TILE_SIZE * 0.5){
 						this.item.x ++;
 						this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+					} else {
+						this.item.x = (this.x + 0.5) * consts.TILE_SIZE;
+						this.item.y = (this.y + 0.5) * consts.TILE_SIZE;
 					}
 					break;
 				case 0x08:
@@ -1059,6 +1171,9 @@ class Conveyor extends Building {
 					} else if(pixelToTile(this.item.x) == consts.TILE_SIZE * 0.5 && pixelToTile(this.item.y) >= consts.TILE_SIZE * 0.5){
 						this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
 						this.item.y --;
+					} else {
+						this.item.x = (this.x + 0.5) * consts.TILE_SIZE;
+						this.item.y = (this.y + 0.5) * consts.TILE_SIZE;
 					}
 					break;
 				case 0x09:
@@ -1068,6 +1183,9 @@ class Conveyor extends Building {
 					} else if(pixelToTile(this.item.x) == consts.TILE_SIZE * 0.5 && pixelToTile(this.item.y) <= consts.TILE_SIZE * 0.5){
 						this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
 						this.item.y ++;
+					} else {
+						this.item.x = (this.x + 0.5) * consts.TILE_SIZE;
+						this.item.y = (this.y + 0.5) * consts.TILE_SIZE;
 					}
 					break;
 				case 0x0A:
@@ -1077,6 +1195,9 @@ class Conveyor extends Building {
 					} else if(pixelToTile(this.item.x) > consts.TILE_SIZE * 0.5 && pixelToTile(this.item.y) == consts.TILE_SIZE * 0.5){
 						this.item.x --;
 						this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+					} else {
+						this.item.x = (this.x + 0.5) * consts.TILE_SIZE;
+						this.item.y = (this.y + 0.5) * consts.TILE_SIZE;
 					}
 					break;
 				case 0x0B:
@@ -1086,6 +1207,9 @@ class Conveyor extends Building {
 					} else if(pixelToTile(this.item.x) < consts.TILE_SIZE * 0.5 && pixelToTile(this.item.y) == consts.TILE_SIZE * 0.5){
 						this.item.x ++;
 						this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+					} else {
+						this.item.x = (this.x + 0.5) * consts.TILE_SIZE;
+						this.item.y = (this.y + 0.5) * consts.TILE_SIZE;
 					}
 					break;
 			}
@@ -1094,6 +1218,110 @@ class Conveyor extends Building {
 		}
 	}
 	static canBuildAt(tileX:number, tileY:number, level:Level){
-		return level.tileAt2(tileX, tileY) != 0x04;
+		return level.atLayer1ByTile(tileX, tileY) != 0x04;
+	}
+}
+
+class Extractor extends Conveyor {
+	update(currentFrame){
+		if(!this.item){
+			if(
+				this.id == 0x0005 &&
+				this.level.buildingAt(this.x - 1, this.y) instanceof StorageBuilding &&
+				(this.level.buildingAt(this.x - 1, this.y) as StorageBuilding).inventory?.length != 0
+			){
+				this.item = (this.level.buildingAt(this.x - 1, this.y) as StorageBuilding).removeItem();
+			} else if(
+				this.id == 0x0105 &&
+				this.level.buildingAt(this.x, this.y - 1) instanceof StorageBuilding &&
+				(this.level.buildingAt(this.x, this.y - 1) as StorageBuilding).inventory?.length != 0
+			){
+				this.item = (this.level.buildingAt(this.x, this.y - 1) as StorageBuilding).removeItem();
+			} else if(
+				this.id == 0x0205 &&
+				this.level.buildingAt(this.x + 1, this.y) instanceof StorageBuilding &&
+				(this.level.buildingAt(this.x + 1, this.y) as StorageBuilding).inventory?.length != 0
+			){
+				this.item = (this.level.buildingAt(this.x + 1, this.y) as StorageBuilding).removeItem();
+			} else if(
+				this.id == 0x0305 &&
+				this.level.buildingAt(this.x, this.y + 1) instanceof StorageBuilding &&
+				(this.level.buildingAt(this.x, this.y + 1) as StorageBuilding).inventory?.length != 0
+			){
+				this.item = (this.level.buildingAt(this.x, this.y + 1) as StorageBuilding).removeItem();
+			} else {
+				return super.update(currentFrame);
+			}
+			this.item.grabbedBy = this;
+			this.item.x = (this.x + 0.5) * consts.TILE_SIZE;
+			this.item.y = (this.y + 0.5) * consts.TILE_SIZE;
+			this.level.items.push(this.item);
+		}
+		super.update(currentFrame);
+	}
+}
+
+class StorageBuilding extends Building {
+	inventory: any;
+	constructor(tileX:number, tileY: number, id:BuildingID, level:Level){
+		super(tileX, tileY, id, level);
+		this.inventory = [];
+		this.inventory.MAX_LENGTH = 64;
+	}
+	update(){
+		if(this.inventory.length < this.inventory.MAX_LENGTH){
+			this.grabItem(() => {return true;}, (item:Item) => {this.inventory.push(item);}, true);
+		}
+	}
+	removeItem():Item {
+		if(this.inventory.length > 0){
+			return this.inventory.pop();
+		} else {
+			return null;
+		}
+	}
+}
+
+let alloysFor = {
+	"base_coal&base_ironIngot": "base_steelIngot",
+	"base_ironIngot&base_coal": "base_steelIngot"
+};
+
+class AlloySmelter extends Building {
+	timer: number;
+	item1: Item;
+	item2: Item;
+	processing: boolean;
+	constructor(tileX:number, tileY:number, id:BuildingID, level:Level){
+		super(tileX, tileY, id, level);
+		this.timer = 240;
+		this.item1 = null;
+		this.item2 = null;
+		this.processing = false;
+	}
+	update(){
+		if(!this.item1){
+			this.grabItem((item) => {return item.id != this.item2?.id;}, (item:Item) => {this.item1 = item;}, true);
+		}
+		if(!this.item2){
+			this.grabItem((item) => {return item.id != this.item1?.id;}, (item:Item) => {this.item2 = item;}, true);
+		}
+		if(this.item1 instanceof Item && this.item2 instanceof Item){
+			if(alloysFor[`${this.item1.id}&${this.item2.id}`]){
+				this.processing = true;
+			}
+		}
+		if(this.processing){
+			if(this.timer > 0){
+				this.timer --;
+			} else {
+				if(this.spawnItem(alloysFor[`${this.item1.id}&${this.item2.id}`])){
+					this.timer = 240;
+					this.item1 = null;
+					this.item2 = null;
+					this.processing = false;
+				}
+			}
+		}
 	}
 }

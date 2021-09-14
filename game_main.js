@@ -1,7 +1,7 @@
 'use strict';
 // TODOS
-// Improve performance by not redrawing everything everytime, but this will need multiple canvases
-// Working on it
+// Make extractor always pull from belt behind, use as splitter
+// 
 // 
 // 
 // 
@@ -63,7 +63,7 @@ const ctx2 = document.getElementById("canvas2").getContext("2d"); //Buildings
 const ctx3 = document.getElementById("canvas3").getContext("2d"); //Items
 const ctx4 = document.getElementById("canvas4").getContext("2d"); //Overlays
 const ctxs = [ctx, ctx1, ctx2, ctx3, ctx4];
-let level1 = new Level(3141);
+const level1 = new Level(3141);
 level1.generateNecessaryChunks();
 let fps = [0, 0, 0, 0, 0, 0];
 function runLevel(level, currentFrame) {
@@ -80,7 +80,7 @@ function runLevel(level, currentFrame) {
     ctx3.clearRect(0, 0, innerWidth, innerHeight);
     ctx4.clearRect(0, 0, innerWidth, innerHeight);
     level.display(currentFrame);
-    level.displayGhostBuilding((mouseX - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE, (mouseY - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE, placedBuildingID);
+    level.displayGhostBuilding((mouseX - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE, (mouseY - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE, placedBuilding.ID);
     if (keysPressed.indexOf("Shift") != -1) {
         level.displayTooltip(mouseX, mouseY, currentFrame);
     }
@@ -248,10 +248,22 @@ function checkload() {
     }
     else {
         setTimeout(checkload, 100);
-        alert(2);
+        alert("Not all textures have loaded!\nYou may have a slow internet connection, or the game may just be broken.\nClick OK to try again.");
     }
 }
-let placedBuildingID = 0x0001;
+let placedBuilding = {
+    type: 0x0001,
+    direction: 0x100,
+    get ID() {
+        if (this.type == 0x01 || this.type == 0x05) {
+            return this.direction + this.type;
+        }
+        else {
+            return this.type;
+        }
+    }
+};
+let canOverwriteBuilding = true;
 let handleMouseDown = (currentFrame, e) => {
     e = e ?? latestMouseEvent;
     switch (GAME_STATE) {
@@ -261,7 +273,15 @@ let handleMouseDown = (currentFrame, e) => {
                 mouseIsPressed = false;
             }
             else {
-                level1.buildBuilding(Math.floor((e.x - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE), Math.floor((e.y - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE), placedBuildingID);
+                if (level1.buildingIDAtTile(Math.floor((e.x - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE), Math.floor((e.y - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE)) == placedBuilding.ID) {
+                    if (canOverwriteBuilding) {
+                        level1.buildBuilding(Math.floor((e.x - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE), Math.floor((e.y - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE), placedBuilding.ID);
+                    }
+                }
+                else {
+                    canOverwriteBuilding = false;
+                    level1.buildBuilding(Math.floor((e.x - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE), Math.floor((e.y - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE), placedBuilding.ID);
+                }
             }
             break;
         case "title":
