@@ -481,6 +481,13 @@ class Chunk {
                 }
             }
         }
+        for (var row of this.layers[2]) {
+            for (var value of row) {
+                if (typeof value?.update == "function") {
+                    value.update();
+                }
+            }
+        }
         return this;
     }
     atLayer1(tileX, tileY) {
@@ -542,7 +549,20 @@ class Chunk {
         let pixelX = ((this.x * consts.CHUNK_SIZE) + x) * consts.DISPLAY_TILE_SIZE + (Game.scroll.x * consts.DISPLAY_SCALE);
         let pixelY = ((this.y * consts.CHUNK_SIZE) + y) * consts.DISPLAY_TILE_SIZE + (Game.scroll.y * consts.DISPLAY_SCALE);
         if (settings.graphics_mode || this.atLayer1(x, y) != 0x00) {
-            ctx.drawImage(textures.get("t" + this.atLayer1(x, y).toString()), pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
+            if (textures.get("t" + this.atLayer1(x, y).toString())) {
+                ctx.drawImage(textures.get("t" + this.atLayer1(x, y).toString()), pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
+            }
+            else {
+                ctx.fillStyle = "#FF00FF";
+                rect(pixelX, pixelY, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2);
+                rect(pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY + consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2);
+                ctx.fillStyle = "#000000";
+                rect(pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2);
+                rect(pixelX, pixelY + consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2);
+                ctx.font = "15px sans-serif";
+                ctx.fillStyle = "#00FF00";
+                ctx.fillText(this.atLayer1(x, y).toString(), pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY + consts.DISPLAY_TILE_SIZE / 2);
+            }
         }
         else {
             ctx.fillStyle = "#00CC33";
@@ -616,10 +636,18 @@ class Chunk {
         else if (textures.get(buildingID.toString())) {
             return _ctx.drawImage(textures.get(buildingID.toString()), pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
         }
-        else {
-            throw "MissingTextureError: " + buildingID.toString();
+        else if (settings.debug && false) {
+            _ctx.fillStyle = "#FF00FF";
+            rect(pixelX, pixelY, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
+            rect(pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY + consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
+            _ctx.fillStyle = "#000000";
+            rect(pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
+            rect(pixelX, pixelY + consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
+            _ctx.font = "15px sans-serif";
+            _ctx.fillStyle = "#00FF00";
+            _ctx.fillText(this.atLayer2(x, y).toString(), pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY + consts.DISPLAY_TILE_SIZE / 2);
         }
-        switch (buildingID) { //TypeScript dum dum
+        switch (buildingID) { //TypeScript big dum dum
             case 0x0001:
                 _ctx.beginPath();
                 _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
@@ -752,40 +780,120 @@ class Chunk {
                 _ctx.fillRect(pixelX + consts.DISPLAY_TILE_SIZE * 0.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.2, consts.DISPLAY_TILE_SIZE * 0.2, consts.DISPLAY_TILE_SIZE * 0.6);
                 _ctx.beginPath();
                 _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
-                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.9, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
-                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.6, pixelY + consts.DISPLAY_TILE_SIZE * 0.3);
-                _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.9, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
-                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.6, pixelY + consts.DISPLAY_TILE_SIZE * 0.7);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 1.4, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 1.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.3);
+                _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 1.4, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 1.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.7);
                 _ctx.stroke();
                 break;
             case 0x0105:
                 _ctx.fillRect(pixelX + consts.DISPLAY_TILE_SIZE * 0.2, pixelY + consts.DISPLAY_TILE_SIZE * 0.1, consts.DISPLAY_TILE_SIZE * 0.6, consts.DISPLAY_TILE_SIZE * 0.2);
                 _ctx.beginPath();
                 _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.1);
-                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.9);
-                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.3, pixelY + consts.DISPLAY_TILE_SIZE * 0.6);
-                _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.9);
-                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.7, pixelY + consts.DISPLAY_TILE_SIZE * 0.6);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 1.4);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.3, pixelY + consts.DISPLAY_TILE_SIZE * 1.1);
+                _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 1.4);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.7, pixelY + consts.DISPLAY_TILE_SIZE * 1.1);
                 _ctx.stroke();
                 break;
             case 0x0205:
                 _ctx.fillRect(pixelX + consts.DISPLAY_TILE_SIZE * 0.7, pixelY + consts.DISPLAY_TILE_SIZE * 0.2, consts.DISPLAY_TILE_SIZE * 0.2, consts.DISPLAY_TILE_SIZE * 0.6);
                 _ctx.beginPath();
                 _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.9, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
-                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
-                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.4, pixelY + consts.DISPLAY_TILE_SIZE * 0.3);
-                _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
-                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.4, pixelY + consts.DISPLAY_TILE_SIZE * 0.7);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * -0.4, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * -0.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.3);
+                _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * -0.4, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * -0.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.7);
                 _ctx.stroke();
                 break;
             case 0x0305:
                 _ctx.fillRect(pixelX + consts.DISPLAY_TILE_SIZE * 0.2, pixelY + consts.DISPLAY_TILE_SIZE * 0.7, consts.DISPLAY_TILE_SIZE * 0.6, consts.DISPLAY_TILE_SIZE * 0.2);
                 _ctx.beginPath();
                 _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.9);
-                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.1);
-                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.3, pixelY + consts.DISPLAY_TILE_SIZE * 0.4);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * -0.4);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.3, pixelY + consts.DISPLAY_TILE_SIZE * -0.1);
+                _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * -0.4);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.7, pixelY + consts.DISPLAY_TILE_SIZE * -0.1);
+                _ctx.stroke();
+                break;
+            case 0x0405:
+                _ctx.fillRect(pixelX + consts.DISPLAY_TILE_SIZE * 0.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.2, consts.DISPLAY_TILE_SIZE * 0.2, consts.DISPLAY_TILE_SIZE * 0.6);
+                _ctx.beginPath();
+                _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 2.4, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 2.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.3);
+                _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 2.4, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 2.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.7);
+                _ctx.stroke();
+                break;
+            case 0x0505:
+                _ctx.fillRect(pixelX + consts.DISPLAY_TILE_SIZE * 0.2, pixelY + consts.DISPLAY_TILE_SIZE * 0.1, consts.DISPLAY_TILE_SIZE * 0.6, consts.DISPLAY_TILE_SIZE * 0.2);
+                _ctx.beginPath();
                 _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.1);
-                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.7, pixelY + consts.DISPLAY_TILE_SIZE * 0.4);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 2.4);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.3, pixelY + consts.DISPLAY_TILE_SIZE * 2.1);
+                _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 2.4);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.7, pixelY + consts.DISPLAY_TILE_SIZE * 2.1);
+                _ctx.stroke();
+                break;
+            case 0x0605:
+                _ctx.fillRect(pixelX + consts.DISPLAY_TILE_SIZE * 0.7, pixelY + consts.DISPLAY_TILE_SIZE * 0.2, consts.DISPLAY_TILE_SIZE * 0.2, consts.DISPLAY_TILE_SIZE * 0.6);
+                _ctx.beginPath();
+                _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.9, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * -1.4, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * -1.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.3);
+                _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * -1.4, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * -1.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.7);
+                _ctx.stroke();
+                break;
+            case 0x0705:
+                _ctx.fillRect(pixelX + consts.DISPLAY_TILE_SIZE * 0.2, pixelY + consts.DISPLAY_TILE_SIZE * 0.7, consts.DISPLAY_TILE_SIZE * 0.6, consts.DISPLAY_TILE_SIZE * 0.2);
+                _ctx.beginPath();
+                _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.9);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * -1.4);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.3, pixelY + consts.DISPLAY_TILE_SIZE * -1.1);
+                _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * -1.4);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.7, pixelY + consts.DISPLAY_TILE_SIZE * -1.1);
+                _ctx.stroke();
+                break;
+            case 0x0805:
+                _ctx.fillRect(pixelX + consts.DISPLAY_TILE_SIZE * 0.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.2, consts.DISPLAY_TILE_SIZE * 0.2, consts.DISPLAY_TILE_SIZE * 0.6);
+                _ctx.beginPath();
+                _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 3.4, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 3.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.3);
+                _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 3.4, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 3.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.7);
+                _ctx.stroke();
+                break;
+            case 0x0905:
+                _ctx.fillRect(pixelX + consts.DISPLAY_TILE_SIZE * 0.2, pixelY + consts.DISPLAY_TILE_SIZE * 0.1, consts.DISPLAY_TILE_SIZE * 0.6, consts.DISPLAY_TILE_SIZE * 0.2);
+                _ctx.beginPath();
+                _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.1);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 3.4);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.3, pixelY + consts.DISPLAY_TILE_SIZE * 3.1);
+                _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 3.4);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.7, pixelY + consts.DISPLAY_TILE_SIZE * 3.1);
+                _ctx.stroke();
+                break;
+            case 0x0A05:
+                _ctx.fillRect(pixelX + consts.DISPLAY_TILE_SIZE * 0.7, pixelY + consts.DISPLAY_TILE_SIZE * 0.2, consts.DISPLAY_TILE_SIZE * 0.2, consts.DISPLAY_TILE_SIZE * 0.6);
+                _ctx.beginPath();
+                _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.9, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * -2.4, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * -2.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.3);
+                _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * -2.4, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * -2.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.7);
+                _ctx.stroke();
+                break;
+            case 0x0B05:
+                _ctx.fillRect(pixelX + consts.DISPLAY_TILE_SIZE * 0.2, pixelY + consts.DISPLAY_TILE_SIZE * 0.7, consts.DISPLAY_TILE_SIZE * 0.6, consts.DISPLAY_TILE_SIZE * 0.2);
+                _ctx.beginPath();
+                _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.9);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * -2.4);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.3, pixelY + consts.DISPLAY_TILE_SIZE * -2.1);
+                _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * -2.4);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.7, pixelY + consts.DISPLAY_TILE_SIZE * -2.1);
                 _ctx.stroke();
                 break;
             case 0x0006:
@@ -864,11 +972,38 @@ class Building {
         this.y = tileY;
         this.id = id;
         this.level = level;
+        this.item = null;
+        this.inventory = null;
     }
     static canBuildAt(tileX, tileY, level) {
         return level.atLayer1ByTile(tileX, tileY) != 0x04;
     }
     break() {
+        if (this.item) {
+            this.item.grabbedBy = null;
+        }
+        if (this.inventory) {
+            for (var item of this.inventory) {
+                item.grabbedBy = null;
+            }
+        }
+    }
+    hasItem() {
+        if (this.item)
+            return this.item;
+        if (this.inventory && this.inventory?.length != 0)
+            return this.inventory[0];
+        return null;
+    }
+    removeItem() {
+        if (this.item) {
+            var temp = this.item;
+            this.item = null;
+            return temp;
+        }
+        if (this.inventory?.length == 0) {
+        }
+        return null;
     }
     spawnItem(id) {
         id ??= "base_null";
@@ -915,10 +1050,12 @@ class Building {
         }
         return true;
     }
-    grabItem(filter, callback, remove) {
+    grabItem(filter, callback, remove, grabDistance) {
+        grabDistance ??= 0.5;
+        filter ??= () => { return true; };
         for (var item in this.level.items) {
-            if ((Math.abs(this.level.items[item].x - ((this.x + 0.5) * consts.TILE_SIZE)) <= consts.TILE_SIZE * 0.5) &&
-                (Math.abs(this.level.items[item].y - ((this.y + 0.5) * consts.TILE_SIZE)) <= consts.TILE_SIZE * 0.5) &&
+            if ((Math.abs(this.level.items[item].x - ((this.x + grabDistance) * consts.TILE_SIZE)) <= consts.TILE_SIZE * grabDistance) &&
+                (Math.abs(this.level.items[item].y - ((this.y + grabDistance) * consts.TILE_SIZE)) <= consts.TILE_SIZE * grabDistance) &&
                 filter(this.level.items[item])) {
                 this.level.items[item].grabbedBy = this;
                 callback(this.level.items[item]);
@@ -1005,14 +1142,6 @@ class Conveyor extends Building {
             this.item.grabbedBy = null;
         }
         this.item = null;
-    }
-    removeItem() {
-        if (this.item) {
-            let temp = this.item;
-            this.item = null;
-            return temp;
-        }
-        return null;
     }
     update(currentframe, nograb) {
         if (this.item instanceof Item) {
@@ -1155,7 +1284,7 @@ class Conveyor extends Building {
             }
         }
         else if (!nograb) {
-            this.grabItem(() => { return true; }, (item) => { this.item = item; }, false);
+            this.grabItem(null, (item) => { this.item = item; }, false);
         }
     }
     static canBuildAt(tileX, tileY, level) {
@@ -1163,64 +1292,261 @@ class Conveyor extends Building {
     }
 }
 class Extractor extends Conveyor {
-    update(currentFrame) {
-        //AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAa
-        //TODO: make this more readable, probably rewrite with a switch statement
-        if (!this.item) {
-            if (this.id == 0x0005 &&
-                (this.level.buildingAt(this.x - 1, this.y)?.id % 0x100 == 1 || this.level.buildingAt(this.x - 1, this.y) instanceof StorageBuilding) &&
-                (this.level.buildingAt(this.x - 1, this.y).inventory?.length > 0 || this.level.buildingAt(this.x - 1, this.y).item)) {
-                this.item = this.level.buildingAt(this.x - 1, this.y).removeItem();
-                this.item.x = (this.x) * consts.TILE_SIZE;
-                this.item.y = (this.y + 0.5) * consts.TILE_SIZE;
+    constructor(x, y, id, level) {
+        super(x, y, id, level);
+    }
+    // update(currentFrame){
+    // 	//AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAa
+    // 	//TODO: make this more readable, probably rewrite with a switch statement
+    // 	if(!this.item){
+    // 		if(
+    // 			this.id == 0x0005 &&
+    // 			(this.level.buildingAt(this.x - 1, this.y)?.id % 0x100 == 1 || this.level.buildingAt(this.x - 1, this.y) instanceof StorageBuilding) &&
+    // 			((this.level.buildingAt(this.x - 1, this.y) as StorageBuilding).inventory?.length > 0 || (this.level.buildingAt(this.x - 1, this.y) as Conveyor).item)
+    // 		){
+    // 			this.item = (this.level.buildingAt(this.x - 1, this.y) as StorageBuilding | Conveyor).removeItem();
+    // 			this.item.x = (this.x) * consts.TILE_SIZE;
+    // 			this.item.y = (this.y + 0.5) * consts.TILE_SIZE;
+    // 		} else if(
+    // 			this.id == 0x0105 &&
+    // 			(this.level.buildingAt(this.x, this.y - 1)?.id % 0x100 == 1 || this.level.buildingAt(this.x, this.y - 1) instanceof StorageBuilding) &&
+    // 			((this.level.buildingAt(this.x, this.y - 1) as StorageBuilding).inventory?.length > 0 || (this.level.buildingAt(this.x, this.y - 1) as Conveyor).item)
+    // 		){
+    // 			this.item = (this.level.buildingAt(this.x, this.y - 1) as StorageBuilding | Conveyor).removeItem();
+    // 			this.item.x = (this.x + 0.5) * consts.TILE_SIZE;
+    // 			this.item.y = (this.y) * consts.TILE_SIZE;
+    // 		} else if(
+    // 			this.id == 0x0205 &&
+    // 			(this.level.buildingAt(this.x + 1, this.y)?.id % 0x100 == 1 || this.level.buildingAt(this.x + 1, this.y) instanceof StorageBuilding) &&
+    // 			((this.level.buildingAt(this.x + 1, this.y) as StorageBuilding).inventory?.length > 0 || (this.level.buildingAt(this.x + 1, this.y) as Conveyor).item)
+    // 		){
+    // 			this.item = (this.level.buildingAt(this.x + 1, this.y) as StorageBuilding | Conveyor).removeItem();
+    // 			this.item.x = (this.x + 0.9) * consts.TILE_SIZE;
+    // 			this.item.y = (this.y + 0.5) * consts.TILE_SIZE;
+    // 		} else if(
+    // 			this.id == 0x0305 &&
+    // 			(this.level.buildingAt(this.x, this.y + 1)?.id % 0x100 == 1 || this.level.buildingAt(this.x, this.y + 1) instanceof StorageBuilding) &&
+    // 			((this.level.buildingAt(this.x, this.y + 1) as StorageBuilding).inventory?.length > 0 || (this.level.buildingAt(this.x, this.y + 1) as Conveyor).item)
+    // 		){
+    // 			this.item = (this.level.buildingAt(this.x, this.y + 1) as StorageBuilding | Conveyor).removeItem();
+    // 			this.item.x = (this.x + 0.5) * consts.TILE_SIZE;
+    // 			this.item.y = (this.y + 0.9) * consts.TILE_SIZE;
+    // 		} else {
+    // 			return super.update(currentFrame, false);
+    // 		}
+    // 		this.item.grabbedBy = this;
+    // 		this.level.items.push(this.item);
+    // 	}
+    // 	super.update(currentFrame, true);
+    // }
+    /*
+        grabItem(filter?:((item:Item) => any) | null, callback?:(item:Item) => void, remove?:boolean, grabDistance?:number){
+            filter ??= () => {return true;};
+            callback ??= () => {};
+            remove = true;
+    
+            switch(Math.floor(this.id / 0x100) % 4){
+                case 0:
+                    if(
+                        ((this.level.buildingAt(this.x - 1, this.y) as any)?.item ||
+                        (this.level.buildingAt(this.x - 1, this.y) as any)?.inventory?.length) &&
+                        filter((this.level.buildingAt(this.x - 1, this.y) as any).removeItem(1))
+                    ){
+                        this.item = (this.level.buildingAt(this.x - 1, this.y) as Conveyor | StorageBuilding).removeItem();
+                        this.item.grabbedBy = this;
+                        this.item.x = (this.x + 0.0) * consts.TILE_SIZE;
+                        this.item.y = (this.y + 0.5) * consts.TILE_SIZE;
+                        callback(this.item);
+                    }
+                    break;
+                case 1:
+                    if(
+                        ((this.level.buildingAt(this.x, this.y - 1) as any)?.item ||
+                        (this.level.buildingAt(this.x, this.y - 1) as any)?.inventory?.length) &&
+                        filter((this.level.buildingAt(this.x, this.y - 1) as any).removeItem(1))
+                    ){
+                        this.item = (this.level.buildingAt(this.x, this.y - 1) as Conveyor | StorageBuilding).removeItem();
+                        this.item.grabbedBy = this;
+                        this.item.x = (this.x + 0.5) * consts.TILE_SIZE;
+                        this.item.y = (this.y + 0.0) * consts.TILE_SIZE;
+                        callback(this.item);
+                    }
+                    break;
+                case 2:
+                    if(
+                        ((this.level.buildingAt(this.x + 1, this.y) as any)?.item ||
+                        (this.level.buildingAt(this.x + 1, this.y) as any)?.inventory?.length) &&
+                        filter((this.level.buildingAt(this.x + 1, this.y) as any).removeItem(1))
+                    ){
+                        this.item = (this.level.buildingAt(this.x + 1, this.y) as Conveyor | StorageBuilding).removeItem();
+                        this.item.grabbedBy = this;
+                        this.item.x = (this.x + 0.9) * consts.TILE_SIZE;
+                        this.item.y = (this.y + 0.5) * consts.TILE_SIZE;
+                        callback(this.item);
+                    }
+                    break;
+                case 3:
+                    if(
+                        ((this.level.buildingAt(this.x, this.y + 1) as any)?.item ||
+                        (this.level.buildingAt(this.x, this.y + 1) as any)?.inventory?.length) &&
+                        filter((this.level.buildingAt(this.x, this.y + 1) as any).removeItem(1))
+                    ){
+                        this.item = (this.level.buildingAt(this.x, this.y + 1) as Conveyor | StorageBuilding).removeItem();
+                        this.item.grabbedBy = this;
+                        this.item.x = (this.x + 0.5) * consts.TILE_SIZE;
+                        this.item.y = (this.y + 0.9) * consts.TILE_SIZE;
+                        callback(this.item);
+                    }
+                    break;
             }
-            else if (this.id == 0x0105 &&
-                (this.level.buildingAt(this.x, this.y - 1)?.id % 0x100 == 1 || this.level.buildingAt(this.x, this.y - 1) instanceof StorageBuilding) &&
-                (this.level.buildingAt(this.x, this.y - 1).inventory?.length > 0 || this.level.buildingAt(this.x, this.y - 1).item)) {
-                this.item = this.level.buildingAt(this.x, this.y - 1).removeItem();
-                this.item.x = (this.x + 0.5) * consts.TILE_SIZE;
-                this.item.y = (this.y) * consts.TILE_SIZE;
-            }
-            else if (this.id == 0x0205 &&
-                (this.level.buildingAt(this.x + 1, this.y)?.id % 0x100 == 1 || this.level.buildingAt(this.x + 1, this.y) instanceof StorageBuilding) &&
-                (this.level.buildingAt(this.x + 1, this.y).inventory?.length > 0 || this.level.buildingAt(this.x + 1, this.y).item)) {
-                this.item = this.level.buildingAt(this.x + 1, this.y).removeItem();
-                this.item.x = (this.x + 0.9) * consts.TILE_SIZE;
-                this.item.y = (this.y + 0.5) * consts.TILE_SIZE;
-            }
-            else if (this.id == 0x0305 &&
-                (this.level.buildingAt(this.x, this.y + 1)?.id % 0x100 == 1 || this.level.buildingAt(this.x, this.y + 1) instanceof StorageBuilding) &&
-                (this.level.buildingAt(this.x, this.y + 1).inventory?.length > 0 || this.level.buildingAt(this.x, this.y + 1).item)) {
-                this.item = this.level.buildingAt(this.x, this.y + 1).removeItem();
-                this.item.x = (this.x + 0.5) * consts.TILE_SIZE;
-                this.item.y = (this.y + 0.9) * consts.TILE_SIZE;
-            }
-            else {
-                return super.update(currentFrame, false);
-            }
-            this.item.grabbedBy = this;
-            this.level.items.push(this.item);
+    
+            
+            //return super.grabItem(filter, callback, remove, grabDistance);
         }
-        super.update(currentFrame, true);
+        */
+    grabItemFromTile(filter, callback, remove, grabDistance) {
+        filter ??= (item) => { return item instanceof Item; };
+        callback ??= () => { };
+        if (this.level.buildingAt(this.x, this.y) instanceof Building &&
+            this.level.buildingAt(this.x, this.y).hasItem() &&
+            filter(this.level.buildingAt(this.x, this.y).hasItem())) {
+            let item = this.level.buildingAt(this.x, this.y).removeItem();
+            if (item.deleted)
+                throw "wat?";
+            item.grabbedBy = this;
+        }
+    }
+    dropItem() {
+        if (this.item instanceof Item) {
+            this.level.items.push(this.item);
+            this.item = null;
+        }
+        else {
+            console.error(this);
+            throw new Error(`no item to drop; extractor at ${this.x} ${this.y}`);
+        }
+    }
+    update(currentFrame) {
+        if (this.item instanceof Item) {
+            if (this.item.grabbedBy != this || this.item.deleted) {
+                console.error(this.item);
+                console.error(this);
+                throw new RangeError("ERR Item somehow grabbed or deleted from an extractor.");
+            }
+            switch (this.id) {
+                case 0x0005:
+                    if (this.item.x > (this.x + 1.5) * consts.TILE_SIZE) {
+                        return this.dropItem();
+                    }
+                    else {
+                        this.item.x++;
+                    }
+                    break;
+                case 0x0105:
+                    if (this.item.y > (this.y + 1.5) * consts.TILE_SIZE) {
+                        return this.dropItem();
+                    }
+                    else {
+                        this.item.y++;
+                    }
+                    break;
+                case 0x0205:
+                    if (this.item.x < (this.x - 1.5) * consts.TILE_SIZE) {
+                        return this.dropItem();
+                    }
+                    else {
+                        this.item.x--;
+                    }
+                    break;
+                case 0x0305:
+                    if (this.item.y < (this.y - 1.5) * consts.TILE_SIZE) {
+                        return this.dropItem();
+                    }
+                    else {
+                        this.item.y--;
+                    }
+                    break;
+                case 0x0405:
+                    if (this.item.x > (this.x + 2.5) * consts.TILE_SIZE) {
+                        return this.dropItem();
+                    }
+                    else {
+                        this.item.x++;
+                    }
+                    break;
+                case 0x0505:
+                    if (this.item.y > (this.y + 2.5) * consts.TILE_SIZE) {
+                        return this.dropItem();
+                    }
+                    else {
+                        this.item.y++;
+                    }
+                    break;
+                case 0x0605:
+                    if (this.item.x < (this.x - 2.5) * consts.TILE_SIZE) {
+                        return this.dropItem();
+                    }
+                    else {
+                        this.item.x--;
+                    }
+                    break;
+                case 0x0705:
+                    if (this.item.y < (this.y - 2.5) * consts.TILE_SIZE) {
+                        return this.dropItem();
+                    }
+                    else {
+                        this.item.y--;
+                    }
+                    break;
+                case 0x0805:
+                    if (this.item.x > (this.x + 3.5) * consts.TILE_SIZE) {
+                        return this.dropItem();
+                    }
+                    else {
+                        this.item.x++;
+                    }
+                    break;
+                case 0x0905:
+                    if (this.item.y > (this.y + 3.5) * consts.TILE_SIZE) {
+                        return this.dropItem();
+                    }
+                    else {
+                        this.item.y++;
+                    }
+                    break;
+                case 0x0A05:
+                    if (this.item.x < (this.x - 3.5) * consts.TILE_SIZE) {
+                        return this.dropItem();
+                    }
+                    else {
+                        this.item.x--;
+                    }
+                    break;
+                case 0x0B05:
+                    if (this.item.y < (this.y - 3.5) * consts.TILE_SIZE) {
+                        return this.dropItem();
+                    }
+                    else {
+                        this.item.y--;
+                    }
+                    break;
+            }
+        }
+        else {
+            this.grabItemFromTile();
+        }
     }
 }
 class StorageBuilding extends Building {
     constructor(tileX, tileY, id, level) {
         super(tileX, tileY, id, level);
-        this.inventory = [];
-        this.inventory.MAX_LENGTH = 64;
+        let temp = [];
+        temp.MAX_LENGTH = 64;
+        this.inventory = temp;
     }
     update() {
         if (this.inventory.length < this.inventory.MAX_LENGTH) {
-            this.grabItem(() => { return true; }, (item) => { this.inventory.push(item); }, true);
-        }
-    }
-    removeItem() {
-        if (this.inventory.length > 0) {
-            return this.inventory.pop();
-        }
-        else {
-            return null;
+            this.grabItem(null, (item) => { this.inventory.push(item); }, true);
         }
     }
 }

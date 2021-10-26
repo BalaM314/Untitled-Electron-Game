@@ -4,7 +4,7 @@
 // Given the 2D grid layout, it is not currently possible to parallelize crafting of the Alloy Smelter with more than 2.
 // Solution: totally change how extractors work.
 // 
-// 
+// make buildingbar only display after textures load
 // 
 // 
 // 
@@ -60,6 +60,7 @@ var GAME_STATE = "title";
 const ctx = document.getElementById("canvas").getContext("2d"); //Tiles
 const ctx1 = document.getElementById("canvas1").getContext("2d"); //Ghost buildings
 const ctx2 = document.getElementById("canvas2").getContext("2d"); //Buildings
+const ctx25 = document.getElementById("canvas2.5").getContext("2d"); //Extractors
 const ctx3 = document.getElementById("canvas3").getContext("2d"); //Items
 const ctx4 = document.getElementById("canvas4").getContext("2d"); //Overlays
 const ctxs = [ctx, ctx1, ctx2, ctx3, ctx4];
@@ -180,6 +181,7 @@ function main_loop() {
     catch (err) {
         //todo: display an error screen
         alert("An error has occurred! Oopsie.\nPlease create an issue on this project's GitHub so I can fix it.\nErr: " + err.message); //todo improve
+        ctxs.forEach((ctx) => { ctx.clearRect(0, 0, innerWidth, innerHeight); });
         throw err;
     }
 }
@@ -233,7 +235,6 @@ function runSettings() {
 function load() {
     //TODO: add loading GAME_STATE
     //possibly display an eror here if the textures haven't loaded?
-    document.getElementById("toolbar").classList.remove("hidden");
     loadTextures();
     checkload();
 }
@@ -242,6 +243,7 @@ function checkload() {
     if (loadedtextures == document.getElementById("textures").children.length) {
         GAME_STATE = "game";
         Game.forceRedraw = true;
+        document.getElementById("toolbar").classList.remove("hidden");
     }
     else if (loadedtextures > document.getElementById("textures").children.length) {
         throw new Error("somehow loaded more textures than exist, what the fffffff");
