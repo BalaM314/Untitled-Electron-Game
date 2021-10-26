@@ -199,6 +199,9 @@ function pixelToTile(pixelCoord) {
     pixelCoord = Math.floor(pixelCoord) % consts.TILE_SIZE;
     return pixelCoord + (pixelCoord < 0 ? consts.TILE_SIZE : 0);
 }
+function tileAtPixel(pixelCoord) {
+    return Math.floor(pixelCoord / consts.TILE_SIZE);
+}
 var interval1;
 function onConsoleOpen() {
     console.log("%c Hey there! It looks like you're checking out the console.\nIf you want to view the source code, *please do it at* https://github.com/BalaM314/Untitled-Electron-Game \n Make sure to view the .ts files as the .js files are compiled and thus look weird.", "color: blue; font-size: 30px;");

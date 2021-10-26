@@ -75,7 +75,7 @@ function runLevel(level, currentFrame) {
     if (currentFrame.redraw) {
         ctx.clearRect(0, 0, innerWidth, innerHeight);
         ctx2.clearRect(0, 0, innerWidth, innerHeight);
-        console.log("redraw");
+        ctx25.clearRect(0, 0, innerWidth, innerHeight);
     }
     ctx1.clearRect(0, 0, innerWidth, innerHeight);
     ctx3.clearRect(0, 0, innerWidth, innerHeight);

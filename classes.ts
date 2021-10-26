@@ -1826,6 +1826,8 @@ class Extractor extends Conveyor {
 		){
 			let item = this.level.buildingAt(this.x, this.y).removeItem();
 			if(item.deleted) throw "wat?";
+			this.item = item;
+			this.item.y = (this.y + 0.5) * consts.TILE_SIZE;
 			item.grabbedBy = this;
 			this.level.items.splice(this.level.items.indexOf(item));
 		}
@@ -1834,8 +1836,10 @@ class Extractor extends Conveyor {
 
 	dropItem(){
 		if(this.item instanceof Item){
-			this.level.items.push(this.item);
-			this.item = null;
+			if(this.level.buildingAt(tileAtPixel(this.item.x), tileAtPixel(this.item.y)) instanceof Conveyor && this.level.buildingAt(tileAtPixel(this.item.x), tileAtPixel(this.item.y)).item == null){
+				this.level.items.push(this.item);
+				this.item = null;
+			}
 		} else {
 			console.error(this);
 			throw new Error(`no item to drop; extractor at ${this.x} ${this.y}`);

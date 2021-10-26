@@ -206,6 +206,9 @@ function pixelToTile(pixelCoord:number):number {
 	pixelCoord = Math.floor(pixelCoord) % consts.TILE_SIZE;
 	return pixelCoord + (pixelCoord < 0 ? consts.TILE_SIZE : 0);
 }
+function tileAtPixel(pixelCoord:number):number {
+	return Math.floor(pixelCoord / consts.TILE_SIZE);
+}
 
 var interval1;
 
