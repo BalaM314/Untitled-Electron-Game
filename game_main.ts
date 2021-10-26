@@ -67,7 +67,7 @@ const ctx2 = (document.getElementById("canvas2") as HTMLCanvasElement).getContex
 const ctx25 = (document.getElementById("canvas25") as HTMLCanvasElement).getContext("2d");//Extractors
 const ctx3 = (document.getElementById("canvas3") as HTMLCanvasElement).getContext("2d");//Items
 const ctx4 = (document.getElementById("canvas4") as HTMLCanvasElement).getContext("2d");//Overlays
-const ctxs = [ctx, ctx1, ctx2, ctx3, ctx4];
+const ctxs = [ctx, ctx1, ctx2, ctx25, ctx3, ctx4];
 
 
 

@@ -409,10 +409,10 @@ class Level extends ChunkedDataStorage<Tile, Building, Extractor> {
 			break;
 		}
 		if(tempBuilding instanceof Extractor){
-			this.writeBuildingToL3(tileX, tileY, tempBuilding);
+			return this.writeBuildingToL3(tileX, tileY, tempBuilding);
+		} else {
+			return this.writeBuilding(tileX, tileY, tempBuilding);
 		}
-		this.writeBuilding(tileX, tileY, tempBuilding);
-		return true;
 	}
 	display(currentframe:Object):void {
 		for(let item of this.items){
@@ -1827,6 +1827,7 @@ class Extractor extends Conveyor {
 			let item = this.level.buildingAt(this.x, this.y).removeItem();
 			if(item.deleted) throw "wat?";
 			item.grabbedBy = this;
+			this.level.items.splice(this.level.items.indexOf(item));
 		}
 
 	}

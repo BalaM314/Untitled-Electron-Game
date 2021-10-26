@@ -372,10 +372,11 @@ class Level extends ChunkedDataStorage {
                 break;
         }
         if (tempBuilding instanceof Extractor) {
-            this.writeBuildingToL3(tileX, tileY, tempBuilding);
+            return this.writeBuildingToL3(tileX, tileY, tempBuilding);
         }
-        this.writeBuilding(tileX, tileY, tempBuilding);
-        return true;
+        else {
+            return this.writeBuilding(tileX, tileY, tempBuilding);
+        }
     }
     display(currentframe) {
         for (let item of this.items) {
@@ -1743,6 +1744,7 @@ class Extractor extends Conveyor {
             if (item.deleted)
                 throw "wat?";
             item.grabbedBy = this;
+            this.level.items.splice(this.level.items.indexOf(item));
         }
     }
     dropItem() {

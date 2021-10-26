@@ -63,7 +63,7 @@ const ctx2 = document.getElementById("canvas2").getContext("2d"); //Buildings
 const ctx25 = document.getElementById("canvas25").getContext("2d"); //Extractors
 const ctx3 = document.getElementById("canvas3").getContext("2d"); //Items
 const ctx4 = document.getElementById("canvas4").getContext("2d"); //Overlays
-const ctxs = [ctx, ctx1, ctx2, ctx3, ctx4];
+const ctxs = [ctx, ctx1, ctx2, ctx25, ctx3, ctx4];
 const level1 = new Level(3141);
 level1.generateNecessaryChunks();
 let fps = [0, 0, 0, 0, 0, 0];
