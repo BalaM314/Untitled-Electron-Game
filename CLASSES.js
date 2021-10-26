@@ -271,6 +271,14 @@ class Level extends ChunkedDataStorage {
         }
         return false;
     }
+    writeBuildingToL3(tileX, tileY, building) {
+        if (this.getChunk(tileX, tileY)) {
+            this.getChunk(tileX, tileY).setLayer3(tileToChunk(tileX), tileToChunk(tileY), building);
+            Game.forceRedraw = true;
+            return true;
+        }
+        return false;
+    }
     buildBuilding(tileX, tileY, building) {
         if (this.buildingIDAtTile(tileX, tileY) % 0x100 == building % 0x100) {
             this.buildingAt(tileX, tileY)?.break();
@@ -362,6 +370,9 @@ class Level extends ChunkedDataStorage {
             default:
                 return this.writeBuilding(tileX, tileY, new Building(tileX, tileY, building, this));
                 break;
+        }
+        if (tempBuilding instanceof Extractor) {
+            this.writeBuildingToL3(tileX, tileY, tempBuilding);
         }
         this.writeBuilding(tileX, tileY, tempBuilding);
         return true;
@@ -508,6 +519,13 @@ class Chunk {
             return false;
         }
         this.layers[1][y][x] = value;
+        return true;
+    }
+    setLayer3(x, y, value) {
+        if (this.atLayer1(x, y) == null) {
+            return false;
+        }
+        this.layers[2][y][x] = value;
         return true;
     }
     /**
