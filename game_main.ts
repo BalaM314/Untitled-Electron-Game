@@ -313,12 +313,14 @@ let placedBuilding: {
 	type: RawBuildingID
 	direction: 0x000 | 0x100 | 0x200 | 0x300;
 	ID: BuildingID;
+	modifier: 0x000 | 0x400 | 0x800
 } = {
 	type: 0x0001,
 	direction: 0x100,
+	modifier: 0x000,
 	get ID(){
 		if(this.type == 0x01 || this.type == 0x05){
-			return this.direction + this.type;
+			return this.direction + this.type + this.modifier;
 		} else {
 			return this.type;
 		}

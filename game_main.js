@@ -281,9 +281,10 @@ function checkload() {
 let placedBuilding = {
     type: 0x0001,
     direction: 0x100,
+    modifier: 0x000,
     get ID() {
         if (this.type == 0x01 || this.type == 0x05) {
-            return this.direction + this.type;
+            return this.direction + this.type + this.modifier;
         }
         else {
             return this.type;

@@ -383,6 +383,10 @@ class Level extends ChunkedDataStorage {
                 }
                 tempBuilding = new Conveyor(tileX, tileY, this.getTurnedConveyor(tileX, tileY, building >> 8), this);
                 break;
+            case 0xFFFF:
+                this.writeBuildingToL3(tileX, tileY, null);
+                this.writeBuilding(tileX, tileY, null);
+                return;
             default:
                 return this.writeBuilding(tileX, tileY, new Building(tileX, tileY, building, this));
                 break;
