@@ -70,7 +70,7 @@ window.onkeydown = (e:KeyboardEvent) => {
 			placedBuilding.type = 0xFFFF; break;
 		default: return;
 	}
-	event.preventDefault();
+	e.preventDefault();
 }
 window.onkeyup = (e:KeyboardEvent) => {
 	if(keysPressed.indexOf(e.key.toLowerCase()) != -1){

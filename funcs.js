@@ -79,7 +79,7 @@ window.onkeydown = (e) => {
             break;
         default: return;
     }
-    event.preventDefault();
+    e.preventDefault();
 };
 window.onkeyup = (e) => {
     if (keysPressed.indexOf(e.key.toLowerCase()) != -1) {

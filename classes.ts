@@ -1812,7 +1812,8 @@ class AlloySmelter extends Building {
 				if(!this.hasRunOnce){
 					this.hasRunOnce = true;
 					totalAlloySmeltersRun ++;
-					if(totalAlloySmeltersRun >= 4){
+					if(totalAlloySmeltersRun >= 4 && Game.persistent.tutorialenabled && Game.tutorial.multiplesteel){
+						Game.tutorial.multiplesteel = false;
 						_alert("🎉🎉🎉🎉🎉🎉\nWell, that's all the content this game has to offer for now.\nCheck back later for more updates, especially once this game reaches beta.");
 					}
 				}

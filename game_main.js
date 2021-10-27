@@ -54,7 +54,8 @@ let Game = {
             coal: true,
             iron: true,
             steel: true
-        }
+        },
+        multiplesteel: false
     }
 };
 var GAME_STATE = "title";
