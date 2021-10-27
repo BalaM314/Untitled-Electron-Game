@@ -333,7 +333,7 @@ class Level extends ChunkedDataStorage {
                 }
                 tempBuilding = new Furnace(tileX, tileY, 0x0004, this);
                 if (Game.tutorial.furnace.placedcorrectly && Game.persistent.tutorialenabled) {
-                    _alert("The Furnace converts raw ores into their smelted forms. Simply point a conveyor belt carrying ores at it and \n>provide another belt<\n for it to output onto.");
+                    _alert("The Furnace converts raw ores into their smelted forms. Simply point a conveyor belt carrying ores at it and provide another belt for it to output onto.");
                     Game.tutorial.furnace.placedcorrectly = false;
                 }
                 break;
@@ -347,7 +347,7 @@ class Level extends ChunkedDataStorage {
             case 0x0002:
                 if (!Miner.canBuildAt(tileX, tileY, this)) {
                     if (Game.tutorial.miner.cantbeplacedongrass && Game.persistent.tutorialenabled) {
-                        _alert("The Miner can only be placed on a resource node.");
+                        _alert("The Miner can only be placed on a resource node(the colored circles).");
                         Game.tutorial.miner.cantbeplacedongrass = false;
                     }
                     return;
@@ -355,7 +355,7 @@ class Level extends ChunkedDataStorage {
                 ;
                 tempBuilding = new Miner(tileX, tileY, 0x0002, this);
                 if (Game.tutorial.miner.placedcorrectly && Game.persistent.tutorialenabled) {
-                    _alert("🎉🎉\nThe Miner mines ore nodes, producing one ore per second. \n>It auto-outputs to adjacent conveyor belts.<\nAlso, ore nodes are infinite.\nBe warned, the miner will continue producing ore forever, which could lead to lag.");
+                    _alert("The Miner mines ore nodes, producing one ore per second. \nIt auto-outputs to adjacent conveyor belts.\nAlso, ore nodes are infinite.");
                     Game.tutorial.miner.placedcorrectly = false;
                 }
                 break;
@@ -379,7 +379,7 @@ class Level extends ChunkedDataStorage {
                     return;
                 }
                 if (Game.tutorial.conveyor.placedcorrectly && Game.persistent.tutorialenabled) {
-                    _alert("Conveyors are the way to move items around. \nYou can use the arrow keys to change the direction of placed belts. \nTry making a belt chain, then putting a debug item on it with Ctrl+click.");
+                    _alert("Conveyors are the way to move items around. \nYou can use the arrow keys to change the direction of placed belts. \nTry making a belt chain, then putting a debug item on it with Ctrl+click.\nYou can drag-click to build multiple of the same building.");
                     Game.tutorial.conveyor.placedcorrectly = false;
                 }
                 tempBuilding = new Conveyor(tileX, tileY, this.getTurnedConveyor(tileX, tileY, building >> 8), this);
@@ -1725,6 +1725,7 @@ let alloysFor = {
     "base_coal&base_ironIngot": "base_steelIngot",
     "base_ironIngot&base_coal": "base_steelIngot"
 };
+let totalAlloySmeltersRun = 0;
 class AlloySmelter extends Building {
     constructor(tileX, tileY, id, level) {
         super(tileX, tileY, id, level);
@@ -1732,6 +1733,7 @@ class AlloySmelter extends Building {
         this.item1 = null;
         this.item2 = null;
         this.processing = false;
+        this.hasRunOnce = false;
     }
     update() {
         if (!this.item1) {
@@ -1750,16 +1752,23 @@ class AlloySmelter extends Building {
                 this.timer--;
             }
             else {
+                if (!this.hasRunOnce) {
+                    this.hasRunOnce = true;
+                    totalAlloySmeltersRun++;
+                    if (totalAlloySmeltersRun >= 4) {
+                        _alert("🎉🎉🎉🎉🎉🎉\nWell, that's all the content this game has to offer for now.\nCheck back later for more updates, especially once this game reaches beta.");
+                    }
+                }
                 if (this.spawnItem(alloysFor[`${this.item1.id}&${this.item2.id}`])) {
+                    if (Game.persistent.tutorialenabled && alloysFor[`${this.item1.id}&${this.item2.id}`] == ItemID["base_steelIngot"] && Game.tutorial.item.steel) {
+                        _alert("Well done!\nThis game is in alpha, so steel isn't used for anything yet.");
+                        Game.tutorial.item.steel = false;
+                        _alert(["Hmm, that's REALLY slow.\nYou'll need more steel than that.\nParallelize!\nYou need to use the extractor(slot 5). It is special, because you can place it on top of other buildings.\nNote: use the comma and period keys to change the length of the extractor(you'll need to use this to make a bridge).\nGood luck!", 3000]);
+                    }
                     this.timer = 240;
                     this.item1 = null;
                     this.item2 = null;
                     this.processing = false;
-                    if (Game.persistent.tutorialenabled && alloysFor[`${this.item1.id}&${this.item2.id}`] == ItemID["base_steelIngot"] && Game.tutorial.item.steel) {
-                        _alert("Well done!\nThis game is in alpha, so steel isn't used for anything yet.");
-                        Game.tutorial.item.steel = false;
-                        _alert(["Hmm, that's REALLY slow.\nYou'll need more steel than that.\nParallelize!", 3000]);
-                    }
                 }
             }
         }

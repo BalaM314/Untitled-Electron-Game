@@ -164,10 +164,10 @@ function main_loop() {
         if (alerts.length) {
             mouseIsPressed = false;
             for (var __alert of alerts) {
-                if (alert instanceof Array) {
+                if (__alert instanceof Array) {
                     setTimeout(() => {
-                        _alert(alert[0]);
-                    }, alert[1]);
+                        _alert(__alert[0]);
+                    }, __alert[1]);
                 }
                 else {
                     alert(__alert); //todo replace with a less annoying custom alert box
@@ -327,11 +327,12 @@ Welcome to Untitled Electron Game!
 This is a game about... well I don't really know, but it has items, conveyor belts, and machines. Guess you could call it a factory game?
 
 For now there's no real goal, but I suggest you automate iron and coal production.
->To get started, place a conveyor belt.<
+To get started, place a conveyor belt.
 
-Controls:
+Basic controls:
 Click to place a building.
-Use 1-4 to choose the type of building.
+Use the number keys to choose the type of building.
+Press 0 to "place air"(delete buildings).
 Use WASD to move around the map and mouse wheel to zoom.`);
                         }, 500);
                     }
