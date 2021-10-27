@@ -103,18 +103,20 @@ const consts = {
     }
 }
 
-class ChunkedDataStorage<Layer1,Layer2,Layer3> {
-	storage: Map<string, Chunk<Layer1,Layer2,Layer3>>;
+class ChunkedDataStorage<Chunk extends AbstractChunk<Layer1,Layer2,Layer3>,Layer1,Layer2,Layer3> {
+	storage: Map<string, Chunk>;
 	seed: number;
 	format: string;
 	defaults: {layer1: Layer1, layer2: Layer2, layer3: Layer3};
-	constructor(seed:number | null, defaults: {layer1: Layer1, layer2: Layer2, layer3: Layer3}){
-		this.storage = new Map<string, Chunk<Layer1,Layer2,Layer3>>();
+	chunk: any;
+	constructor(seed:number | null, chunk, defaults: {layer1: Layer1, layer2: Layer2, layer3: Layer3}){
+		this.storage = new Map<string, Chunk>();
 		this.seed = seed ? seed : 0;
 		this.defaults = defaults;
+		this.chunk = chunk;
 		this.format = consts.VERSION;
 	}
-	getChunk(tileX:number, tileY:number, dontGenerateChunk?:boolean):Chunk<Layer1,Layer2,Layer3>{
+	getChunk(tileX:number, tileY:number, dontGenerateChunk?:boolean):Chunk{
 		if(this.storage.get(`${Math.floor(tileX / consts.CHUNK_SIZE)},${Math.floor(tileY / consts.CHUNK_SIZE)}`)){
 			return this.storage.get(`${Math.floor(tileX / consts.CHUNK_SIZE)},${Math.floor(tileY / consts.CHUNK_SIZE)}`);
 		} else if(!dontGenerateChunk){
@@ -128,7 +130,7 @@ class ChunkedDataStorage<Layer1,Layer2,Layer3> {
 			return;
 		}
 		this.storage.set(`${x},${y}`, 
-			new Chunk<Layer1,Layer2,Layer3>(x, y, this.seed, this.defaults.layer1, this.defaults.layer2, this.defaults.layer3)
+			new this.chunk(x, y, this.seed, this.defaults.layer1, this.defaults.layer2, this.defaults.layer3)
 			.generate()
 		);
 		console.log(`generated chunk ${x}, ${y}`)
@@ -146,7 +148,7 @@ class ChunkedDataStorage<Layer1,Layer2,Layer3> {
 			Math.floor(tileY)
 		).atLayer1(tileToChunk(tileX), tileToChunk(tileY));
 	}
-	writeTile(tileX:number, tileY:number, tile:Tile):boolean {
+	setLayer1(tileX:number, tileY:number, tile:Layer1):boolean {
 		if(this.getChunk(tileX,tileY)){
 			this.getChunk(tileX,tileY).setLayer1(tileToChunk(tileX), tileToChunk(tileY), tile);
 			Game.forceRedraw = true;
@@ -175,10 +177,10 @@ class ChunkedDataStorage<Layer1,Layer2,Layer3> {
 	}
 }
 
-class Level extends ChunkedDataStorage<Tile, Building, Extractor> {
+class Level extends ChunkedDataStorage<Chunk, Tile, Building, Extractor> {
 	items: Item[];
 	constructor(seed:number){
-		super(seed, {
+		super(seed, Chunk, {
 			layer1: 0x00,
 			layer2: null,
 			layer3: null
@@ -208,7 +210,7 @@ class Level extends ChunkedDataStorage<Tile, Building, Extractor> {
 		this.items.push(tempitem);
 		return tempitem;
 	}
-	update(currentframe:any){
+	update(currentframe){
 		for(var item of this.items){
 			item.update(currentframe);
 		}
@@ -430,7 +432,7 @@ class Level extends ChunkedDataStorage<Tile, Building, Extractor> {
 		}
 		
 	}
-	displayTooltip(mousex:number, mousey:number, currentframe:any){
+	displayTooltip(mousex:number, mousey:number, currentframe){
 		if(!currentframe.tooltip){return;}
 		var x = (mousex - (Game.scroll.x * consts.DISPLAY_SCALE))/consts.DISPLAY_SCALE;
 		var y = (mousey - (Game.scroll.y * consts.DISPLAY_SCALE))/consts.DISPLAY_SCALE;
@@ -458,7 +460,8 @@ class Level extends ChunkedDataStorage<Tile, Building, Extractor> {
 
 
 
-class Chunk<Layer1,Layer2,Layer3> {
+
+class AbstractChunk<Layer1,Layer2,Layer3> {
 	layers: [
 		Layer1[][],
 		Layer2[][],
@@ -478,9 +481,9 @@ class Chunk<Layer1,Layer2,Layer3> {
 			123456789
 		)) % 2147483648;
 		this.layers = [
-			null,//Ground(ground, dirt)
-			null,//Buildings
-			null//Reserved
+			null,
+			null,
+			null
 		];
 
 		this.layers[0] = [];
@@ -509,12 +512,72 @@ class Chunk<Layer1,Layer2,Layer3> {
 
 		return this;
 	}
-	generate():Chunk<Layer1,Layer2,Layer3> {
+	generate():AbstractChunk<Layer1,Layer2,Layer3> {
+		return this;
+	}
+	update():AbstractChunk<Layer1,Layer2,Layer3> {
+		for(let row of this.layers[1]){
+			for(let value of row){
+				if(typeof value["update"] == "function"){
+					value["update"]();
+				}
+			}
+		}
+		for(let row of this.layers[2]){
+			for(let value of row){
+				if(typeof value["update"] == "function"){
+					value["update"]();
+				}
+			}
+		}
+		return this;
+	}
+	atLayer1(tileX:number, tileY:number):Layer1 {
+		return this.layers[0]?.[tileY]?.[tileX] ?? null;
+	}
+	atLayer2(tileX:number, tileY:number):Layer2 {
+		return this.layers[1]?.[tileY]?.[tileX] ?? null;
+	}
+	atLayer3(tileX:number, tileY:number):Layer3 {
+		return this.layers[2]?.[tileY]?.[tileX] ?? null;
+	}
+	setLayer1(tileX:number, tileY:number, value:Layer1):boolean {
+		if(this.atLayer1(tileX, tileY) == null){
+			return false;
+		}
+		this.layers[0][tileY][tileX] = value;
+		return true;
+	}
+	setLayer2(tileX:number, tileY:number, value:Layer2):boolean {
+		if(this.atLayer1(tileX, tileY) == null){
+			return false;
+		}
+		this.layers[1][tileY][tileX] = value;
+		return true;
+	}
+	setLayer3(tileX:number, tileY:number, value:Layer3):boolean {
+		if(this.atLayer1(tileX, tileY) == null){
+			return false;
+		}
+		this.layers[2][tileY][tileX] = value;
+		return true;
+	}
+	/**
+	 * @deprecated
+	 */
+	displayToConsole(){
+		console.log(`%c Base layer of chunk [${this.x},${this.y}]`, `font-weight: bold;`);
+		console.table(this.layers[0]);
+	}
+}
+
+class Chunk extends AbstractChunk<Tile, Building, Extractor> {
+	generate():Chunk {
 		//Put down the base
 		this.isWet = this.chunkSeed < 134217728 && Math.abs(this.x) > 3 && Math.abs(this.y) > 3;
 		for(var row in this.layers[0]){
 			for(var tile in this.layers[0][row]){
-				this.layers[0][row][tile] = (this.isWet ? 0x04 : 0x00 as any);//TODO: somehow fix this, any bad
+				this.layers[0][row][tile] = this.isWet ? 0x04 : 0x00;
 			}
 		}
 
@@ -547,67 +610,13 @@ class Chunk<Layer1,Layer2,Layer3> {
 
 		return this;
 	}
-	update():Chunk<Layer1,Layer2,Layer3> {
-		for(var row of this.layers[1] as any[][]){
-			for(var value of row){
-				if(typeof value?.update == "function"){
-					value.update();
-				}
-			}
-		}
-		for(var row of this.layers[2] as any[][]){
-			for(var value of row){
-				if(typeof value?.update == "function"){
-					value.update();
-				}
-			}
-		}
-		return this;
-	}
-	atLayer1(tileX:number, tileY:number):Layer1 {
-		return this.layers[0]?.[tileY]?.[tileX] ?? null;
-	}
-	atLayer2(x:number, y:number):Layer2 {
-		return this.layers[1]?.[y]?.[x] ?? null;
-	}
-	atLayer3(x:number, y:number):Layer3 {
-		return this.layers[2]?.[y]?.[x] ?? null;
-	}
-	setLayer1(x:number, y:number, value:any):boolean {//todo fix, any bad
-		if(this.atLayer1(x, y) == null){
-			return false;
-		}
-		this.layers[0][y][x] = value;
-		return true;
-	}
-	setLayer2(x:number, y:number, value:Layer2):boolean {
-		if(this.atLayer1(x, y) == null){
-			return false;
-		}
-		this.layers[1][y][x] = value;
-		return true;
-	}
-	setLayer3(x:number, y:number, value:Layer3):boolean {
-		if(this.atLayer1(x, y) == null){
-			return false;
-		}
-		this.layers[2][y][x] = value;
-		return true;
-	}
-	/**
-	 * @deprecated
-	 */
-	displayToConsole(){
-		console.log(`%c Base layer of chunk [${this.x},${this.y}]`, `font-weight: bold;`);
-		console.table(this.layers[0]);
-	}
-	display(currentframe:any){
+	display(currentframe){
 		if(
 			(Game.scroll.x * consts.DISPLAY_SCALE) + this.x * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE > window.innerWidth + 1 ||
 			(Game.scroll.x * consts.DISPLAY_SCALE) + this.x * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE < -1 - consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE ||
 			(Game.scroll.y * consts.DISPLAY_SCALE) + this.y * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE > window.innerHeight + 1 ||
 			(Game.scroll.y * consts.DISPLAY_SCALE) + this.y * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE < -1 - consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE
-		){return false;}//if offscreen return immediately
+		){return;}//if offscreen return immediately
 		currentframe.cps ++;
 		ctx.strokeStyle = "#000000";
 		ctx.lineWidth = 1;
@@ -615,20 +624,20 @@ class Chunk<Layer1,Layer2,Layer3> {
 		if(currentframe.redraw){
 			for(let y = 0; y < this.layers[0].length; y ++){
 				for(let x = 0; x < this.layers[0][y].length; x ++){
-					this.displayTile(x, y, currentframe);//todo fix, any bad
+					this.displayTile(x, y, currentframe);
 				}
 			}
 		}
 		for(let y = 0; y < this.layers[1].length; y ++){
 			for(let x = 0; x < this.layers[1][y].length; x ++){
-				this.displayBuilding(x, y, (this.atLayer2(tileToChunk(x), tileToChunk(y)) as unknown as Building)?.id ?? 0xFFFF);//todo fix, any bad
+				this.displayBuilding(x, y, this.atLayer2(tileToChunk(x), tileToChunk(y))?.id ?? 0xFFFF);
 			}
 		}
 		for(let y = 0; y < this.layers[2].length; y ++){
 			for(let x = 0; x < this.layers[2][y].length; x ++){
 				if(this.layers[2][y][x]){
-					this.displayL3(x, y, (this.layers[2][y][x] as unknown as Building)?.id ?? 0xFFFF);//todo fix, any bad
-					(this.layers[2][y][x] as any as Extractor).display(currentframe);
+					this.displayL3(x, y, this.layers[2][y][x]?.id ?? 0xFFFF);
+					this.layers[2][y][x].display(currentframe);
 				}
 			}
 		}
@@ -641,7 +650,7 @@ class Chunk<Layer1,Layer2,Layer3> {
 		currentframe.tps ++;
 		let pixelX = ((this.x * consts.CHUNK_SIZE) + x) * consts.DISPLAY_TILE_SIZE + (Game.scroll.x * consts.DISPLAY_SCALE);
 		let pixelY = ((this.y * consts.CHUNK_SIZE) + y) * consts.DISPLAY_TILE_SIZE + (Game.scroll.y * consts.DISPLAY_SCALE);
-		if(settings.graphics_mode || (this.atLayer1(x,y) as any as Tile) != 0x00){
+		if(settings.graphics_mode || (this.atLayer1(x,y) != 0x00)){
 			if(textures.get("t" + this.atLayer1(x,y).toString())){
 				ctx.drawImage(textures.get("t" + this.atLayer1(x,y).toString()), pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
 			} else {
@@ -732,7 +741,7 @@ class Chunk<Layer1,Layer2,Layer3> {
 			_ctx.fillStyle = "#00FF00";
 			_ctx.fillText(this.atLayer2(x, y).toString(), pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY + consts.DISPLAY_TILE_SIZE / 2);
 		}
-		switch(buildingID as any){//TypeScript big dum dum
+		switch(buildingID as number){//TypeScript big dum dum
 			case 0x0001:
 				_ctx.beginPath();
 				_ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
@@ -1203,7 +1212,6 @@ class Chunk<Layer1,Layer2,Layer3> {
 	}
 }
 
-
 class Item {
 	id: string;
 	x: number;
@@ -1225,7 +1233,9 @@ class Item {
 			this.startY = y;
 		}
 	}
-	update(currentframe:any){
+	update(currentframe){
+		//currentframe.items ++;
+		//todo
 		if(Game.tutorial.conveyor.beltchain && Game.persistent.tutorialenabled && ((Math.abs(this.startX - this.x) + 1 > consts.TILE_SIZE * 2) || (Math.abs(this.startY - this.y) + 1 > consts.TILE_SIZE * 2))){
 			_alert("Nice!\nConveyor belts are also the way to put items in machines.\nSpeaking of which, let's try automating coal: Place a Miner(2 key).");
 			Game.tutorial.conveyor.beltchain = false;
@@ -1234,7 +1244,7 @@ class Item {
 			//do stuff
 		}
 	}
-	display(currentframe:any){
+	display(currentframe){
 		ctx3.drawImage(textures.get("item_" + this.id), this.x * consts.DISPLAY_SCALE + (Game.scroll.x * consts.DISPLAY_SCALE) - 8*consts.DISPLAY_SCALE, this.y * consts.DISPLAY_SCALE + (Game.scroll.y * consts.DISPLAY_SCALE) - 8*consts.DISPLAY_SCALE, 16 * consts.DISPLAY_SCALE, 16 * consts.DISPLAY_SCALE);
 		if(keysPressed.indexOf("Shift") != -1){
 			var x = (mouseX - (Game.scroll.x * consts.DISPLAY_SCALE))/consts.DISPLAY_SCALE;
@@ -1380,7 +1390,6 @@ class Building {
 class Miner extends Building {
 	timer: number;
 	miningItem: string;
-	oreFor: any;
 	constructor(tileX:number, tileY:number, id:BuildingID, level:Level){
 		super(tileX, tileY, id, level);
 		this.timer = 61;
