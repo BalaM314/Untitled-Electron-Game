@@ -28,7 +28,8 @@ const ItemID = {
     "base_coalOre": "base_coalOre",
     "base_coal": "base_coal",
     "base_ironOre": "base_ironOre",
-    "base_ironIngot": "base_ironIngot"
+    "base_ironIngot": "base_ironIngot",
+    "base_steelIngot": "base_steelIngot"
 };
 const rands = {
     x_prime: 1299689,
@@ -160,6 +161,14 @@ class Level extends ChunkedDataStorage {
             case 0x0105:
             case 0x0205:
             case 0x0305:
+            case 0x0405:
+            case 0x0505:
+            case 0x0605:
+            case 0x0705:
+            case 0x0805:
+            case 0x0905:
+            case 0x0A05:
+            case 0x0B05:
                 this.getChunk(tileX, tileY).displayBuilding(tileToChunk(tileX), tileToChunk(tileY), buildingID, Extractor.canBuildAt(tileX, tileY, this) ? 1 : 2);
                 break;
             case 0x0004:
@@ -271,6 +280,14 @@ class Level extends ChunkedDataStorage {
         }
         return false;
     }
+    writeBuildingToL3(tileX, tileY, building) {
+        if (this.getChunk(tileX, tileY)) {
+            this.getChunk(tileX, tileY).setLayer3(tileToChunk(tileX), tileToChunk(tileY), building);
+            Game.forceRedraw = true;
+            return true;
+        }
+        return false;
+    }
     buildBuilding(tileX, tileY, building) {
         if (this.buildingIDAtTile(tileX, tileY) % 0x100 == building % 0x100) {
             this.buildingAt(tileX, tileY)?.break();
@@ -293,6 +310,14 @@ class Level extends ChunkedDataStorage {
             case 0x0105:
             case 0x0205:
             case 0x0305:
+            case 0x0405:
+            case 0x0505:
+            case 0x0605:
+            case 0x0705:
+            case 0x0805:
+            case 0x0905:
+            case 0x0A05:
+            case 0x0B05:
                 if (!Extractor.canBuildAt(tileX, tileY, this)) {
                     return;
                 }
@@ -308,7 +333,7 @@ class Level extends ChunkedDataStorage {
                 }
                 tempBuilding = new Furnace(tileX, tileY, 0x0004, this);
                 if (Game.tutorial.furnace.placedcorrectly && Game.persistent.tutorialenabled) {
-                    _alert("The Furnace converts raw ores into their smelted forms. Simply point a conveyor belt carrying ores at it and \n>provide another belt<\n for it to output onto.");
+                    _alert("The Furnace converts raw ores into their smelted forms. Simply point a conveyor belt carrying ores at it and provide another belt for it to output onto.");
                     Game.tutorial.furnace.placedcorrectly = false;
                 }
                 break;
@@ -322,7 +347,7 @@ class Level extends ChunkedDataStorage {
             case 0x0002:
                 if (!Miner.canBuildAt(tileX, tileY, this)) {
                     if (Game.tutorial.miner.cantbeplacedongrass && Game.persistent.tutorialenabled) {
-                        _alert("The Miner can only be placed on a resource node.");
+                        _alert("The Miner can only be placed on a resource node(the colored circles).");
                         Game.tutorial.miner.cantbeplacedongrass = false;
                     }
                     return;
@@ -330,7 +355,7 @@ class Level extends ChunkedDataStorage {
                 ;
                 tempBuilding = new Miner(tileX, tileY, 0x0002, this);
                 if (Game.tutorial.miner.placedcorrectly && Game.persistent.tutorialenabled) {
-                    _alert("🎉🎉\nThe Miner mines ore nodes, producing one ore per second. \n>It auto-outputs to adjacent conveyor belts.<\nAlso, ore nodes are infinite.\nBe warned, the miner will continue producing ore forever, which could lead to lag.");
+                    _alert("The Miner mines ore nodes, producing one ore per second. \nIt auto-outputs to adjacent conveyor belts.\nAlso, ore nodes are infinite.");
                     Game.tutorial.miner.placedcorrectly = false;
                 }
                 break;
@@ -354,17 +379,25 @@ class Level extends ChunkedDataStorage {
                     return;
                 }
                 if (Game.tutorial.conveyor.placedcorrectly && Game.persistent.tutorialenabled) {
-                    _alert("Conveyors are the way to move items around. \nYou can use the arrow keys to change the direction of placed belts. \nTry making a belt chain, then putting a debug item on it with Ctrl+click.");
+                    _alert("Conveyors are the way to move items around. \nYou can use the arrow keys to change the direction of placed belts. \nTry making a belt chain, then putting a debug item on it with Ctrl+click.\nYou can drag-click to build multiple of the same building.");
                     Game.tutorial.conveyor.placedcorrectly = false;
                 }
                 tempBuilding = new Conveyor(tileX, tileY, this.getTurnedConveyor(tileX, tileY, building >> 8), this);
                 break;
+            case 0xFFFF:
+                this.writeBuildingToL3(tileX, tileY, null);
+                this.writeBuilding(tileX, tileY, null);
+                return;
             default:
                 return this.writeBuilding(tileX, tileY, new Building(tileX, tileY, building, this));
                 break;
         }
-        this.writeBuilding(tileX, tileY, tempBuilding);
-        return true;
+        if (tempBuilding instanceof Extractor) {
+            return this.writeBuildingToL3(tileX, tileY, tempBuilding);
+        }
+        else {
+            return this.writeBuilding(tileX, tileY, tempBuilding);
+        }
     }
     display(currentframe) {
         for (let item of this.items) {
@@ -481,6 +514,13 @@ class Chunk {
                 }
             }
         }
+        for (var row of this.layers[2]) {
+            for (var value of row) {
+                if (typeof value?.update == "function") {
+                    value.update();
+                }
+            }
+        }
         return this;
     }
     atLayer1(tileX, tileY) {
@@ -488,6 +528,9 @@ class Chunk {
     }
     atLayer2(x, y) {
         return this.layers[1]?.[y]?.[x] ?? null;
+    }
+    atLayer3(x, y) {
+        return this.layers[2]?.[y]?.[x] ?? null;
     }
     setLayer1(x, y, value) {
         if (this.atLayer1(x, y) == null) {
@@ -501,6 +544,13 @@ class Chunk {
             return false;
         }
         this.layers[1][y][x] = value;
+        return true;
+    }
+    setLayer3(x, y, value) {
+        if (this.atLayer1(x, y) == null) {
+            return false;
+        }
+        this.layers[2][y][x] = value;
         return true;
     }
     /**
@@ -526,9 +576,17 @@ class Chunk {
                     this.displayTile(x, y, currentframe); //todo fix, any bad
                 }
             }
-            for (let y = 0; y < this.layers[0].length; y++) {
-                for (let x = 0; x < this.layers[0][y].length; x++) {
-                    this.displayBuilding(x, y, this.atLayer2(tileToChunk(x), tileToChunk(y))?.id ?? 0xFFFF); //todo fix, any bad
+        }
+        for (let y = 0; y < this.layers[1].length; y++) {
+            for (let x = 0; x < this.layers[1][y].length; x++) {
+                this.displayBuilding(x, y, this.atLayer2(tileToChunk(x), tileToChunk(y))?.id ?? 0xFFFF); //todo fix, any bad
+            }
+        }
+        for (let y = 0; y < this.layers[2].length; y++) {
+            for (let x = 0; x < this.layers[2][y].length; x++) {
+                if (this.layers[2][y][x]) {
+                    this.displayL3(x, y, this.layers[2][y][x]?.id ?? 0xFFFF); //todo fix, any bad
+                    this.layers[2][y][x].display(currentframe);
                 }
             }
         }
@@ -542,7 +600,20 @@ class Chunk {
         let pixelX = ((this.x * consts.CHUNK_SIZE) + x) * consts.DISPLAY_TILE_SIZE + (Game.scroll.x * consts.DISPLAY_SCALE);
         let pixelY = ((this.y * consts.CHUNK_SIZE) + y) * consts.DISPLAY_TILE_SIZE + (Game.scroll.y * consts.DISPLAY_SCALE);
         if (settings.graphics_mode || this.atLayer1(x, y) != 0x00) {
-            ctx.drawImage(textures.get("t" + this.atLayer1(x, y).toString()), pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
+            if (textures.get("t" + this.atLayer1(x, y).toString())) {
+                ctx.drawImage(textures.get("t" + this.atLayer1(x, y).toString()), pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
+            }
+            else {
+                ctx.fillStyle = "#FF00FF";
+                rect(pixelX, pixelY, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2);
+                rect(pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY + consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2);
+                ctx.fillStyle = "#000000";
+                rect(pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2);
+                rect(pixelX, pixelY + consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2);
+                ctx.font = "15px sans-serif";
+                ctx.fillStyle = "#00FF00";
+                ctx.fillText(this.atLayer1(x, y).toString(), pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY + consts.DISPLAY_TILE_SIZE / 2);
+            }
         }
         else {
             ctx.fillStyle = "#00CC33";
@@ -616,10 +687,18 @@ class Chunk {
         else if (textures.get(buildingID.toString())) {
             return _ctx.drawImage(textures.get(buildingID.toString()), pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
         }
-        else {
-            throw "MissingTextureError: " + buildingID.toString();
+        else if (settings.debug && false) {
+            _ctx.fillStyle = "#FF00FF";
+            rect(pixelX, pixelY, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
+            rect(pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY + consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
+            _ctx.fillStyle = "#000000";
+            rect(pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
+            rect(pixelX, pixelY + consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
+            _ctx.font = "15px sans-serif";
+            _ctx.fillStyle = "#00FF00";
+            _ctx.fillText(this.atLayer2(x, y).toString(), pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY + consts.DISPLAY_TILE_SIZE / 2);
         }
-        switch (buildingID) { //TypeScript dum dum
+        switch (buildingID) { //TypeScript big dum dum
             case 0x0001:
                 _ctx.beginPath();
                 _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
@@ -752,40 +831,120 @@ class Chunk {
                 _ctx.fillRect(pixelX + consts.DISPLAY_TILE_SIZE * 0.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.2, consts.DISPLAY_TILE_SIZE * 0.2, consts.DISPLAY_TILE_SIZE * 0.6);
                 _ctx.beginPath();
                 _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
-                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.9, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
-                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.6, pixelY + consts.DISPLAY_TILE_SIZE * 0.3);
-                _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.9, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
-                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.6, pixelY + consts.DISPLAY_TILE_SIZE * 0.7);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 1.4, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 1.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.3);
+                _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 1.4, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 1.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.7);
                 _ctx.stroke();
                 break;
             case 0x0105:
                 _ctx.fillRect(pixelX + consts.DISPLAY_TILE_SIZE * 0.2, pixelY + consts.DISPLAY_TILE_SIZE * 0.1, consts.DISPLAY_TILE_SIZE * 0.6, consts.DISPLAY_TILE_SIZE * 0.2);
                 _ctx.beginPath();
                 _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.1);
-                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.9);
-                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.3, pixelY + consts.DISPLAY_TILE_SIZE * 0.6);
-                _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.9);
-                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.7, pixelY + consts.DISPLAY_TILE_SIZE * 0.6);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 1.4);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.3, pixelY + consts.DISPLAY_TILE_SIZE * 1.1);
+                _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 1.4);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.7, pixelY + consts.DISPLAY_TILE_SIZE * 1.1);
                 _ctx.stroke();
                 break;
             case 0x0205:
                 _ctx.fillRect(pixelX + consts.DISPLAY_TILE_SIZE * 0.7, pixelY + consts.DISPLAY_TILE_SIZE * 0.2, consts.DISPLAY_TILE_SIZE * 0.2, consts.DISPLAY_TILE_SIZE * 0.6);
                 _ctx.beginPath();
                 _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.9, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
-                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
-                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.4, pixelY + consts.DISPLAY_TILE_SIZE * 0.3);
-                _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
-                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.4, pixelY + consts.DISPLAY_TILE_SIZE * 0.7);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * -0.4, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * -0.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.3);
+                _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * -0.4, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * -0.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.7);
                 _ctx.stroke();
                 break;
             case 0x0305:
                 _ctx.fillRect(pixelX + consts.DISPLAY_TILE_SIZE * 0.2, pixelY + consts.DISPLAY_TILE_SIZE * 0.7, consts.DISPLAY_TILE_SIZE * 0.6, consts.DISPLAY_TILE_SIZE * 0.2);
                 _ctx.beginPath();
                 _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.9);
-                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.1);
-                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.3, pixelY + consts.DISPLAY_TILE_SIZE * 0.4);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * -0.4);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.3, pixelY + consts.DISPLAY_TILE_SIZE * -0.1);
+                _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * -0.4);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.7, pixelY + consts.DISPLAY_TILE_SIZE * -0.1);
+                _ctx.stroke();
+                break;
+            case 0x0405:
+                _ctx.fillRect(pixelX + consts.DISPLAY_TILE_SIZE * 0.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.2, consts.DISPLAY_TILE_SIZE * 0.2, consts.DISPLAY_TILE_SIZE * 0.6);
+                _ctx.beginPath();
+                _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 2.4, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 2.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.3);
+                _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 2.4, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 2.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.7);
+                _ctx.stroke();
+                break;
+            case 0x0505:
+                _ctx.fillRect(pixelX + consts.DISPLAY_TILE_SIZE * 0.2, pixelY + consts.DISPLAY_TILE_SIZE * 0.1, consts.DISPLAY_TILE_SIZE * 0.6, consts.DISPLAY_TILE_SIZE * 0.2);
+                _ctx.beginPath();
                 _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.1);
-                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.7, pixelY + consts.DISPLAY_TILE_SIZE * 0.4);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 2.4);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.3, pixelY + consts.DISPLAY_TILE_SIZE * 2.1);
+                _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 2.4);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.7, pixelY + consts.DISPLAY_TILE_SIZE * 2.1);
+                _ctx.stroke();
+                break;
+            case 0x0605:
+                _ctx.fillRect(pixelX + consts.DISPLAY_TILE_SIZE * 0.7, pixelY + consts.DISPLAY_TILE_SIZE * 0.2, consts.DISPLAY_TILE_SIZE * 0.2, consts.DISPLAY_TILE_SIZE * 0.6);
+                _ctx.beginPath();
+                _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.9, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * -1.4, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * -1.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.3);
+                _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * -1.4, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * -1.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.7);
+                _ctx.stroke();
+                break;
+            case 0x0705:
+                _ctx.fillRect(pixelX + consts.DISPLAY_TILE_SIZE * 0.2, pixelY + consts.DISPLAY_TILE_SIZE * 0.7, consts.DISPLAY_TILE_SIZE * 0.6, consts.DISPLAY_TILE_SIZE * 0.2);
+                _ctx.beginPath();
+                _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.9);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * -1.4);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.3, pixelY + consts.DISPLAY_TILE_SIZE * -1.1);
+                _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * -1.4);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.7, pixelY + consts.DISPLAY_TILE_SIZE * -1.1);
+                _ctx.stroke();
+                break;
+            case 0x0805:
+                _ctx.fillRect(pixelX + consts.DISPLAY_TILE_SIZE * 0.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.2, consts.DISPLAY_TILE_SIZE * 0.2, consts.DISPLAY_TILE_SIZE * 0.6);
+                _ctx.beginPath();
+                _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 3.4, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 3.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.3);
+                _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 3.4, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 3.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.7);
+                _ctx.stroke();
+                break;
+            case 0x0905:
+                _ctx.fillRect(pixelX + consts.DISPLAY_TILE_SIZE * 0.2, pixelY + consts.DISPLAY_TILE_SIZE * 0.1, consts.DISPLAY_TILE_SIZE * 0.6, consts.DISPLAY_TILE_SIZE * 0.2);
+                _ctx.beginPath();
+                _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.1);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 3.4);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.3, pixelY + consts.DISPLAY_TILE_SIZE * 3.1);
+                _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 3.4);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.7, pixelY + consts.DISPLAY_TILE_SIZE * 3.1);
+                _ctx.stroke();
+                break;
+            case 0x0A05:
+                _ctx.fillRect(pixelX + consts.DISPLAY_TILE_SIZE * 0.7, pixelY + consts.DISPLAY_TILE_SIZE * 0.2, consts.DISPLAY_TILE_SIZE * 0.2, consts.DISPLAY_TILE_SIZE * 0.6);
+                _ctx.beginPath();
+                _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.9, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * -2.4, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * -2.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.3);
+                _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * -2.4, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * -2.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.7);
+                _ctx.stroke();
+                break;
+            case 0x0B05:
+                _ctx.fillRect(pixelX + consts.DISPLAY_TILE_SIZE * 0.2, pixelY + consts.DISPLAY_TILE_SIZE * 0.7, consts.DISPLAY_TILE_SIZE * 0.6, consts.DISPLAY_TILE_SIZE * 0.2);
+                _ctx.beginPath();
+                _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.9);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * -2.4);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.3, pixelY + consts.DISPLAY_TILE_SIZE * -2.1);
+                _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * -2.4);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.7, pixelY + consts.DISPLAY_TILE_SIZE * -2.1);
                 _ctx.stroke();
                 break;
             case 0x0006:
@@ -797,6 +956,196 @@ class Chunk {
                 rect(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.5, consts.DISPLAY_TILE_SIZE * 0.8, consts.DISPLAY_TILE_SIZE * 0.8, rectMode.CENTER, _ctx);
                 _ctx.fillStyle = "#FF0000";
                 rect(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.5, consts.DISPLAY_TILE_SIZE * 0.4, consts.DISPLAY_TILE_SIZE * 0.4, rectMode.CENTER, _ctx);
+                break;
+            default:
+                _ctx.fillStyle = "#FF00FF";
+                rect(pixelX, pixelY, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
+                rect(pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY + consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
+                _ctx.fillStyle = "#000000";
+                rect(pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
+                rect(pixelX, pixelY + consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
+                _ctx.font = "15px sans-serif";
+                _ctx.fillStyle = "#00FF00";
+                _ctx.fillText(buildingID.toString(), pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY + consts.DISPLAY_TILE_SIZE / 2);
+                break;
+        }
+    }
+    displayL3(x, y, buildingID, isGhost) {
+        if (buildingID == 0xFFFF) {
+            return;
+        }
+        let pixelX = ((this.x * consts.CHUNK_SIZE) + x) * consts.DISPLAY_TILE_SIZE + (Game.scroll.x * consts.DISPLAY_SCALE);
+        let pixelY = ((this.y * consts.CHUNK_SIZE) + y) * consts.DISPLAY_TILE_SIZE + (Game.scroll.y * consts.DISPLAY_SCALE);
+        let _ctx = isGhost ? ctx1 : ctx25;
+        if (isGhost == 2) {
+            _ctx.strokeStyle = "#FF0000";
+            _ctx.fillStyle = "#FF0000";
+            _ctx.lineWidth = 2;
+        }
+        else if (isGhost == 1) {
+            _ctx.strokeStyle = "#444444";
+            _ctx.fillStyle = "#444444";
+            _ctx.lineWidth = 1;
+        }
+        else if (textures.get(buildingID.toString())) {
+            switch (buildingID) {
+                case 0x0005:
+                    return _ctx.drawImage(textures.get(buildingID.toString()), pixelX, pixelY, consts.DISPLAY_TILE_SIZE * 2, consts.DISPLAY_TILE_SIZE);
+                case 0x0105:
+                    return _ctx.drawImage(textures.get(buildingID.toString()), pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE * 2);
+                case 0x0205:
+                    return _ctx.drawImage(textures.get(buildingID.toString()), pixelX - consts.DISPLAY_TILE_SIZE, pixelY, consts.DISPLAY_TILE_SIZE * 2, consts.DISPLAY_TILE_SIZE);
+                case 0x0305:
+                    return _ctx.drawImage(textures.get(buildingID.toString()), pixelX, pixelY - consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE * 2);
+                case 0x0405:
+                    return _ctx.drawImage(textures.get(buildingID.toString()), pixelX, pixelY, consts.DISPLAY_TILE_SIZE * 3, consts.DISPLAY_TILE_SIZE);
+                case 0x0505:
+                    return _ctx.drawImage(textures.get(buildingID.toString()), pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE * 3);
+                case 0x0605:
+                    return _ctx.drawImage(textures.get(buildingID.toString()), pixelX - consts.DISPLAY_TILE_SIZE * 2, pixelY, consts.DISPLAY_TILE_SIZE * 3, consts.DISPLAY_TILE_SIZE);
+                case 0x0705:
+                    return _ctx.drawImage(textures.get(buildingID.toString()), pixelX, pixelY - consts.DISPLAY_TILE_SIZE * 2, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE * 3);
+                case 0x0805:
+                    return _ctx.drawImage(textures.get(buildingID.toString()), pixelX, pixelY, consts.DISPLAY_TILE_SIZE * 4, consts.DISPLAY_TILE_SIZE);
+                case 0x0905:
+                    return _ctx.drawImage(textures.get(buildingID.toString()), pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE * 4);
+                case 0x0A05:
+                    return _ctx.drawImage(textures.get(buildingID.toString()), pixelX - consts.DISPLAY_TILE_SIZE * 3, pixelY, consts.DISPLAY_TILE_SIZE * 4, consts.DISPLAY_TILE_SIZE);
+                case 0x0B05:
+                    return _ctx.drawImage(textures.get(buildingID.toString()), pixelX, pixelY - consts.DISPLAY_TILE_SIZE * 3, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE * 4);
+            }
+        }
+        else if (settings.debug && false) {
+            _ctx.fillStyle = "#FF00FF";
+            rect(pixelX, pixelY, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
+            rect(pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY + consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
+            _ctx.fillStyle = "#000000";
+            rect(pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
+            rect(pixelX, pixelY + consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
+            _ctx.font = "15px sans-serif";
+            _ctx.fillStyle = "#00FF00";
+            _ctx.fillText(this.atLayer2(x, y).toString(), pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY + consts.DISPLAY_TILE_SIZE / 2);
+        }
+        switch (buildingID) { //TypeScript big dum dum
+            case 0x0005:
+                _ctx.fillRect(pixelX + consts.DISPLAY_TILE_SIZE * 0.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.2, consts.DISPLAY_TILE_SIZE * 0.2, consts.DISPLAY_TILE_SIZE * 0.6);
+                _ctx.beginPath();
+                _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 1.4, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 1.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.3);
+                _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 1.4, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 1.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.7);
+                _ctx.stroke();
+                break;
+            case 0x0105:
+                _ctx.fillRect(pixelX + consts.DISPLAY_TILE_SIZE * 0.2, pixelY + consts.DISPLAY_TILE_SIZE * 0.1, consts.DISPLAY_TILE_SIZE * 0.6, consts.DISPLAY_TILE_SIZE * 0.2);
+                _ctx.beginPath();
+                _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.1);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 1.4);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.3, pixelY + consts.DISPLAY_TILE_SIZE * 1.1);
+                _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 1.4);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.7, pixelY + consts.DISPLAY_TILE_SIZE * 1.1);
+                _ctx.stroke();
+                break;
+            case 0x0205:
+                _ctx.fillRect(pixelX + consts.DISPLAY_TILE_SIZE * 0.7, pixelY + consts.DISPLAY_TILE_SIZE * 0.2, consts.DISPLAY_TILE_SIZE * 0.2, consts.DISPLAY_TILE_SIZE * 0.6);
+                _ctx.beginPath();
+                _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.9, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * -0.4, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * -0.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.3);
+                _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * -0.4, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * -0.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.7);
+                _ctx.stroke();
+                break;
+            case 0x0305:
+                _ctx.fillRect(pixelX + consts.DISPLAY_TILE_SIZE * 0.2, pixelY + consts.DISPLAY_TILE_SIZE * 0.7, consts.DISPLAY_TILE_SIZE * 0.6, consts.DISPLAY_TILE_SIZE * 0.2);
+                _ctx.beginPath();
+                _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.9);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * -0.4);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.3, pixelY + consts.DISPLAY_TILE_SIZE * -0.1);
+                _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * -0.4);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.7, pixelY + consts.DISPLAY_TILE_SIZE * -0.1);
+                _ctx.stroke();
+                break;
+            case 0x0405:
+                _ctx.fillRect(pixelX + consts.DISPLAY_TILE_SIZE * 0.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.2, consts.DISPLAY_TILE_SIZE * 0.2, consts.DISPLAY_TILE_SIZE * 0.6);
+                _ctx.beginPath();
+                _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 2.4, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 2.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.3);
+                _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 2.4, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 2.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.7);
+                _ctx.stroke();
+                break;
+            case 0x0505:
+                _ctx.fillRect(pixelX + consts.DISPLAY_TILE_SIZE * 0.2, pixelY + consts.DISPLAY_TILE_SIZE * 0.1, consts.DISPLAY_TILE_SIZE * 0.6, consts.DISPLAY_TILE_SIZE * 0.2);
+                _ctx.beginPath();
+                _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.1);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 2.4);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.3, pixelY + consts.DISPLAY_TILE_SIZE * 2.1);
+                _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 2.4);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.7, pixelY + consts.DISPLAY_TILE_SIZE * 2.1);
+                _ctx.stroke();
+                break;
+            case 0x0605:
+                _ctx.fillRect(pixelX + consts.DISPLAY_TILE_SIZE * 0.7, pixelY + consts.DISPLAY_TILE_SIZE * 0.2, consts.DISPLAY_TILE_SIZE * 0.2, consts.DISPLAY_TILE_SIZE * 0.6);
+                _ctx.beginPath();
+                _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.9, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * -1.4, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * -1.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.3);
+                _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * -1.4, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * -1.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.7);
+                _ctx.stroke();
+                break;
+            case 0x0705:
+                _ctx.fillRect(pixelX + consts.DISPLAY_TILE_SIZE * 0.2, pixelY + consts.DISPLAY_TILE_SIZE * 0.7, consts.DISPLAY_TILE_SIZE * 0.6, consts.DISPLAY_TILE_SIZE * 0.2);
+                _ctx.beginPath();
+                _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.9);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * -1.4);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.3, pixelY + consts.DISPLAY_TILE_SIZE * -1.1);
+                _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * -1.4);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.7, pixelY + consts.DISPLAY_TILE_SIZE * -1.1);
+                _ctx.stroke();
+                break;
+            case 0x0805:
+                _ctx.fillRect(pixelX + consts.DISPLAY_TILE_SIZE * 0.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.2, consts.DISPLAY_TILE_SIZE * 0.2, consts.DISPLAY_TILE_SIZE * 0.6);
+                _ctx.beginPath();
+                _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 3.4, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 3.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.3);
+                _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 3.4, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 3.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.7);
+                _ctx.stroke();
+                break;
+            case 0x0905:
+                _ctx.fillRect(pixelX + consts.DISPLAY_TILE_SIZE * 0.2, pixelY + consts.DISPLAY_TILE_SIZE * 0.1, consts.DISPLAY_TILE_SIZE * 0.6, consts.DISPLAY_TILE_SIZE * 0.2);
+                _ctx.beginPath();
+                _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.1);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 3.4);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.3, pixelY + consts.DISPLAY_TILE_SIZE * 3.1);
+                _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 3.4);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.7, pixelY + consts.DISPLAY_TILE_SIZE * 3.1);
+                _ctx.stroke();
+                break;
+            case 0x0A05:
+                _ctx.fillRect(pixelX + consts.DISPLAY_TILE_SIZE * 0.7, pixelY + consts.DISPLAY_TILE_SIZE * 0.2, consts.DISPLAY_TILE_SIZE * 0.2, consts.DISPLAY_TILE_SIZE * 0.6);
+                _ctx.beginPath();
+                _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.9, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * -2.4, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * -2.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.3);
+                _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * -2.4, pixelY + consts.DISPLAY_TILE_SIZE * 0.5);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * -2.1, pixelY + consts.DISPLAY_TILE_SIZE * 0.7);
+                _ctx.stroke();
+                break;
+            case 0x0B05:
+                _ctx.fillRect(pixelX + consts.DISPLAY_TILE_SIZE * 0.2, pixelY + consts.DISPLAY_TILE_SIZE * 0.7, consts.DISPLAY_TILE_SIZE * 0.6, consts.DISPLAY_TILE_SIZE * 0.2);
+                _ctx.beginPath();
+                _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * 0.9);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * -2.4);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.3, pixelY + consts.DISPLAY_TILE_SIZE * -2.1);
+                _ctx.moveTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.5, pixelY + consts.DISPLAY_TILE_SIZE * -2.4);
+                _ctx.lineTo(pixelX + consts.DISPLAY_TILE_SIZE * 0.7, pixelY + consts.DISPLAY_TILE_SIZE * -2.1);
+                _ctx.stroke();
                 break;
             default:
                 _ctx.fillStyle = "#FF00FF";
@@ -864,11 +1213,39 @@ class Building {
         this.y = tileY;
         this.id = id;
         this.level = level;
+        this.item = null;
+        this.inventory = null;
     }
     static canBuildAt(tileX, tileY, level) {
         return level.atLayer1ByTile(tileX, tileY) != 0x04;
     }
     break() {
+        if (this.item) {
+            this.item.grabbedBy = null;
+        }
+        if (this.inventory) {
+            for (var item of this.inventory) {
+                item.grabbedBy = null;
+            }
+        }
+    }
+    hasItem() {
+        if (this.item)
+            return this.item;
+        if (this.inventory && this.inventory?.length != 0)
+            return this.inventory[0];
+        return null;
+    }
+    removeItem() {
+        if (this.item) {
+            var temp = this.item;
+            this.item = null;
+            return temp;
+        }
+        if (this.inventory?.length > 0) {
+            return this.inventory.pop();
+        }
+        return null;
     }
     spawnItem(id) {
         id ??= "base_null";
@@ -909,25 +1286,29 @@ class Building {
             Game.tutorial.item.coal = false;
         }
         if (Game.persistent.tutorialenabled && id == ItemID.base_ironIngot && Game.tutorial.item.iron) {
-            _alert("Nice job!\nWell, that's all the content this game has to offer right now. I would tell you to automate steel, but it doesn't exist yet.\nThis game is currently in alpha, check back later for more updates!");
+            _alert("Nice job!");
             Game.tutorial.item.iron = false;
-            _alert(["Oh, also, you technically beat the game. Just saying.", 3000]);
+            _alert(["Up for a challenge? Try automating steel.\nYou'll need to use the alloy smelter(slot 7), which needs two inputs(coal and iron).", 3000]);
         }
         return true;
     }
-    grabItem(filter, callback, remove) {
+    grabItem(filter, callback, remove, grabDistance) {
+        grabDistance ??= 0.5;
+        filter ??= () => { return true; };
         for (var item in this.level.items) {
-            if ((Math.abs(this.level.items[item].x - ((this.x + 0.5) * consts.TILE_SIZE)) <= consts.TILE_SIZE * 0.5) &&
-                (Math.abs(this.level.items[item].y - ((this.y + 0.5) * consts.TILE_SIZE)) <= consts.TILE_SIZE * 0.5) &&
+            if ((Math.abs(this.level.items[item].x - ((this.x + grabDistance) * consts.TILE_SIZE)) <= consts.TILE_SIZE * grabDistance) &&
+                (Math.abs(this.level.items[item].y - ((this.y + grabDistance) * consts.TILE_SIZE)) <= consts.TILE_SIZE * grabDistance) &&
                 filter(this.level.items[item])) {
                 this.level.items[item].grabbedBy = this;
                 callback(this.level.items[item]);
+                let returnItem = this.level.items[item];
                 if (remove) {
                     this.level.items.splice(parseInt(item), 1);
                 }
-                return;
+                return returnItem;
             }
         }
+        return null;
     }
 }
 class Miner extends Building {
@@ -1005,14 +1386,6 @@ class Conveyor extends Building {
             this.item.grabbedBy = null;
         }
         this.item = null;
-    }
-    removeItem() {
-        if (this.item) {
-            let temp = this.item;
-            this.item = null;
-            return temp;
-        }
-        return null;
     }
     update(currentframe, nograb) {
         if (this.item instanceof Item) {
@@ -1155,7 +1528,7 @@ class Conveyor extends Building {
             }
         }
         else if (!nograb) {
-            this.grabItem(() => { return true; }, (item) => { this.item = item; }, false);
+            this.grabItem(null, (item) => { this.item = item; }, false);
         }
     }
     static canBuildAt(tileX, tileY, level) {
@@ -1163,71 +1536,196 @@ class Conveyor extends Building {
     }
 }
 class Extractor extends Conveyor {
-    update(currentFrame) {
-        //AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAa
-        //TODO: make this more readable, probably rewrite with a switch statement
-        if (!this.item) {
-            if (this.id == 0x0005 &&
-                (this.level.buildingAt(this.x - 1, this.y)?.id % 0x100 == 1 || this.level.buildingAt(this.x - 1, this.y) instanceof StorageBuilding) &&
-                (this.level.buildingAt(this.x - 1, this.y).inventory?.length > 0 || this.level.buildingAt(this.x - 1, this.y).item)) {
-                this.item = this.level.buildingAt(this.x - 1, this.y).removeItem();
-                this.item.x = (this.x) * consts.TILE_SIZE;
-                this.item.y = (this.y + 0.5) * consts.TILE_SIZE;
-            }
-            else if (this.id == 0x0105 &&
-                (this.level.buildingAt(this.x, this.y - 1)?.id % 0x100 == 1 || this.level.buildingAt(this.x, this.y - 1) instanceof StorageBuilding) &&
-                (this.level.buildingAt(this.x, this.y - 1).inventory?.length > 0 || this.level.buildingAt(this.x, this.y - 1).item)) {
-                this.item = this.level.buildingAt(this.x, this.y - 1).removeItem();
-                this.item.x = (this.x + 0.5) * consts.TILE_SIZE;
-                this.item.y = (this.y) * consts.TILE_SIZE;
-            }
-            else if (this.id == 0x0205 &&
-                (this.level.buildingAt(this.x + 1, this.y)?.id % 0x100 == 1 || this.level.buildingAt(this.x + 1, this.y) instanceof StorageBuilding) &&
-                (this.level.buildingAt(this.x + 1, this.y).inventory?.length > 0 || this.level.buildingAt(this.x + 1, this.y).item)) {
-                this.item = this.level.buildingAt(this.x + 1, this.y).removeItem();
-                this.item.x = (this.x + 0.9) * consts.TILE_SIZE;
-                this.item.y = (this.y + 0.5) * consts.TILE_SIZE;
-            }
-            else if (this.id == 0x0305 &&
-                (this.level.buildingAt(this.x, this.y + 1)?.id % 0x100 == 1 || this.level.buildingAt(this.x, this.y + 1) instanceof StorageBuilding) &&
-                (this.level.buildingAt(this.x, this.y + 1).inventory?.length > 0 || this.level.buildingAt(this.x, this.y + 1).item)) {
-                this.item = this.level.buildingAt(this.x, this.y + 1).removeItem();
-                this.item.x = (this.x + 0.5) * consts.TILE_SIZE;
-                this.item.y = (this.y + 0.9) * consts.TILE_SIZE;
-            }
-            else {
-                return super.update(currentFrame, false);
-            }
-            this.item.grabbedBy = this;
-            this.level.items.push(this.item);
+    constructor(x, y, id, level) {
+        super(x, y, id, level);
+    }
+    display(currentFrame) {
+        if (this.item instanceof Item) {
+            this.item.display(currentFrame);
         }
-        super.update(currentFrame, true);
+    }
+    grabItemFromTile(filter, callback, remove, grabDistance) {
+        filter ??= (item) => { return item instanceof Item; };
+        callback ??= () => { };
+        if (this.level.buildingAt(this.x, this.y) instanceof Building &&
+            this.level.buildingAt(this.x, this.y).hasItem() &&
+            filter(this.level.buildingAt(this.x, this.y).hasItem())) {
+            let item = this.level.buildingAt(this.x, this.y).removeItem();
+            if (!(item instanceof Item))
+                throw "what even";
+            if (item.deleted)
+                throw "wat?";
+            this.item = item;
+            switch ((this.id >> 8) % 4) {
+                case 0:
+                    this.item.y = (this.y + 0.5) * consts.TILE_SIZE;
+                    break;
+                case 1:
+                    this.item.x = (this.x + 0.5) * consts.TILE_SIZE;
+                    break;
+                case 2:
+                    this.item.y = (this.y + 0.5) * consts.TILE_SIZE;
+                    break;
+                case 3:
+                    this.item.x = (this.x + 0.5) * consts.TILE_SIZE;
+                    break;
+            }
+            item.grabbedBy = this;
+            if (this.level.items.indexOf(item) != -1) {
+                this.level.items.splice(this.level.items.indexOf(item), 1);
+            }
+        }
+    }
+    dropItem() {
+        if (this.item instanceof Item) {
+            if (this.level.buildingAt(tileAtPixel(this.item.x), tileAtPixel(this.item.y)) instanceof Conveyor && this.level.buildingAt(tileAtPixel(this.item.x), tileAtPixel(this.item.y)).item == null) {
+                this.level.items.push(this.item);
+                this.item = null;
+            }
+        }
+        else {
+            console.error(this);
+            throw new Error(`no item to drop; extractor at ${this.x} ${this.y}`);
+        }
+    }
+    update(currentFrame) {
+        if (this.item instanceof Item) {
+            if (this.item.grabbedBy != this || this.item.deleted) {
+                console.error(this.item);
+                console.error(this);
+                throw new RangeError("ERR Item somehow grabbed or deleted from an extractor.");
+            }
+            switch (this.id) {
+                case 0x0005:
+                    if (this.item.x > (this.x + 1.5) * consts.TILE_SIZE) {
+                        return this.dropItem();
+                    }
+                    else {
+                        this.item.x++;
+                    }
+                    break;
+                case 0x0105:
+                    if (this.item.y > (this.y + 1.5) * consts.TILE_SIZE) {
+                        return this.dropItem();
+                    }
+                    else {
+                        this.item.y++;
+                    }
+                    break;
+                case 0x0205:
+                    if (this.item.x < (this.x - 0.5) * consts.TILE_SIZE) {
+                        return this.dropItem();
+                    }
+                    else {
+                        this.item.x--;
+                    }
+                    break;
+                case 0x0305:
+                    if (this.item.y < (this.y - 0.5) * consts.TILE_SIZE) {
+                        return this.dropItem();
+                    }
+                    else {
+                        this.item.y--;
+                    }
+                    break;
+                case 0x0405:
+                    if (this.item.x > (this.x + 2.5) * consts.TILE_SIZE) {
+                        return this.dropItem();
+                    }
+                    else {
+                        this.item.x++;
+                    }
+                    break;
+                case 0x0505:
+                    if (this.item.y > (this.y + 2.5) * consts.TILE_SIZE) {
+                        return this.dropItem();
+                    }
+                    else {
+                        this.item.y++;
+                    }
+                    break;
+                case 0x0605:
+                    if (this.item.x < (this.x - 1.5) * consts.TILE_SIZE) {
+                        return this.dropItem();
+                    }
+                    else {
+                        this.item.x--;
+                    }
+                    break;
+                case 0x0705:
+                    if (this.item.y < (this.y - 1.5) * consts.TILE_SIZE) {
+                        return this.dropItem();
+                    }
+                    else {
+                        this.item.y--;
+                    }
+                    break;
+                case 0x0805:
+                    if (this.item.x > (this.x + 3.5) * consts.TILE_SIZE) {
+                        return this.dropItem();
+                    }
+                    else {
+                        this.item.x++;
+                    }
+                    break;
+                case 0x0905:
+                    if (this.item.y > (this.y + 3.5) * consts.TILE_SIZE) {
+                        return this.dropItem();
+                    }
+                    else {
+                        this.item.y++;
+                    }
+                    break;
+                case 0x0A05:
+                    if (this.item.x < (this.x - 2.5) * consts.TILE_SIZE) {
+                        return this.dropItem();
+                    }
+                    else {
+                        this.item.x--;
+                    }
+                    break;
+                case 0x0B05:
+                    if (this.item.y < (this.y - 2.5) * consts.TILE_SIZE) {
+                        return this.dropItem();
+                    }
+                    else {
+                        this.item.y--;
+                    }
+                    break;
+            }
+        }
+        else {
+            this.grabItemFromTile();
+        }
     }
 }
 class StorageBuilding extends Building {
     constructor(tileX, tileY, id, level) {
         super(tileX, tileY, id, level);
-        this.inventory = [];
-        this.inventory.MAX_LENGTH = 64;
+        let temp = [];
+        temp.MAX_LENGTH = 64;
+        this.inventory = temp;
     }
     update() {
         if (this.inventory.length < this.inventory.MAX_LENGTH) {
-            this.grabItem(() => { return true; }, (item) => { this.inventory.push(item); }, true);
+            this.grabItem(null, (item) => { this.inventory.push(item); }, true);
         }
     }
-    removeItem() {
-        if (this.inventory.length > 0) {
-            return this.inventory.pop();
+    grabItem(filter, callback, remove, grabDistance) {
+        let item = super.grabItem(filter, callback, remove, grabDistance);
+        if (item) {
+            item.x = (this.x + 0.5) * consts.TILE_SIZE;
+            item.y = (this.y + 0.5) * consts.TILE_SIZE;
+            return item;
         }
-        else {
-            return null;
-        }
+        return null;
     }
 }
 let alloysFor = {
     "base_coal&base_ironIngot": "base_steelIngot",
     "base_ironIngot&base_coal": "base_steelIngot"
 };
+let totalAlloySmeltersRun = 0;
 class AlloySmelter extends Building {
     constructor(tileX, tileY, id, level) {
         super(tileX, tileY, id, level);
@@ -1235,6 +1733,7 @@ class AlloySmelter extends Building {
         this.item1 = null;
         this.item2 = null;
         this.processing = false;
+        this.hasRunOnce = false;
     }
     update() {
         if (!this.item1) {
@@ -1253,7 +1752,19 @@ class AlloySmelter extends Building {
                 this.timer--;
             }
             else {
+                if (!this.hasRunOnce) {
+                    this.hasRunOnce = true;
+                    totalAlloySmeltersRun++;
+                    if (totalAlloySmeltersRun >= 4) {
+                        _alert("🎉🎉🎉🎉🎉🎉\nWell, that's all the content this game has to offer for now.\nCheck back later for more updates, especially once this game reaches beta.");
+                    }
+                }
                 if (this.spawnItem(alloysFor[`${this.item1.id}&${this.item2.id}`])) {
+                    if (Game.persistent.tutorialenabled && alloysFor[`${this.item1.id}&${this.item2.id}`] == ItemID["base_steelIngot"] && Game.tutorial.item.steel) {
+                        _alert("Well done!\nThis game is in alpha, so steel isn't used for anything yet.");
+                        Game.tutorial.item.steel = false;
+                        _alert(["Hmm, that's REALLY slow.\nYou'll need more steel than that.\nParallelize!\nYou need to use the extractor(slot 5). It is special, because you can place it on top of other buildings.\nNote: use the comma and period keys to change the length of the extractor(you'll need to use this to make a bridge).\nGood luck!", 3000]);
+                    }
                     this.timer = 240;
                     this.item1 = null;
                     this.item2 = null;

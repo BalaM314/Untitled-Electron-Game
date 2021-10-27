@@ -1,8 +1,8 @@
 'use strict';
 // TODOS
 // Resolve critical gameplay issue:
-// Given the 2D grid layout, it is not currently possible to parallelize crafting of the Alloy Smelter with more than 2.
-// Solution: totally change how extractors work.
+// make buildingbar only display after textures load
+// Fix hasItem and removeItem, they're kinda lost
 // 
 // 
 // 
@@ -52,7 +52,8 @@ let Game = {
         },
         item: {
             coal: true,
-            iron: true
+            iron: true,
+            steel: true
         }
     }
 };
@@ -60,11 +61,10 @@ var GAME_STATE = "title";
 const ctx = document.getElementById("canvas").getContext("2d"); //Tiles
 const ctx1 = document.getElementById("canvas1").getContext("2d"); //Ghost buildings
 const ctx2 = document.getElementById("canvas2").getContext("2d"); //Buildings
+const ctx25 = document.getElementById("canvas25").getContext("2d"); //Extractors
 const ctx3 = document.getElementById("canvas3").getContext("2d"); //Items
 const ctx4 = document.getElementById("canvas4").getContext("2d"); //Overlays
-const ctxs = [ctx, ctx1, ctx2, ctx3, ctx4];
-const level1 = new Level(3141);
-level1.generateNecessaryChunks();
+const ctxs = [ctx, ctx1, ctx2, ctx25, ctx3, ctx4];
 let fps = [0, 0, 0, 0, 0, 0];
 function runLevel(level, currentFrame) {
     let startFrameTime = new Date();
@@ -73,10 +73,10 @@ function runLevel(level, currentFrame) {
     //display
     if (currentFrame.redraw) {
         ctx.clearRect(0, 0, innerWidth, innerHeight);
-        ctx2.clearRect(0, 0, innerWidth, innerHeight);
-        console.log("redraw");
     }
     ctx1.clearRect(0, 0, innerWidth, innerHeight);
+    ctx2.clearRect(0, 0, innerWidth, innerHeight);
+    ctx25.clearRect(0, 0, innerWidth, innerHeight);
     ctx3.clearRect(0, 0, innerWidth, innerHeight);
     ctx4.clearRect(0, 0, innerWidth, innerHeight);
     level.display(currentFrame);
@@ -164,10 +164,10 @@ function main_loop() {
         if (alerts.length) {
             mouseIsPressed = false;
             for (var __alert of alerts) {
-                if (alert instanceof Array) {
+                if (__alert instanceof Array) {
                     setTimeout(() => {
-                        _alert(alert[0]);
-                    }, alert[1]);
+                        _alert(__alert[0]);
+                    }, __alert[1]);
                 }
                 else {
                     alert(__alert); //todo replace with a less annoying custom alert box
@@ -180,6 +180,7 @@ function main_loop() {
     catch (err) {
         //todo: display an error screen
         alert("An error has occurred! Oopsie.\nPlease create an issue on this project's GitHub so I can fix it.\nErr: " + err.message); //todo improve
+        ctxs.forEach((ctx) => { ctx.clearRect(0, 0, innerWidth, innerHeight); });
         throw err;
     }
 }
@@ -233,15 +234,44 @@ function runSettings() {
 function load() {
     //TODO: add loading GAME_STATE
     //possibly display an eror here if the textures haven't loaded?
-    document.getElementById("toolbar").classList.remove("hidden");
     loadTextures();
     checkload();
 }
 let loadedtextures = 0;
+const level1 = new Level(3141);
 function checkload() {
     if (loadedtextures == document.getElementById("textures").children.length) {
+        level1.generateNecessaryChunks();
+        {
+            /*level1.buildBuilding(4,1,0x0001);
+            level1.buildBuilding(5,1,0x0001);
+            level1.buildBuilding(5,-1,0x0301);
+            level1.buildBuilding(5,1,0x0705);
+            level1.buildBuilding(6,1,0x0001);
+            level1.buildBuilding(6,3,0x0101);
+            level1.buildBuilding(6,1,0x0505);
+            level1.buildBuilding(7,1,0x0001);
+            level1.buildBuilding(7,-1,0x0301);
+            level1.buildBuilding(7,1,0x0705);
+            level1.buildBuilding(8,1,0x0001);
+            level1.buildBuilding(8,3,0x0101);
+            level1.buildBuilding(8,1,0x0505);
+            level1.buildBuilding(9,1,0x0001);
+            level1.buildBuilding(9,-1,0x0301);
+            level1.buildBuilding(9,1,0x0705);
+            level1.buildBuilding(10,1,0x0001);
+            level1.buildBuilding(10,3,0x0101);
+            level1.buildBuilding(10,1,0x0505);
+            level1.buildBuilding(11,1,0x0001);
+            level1.buildBuilding(11,-1,0x0301);
+            level1.buildBuilding(11,1,0x0705);
+            level1.buildBuilding(12,1,0x0001);
+            level1.buildBuilding(12,3,0x0101);
+            level1.buildBuilding(12,1,0x0505);*/
+        }
         GAME_STATE = "game";
         Game.forceRedraw = true;
+        document.getElementById("toolbar").classList.remove("hidden");
     }
     else if (loadedtextures > document.getElementById("textures").children.length) {
         throw new Error("somehow loaded more textures than exist, what the fffffff");
@@ -254,9 +284,10 @@ function checkload() {
 let placedBuilding = {
     type: 0x0001,
     direction: 0x100,
+    modifier: 0x000,
     get ID() {
         if (this.type == 0x01 || this.type == 0x05) {
-            return this.direction + this.type;
+            return this.direction + this.type + this.modifier;
         }
         else {
             return this.type;
@@ -296,11 +327,12 @@ Welcome to Untitled Electron Game!
 This is a game about... well I don't really know, but it has items, conveyor belts, and machines. Guess you could call it a factory game?
 
 For now there's no real goal, but I suggest you automate iron and coal production.
->To get started, place a conveyor belt.<
+To get started, place a conveyor belt.
 
-Controls:
+Basic controls:
 Click to place a building.
-Use 1-4 to choose the type of building.
+Use the number keys to choose the type of building.
+Press 0 to "place air"(delete buildings).
 Use WASD to move around the map and mouse wheel to zoom.`);
                         }, 500);
                     }

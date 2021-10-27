@@ -27,6 +27,15 @@ window.onmousemove = (e:MouseEvent) => {
 }
 let keysPressed:string[] = [];
 window.onkeydown = (e:KeyboardEvent) => {
+	if(parseInt(e.key)){
+		for(var x of document.getElementById("toolbar").children){
+			x.classList.remove("selected");
+		}
+		(document.getElementById("toolbar").children?.[parseInt(e.key) - 1] as HTMLElement)?.classList.add("selected");
+	}
+	if(keysPressed.indexOf(e.key.toLowerCase()) == -1){
+		keysPressed.push(e.key.toLowerCase());
+	}
 	switch(e.key){
 		case "ArrowRight":
 			placedBuilding.direction = 0x000; break;
@@ -36,6 +45,13 @@ window.onkeydown = (e:KeyboardEvent) => {
 			placedBuilding.direction = 0x200; break;
 		case "ArrowUp":
 			placedBuilding.direction = 0x300; break;
+		case ",":
+			placedBuilding.modifier = 0x000; break;
+		case ".":
+			placedBuilding.modifier = 0x400; break;
+		case "/":
+			// placedBuilding.modifier = 0x800; break;
+			_alert(`"Longer" extractors will be added in the next update.`); break;
 		case "1":
 			placedBuilding.type = 0x0001; break;
 		case "2":
@@ -51,17 +67,10 @@ window.onkeydown = (e:KeyboardEvent) => {
 		case "7":
 			placedBuilding.type = 0x0007; break;
 		case "0":
-			placedBuilding.type = 0xFFFF; break;		
+			placedBuilding.type = 0xFFFF; break;
+		default: return;
 	}
-	if(parseInt(e.key)){
-		for(var x of document.getElementById("toolbar").children){
-			x.classList.remove("selected");
-		}
-		(document.getElementById("toolbar").children?.[parseInt(e.key) - 1] as HTMLElement)?.classList.add("selected");
-	}
-	if(keysPressed.indexOf(e.key.toLowerCase()) == -1){
-		keysPressed.push(e.key.toLowerCase());
-	}
+	event.preventDefault();
 }
 window.onkeyup = (e:KeyboardEvent) => {
 	if(keysPressed.indexOf(e.key.toLowerCase()) != -1){
@@ -205,6 +214,9 @@ function tileToChunk(tileCoord:number):number {
 function pixelToTile(pixelCoord:number):number {
 	pixelCoord = Math.floor(pixelCoord) % consts.TILE_SIZE;
 	return pixelCoord + (pixelCoord < 0 ? consts.TILE_SIZE : 0);
+}
+function tileAtPixel(pixelCoord:number):number {
+	return Math.floor(pixelCoord / consts.TILE_SIZE);
 }
 
 var interval1;
