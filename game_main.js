@@ -80,14 +80,14 @@ function runLevel(level, currentFrame) {
     ctx3.clearRect(0, 0, innerWidth, innerHeight);
     ctx4.clearRect(0, 0, innerWidth, innerHeight);
     level.display(currentFrame);
-    level.displayGhostBuilding((mouseX - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE, (mouseY - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE, placedBuilding.ID);
+    level.displayGhostBuilding((mouseX - (Game.scroll.x * Globals.DISPLAY_SCALE)) / Globals.DISPLAY_TILE_SIZE, (mouseY - (Game.scroll.y * Globals.DISPLAY_SCALE)) / Globals.DISPLAY_TILE_SIZE, placedBuilding.ID);
     if (keysPressed.indexOf("Shift") != -1) {
         level.displayTooltip(mouseX, mouseY, currentFrame);
     }
     //display overlays
     ctx4.font = "30px sans-serif";
     ctx4.fillStyle = "#000000";
-    ctx4.fillText((Math.round(-(Game.scroll.x * consts.DISPLAY_SCALE) / consts.DISPLAY_TILE_SIZE).toString() + ", " + Math.round(-(Game.scroll.y * consts.DISPLAY_SCALE) / consts.DISPLAY_TILE_SIZE).toString()), 10, 100);
+    ctx4.fillText((Math.round(-(Game.scroll.x * Globals.DISPLAY_SCALE) / Globals.DISPLAY_TILE_SIZE).toString() + ", " + Math.round(-(Game.scroll.y * Globals.DISPLAY_SCALE) / Globals.DISPLAY_TILE_SIZE).toString()), 10, 100);
     let frameMS = (new Date()).getTime() - startFrameTime.getTime();
     fps.splice(0, 1);
     fps.push(frameMS);
@@ -95,7 +95,7 @@ function runLevel(level, currentFrame) {
     ctx4.fillText(avgFPS + " fps", 10, 50);
     if (settings.debug) {
         ctx4.fillText("C: " + currentFrame.cps, 10, 150);
-        ctx4.fillText("E: " + currentFrame.ee, 10, 200);
+        ctx4.fillText("I: " + currentFrame.ips, 10, 200);
     }
 }
 function handleKeysPressed(currentframe) {
@@ -136,8 +136,7 @@ function main_loop() {
             debug: settings.debug,
             cps: 0,
             tps: 0,
-            ee: 0,
-            chunktime: [],
+            ips: 0,
             redraw: Game.forceRedraw
         };
         Game.forceRedraw = false;
@@ -300,18 +299,18 @@ let handleMouseDown = (currentFrame, e) => {
     switch (GAME_STATE) {
         case "game":
             if (e.ctrlKey) {
-                level1.addItem((e.x - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_SCALE, (e.y - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_SCALE, ItemID.base_null);
+                level1.addItem((e.x - (Game.scroll.x * Globals.DISPLAY_SCALE)) / Globals.DISPLAY_SCALE, (e.y - (Game.scroll.y * Globals.DISPLAY_SCALE)) / Globals.DISPLAY_SCALE, ItemID.base_null);
                 mouseIsPressed = false;
             }
             else {
-                if (level1.buildingIDAtTile(Math.floor((e.x - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE), Math.floor((e.y - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE)) == placedBuilding.ID) {
+                if (level1.buildingIDAtTile(Math.floor((e.x - (Game.scroll.x * Globals.DISPLAY_SCALE)) / Globals.DISPLAY_TILE_SIZE), Math.floor((e.y - (Game.scroll.y * Globals.DISPLAY_SCALE)) / Globals.DISPLAY_TILE_SIZE)) == placedBuilding.ID) {
                     if (canOverwriteBuilding) {
-                        level1.buildBuilding(Math.floor((e.x - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE), Math.floor((e.y - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE), placedBuilding.ID);
+                        level1.buildBuilding(Math.floor((e.x - (Game.scroll.x * Globals.DISPLAY_SCALE)) / Globals.DISPLAY_TILE_SIZE), Math.floor((e.y - (Game.scroll.y * Globals.DISPLAY_SCALE)) / Globals.DISPLAY_TILE_SIZE), placedBuilding.ID);
                     }
                 }
                 else {
                     canOverwriteBuilding = false;
-                    level1.buildBuilding(Math.floor((e.x - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE), Math.floor((e.y - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE), placedBuilding.ID);
+                    level1.buildBuilding(Math.floor((e.x - (Game.scroll.x * Globals.DISPLAY_SCALE)) / Globals.DISPLAY_TILE_SIZE), Math.floor((e.y - (Game.scroll.y * Globals.DISPLAY_SCALE)) / Globals.DISPLAY_TILE_SIZE), placedBuilding.ID);
                 }
             }
             break;
