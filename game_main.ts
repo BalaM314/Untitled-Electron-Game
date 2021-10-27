@@ -5,7 +5,7 @@
 // make buildingbar only display after textures load
 // Fix hasItem and removeItem, they're kinda lost
 // 
-// 
+// Code cleanup
 // 
 // 
 // 
