@@ -52,7 +52,8 @@ let Game = {
         },
         item: {
             coal: true,
-            iron: true
+            iron: true,
+            steel: true
         }
     }
 };

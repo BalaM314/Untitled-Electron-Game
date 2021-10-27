@@ -28,7 +28,8 @@ const ItemID = {
     "base_coalOre": "base_coalOre",
     "base_coal": "base_coal",
     "base_ironOre": "base_ironOre",
-    "base_ironIngot": "base_ironIngot"
+    "base_ironIngot": "base_ironIngot",
+    "base_steelIngot": "base_steelIngot"
 };
 const rands = {
     x_prime: 1299689,
@@ -1285,9 +1286,9 @@ class Building {
             Game.tutorial.item.coal = false;
         }
         if (Game.persistent.tutorialenabled && id == ItemID.base_ironIngot && Game.tutorial.item.iron) {
-            _alert("Nice job!\nWell, that's all the content this game has to offer right now. I would tell you to automate steel, but it doesn't exist yet.\nThis game is currently in alpha, check back later for more updates!");
+            _alert("Nice job!");
             Game.tutorial.item.iron = false;
-            _alert(["Oh, also, you technically beat the game. Just saying.", 3000]);
+            _alert(["Up for a challenge? Try automating steel.\nYou'll need to use the alloy smelter(slot 7), which needs two inputs(coal and iron).", 3000]);
         }
         return true;
     }
@@ -1754,6 +1755,11 @@ class AlloySmelter extends Building {
                     this.item1 = null;
                     this.item2 = null;
                     this.processing = false;
+                    if (Game.persistent.tutorialenabled && alloysFor[`${this.item1.id}&${this.item2.id}`] == ItemID["base_steelIngot"] && Game.tutorial.item.steel) {
+                        _alert("Well done!\nThis game is in alpha, so steel isn't used for anything yet.");
+                        Game.tutorial.item.steel = false;
+                        _alert(["Hmm, that's REALLY slow.\nYou'll need more steel than that.\nParallelize!", 3000]);
+                    }
                 }
             }
         }
