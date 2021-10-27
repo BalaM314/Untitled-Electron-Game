@@ -95,7 +95,7 @@ function runLevel(level:Level, currentFrame:any){
 
 	
 	level.displayGhostBuilding((mouseX - (Game.scroll.x * Globals.DISPLAY_SCALE)) / Globals.DISPLAY_TILE_SIZE, (mouseY - (Game.scroll.y * Globals.DISPLAY_SCALE)) / Globals.DISPLAY_TILE_SIZE, placedBuilding.ID);
-	if(keysPressed.indexOf("Shift") != -1){
+	if(keysPressed.indexOf("shift") != -1){
 		level.displayTooltip(mouseX, mouseY, currentFrame);
 	}
 	

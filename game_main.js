@@ -81,7 +81,7 @@ function runLevel(level, currentFrame) {
     ctx4.clearRect(0, 0, innerWidth, innerHeight);
     level.display(currentFrame);
     level.displayGhostBuilding((mouseX - (Game.scroll.x * Globals.DISPLAY_SCALE)) / Globals.DISPLAY_TILE_SIZE, (mouseY - (Game.scroll.y * Globals.DISPLAY_SCALE)) / Globals.DISPLAY_TILE_SIZE, placedBuilding.ID);
-    if (keysPressed.indexOf("Shift") != -1) {
+    if (keysPressed.indexOf("shift") != -1) {
         level.displayTooltip(mouseX, mouseY, currentFrame);
     }
     //display overlays
