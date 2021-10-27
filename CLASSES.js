@@ -1241,7 +1241,8 @@ class Building {
             this.item = null;
             return temp;
         }
-        if (this.inventory?.length == 0) {
+        if (this.inventory?.length > 0) {
+            return this.inventory.pop();
         }
         return null;
     }
@@ -1299,12 +1300,14 @@ class Building {
                 filter(this.level.items[item])) {
                 this.level.items[item].grabbedBy = this;
                 callback(this.level.items[item]);
+                let returnItem = this.level.items[item];
                 if (remove) {
                     this.level.items.splice(parseInt(item), 1);
                 }
-                return;
+                return returnItem;
             }
         }
+        return null;
     }
 }
 class Miner extends Building {
@@ -1547,6 +1550,8 @@ class Extractor extends Conveyor {
             this.level.buildingAt(this.x, this.y).hasItem() &&
             filter(this.level.buildingAt(this.x, this.y).hasItem())) {
             let item = this.level.buildingAt(this.x, this.y).removeItem();
+            if (!(item instanceof Item))
+                throw "what even";
             if (item.deleted)
                 throw "wat?";
             this.item = item;
@@ -1565,7 +1570,9 @@ class Extractor extends Conveyor {
                     break;
             }
             item.grabbedBy = this;
-            this.level.items.splice(this.level.items.indexOf(item), 1);
+            if (this.level.items.indexOf(item) != -1) {
+                this.level.items.splice(this.level.items.indexOf(item), 1);
+            }
         }
     }
     dropItem() {
@@ -1702,6 +1709,15 @@ class StorageBuilding extends Building {
         if (this.inventory.length < this.inventory.MAX_LENGTH) {
             this.grabItem(null, (item) => { this.inventory.push(item); }, true);
         }
+    }
+    grabItem(filter, callback, remove, grabDistance) {
+        let item = super.grabItem(filter, callback, remove, grabDistance);
+        if (item) {
+            item.x = (this.x + 0.5) * consts.TILE_SIZE;
+            item.y = (this.y + 0.5) * consts.TILE_SIZE;
+            return item;
+        }
+        return null;
     }
 }
 let alloysFor = {

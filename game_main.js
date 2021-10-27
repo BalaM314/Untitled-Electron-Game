@@ -1,10 +1,10 @@
 'use strict';
 // TODOS
 // Resolve critical gameplay issue:
-// Given the 2D grid layout, it is not currently possible to parallelize crafting of the Alloy Smelter with more than 2.
-// Solution: totally change how extractors work.
-// 
 // make buildingbar only display after textures load
+// Fix hasItem and removeItem, they're kinda lost
+// 
+// 
 // 
 // 
 // 

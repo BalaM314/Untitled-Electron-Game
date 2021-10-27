@@ -1288,7 +1288,7 @@ class Building {
 			}
 		}
 	}
-	hasItem():Item{
+	hasItem():Item {
 		if(this.item) return this.item;
 		if(this.inventory && this.inventory?.length != 0) return this.inventory[0];
 		return null;
@@ -1299,8 +1299,8 @@ class Building {
 			this.item = null;
 			return temp;
 		}
-		if(this.inventory?.length == 0){
-
+		if(this.inventory?.length > 0){
+			return this.inventory.pop();
 		}
 		return null;
 	}
@@ -1353,7 +1353,7 @@ class Building {
 		}
 		return true;
 	}
-	grabItem(filter:((item:Item) => any) | null, callback:(item:Item) => void, remove:boolean, grabDistance?:number){
+	grabItem(filter:(item:Item) => any, callback:(item:Item) => void, remove:boolean, grabDistance?:number){
 		grabDistance ??= 0.5;
 		filter ??= () => {return true};
 		for(var item in this.level.items){
@@ -1364,12 +1364,14 @@ class Building {
 			){
 				this.level.items[item].grabbedBy = this;
 				callback(this.level.items[item]);
+				let returnItem = this.level.items[item];
 				if(remove){
 					this.level.items.splice(parseInt(item), 1);
 				}
-				return;
+				return returnItem;
 			}
 		}
+		return null;
 	}
 }
 
@@ -1595,14 +1597,14 @@ class Extractor extends Conveyor {
 	constructor(x:number, y:number, id:BuildingID, level:Level){
 		super(x, y, id, level);
 	}
-	
+
 	display(currentFrame){
 		if(this.item instanceof Item){
 			this.item.display(currentFrame);
 		}
 	}
 
-	grabItemFromTile(filter?:((item:Item) => any), callback?:(item:Item) => void, remove?:boolean, grabDistance?:number){
+	grabItemFromTile(filter?:(item:Item) => any, callback?:(item:Item) => void, remove?:boolean, grabDistance?:number){
 		filter ??= (item) => {return item instanceof Item;};
 		callback ??= () => {};
 
@@ -1612,6 +1614,7 @@ class Extractor extends Conveyor {
 			filter(this.level.buildingAt(this.x, this.y).hasItem())
 		){
 			let item = this.level.buildingAt(this.x, this.y).removeItem();
+			if(!(item instanceof Item)) throw "what even";
 			if(item.deleted) throw "wat?";
 			this.item = item;
 			switch((this.id >> 8) % 4){
@@ -1623,10 +1626,11 @@ class Extractor extends Conveyor {
 					this.item.y = (this.y + 0.5) * consts.TILE_SIZE;break;
 				case 3:
 					this.item.x = (this.x + 0.5) * consts.TILE_SIZE;break;
-
 			}
 			item.grabbedBy = this;
-			this.level.items.splice(this.level.items.indexOf(item), 1);
+			if(this.level.items.indexOf(item) != -1){
+				this.level.items.splice(this.level.items.indexOf(item), 1);
+			}
 		}
 
 	}
@@ -1735,6 +1739,15 @@ class StorageBuilding extends Building {
 		if(this.inventory.length < this.inventory.MAX_LENGTH){
 			this.grabItem(null, (item:Item) => {this.inventory.push(item);}, true);
 		}
+	}
+	grabItem(filter:(item:Item) => any, callback:(item:Item) => void, remove:boolean, grabDistance?:number):Item {
+		let item = super.grabItem(filter, callback, remove, grabDistance);
+		if(item){
+			item.x = (this.x + 0.5) * consts.TILE_SIZE;
+			item.y = (this.y + 0.5) * consts.TILE_SIZE;
+			return item;
+		}
+		return null;
 	}
 }
 
