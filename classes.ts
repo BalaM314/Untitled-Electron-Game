@@ -437,6 +437,17 @@ class Level extends ChunkedDataStorage<Chunk, Tile, Building, Extractor> {
 		var x = (mousex - (Game.scroll.x * Globals.DISPLAY_SCALE))/Globals.DISPLAY_SCALE;
 		var y = (mousey - (Game.scroll.y * Globals.DISPLAY_SCALE))/Globals.DISPLAY_SCALE;
 		ctx4.font = "16px monospace";
+		for(let item of this.items){
+			if((Math.abs(item.x - x) < 16) && Math.abs(item.y - y) < 16){
+				ctx4.fillStyle = "#0033CC";
+				ctx4.fillRect(mousex, mousey, names.item[item.id].length * 10, 16);
+				ctx4.strokeStyle = "#000000";
+				ctx4.strokeRect(mousex, mousey, names.item[item.id].length * 10, 16);
+				ctx4.fillStyle = "#FFFFFF";
+				ctx4.fillText(names.item[item.id], mousex + 2, mousey + 10);
+				return;
+			}
+		}
 		if(this.buildingIDAtPixel(x, y) !== 0xFFFF){
 			let buildingID = this.buildingIDAtPixel(x, y) % 0x100;
 			ctx4.fillStyle = "#0033CC";
