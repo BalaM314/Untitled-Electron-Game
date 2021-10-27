@@ -71,8 +71,7 @@ const ctxs = [ctx, ctx1, ctx2, ctx25, ctx3, ctx4];
 
 
 
-const level1 = new Level(3141);
-level1.generateNecessaryChunks();
+
 
 let fps = [0, 0, 0, 0, 0, 0];
 
@@ -84,10 +83,10 @@ function runLevel(level:Level, currentFrame:any){
 	//display
 	if(currentFrame.redraw){
 		ctx.clearRect(0, 0, innerWidth, innerHeight);
-		ctx2.clearRect(0, 0, innerWidth, innerHeight);
-		ctx25.clearRect(0, 0, innerWidth, innerHeight);
 	}
 	ctx1.clearRect(0, 0, innerWidth, innerHeight);
+	ctx2.clearRect(0, 0, innerWidth, innerHeight);
+	ctx25.clearRect(0, 0, innerWidth, innerHeight);
 	ctx3.clearRect(0, 0, innerWidth, innerHeight);
 	ctx4.clearRect(0, 0, innerWidth, innerHeight);
 
@@ -269,9 +268,36 @@ function load(){
 }
 
 let loadedtextures = 0;
+const level1 = new Level(3141);
 
 function checkload(){
 	if(loadedtextures == document.getElementById("textures").children.length){
+		level1.generateNecessaryChunks();
+		level1.buildBuilding(4,1,0x0001);
+		level1.buildBuilding(5,1,0x0001);
+		level1.buildBuilding(5,-1,0x0301);
+		level1.buildBuilding(5,1,0x0705);
+		level1.buildBuilding(6,1,0x0001);
+		level1.buildBuilding(6,3,0x0101);
+		level1.buildBuilding(6,1,0x0505);
+		level1.buildBuilding(7,1,0x0001);
+		level1.buildBuilding(7,-1,0x0301);
+		level1.buildBuilding(7,1,0x0705);
+		level1.buildBuilding(8,1,0x0001);
+		level1.buildBuilding(8,3,0x0101);
+		level1.buildBuilding(8,1,0x0505);
+		level1.buildBuilding(9,1,0x0001);
+		level1.buildBuilding(9,-1,0x0301);
+		level1.buildBuilding(9,1,0x0705);
+		level1.buildBuilding(10,1,0x0001);
+		level1.buildBuilding(10,3,0x0101);
+		level1.buildBuilding(10,1,0x0505);
+		level1.buildBuilding(11,1,0x0001);
+		level1.buildBuilding(11,-1,0x0301);
+		level1.buildBuilding(11,1,0x0705);
+		level1.buildBuilding(12,1,0x0001);
+		level1.buildBuilding(12,3,0x0101);
+		level1.buildBuilding(12,1,0x0505);
 		GAME_STATE = "game";
 		Game.forceRedraw = true;
 		document.getElementById("toolbar").classList.remove("hidden");
