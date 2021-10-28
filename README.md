@@ -15,7 +15,7 @@ Roadmap:
 
 []Add a few more items and recipes just for fun
 
-[]Fix tooltips; why are those even broken again-
+[✅]Fix tooltips; why are those even broken again-
 
 []Overhaul worldgen; make it not trash
 
