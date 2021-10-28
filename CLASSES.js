@@ -451,10 +451,7 @@ class AbstractChunk {
     constructor(x, y, seed, defaultValue1, defaultValue2, defaultValue3) {
         this.x = x;
         this.y = y;
-        this.chunkSeed = Math.abs(Math.round(seed * (x ? x : 23) * rands.x_prime +
-            seed * (y ? y : 133) * rands.y_prime +
-            Math.pow((Math.abs(x + y) % 10) + 10, (seed % 10) + 10) +
-            123456789)) % 2147483648;
+        this.chunkSeed = Math.abs(((x ** 2) * (y ** 3) + 3850) % (2 ** 16));
         this.layers = [
             null,
             null,
