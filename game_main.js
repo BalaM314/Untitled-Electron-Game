@@ -26,7 +26,8 @@ let settings = {
 let Game = {
     scroll: {
         x: 300,
-        y: 300
+        y: 300,
+        speed: 5
     },
     forceRedraw: true,
     persistent: {
@@ -101,19 +102,19 @@ function runLevel(level, currentFrame) {
 }
 function handleKeysPressed(currentframe) {
     if (keysPressed.indexOf("w") != -1) {
-        Game.scroll.y += 5;
+        Game.scroll.y += Game.scroll.speed;
         currentframe.redraw = true;
     }
     if (keysPressed.indexOf("a") != -1) {
-        Game.scroll.x += 5;
+        Game.scroll.x += Game.scroll.speed;
         currentframe.redraw = true;
     }
     if (keysPressed.indexOf("s") != -1) {
-        Game.scroll.y -= 5;
+        Game.scroll.y -= Game.scroll.speed;
         currentframe.redraw = true;
     }
     if (keysPressed.indexOf("d") != -1) {
-        Game.scroll.x -= 5;
+        Game.scroll.x -= Game.scroll.speed;
         currentframe.redraw = true;
     }
 }
@@ -147,6 +148,12 @@ function main_loop() {
         }
         if (keysPressed.length > 0) {
             handleKeysPressed(currentFrame);
+        }
+        if (keysPressed.indexOf("shift") !== -1) {
+            Game.scroll.speed = 20;
+        }
+        else {
+            Game.scroll.speed = 5;
         }
         switch (GAME_STATE) {
             case "title":
@@ -286,8 +293,11 @@ let placedBuilding = {
     direction: 0x100,
     modifier: 0x000,
     get ID() {
-        if (this.type == 0x01 || this.type == 0x05) {
-            return this.direction + this.type + this.modifier;
+        if (this.type == 0x05) {
+            return this.type + this.direction + this.modifier;
+        }
+        else if (this.type == 0x01) {
+            return this.type + this.direction;
         }
         else {
             return this.type;
