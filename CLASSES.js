@@ -1217,8 +1217,6 @@ class Item {
         }
     }
     update(currentframe) {
-        //currentframe.items ++;
-        //todo
         if (Game.tutorial.conveyor.beltchain && Game.persistent.tutorialenabled && ((Math.abs(this.startX - this.x) + 1 > Globals.TILE_SIZE * 2) || (Math.abs(this.startY - this.y) + 1 > Globals.TILE_SIZE * 2))) {
             _alert("Nice!\nConveyor belts are also the way to put items in machines.\nSpeaking of which, let's try automating coal: Place a Miner(2 key).");
             Game.tutorial.conveyor.beltchain = false;
@@ -1808,7 +1806,7 @@ class AlloySmelter extends Building {
                     if (Game.persistent.tutorialenabled && alloysFor[`${this.item1.id}&${this.item2.id}`] == ItemID["base_steelIngot"] && Game.tutorial.item.steel) {
                         _alert("Well done!\nThis game is in alpha, so steel isn't used for anything yet.");
                         Game.tutorial.item.steel = false;
-                        _alert(["Hmm, that's REALLY slow.\nYou'll need more steel than that.\nParallelize!\nYou need to use the extractor(slot 5). It is special, because you can place it on top of other buildings.\nNote: use the comma and period keys to change the length of the extractor(you'll need to use this to make a bridge).\nGood luck!", 3000]);
+                        _alert(["Hmm, that's REALLY slow.\nYou'll \"need\" more steel than that.\nParallelize!\nYou need to use the extractor(slot 5). It is special, because you can place it on top of other buildings.\nNote: use the comma and period keys to change the length of the extractor(you'll need to use this to make a bridge).\nGood luck!", 3000]);
                     }
                     this.timer = 240;
                     this.item1 = null;
