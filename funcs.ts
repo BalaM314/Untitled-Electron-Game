@@ -1,6 +1,19 @@
 
 
 
+/**
+ * Library stuff
+ */
+
+declare var noise: {
+	seed: (seed:number) => void;
+	perlin2: (x:number, y:number) => number;
+	simplex2: (x:number, y:number) => number;
+	perlin3: (x:number, y:number, z:number) => number;
+	simplex3: (x:number, y:number, z:number) => number;
+};
+noise.seed(1);
+
 
 /**
  * Utility Functions
@@ -8,13 +21,7 @@
  * 
  */
 
-//.protptype.
-/*interface Array<T> {
-	last: Function
-}
-(Array).prototype.last = function():any{
-	return this[this.length - 1];
-}*/
+
 
 let mouseX = 0;
 let mouseY = 0;
@@ -138,6 +145,10 @@ function constrain(x:number, min:number, max:number){
 	return x;
 }
 
+function squish(x:number){//Used to help make ores spawn more the farther you go out.
+	return constrain(Math.log(x + 0.5)/2, 0, 0.6);
+}
+
 function assert(x:any){
 	if(!x){
 		throw new Error(x);
@@ -169,6 +180,13 @@ function ellipse(x, y, w, h){
 	ctx.fill();
 }
 
+function* pseudoRandom(seed){
+	let value = seed + 11111111111111;
+	while(true){
+		value = value * 16807 % 16777216;
+		yield value / 16777216;
+	}
+}
 
 
 

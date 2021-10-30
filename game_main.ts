@@ -279,7 +279,7 @@ function load(){
 }
 
 let loadedtextures = 0;
-const level1 = new Level(3141);
+const level1 = new Level(314);
 
 function checkload(){
 	if(loadedtextures == document.getElementById("textures").children.length){

@@ -2,9 +2,10 @@
 type Tile = 
 0x00 |  //Blank
 0x01 |  //stone
-0x02 |  //iron ore
-0x03 |  //coal ore
-0x04 |	//water
+0x02 |	//water
+0x10 |  //iron ore
+0x11 |  //coal ore
+0x12 |	//water
 0xFF ;  //Unset
 type BuildingID = 
 //0x0000 is invalid
@@ -50,9 +51,10 @@ const names = {
 	tile: {
 		0x00: "Grass",
 		0x01: "Stone",
-		0x02: "Coal Ore Node",
-		0x03: "Iron Ore Node",
-		0x04: "Water"
+		0x02: "Water",
+		0x10: "Coal Ore Node",
+		0x11: "Iron Ore Node",
+		0x12: "Copper Ore Node"
 	},
 	building: {
 		0x01: "Conveyor Belt",
@@ -77,16 +79,25 @@ const ItemID = {
 	"base_coal": "base_coal",
 	"base_ironOre": "base_ironOre",
 	"base_ironIngot": "base_ironIngot",
+	"base_copperOre": "base_copperOre",
+	"base_copperIngot": "base_copperIngot",
 	"base_steelIngot": "base_steelIngot"
 }
 
-const rands = {
-	x_prime: 1299689,
-	y_prime: 1156709,
-	hill_x: 89,
-	hill_y: 11,
-	ore_type: 103
-}
+const consts = {
+	perlin_scale: 2 * Math.PI,
+	y_offset: 203,
+	ore_scale: 3,
+	hilly: {
+		stone_threshold: 0.7,
+		ore_threshold: 0.8//Determines how high the perlin noise has to go at a tile for the tile to be stone or an ore.
+		//Sort of. See Chunk.generate().
+	},
+	normal: {
+		stone_threshold: 0.5,
+		ore_threshold: 0.7//Determines how high the perlin noise has to go at a tile for the tile to be stone or an ore.
+	}
+};
 
 const Globals = {
 	VERSION: "alpha 0.0.0",
@@ -130,7 +141,7 @@ class ChunkedDataStorage<Chunk extends AbstractChunk<Layer1,Layer2,Layer3>,Layer
 			return;
 		}
 		this.storage.set(`${x},${y}`, 
-			new this.chunk(x, y, this.seed, this.defaults.layer1, this.defaults.layer2, this.defaults.layer3)
+			new this.chunk(x, y, this.seed, this, this.defaults.layer1, this.defaults.layer2, this.defaults.layer3)
 			.generate()
 		);
 		console.log(`generated chunk ${x}, ${y}`)
@@ -478,16 +489,21 @@ class AbstractChunk<Layer1,Layer2,Layer3> {
 		Layer2[][],
 		Layer3[][]
 	];
-	chunkSeed: number;
+	generator: Generator;
 	x: number;
 	y: number;
-	isWet: boolean;
-	constructor(x:number, y:number, seed:number, defaultValue1:Layer1, defaultValue2:Layer2, defaultValue3:Layer3){
+	chunkSeed: number;
+	parent: ChunkedDataStorage<any, any, any, any>;
+	constructor(x:number, y:number, seed:number, parent:ChunkedDataStorage<any, any, any, any>, defaultValue1:Layer1, defaultValue2:Layer2, defaultValue3:Layer3){
 		this.x = x;
 		this.y = y;
+		this.parent = parent;
+		let tweakedX = x == 0 ? 5850 : x;
+		let tweakedY = y == 0 ? 9223 : y;
 		this.chunkSeed = Math.abs(
-			((x ** 2) * (y ** 3) + 3850) % (2 ** 16)
+			(((tweakedX) ** 3) * (tweakedY ** 5) + 3850) % (2 ** 16)
 		);
+		this.generator = pseudoRandom(this.chunkSeed);
 		this.layers = [
 			null,
 			null,
@@ -581,40 +597,84 @@ class AbstractChunk<Layer1,Layer2,Layer3> {
 
 class Chunk extends AbstractChunk<Tile, Building, Extractor> {
 	generate():Chunk {
-		//Put down the base
-		this.isWet = this.chunkSeed < 134217728 && Math.abs(this.x) > 3 && Math.abs(this.y) > 3;
-		for(var row in this.layers[0]){
-			for(var tile in this.layers[0][row]){
-				this.layers[0][row][tile] = this.isWet ? 0x04 : 0x00;
+		let isWet = false;
+		let isHilly = false;
+		const typeVar = this.generator.next().value;
+		let distanceBoost = squish(Math.sqrt(this.x **2 + this.y **2) / consts.ore_scale);
+
+		if(typeVar < 0.07 && (Math.abs(this.x) > 3 || Math.abs(this.y) > 3)){
+			isWet = true;
+		} else if(distanceBoost > 0.01){
+			isHilly = true;
+		}
+		
+		if(isWet){
+			for(var row in this.layers[0]){
+				for(var tile in this.layers[0][row]){
+					if(row == "0" || row == "15" || tile == "0" || tile == "15"){
+						this.layers[0][row][tile] = 0x02;
+					} else if(row == "1" || row == "14" || tile == "1" || tile == "14"){
+						this.layers[0][row][tile] = this.generator.next().value > 0.5 ? 0x01 : 0x02;						
+					} else {
+						this.layers[0][row][tile] = 
+						this.generator.next().value < 0.1 ?
+						(this.generator.next().value < 0.3 ? 0x11 : 0x10)
+						: 0x01;
+					}
+				}
 			}
+		} else if(isHilly){
+			let oreToGenerate:Tile = 0xFF;
+			let oreRand = this.generator.next().value;
+			if(Math.sqrt(this.x **2 + this.y **2) < 8){
+				oreToGenerate = 0x10;
+			} else if(Math.sqrt(this.x **2 + this.y **2) < 15){
+				oreToGenerate = oreRand > 0.5 ? 0x10 : 0x11;
+			} else {
+				oreToGenerate = oreRand > 0.5 ? 0x10 : (oreRand > 0.25 ? 0x11 : 0x12);
+			}
+			for(var row in this.layers[0]){
+				for(var tile in this.layers[0][row]){
+					let noiseHeight = 
+					Math.abs(noise.perlin2(
+						((this.x * Globals.CHUNK_SIZE) + +tile + this.parent.seed) / consts.perlin_scale,
+						((this.y * Globals.CHUNK_SIZE) + +row + (this.parent.seed + consts.y_offset)) / consts.perlin_scale
+					));
+
+					if((noiseHeight + distanceBoost / 2) > consts.hilly.ore_threshold){
+						this.layers[0][row][tile] = oreToGenerate;
+					} else if((noiseHeight + distanceBoost) > consts.hilly.stone_threshold){
+						this.layers[0][row][tile] = 0x01;
+					} else {
+						this.layers[0][row][tile] = 0x00;
+					}
+				}
+			}
+		} else {
+			for(var row in this.layers[0]){
+				for(var tile in this.layers[0][row]){
+					this.layers[0][row][tile] = 0x00;
+				}
+			}
+			let oreToGenerate:Tile = 0xFF;
+			if(Math.sqrt(this.x **2 + this.y **2) < 3){
+				oreToGenerate = 0x10;
+			} else {
+				oreToGenerate = (this.generator.next().value > 0.5) ? 0x11 : 0x10;
+			}
+			let hill_x = Math.floor(this.generator.next().value * 16);
+			let hill_y = Math.floor(this.generator.next().value * 16);
+			this.setLayer1(hill_x, hill_y, oreToGenerate);
+			this.setLayer1(hill_x + 1, hill_y, 0x01);
+			this.setLayer1(hill_x - 1, hill_y, 0x01);
+			this.setLayer1(hill_x, hill_y + 1, 0x01);
+			this.setLayer1(hill_x, hill_y - 1, 0x01);
+			this.setLayer1(hill_x + 1, hill_y + 1, (this.generator.next().value > 0.5) ? 0x01 : 0x00);
+			this.setLayer1(hill_x + 1, hill_y - 1, (this.generator.next().value > 0.5) ? 0x01 : 0x00);
+			this.setLayer1(hill_x - 1, hill_y + 1, (this.generator.next().value > 0.5) ? 0x01 : 0x00);
+			this.setLayer1(hill_x - 1, hill_y - 1, (this.generator.next().value > 0.5) ? 0x01 : 0x00);
 		}
 
-		if(!this.isWet){
-			this.setLayer1((this.chunkSeed - rands.hill_x) % Globals.CHUNK_SIZE, (this.chunkSeed - rands.hill_y) % Globals.CHUNK_SIZE, (((this.chunkSeed - rands.ore_type) % 3) > 1 && (Math.abs(this.x) > 1 || Math.abs(this.y) > 1)) ? 0x03 : 0x02);
-			this.setLayer1((this.chunkSeed - rands.hill_x) % Globals.CHUNK_SIZE + 1, (this.chunkSeed - rands.hill_y) % Globals.CHUNK_SIZE, 0x01);
-			this.setLayer1((this.chunkSeed - rands.hill_x) % Globals.CHUNK_SIZE - 1, (this.chunkSeed - rands.hill_y) % Globals.CHUNK_SIZE, 0x01);
-			this.setLayer1((this.chunkSeed - rands.hill_x) % Globals.CHUNK_SIZE, (this.chunkSeed - rands.hill_y) % Globals.CHUNK_SIZE + 1, 0x01);
-			this.setLayer1((this.chunkSeed - rands.hill_x) % Globals.CHUNK_SIZE, (this.chunkSeed - rands.hill_y) % Globals.CHUNK_SIZE - 1, 0x01);
-			this.setLayer1((this.chunkSeed - rands.hill_x) % Globals.CHUNK_SIZE + 1, (this.chunkSeed - rands.hill_y) % Globals.CHUNK_SIZE + 1, (this.chunkSeed % 4 > 1) ? 0x01 : 0x00);
-			this.setLayer1((this.chunkSeed - rands.hill_x) % Globals.CHUNK_SIZE + 1, (this.chunkSeed - rands.hill_y) % Globals.CHUNK_SIZE - 1, (this.chunkSeed % 8 > 3) ? 0x01 : 0x00);
-			this.setLayer1((this.chunkSeed - rands.hill_x) % Globals.CHUNK_SIZE - 1, (this.chunkSeed - rands.hill_y) % Globals.CHUNK_SIZE + 1, (this.chunkSeed % 16 > 7) ? 0x01 : 0x00);
-			this.setLayer1((this.chunkSeed - rands.hill_x) % Globals.CHUNK_SIZE - 1, (this.chunkSeed - rands.hill_y) % Globals.CHUNK_SIZE - 1, (this.chunkSeed % 32 > 15) ? 0x01 : 0x00);
-		}
-
-		if(this.isWet){
-			this.setLayer1(7, 7, 0x02);
-			this.setLayer1(8, 7, 0x03);
-			this.setLayer1(7, 8, 0x03);
-			this.setLayer1(8, 8, 0x02);
-			this.setLayer1(6, 7, 0x01);
-			this.setLayer1(7, 6, 0x01);
-			this.setLayer1(6, 8, 0x01);
-			this.setLayer1(8, 6, 0x01);
-			this.setLayer1(8, 9, 0x01);
-			this.setLayer1(9, 8, 0x01);
-			this.setLayer1(7, 9, 0x01);
-			this.setLayer1(9, 7, 0x01);
-		}
 
 		return this;
 	}
@@ -1296,7 +1356,7 @@ class Building {
 		this.inventory = null;
 	}
 	static canBuildAt(tileX:number, tileY:number, level:Level){
-		return level.atLayer1ByTile(tileX, tileY) != 0x04;
+		return level.atLayer1ByTile(tileX, tileY) != 0x02;
 	}
 	break(){
 		if(this.item){
@@ -1405,7 +1465,7 @@ class Miner extends Building {
 		this.miningItem = oreFor[level.atLayer1ByTile(tileX, tileY)];
 	}
 	static canBuildAt(tileX:number, tileY:number, level:Level):boolean {
-		return level.atLayer1ByTile(tileX, tileY) == 0x02 || level.atLayer1ByTile(tileX, tileY) == 0x03;
+		return level.atLayer1ByTile(tileX, tileY) >> 4 == 1;
 	}
 	update(){
 		if(this.timer > 0){
@@ -1423,14 +1483,16 @@ class Miner extends Building {
 }
 
 const oreFor = {
-	0x02: ItemID.base_coalOre,
-	0x03: ItemID.base_ironOre
+	0x10: ItemID.base_coalOre,
+	0x11: ItemID.base_ironOre,
+	0x12: ItemID.base_copperOre
 };
 
 function smeltFor(item:Item | string){
 	switch(item instanceof Item ? item.id : item){
 		case ItemID.base_coalOre: return ItemID.base_coal;
 		case ItemID.base_ironOre: return ItemID.base_ironIngot;
+		case ItemID.base_copperOre: return ItemID.base_copperIngot;
 	}
 	return null;
 }
@@ -1605,9 +1667,6 @@ class Conveyor extends Building {
 		} else if(!nograb){
 			this.grabItem(null, (item) => {this.item = item;}, false);
 		}
-	}
-	static canBuildAt(tileX:number, tileY:number, level:Level){
-		return level.atLayer1ByTile(tileX, tileY) != 0x04;
 	}
 }
 
