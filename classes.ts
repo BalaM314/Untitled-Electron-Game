@@ -85,17 +85,17 @@ const ItemID = {
 }
 
 const consts = {
-	perlin_scale: 2 * Math.PI,
-	y_offset: 203,
-	ore_scale: 3,
+	//All distance values are in chunks.
+	perlin_scale: 1 * Math.PI,//An irrational number used to scale the perlin noise. The larger the number, the larger the terrain formations.
+	y_offset: 2031,//To make the terrain not mirrored diagonally.
+	ore_scale: 3,//Affects how fast the stone/ore gets bigger as you move away from spawn.
+	min_water_chunk_distance: 3,//The minimum distance from spawn for water chunks to spawn.
 	hilly: {
-		stone_threshold: 0.7,
-		ore_threshold: 0.8//Determines how high the perlin noise has to go at a tile for the tile to be stone or an ore.
-		//Sort of. See Chunk.generate().
-	},
-	normal: {
-		stone_threshold: 0.5,
-		ore_threshold: 0.7//Determines how high the perlin noise has to go at a tile for the tile to be stone or an ore.
+		terrain_cutoff: 0.01,//Determins where the hilly(perlin generated) terrain starts. Higher values make it start further away.
+		stone_threshold: 0.7,//Determines how high the perlin noise has to go for stone to generate... sort of. See Chunk.generate().
+		ore_threshold: 0.8,//Same as above but for ore.
+		min_iron_distance: 8,//Minimum distance from spawn for iron ore to generate.
+		min_copper_distance: 12//Minimum distance from spawn for copper ore to generate.
 	}
 };
 
@@ -597,49 +597,62 @@ class AbstractChunk<Layer1,Layer2,Layer3> {
 
 class Chunk extends AbstractChunk<Tile, Building, Extractor> {
 	generate():Chunk {
+		//This... needs to be refactored. Oh well.
 		let isWet = false;
 		let isHilly = false;
-		const typeVar = this.generator.next().value;
-		let distanceBoost = squish(Math.sqrt(this.x **2 + this.y **2) / consts.ore_scale);
 
-		if(typeVar < 0.07 && (Math.abs(this.x) > 3 || Math.abs(this.y) > 3)){
+		let distanceFromSpawn = Math.sqrt(this.x **2 + this.y **2);
+		let distanceBoost = constrain(Math.log((distanceFromSpawn / consts.ore_scale) + 0.5)/2, 0, 0.6);
+		//A value added to the perlin noise on each tile to make the amount of stone/ore increase, scales as you go further out.
+
+		if(this.generator.next().value < 0.07 && distanceFromSpawn > consts.min_water_chunk_distance){
 			isWet = true;
-		} else if(distanceBoost > 0.01){
+		} else if(distanceBoost > consts.hilly.terrain_cutoff){
 			isHilly = true;
 		}
 		
-		if(isWet){
+		if(isWet){//Generator for wet chunks.
 			for(var row in this.layers[0]){
 				for(var tile in this.layers[0][row]){
+					//Choose the tile to be placed:
 					if(row == "0" || row == "15" || tile == "0" || tile == "15"){
-						this.layers[0][row][tile] = 0x02;
+						this.layers[0][row][tile] = 0x02;//If on edge, place water
 					} else if(row == "1" || row == "14" || tile == "1" || tile == "14"){
-						this.layers[0][row][tile] = this.generator.next().value > 0.5 ? 0x01 : 0x02;						
+						this.layers[0][row][tile] = this.generator.next().value > 0.5 ? 0x01 : 0x02;//If near edge, place 50-50 stone or water		
 					} else {
 						this.layers[0][row][tile] = 
 						this.generator.next().value < 0.1 ?
 						(this.generator.next().value < 0.3 ? 0x11 : 0x10)
 						: 0x01;
+						//Otherwise, stone, iron, or coal.
 					}
 				}
 			}
 		} else if(isHilly){
+			//Hilly terrain generator:
+			//Based on perlin noise.
+
+			//Chooses which ore to generate based on RNG and ditance from spawn.
 			let oreToGenerate:Tile = 0xFF;
 			let oreRand = this.generator.next().value;
-			if(Math.sqrt(this.x **2 + this.y **2) < 8){
+			if(distanceFromSpawn < consts.hilly.min_iron_distance){
 				oreToGenerate = 0x10;
-			} else if(Math.sqrt(this.x **2 + this.y **2) < 15){
+			} else if(distanceFromSpawn < consts.hilly.min_copper_distance){
 				oreToGenerate = oreRand > 0.5 ? 0x10 : 0x11;
 			} else {
 				oreToGenerate = oreRand > 0.5 ? 0x10 : (oreRand > 0.25 ? 0x11 : 0x12);
 			}
+
+
 			for(var row in this.layers[0]){
 				for(var tile in this.layers[0][row]){
+					//Choose the tile to be placed:
 					let noiseHeight = 
 					Math.abs(noise.perlin2(
 						((this.x * Globals.CHUNK_SIZE) + +tile + this.parent.seed) / consts.perlin_scale,
 						((this.y * Globals.CHUNK_SIZE) + +row + (this.parent.seed + consts.y_offset)) / consts.perlin_scale
 					));
+					//This formula just finds the perlin noise value at a tile, but tweaked so it's different per seed and not mirrored diagonally.
 
 					if((noiseHeight + distanceBoost / 2) > consts.hilly.ore_threshold){
 						this.layers[0][row][tile] = oreToGenerate;
@@ -651,19 +664,22 @@ class Chunk extends AbstractChunk<Tile, Building, Extractor> {
 				}
 			}
 		} else {
+			//Old terrain generation. I kept it, just only close to spawn.
 			for(var row in this.layers[0]){
 				for(var tile in this.layers[0][row]){
 					this.layers[0][row][tile] = 0x00;
 				}
 			}
 			let oreToGenerate:Tile = 0xFF;
-			if(Math.sqrt(this.x **2 + this.y **2) < 3){
+			if(distanceFromSpawn < 3){
 				oreToGenerate = 0x10;
 			} else {
 				oreToGenerate = (this.generator.next().value > 0.5) ? 0x11 : 0x10;
 			}
 			let hill_x = Math.floor(this.generator.next().value * 16);
 			let hill_y = Math.floor(this.generator.next().value * 16);
+
+			//Makes a "hill", with an ore node in the middle, stone on the sides, and maybe stone in the corners.
 			this.setLayer1(hill_x, hill_y, oreToGenerate);
 			this.setLayer1(hill_x + 1, hill_y, 0x01);
 			this.setLayer1(hill_x - 1, hill_y, 0x01);

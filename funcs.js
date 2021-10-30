@@ -139,9 +139,6 @@ function constrain(x, min, max) {
         return min;
     return x;
 }
-function squish(x) {
-    return constrain(Math.log(x + 0.5) / 2, 0, 0.6);
-}
 function assert(x) {
     if (!x) {
         throw new Error(x);

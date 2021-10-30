@@ -145,9 +145,6 @@ function constrain(x:number, min:number, max:number){
 	return x;
 }
 
-function squish(x:number){//Used to help make ores spawn more the farther you go out.
-	return constrain(Math.log(x + 0.5)/2, 0, 0.6);
-}
 
 function assert(x:any){
 	if(!x){
