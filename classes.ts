@@ -86,7 +86,7 @@ const ItemID = {
 
 const consts = {
 	//All distance values are in chunks.
-	perlin_scale: 1 * Math.PI,//An irrational number used to scale the perlin noise. The larger the number, the larger the terrain formations.
+	perlin_scale: 2 * Math.PI,//An irrational number used to scale the perlin noise. The larger the number, the larger the terrain formations.
 	y_offset: 2031,//To make the terrain not mirrored diagonally.
 	ore_scale: 3,//Affects how fast the stone/ore gets bigger as you move away from spawn.
 	min_water_chunk_distance: 3,//The minimum distance from spawn for water chunks to spawn.

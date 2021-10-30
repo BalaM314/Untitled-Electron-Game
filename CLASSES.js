@@ -36,7 +36,7 @@ const ItemID = {
 };
 const consts = {
     //All distance values are in chunks.
-    perlin_scale: 1 * Math.PI,
+    perlin_scale: 2 * Math.PI,
     y_offset: 2031,
     ore_scale: 3,
     min_water_chunk_distance: 3,
