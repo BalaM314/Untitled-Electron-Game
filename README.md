@@ -17,7 +17,7 @@ Roadmap:
 
 [✅]Fix tooltips; why are those even broken again-
 
-[]Overhaul worldgen; make it not trash
+[✅]Overhaul worldgen; make it not trash
 
 []Add GUIs to some buildings
 
