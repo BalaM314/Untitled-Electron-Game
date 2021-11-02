@@ -1,6 +1,6 @@
 
 type Tile = 
-0x00 |  //Blank
+0x00 |  //Grass
 0x01 |  //stone
 0x02 |	//water
 0x10 |  //iron ore
@@ -38,9 +38,10 @@ type BuildingID =
 0x0B05 |	//Really Long Extractor Facing Up
 0x0006 |	//Chest
 0x0007 |	//Alloy Smelter
+0x0008 |	//Resource Acceptor
 0xFFFF ;	//Unset
 
-type RawBuildingID = 0x0001 | 0x0002 | 0x0003 | 0x0004 | 0x0005 | 0x0006 | 0x0007 | 0xFFFF;
+type RawBuildingID = 0x0001 | 0x0002 | 0x0003 | 0x0004 | 0x0005 | 0x0006 | 0x0007 | 0x0008 | 0xFFFF;
 
 
 
@@ -190,6 +191,9 @@ class ChunkedDataStorage<Chunk extends AbstractChunk<Layer1,Layer2,Layer3>,Layer
 
 class Level extends ChunkedDataStorage<Chunk, Tile, Building, Extractor> {
 	items: Item[];
+	resources: {
+		[index: string]: number
+	}
 	constructor(seed:number){
 		super(seed, Chunk, {
 			layer1: 0x00,
@@ -197,6 +201,7 @@ class Level extends ChunkedDataStorage<Chunk, Tile, Building, Extractor> {
 			layer3: null
 		});
 		this.items = [];
+		this.resources = {};
 	}
 	buildingIDAtPixel(pixelX:number, pixelY:number):BuildingID {
 		return this.getChunk(
@@ -351,6 +356,13 @@ class Level extends ChunkedDataStorage<Chunk, Tile, Building, Extractor> {
 		}
 		var tempBuilding:Building;
 		switch(building){
+			//A lot of the code here is duplicated, oh well
+			case 0x0008:
+				if(!ResourceAcceptor.canBuildAt(tileX, tileY, this)){
+					return;
+				}
+				tempBuilding = new ResourceAcceptor(tileX, tileY, building, this);
+				break;
 			case 0x0007:
 				if(!AlloySmelter.canBuildAt(tileX, tileY, this)){
 					return;
@@ -1398,7 +1410,7 @@ class Building {
 		if(Game.persistent.tutorialenabled && id == ItemID.base_ironIngot && Game.tutorial.item.iron){
 			_alert("Nice job!");
 			Game.tutorial.item.iron = false;
-			_alert(["Up for a challenge? Try automating steel.\nYou'll need to use the alloy smelter(slot 7), which needs two inputs(coal and iron).", 3000]);
+			_alert(["The next automateable resource is steel.\nYou'll need to use the alloy smelter(slot 7), which needs two inputs(coal and iron).", 3000]);
 		}
 		return true;
 	}
@@ -1855,5 +1867,17 @@ class AlloySmelter extends Building {
 				}
 			}
 		}
+	}
+}
+
+class ResourceAcceptor extends Building {
+	update(){
+		this.grabItem(null, item => {
+			item.deleted = true;
+			if(! this.level.resources[item.id]){
+				this.level.resources[item.id] = 0;
+			}
+			this.level.resources[item.id] ++;
+		}, true);
 	}
 }

@@ -132,6 +132,7 @@ class Level extends ChunkedDataStorage {
             layer3: null
         });
         this.items = [];
+        this.resources = {};
     }
     buildingIDAtPixel(pixelX, pixelY) {
         return this.getChunk(Math.floor(pixelX / Globals.TILE_SIZE), Math.floor(pixelY / Globals.TILE_SIZE)).atLayer2(tileToChunk(pixelX / Globals.TILE_SIZE), tileToChunk(pixelY / Globals.TILE_SIZE))?.id ?? 0xFFFF;
@@ -305,6 +306,13 @@ class Level extends ChunkedDataStorage {
         }
         var tempBuilding;
         switch (building) {
+            //A lot of the code here is duplicated, oh well
+            case 0x0008:
+                if (!ResourceAcceptor.canBuildAt(tileX, tileY, this)) {
+                    return;
+                }
+                tempBuilding = new ResourceAcceptor(tileX, tileY, building, this);
+                break;
             case 0x0007:
                 if (!AlloySmelter.canBuildAt(tileX, tileY, this)) {
                     return;
@@ -1331,7 +1339,7 @@ class Building {
         if (Game.persistent.tutorialenabled && id == ItemID.base_ironIngot && Game.tutorial.item.iron) {
             _alert("Nice job!");
             Game.tutorial.item.iron = false;
-            _alert(["Up for a challenge? Try automating steel.\nYou'll need to use the alloy smelter(slot 7), which needs two inputs(coal and iron).", 3000]);
+            _alert(["The next automateable resource is steel.\nYou'll need to use the alloy smelter(slot 7), which needs two inputs(coal and iron).", 3000]);
         }
         return true;
     }
@@ -1815,5 +1823,16 @@ class AlloySmelter extends Building {
                 }
             }
         }
+    }
+}
+class ResourceAcceptor extends Building {
+    update() {
+        this.grabItem(null, item => {
+            item.deleted = true;
+            if (!this.level.resources[item.id]) {
+                this.level.resources[item.id] = 0;
+            }
+            this.level.resources[item.id]++;
+        }, true);
     }
 }
