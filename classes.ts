@@ -63,7 +63,9 @@ const names = {
 		0x03: "Trash Can",
 		0x04: "Furnace",
 		0x05: "Extractor",
-		0x06: "Storage"
+		0x06: "Storage",
+		0x07: "Alloy Smelter",
+		0x08: "Resource Acceptor"
 	},
 	item: {
 		"base_null": "Debug Item",
