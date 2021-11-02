@@ -99,6 +99,9 @@ function runLevel(level, currentFrame) {
         ctx4.fillText("C: " + currentFrame.cps, 10, 150);
         ctx4.fillText("I: " + currentFrame.ips, 10, 200);
     }
+    for (var item of document.getElementById("resources").children) {
+        item.innerHTML = (level1.resources[item.id] ?? 0).toString();
+    }
 }
 function handleKeysPressed(currentframe) {
     if (keysPressed.indexOf("w") != -1) {

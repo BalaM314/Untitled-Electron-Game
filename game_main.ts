@@ -114,6 +114,11 @@ function runLevel(level:Level, currentFrame:any){
 		ctx4.fillText("C: " + currentFrame.cps, 10, 150);
 		ctx4.fillText("I: " + currentFrame.ips, 10, 200);
 	}
+
+	for(var item of (<HTMLDivElement>document.getElementById("resources")!).children){
+		item.innerHTML = (level1.resources[item.id] ?? 0).toString();
+	}
+	
 }
 
 function handleKeysPressed(currentframe:any){

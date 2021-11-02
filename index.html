@@ -67,6 +67,37 @@
       .selected {
         border: 5px ridge green;
       }
+      #resources {
+        position: absolute;
+        z-index: 7;
+        margin-left: 40%;
+        margin-right: 40%;
+        width: 20%;
+        text-align: center;
+        font-size: 32px;
+        font-family: sans-serif;
+      }
+      #resources span::before {
+        width: 32px;
+        height: 32px;
+        margin-right: 4px;
+        margin-left: 32px;
+        background-size: 32px;
+        content: "";
+        display: inline-block !important;
+      }
+      #base_coal::before {
+        background-image: url("assets/textures/item/base_coal.png");
+      }
+      #base_ironIngot::before {
+        background-image: url("assets/textures/item/base_ironIngot.png");
+      }
+      #base_steelIngot::before {
+        background-image: url("assets/textures/item/base_steelIngot.png");
+      }
+      #base_copperIngot::before {
+        background-image: url("assets/textures/item/base_copperIngot.png");
+      }
     </style>
   </head>
   <body>
@@ -122,6 +153,12 @@
     <canvas id="canvas25" width=1200 height=1200></canvas>
     <canvas id="canvas3" width=1200 height=1200></canvas>
     <canvas id="canvas4" width=1200 height=1200></canvas>
+    <div id="resources">
+      <span id="base_coal">0</span>
+      <span id="base_ironIngot">0</span>
+      <span id="base_copperIngot">0</span>
+      <span id="base_steelIngot">0</span>
+    </div>
     <div id="error_background">Oops! If you're seeing this(for more than a second), something went wrong. Please check the dev console(F12 then console) for any red boxes, take a screenshot, and report it to the <a href="https://github.com/BalaM314/Untitled-Electron-Game/issues">issue tracker.</a></div>
     <div id="toolbar" class="hidden">
       <img src="assets/textures/building/0x0001.png" id="1">
