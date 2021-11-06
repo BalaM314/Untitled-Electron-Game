@@ -1215,6 +1215,35 @@ class Chunk extends AbstractChunk {
                 break;
         }
     }
+    export() {
+        let exportDataL1 = [];
+        var hasBuildings = false;
+        for (let row of this.layers[1]) {
+            exportDataL1.push([]);
+            for (let building of row) {
+                if (building instanceof Building) {
+                    hasBuildings = true;
+                    exportDataL1.push(building.export());
+                }
+            }
+        }
+        let exportDataL2 = [];
+        for (let row of this.layers[2]) {
+            exportDataL2.push([]);
+            for (let extractor of row) {
+                if (extractor instanceof Extractor) {
+                    hasBuildings = true;
+                    exportDataL2.push(extractor.export());
+                }
+            }
+        }
+        if (hasBuildings) {
+            return [exportDataL1, exportDataL2];
+        }
+        else {
+            return null;
+        }
+    }
 }
 class Item {
     constructor(x, y, id, level) {
@@ -1261,6 +1290,16 @@ class Item {
                 }
             }
         }
+    }
+    export() {
+        if (this.deleted)
+            return null;
+        return {
+            id: this.id,
+            x: this.x,
+            y: this.y,
+            grabbedBy: this.grabbedBy ? { x: this.grabbedBy.x, y: this.grabbedBy.y } : null
+        };
     }
 }
 class Building {
@@ -1353,6 +1392,21 @@ class Building {
             }
         }
         return null;
+    }
+    export() {
+        var inv = [];
+        if (this.inventory) {
+            for (var item of this.inventory) {
+                inv.push(item.export());
+            }
+        }
+        return {
+            x: this.x,
+            y: this.y,
+            id: this.id,
+            item: this.item?.export(),
+            inv: inv
+        };
     }
 }
 class Miner extends Building {
