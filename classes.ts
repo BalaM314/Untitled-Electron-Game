@@ -1373,34 +1373,22 @@ class Building {
 	spawnItem(id:string){
 		id ??= "base_null";
 		if(
-				this.level.buildingIDAtTile(this.x + 1, this.y) % 0x100 === 0x01 &&
-				this.level.buildingIDAtTile(this.x + 1, this.y) !== 0x0201 &&
-				this.level.buildingIDAtTile(this.x + 1, this.y) !== 0x0801 &&
-				this.level.buildingIDAtTile(this.x + 1, this.y) !== 0x0901 &&
+				this.level.buildingIDAtTile(this.x + 1, this.y) === 0x0001 &&
 				(this.level.buildingAt(this.x + 1, this.y) as Conveyor).item == null
 		){
 			this.level.addItem(this.x * Globals.TILE_SIZE + Globals.TILE_SIZE * 1.1, this.y * Globals.TILE_SIZE + Globals.TILE_SIZE * 0.5, id);
 		} else if(
-				this.level.buildingIDAtTile(this.x, this.y + 1) % 0x100 === 0x01 &&
-				this.level.buildingIDAtTile(this.x, this.y + 1) !== 0x0301 &&
-				this.level.buildingIDAtTile(this.x, this.y + 1) !== 0x0A01 &&
-				this.level.buildingIDAtTile(this.x, this.y + 1) !== 0x0B01 &&
+				this.level.buildingIDAtTile(this.x, this.y + 1) === 0x0101 &&
 				(this.level.buildingAt(this.x, this.y + 1) as Conveyor).item == null
 		){
 			this.level.addItem(this.x * Globals.TILE_SIZE + Globals.TILE_SIZE * 0.5, this.y * Globals.TILE_SIZE + Globals.TILE_SIZE * 1.1, id);
 		} else if(
-				this.level.buildingIDAtTile(this.x - 1, this.y) % 0x100 === 0x01 &&
-				this.level.buildingIDAtTile(this.x - 1, this.y) !== 0x0001 &&
-				this.level.buildingIDAtTile(this.x - 1, this.y) !== 0x0401 &&
-				this.level.buildingIDAtTile(this.x - 1, this.y) !== 0x0501 &&
+				this.level.buildingIDAtTile(this.x - 1, this.y) !== 0x0201 &&
 				(this.level.buildingAt(this.x - 1, this.y) as Conveyor).item == null
 		){
 			this.level.addItem(this.x * Globals.TILE_SIZE - Globals.TILE_SIZE * 0.1, this.y * Globals.TILE_SIZE + Globals.TILE_SIZE * 0.5, id);
 		} else if(
-				this.level.buildingIDAtTile(this.x, this.y - 1) % 0x100 === 0x01 &&
-				this.level.buildingIDAtTile(this.x, this.y - 1) !== 0x0101 &&
-				this.level.buildingIDAtTile(this.x, this.y - 1) !== 0x0601 &&
-				this.level.buildingIDAtTile(this.x, this.y - 1) !== 0x0701 &&
+				this.level.buildingIDAtTile(this.x, this.y - 1) !== 0x0301 &&
 				(this.level.buildingAt(this.x, this.y - 1) as Conveyor).item == null
 		){
 			this.level.addItem(this.x * Globals.TILE_SIZE + Globals.TILE_SIZE * 0.5, this.y * Globals.TILE_SIZE - Globals.TILE_SIZE * 0.1, id);
