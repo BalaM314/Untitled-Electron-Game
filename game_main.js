@@ -292,6 +292,18 @@ function checkload() {
         alert("Not all textures have loaded!\nYou may have a slow internet connection, or the game may just be broken.\nClick OK to try again.");
     }
 }
+function exportData() {
+    let output = {
+        UntitledElectronGame: {
+            metadata: {
+                validationCode: "esrdtfgvczdsret56u7yhgvfcesrythgvfd!",
+                version: Globals.VERSION
+            },
+            level1: level1.export()
+        }
+    };
+    download("Untitled-Electron-Game-save.json", JSON.stringify(output));
+}
 let placedBuilding = {
     type: 0x0001,
     direction: 0x100,

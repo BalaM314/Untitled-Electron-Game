@@ -489,7 +489,7 @@ class Level extends ChunkedDataStorage {
                 seed: this.seed
             }
         };
-        return JSON.stringify(output);
+        return output;
     }
 }
 class AbstractChunk {

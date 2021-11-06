@@ -523,7 +523,7 @@ class Level extends ChunkedDataStorage<Chunk, Tile, Building, Extractor> {
 			}
 		};
 
-		return JSON.stringify(output);
+		return output;
 	}
 }
 

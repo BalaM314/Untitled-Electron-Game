@@ -328,6 +328,20 @@ function checkload(){
 	}
 }
 
+function exportData(){
+	let output = {
+		UntitledElectronGame: {
+			metadata: {
+				validationCode: "esrdtfgvczdsret56u7yhgvfcesrythgvfd!",
+				version: Globals.VERSION
+			},
+			level1: level1.export()
+		}
+	};
+
+	download("Untitled-Electron-Game-save.json", JSON.stringify(output));
+}
+
 let placedBuilding: {
 	type: RawBuildingID
 	direction: 0x000 | 0x100 | 0x200 | 0x300;

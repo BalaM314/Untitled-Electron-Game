@@ -147,6 +147,16 @@ function assert(x) {
         throw new Error(x);
     }
 }
+function download(filename, text) {
+    //Self explanatory.
+    let temp2 = document.createElement('a');
+    temp2.setAttribute('href', 'data:text/json;charset=utf-8,' + encodeURIComponent(text));
+    temp2.setAttribute('download', filename);
+    temp2.style.display = 'none';
+    document.body.appendChild(temp2);
+    temp2.click();
+    document.body.removeChild(temp2);
+}
 /**
  * Drawing Functions
  *
