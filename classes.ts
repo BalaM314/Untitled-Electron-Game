@@ -495,6 +495,36 @@ class Level extends ChunkedDataStorage<Chunk, Tile, Building, Extractor> {
 		ctx4.fillText(names.tile[tileID], mousex + 2, mousey + 10);
 		return;
 	}
+
+
+	export(){
+
+		
+
+		let chunkOutput = {};
+		for(var [position, chunk] of this.storage.entries()){
+			let output = chunk.export();
+			if(output){
+				chunkOutput[position] = output;
+			}
+		}
+
+		let items = [];
+		for(var item of this.items){
+			items.push(item.export());
+		}
+
+		var output = {
+			level1: {
+				chunks: chunkOutput,
+				items: items,
+				resources: this.resources,
+				seed: this.seed
+			}
+		};
+
+		return JSON.stringify(output);
+	}
 }
 
 
@@ -1425,12 +1455,12 @@ class Building {
 		){
 			this.level.addItem(this.x * Globals.TILE_SIZE + Globals.TILE_SIZE * 0.5, this.y * Globals.TILE_SIZE + Globals.TILE_SIZE * 1.1, id);
 		} else if(
-				this.level.buildingIDAtTile(this.x - 1, this.y) !== 0x0201 &&
+				this.level.buildingIDAtTile(this.x - 1, this.y) === 0x0201 &&
 				(this.level.buildingAt(this.x - 1, this.y) as Conveyor).item == null
 		){
 			this.level.addItem(this.x * Globals.TILE_SIZE - Globals.TILE_SIZE * 0.1, this.y * Globals.TILE_SIZE + Globals.TILE_SIZE * 0.5, id);
 		} else if(
-				this.level.buildingIDAtTile(this.x, this.y - 1) !== 0x0301 &&
+				this.level.buildingIDAtTile(this.x, this.y - 1) === 0x0301 &&
 				(this.level.buildingAt(this.x, this.y - 1) as Conveyor).item == null
 		){
 			this.level.addItem(this.x * Globals.TILE_SIZE + Globals.TILE_SIZE * 0.5, this.y * Globals.TILE_SIZE - Globals.TILE_SIZE * 0.1, id);

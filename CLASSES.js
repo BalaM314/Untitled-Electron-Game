@@ -469,6 +469,28 @@ class Level extends ChunkedDataStorage {
         ctx4.fillText(names.tile[tileID], mousex + 2, mousey + 10);
         return;
     }
+    export() {
+        let chunkOutput = {};
+        for (var [position, chunk] of this.storage.entries()) {
+            let output = chunk.export();
+            if (output) {
+                chunkOutput[position] = output;
+            }
+        }
+        let items = [];
+        for (var item of this.items) {
+            items.push(item.export());
+        }
+        var output = {
+            level1: {
+                chunks: chunkOutput,
+                items: items,
+                resources: this.resources,
+                seed: this.seed
+            }
+        };
+        return JSON.stringify(output);
+    }
 }
 class AbstractChunk {
     constructor(x, y, seed, parent, defaultValue1, defaultValue2, defaultValue3) {
@@ -1352,11 +1374,11 @@ class Building {
             this.level.buildingAt(this.x, this.y + 1).item == null) {
             this.level.addItem(this.x * Globals.TILE_SIZE + Globals.TILE_SIZE * 0.5, this.y * Globals.TILE_SIZE + Globals.TILE_SIZE * 1.1, id);
         }
-        else if (this.level.buildingIDAtTile(this.x - 1, this.y) !== 0x0201 &&
+        else if (this.level.buildingIDAtTile(this.x - 1, this.y) === 0x0201 &&
             this.level.buildingAt(this.x - 1, this.y).item == null) {
             this.level.addItem(this.x * Globals.TILE_SIZE - Globals.TILE_SIZE * 0.1, this.y * Globals.TILE_SIZE + Globals.TILE_SIZE * 0.5, id);
         }
-        else if (this.level.buildingIDAtTile(this.x, this.y - 1) !== 0x0301 &&
+        else if (this.level.buildingIDAtTile(this.x, this.y - 1) === 0x0301 &&
             this.level.buildingAt(this.x, this.y - 1).item == null) {
             this.level.addItem(this.x * Globals.TILE_SIZE + Globals.TILE_SIZE * 0.5, this.y * Globals.TILE_SIZE - Globals.TILE_SIZE * 0.1, id);
         }
