@@ -319,6 +319,7 @@ function checkload(){
 		GAME_STATE = "game";
 		Game.forceRedraw = true;
 		document.getElementById("toolbar").classList.remove("hidden");
+		document.getElementById("resources").classList.remove("hidden");
 	} else if(loadedtextures > document.getElementById("textures").children.length){
 		throw new Error("somehow loaded more textures than exist, what the fffffff");
 	} else {
@@ -383,7 +384,8 @@ Basic controls:
 Click to place a building.
 Use the number keys to choose the type of building.
 Press 0 to "place air"(delete buildings).
-Use WASD to move around the map and mouse wheel to zoom.`
+Use WASD to move around the map and mouse wheel to zoom.
+Press Shift to move faster and for tooltips.`
 							);
 						}, 500);
 					}

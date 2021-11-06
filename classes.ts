@@ -72,7 +72,10 @@ const names = {
 		"base_coalOre": "Coal Ore",
 		"base_coal": "Coal",
 		"base_ironOre": "Iron Ore",
-		"base_ironIngot": "Iron Ingot"
+		"base_ironIngot": "Iron Ingot",
+		"base_steelIngot": "Steel Ingot",
+		"base_copperOre": "Copper Ore",
+		"base_copperIngot": "Copper Ingot",
 	}
 };
 
