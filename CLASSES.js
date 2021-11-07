@@ -1362,6 +1362,12 @@ class Item {
         }
     }
     display(currentframe) {
+        if ((Game.scroll.x * Globals.DISPLAY_SCALE) + this.x > window.innerWidth + (8 * Globals.DISPLAY_SCALE) ||
+            (Game.scroll.x * Globals.DISPLAY_SCALE) + this.x < (-8 * Globals.DISPLAY_SCALE) ||
+            (Game.scroll.y * Globals.DISPLAY_SCALE) + this.y > window.innerHeight + +(8 * Globals.DISPLAY_SCALE) ||
+            (Game.scroll.y * Globals.DISPLAY_SCALE) + this.y < (-8 * Globals.DISPLAY_SCALE)) {
+            return;
+        } //if offscreen return immediately
         currentframe.ips++;
         ctx3.drawImage(textures.get("item_" + this.id), this.x * Globals.DISPLAY_SCALE + (Game.scroll.x * Globals.DISPLAY_SCALE) - 8 * Globals.DISPLAY_SCALE, this.y * Globals.DISPLAY_SCALE + (Game.scroll.y * Globals.DISPLAY_SCALE) - 8 * Globals.DISPLAY_SCALE, 16 * Globals.DISPLAY_SCALE, 16 * Globals.DISPLAY_SCALE);
         if (keysPressed.indexOf("Shift") != -1) {
