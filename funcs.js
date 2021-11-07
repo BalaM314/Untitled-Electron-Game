@@ -77,6 +77,14 @@ window.onkeydown = (e) => {
         case "0":
             placedBuilding.type = 0xFFFF;
             break;
+        case "s":
+            if (e.ctrlKey)
+                exportData();
+            break;
+        case "o":
+            if (e.ctrlKey)
+                uploadButton.click();
+            break;
         default: return;
     }
     e.preventDefault();
@@ -157,6 +165,16 @@ function download(filename, text) {
     temp2.click();
     document.body.removeChild(temp2);
 }
+let uploadButton = document.getElementById('uploadButton');
+uploadButton.onchange = function (event) {
+    let file = event.target.files[0];
+    let reader = new FileReader();
+    reader.readAsText(file);
+    reader.onload = function (readerEvent) {
+        let content = readerEvent.target.result.toString();
+        importData(content);
+    };
+};
 /**
  * Drawing Functions
  *

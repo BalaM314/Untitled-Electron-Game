@@ -108,16 +108,16 @@ const consts = {
 const Globals = {
 	VERSION: "alpha 0.0.0",
 	CHUNK_SIZE: 16,
-    TILE_SIZE: 30,
-    DISPLAY_SCALE: 1,
-		get DISPLAY_TILE_SIZE(){
-			return this.TILE_SIZE * this.DISPLAY_SCALE;
-    },
-    buildings: {
-			conveyor: {
-				SPEED: 1
-			}
-    }
+	TILE_SIZE: 30,
+	DISPLAY_SCALE: 1,
+	get DISPLAY_TILE_SIZE(){
+		return this.TILE_SIZE * this.DISPLAY_SCALE;
+	},
+	buildings: {
+		conveyor: {
+			SPEED: 1
+		}
+	}
 }
 
 class ChunkedDataStorage<Chunk extends AbstractChunk<Layer1,Layer2,Layer3>,Layer1,Layer2,Layer3> {
@@ -147,7 +147,7 @@ class ChunkedDataStorage<Chunk extends AbstractChunk<Layer1,Layer2,Layer3>,Layer
 			return;
 		}
 		this.storage.set(`${x},${y}`, 
-			new this.chunk(x, y, this.seed, this, this.defaults.layer1, this.defaults.layer2, this.defaults.layer3)
+			new this.chunk({x: x, y: y, seed: this.seed, parent: this, defaultValue1: this.defaults.layer1, defaultValue2: this.defaults.layer2, defaultValue3: this.defaults.layer3})
 			.generate()
 		);
 		console.log(`generated chunk ${x}, ${y}`)
@@ -199,15 +199,51 @@ class Level extends ChunkedDataStorage<Chunk, Tile, Building, Extractor> {
 	resources: {
 		[index: string]: number
 	}
-	constructor(seed:number){
-		super(seed, Chunk, {
-			layer1: 0x00,
-			layer2: null,
-			layer3: null
-		});
-		this.items = [];
-		this.resources = {};
+	constructor(data:number|any){
+		if(typeof data == "number"){
+			super(data, Chunk, {
+				layer1: 0x00,
+				layer2: null,
+				layer3: null
+			});
+			this.items = [];
+			this.resources = {};
+		} else {
+			// what the heck am I doing
+			let {chunks, items, resources, seed} = data;
+			super(seed, Chunk, {
+				layer1: 0x00,
+				layer2: null,
+				layer3: null
+			});
+			this.items = [];
+			this.resources = resources;
+
+			for(var [position, chunkData] of Object.entries(chunks)){
+				this.storage.set(position, new Chunk({
+					x: parseInt(position.split(",")[0]), y: parseInt(position.split(",")[1]),
+					seed: seed, parent: this, defaultValue1: 0x00, defaultValue2: null, defaultValue3: null,
+					data: chunkData
+				}).generate());
+			}
+
+			for(var item of items){
+				let foundDuplicate = false;
+				for(let testItem of this.items){
+					if(testItem.x == item.x && testItem.y == item.y){foundDuplicate = true;}
+				}
+				if(foundDuplicate) continue;//O(n^2) go brrrrrrrrrrr
+				let tempItem = new Item(item.x, item.y, item.id, this);
+				if(item.grabbedBy){
+					tempItem.grabbedBy = this.buildingAt(item.grabbedBy.x, item.grabbedBy.y);
+					assert(tempItem.grabbedBy);
+				}
+				this.items.push(tempItem);
+			}
+
+		}
 	}
+
 	buildingIDAtPixel(pixelX:number, pixelY:number):BuildingID {
 		return this.getChunk(
 			Math.floor(pixelX/Globals.TILE_SIZE),
@@ -515,12 +551,10 @@ class Level extends ChunkedDataStorage<Chunk, Tile, Building, Extractor> {
 		}
 
 		var output = {
-			level1: {
-				chunks: chunkOutput,
-				items: items,
-				resources: this.resources,
-				seed: this.seed
-			}
+			chunks: chunkOutput,
+			items: items,
+			resources: this.resources,
+			seed: this.seed
 		};
 
 		return output;
@@ -541,7 +575,7 @@ class AbstractChunk<Layer1,Layer2,Layer3> {
 	y: number;
 	chunkSeed: number;
 	parent: ChunkedDataStorage<any, any, any, any>;
-	constructor(x:number, y:number, seed:number, parent:ChunkedDataStorage<any, any, any, any>, defaultValue1:Layer1, defaultValue2:Layer2, defaultValue3:Layer3){
+	constructor({ x, y, seed, parent, defaultValue1, defaultValue2, defaultValue3, data }: { x: number; y: number; seed: number; parent: ChunkedDataStorage<any, any, any, any>; defaultValue1: Layer1; defaultValue2: Layer2; defaultValue3: Layer3; data: any}){
 		this.x = x;
 		this.y = y;
 		this.parent = parent;
@@ -578,6 +612,43 @@ class AbstractChunk<Layer1,Layer2,Layer3> {
 			this.layers[2][x] = [];
 			for(let z = 0; z < Globals.CHUNK_SIZE; z ++){
 				this.layers[2][x].push(defaultValue3);
+			}
+		}
+
+		if(data){
+			for(let y in data[0]){
+				for(let x in data[0][y]){
+					let buildingData = data[0][y][x];
+					if(!buildingData) continue;
+					let tempBuilding = new BuildingType[buildingData.id % 0x100](parseInt(x) + (Globals.CHUNK_SIZE * this.x), parseInt(y) + (Globals.CHUNK_SIZE * this.y), buildingData.id, this.parent as Level);
+					if(buildingData.item){
+						tempBuilding.item = new Item(buildingData.item.x, buildingData.item.y, buildingData.item.id, this.parent as Level);
+						tempBuilding.item.grabbedBy = tempBuilding;
+						(this.parent as Level)?.items.push(tempBuilding.item);
+					}
+					if(buildingData.inv){
+						for(var itemData of buildingData.inv){
+							let tempItem = new Item(itemData.x, itemData.y, itemData.id, this.parent as Level);
+							tempItem.grabbedBy = tempBuilding;
+							tempBuilding.inventory.push(tempItem);
+						}
+					}
+					this.layers[1][y][x] = tempBuilding;
+				}
+			}
+
+			for(let y in data[1]){
+				for(let x in data[1][y]){
+					let buildingData = data[1][y][x];
+					if(!buildingData) continue;
+					let tempBuilding = new Extractor(parseInt(x) + (Globals.CHUNK_SIZE * this.x), parseInt(y) + (Globals.CHUNK_SIZE * this.y), buildingData.id, this.parent as Level);
+					if(buildingData.item){
+						tempBuilding.item = new Item(buildingData.item.x, buildingData.item.y, buildingData.item.id, this.parent as Level);
+						tempBuilding.item.grabbedBy = tempBuilding;
+					}
+					this.layers[2][y][x] = tempBuilding;
+
+				}
 			}
 		}
 
@@ -1300,24 +1371,26 @@ class Chunk extends AbstractChunk<Tile, Building, Extractor> {
 		let exportDataL1 = [];
 		var hasBuildings = false;
 		for(let row of this.layers[1]){
-			exportDataL1.push([]);
+			let tempRow = [];
 			for(let building of row){
 				if(building instanceof Building){
 					hasBuildings = true;
-					exportDataL1.push(building.export());
 				}
+				tempRow.push(building?.export() ?? null);
 			}
+			exportDataL1.push(tempRow);
 		}
 
 		let exportDataL2 = [];
 		for(let row of this.layers[2]){
-			exportDataL2.push([]);
+			let tempRow = [];
 			for(let extractor of row){
 				if(extractor instanceof Extractor){
 					hasBuildings = true;
-					exportDataL2.push(extractor.export());
 				}
+				tempRow.push(extractor?.export() ?? null);
 			}
+			exportDataL2.push(tempRow);
 		}
 
 		if(hasBuildings){
@@ -1961,3 +2034,16 @@ class ResourceAcceptor extends Building {
 		}, true);
 	}
 }
+
+
+
+const BuildingType = {
+	0x01: Conveyor,
+	0x02: Miner,
+	0x03: TrashCan,
+	0x04: Furnace,
+	0x05: Extractor,
+	0x06: StorageBuilding,
+	0x07: AlloySmelter,
+	0x08: ResourceAcceptor
+};

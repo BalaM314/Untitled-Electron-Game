@@ -77,6 +77,10 @@ window.onkeydown = (e:KeyboardEvent) => {
 			placedBuilding.type = 0x0008; break;
 		case "0":
 			placedBuilding.type = 0xFFFF; break;
+		case "s":
+			if(e.ctrlKey) exportData(); break;
+		case "o":
+			if(e.ctrlKey) uploadButton.click(); break;
 		default: return;
 	}
 	e.preventDefault();
@@ -163,6 +167,17 @@ function download(filename, text){
   document.body.appendChild(temp2);
   temp2.click();
   document.body.removeChild(temp2);
+}
+
+let uploadButton = document.getElementById('uploadButton')! as HTMLInputElement;
+uploadButton.onchange = function(event:any){
+  let file = event.target.files[0];
+  let reader = new FileReader();
+  reader.readAsText(file);
+  reader.onload = function(readerEvent){
+    let content = readerEvent.target.result.toString();
+    importData(content);
+  }
 }
 
 /**

@@ -245,12 +245,30 @@ function load() {
     //TODO: add loading GAME_STATE
     //possibly display an eror here if the textures haven't loaded?
     loadTextures();
+    if (Game.persistent.tutorialenabled) {
+        setTimeout(() => {
+            alert(`
+Welcome to Untitled Electron Game!
+This is a game about... well I don't really know, but it has items, conveyor belts, and machines. Guess you could call it a factory game?
+
+For now there's no real goal, but I suggest you automate iron and coal production.
+To get started, place a conveyor belt.
+
+Basic controls:
+Click to place a building.
+Use the number keys to choose the type of building.
+Press 0 to "place air"(delete buildings).
+Use WASD to move around the map and mouse wheel to zoom.
+Press Shift to move faster and for tooltips.`);
+        }, 500);
+    }
     checkload();
 }
 let loadedtextures = 0;
-const level1 = new Level(314);
+let level1;
 function checkload() {
     if (loadedtextures == document.getElementById("textures").children.length) {
+        level1 = new Level(314);
         level1.generateNecessaryChunks();
         {
             /*level1.buildBuilding(4,1,0x0001);
@@ -304,6 +322,21 @@ function exportData() {
     };
     download("Untitled-Electron-Game-save.json", JSON.stringify(output));
 }
+function importData(rawData) {
+    let tempLevel;
+    try {
+        let data = JSON.parse(rawData);
+        assert(data.UntitledElectronGame.metadata.validationCode === "esrdtfgvczdsret56u7yhgvfcesrythgvfd!");
+        let levelData = data.UntitledElectronGame.level1;
+        assert(levelData.chunks instanceof Object);
+        assert(levelData.items instanceof Array);
+        tempLevel = new Level(levelData);
+        level1 = tempLevel;
+    }
+    catch (err) {
+        console.error("Import failed.", err);
+    }
+}
 let placedBuilding = {
     type: 0x0001,
     direction: 0x100,
@@ -346,23 +379,6 @@ let handleMouseDown = (currentFrame, e) => {
                 if (e.y > innerHeight / 2 && e.y < innerHeight * 0.7) {
                     mouseIsPressed = false;
                     load();
-                    if (Game.persistent.tutorialenabled) {
-                        setTimeout(() => {
-                            alert(`
-Welcome to Untitled Electron Game!
-This is a game about... well I don't really know, but it has items, conveyor belts, and machines. Guess you could call it a factory game?
-
-For now there's no real goal, but I suggest you automate iron and coal production.
-To get started, place a conveyor belt.
-
-Basic controls:
-Click to place a building.
-Use the number keys to choose the type of building.
-Press 0 to "place air"(delete buildings).
-Use WASD to move around the map and mouse wheel to zoom.
-Press Shift to move faster and for tooltips.`);
-                        }, 500);
-                    }
                 }
                 if (e.y > innerHeight * 0.75 && e.y < innerHeight * 0.95) {
                     GAME_STATE = "settings";
