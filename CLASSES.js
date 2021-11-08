@@ -1,3 +1,4 @@
+"use strict";
 let textures = new Map();
 const names = {
     tile: {

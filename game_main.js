@@ -1,6 +1,6 @@
-'use strict';
+"use strict";
 // TODOS
-// Resolve critical gameplay issue:
+// Make conveyor chains not O(n^2)
 // make buildingbar only display after textures load
 // Fix hasItem and removeItem, they're kinda lost
 // 
@@ -188,7 +188,6 @@ function main_loop() {
         cancel = requestAnimationFrame(main_loop);
     }
     catch (err) {
-        //todo: display an error screen
         alert("An error has occurred! Oopsie.\nPlease create an issue on this project's GitHub so I can fix it.\nErr: " + err.message); //todo improve
         ctxs.forEach((ctx) => { ctx.clearRect(0, 0, innerWidth, innerHeight); });
         throw err;
