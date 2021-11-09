@@ -1,24 +1,4 @@
 "use strict";
-// TODOS
-// 
-// 
-// Fix hasItem and removeItem, they're kinda lost
-// 
-// *Code cleanup
-// 
-// 
-// 
-// 
-// 
-// 
-// 
-// 
-// 
-// 
-// 
-// 
-// 
-// 
 let settings = {
     graphics_mode: 1,
     debug: true
@@ -60,19 +40,18 @@ let Game = {
     }
 };
 var GAME_STATE = "title";
-const ctx = document.getElementById("canvas").getContext("2d"); //Tiles
-const ctx1 = document.getElementById("canvas1").getContext("2d"); //Ghost buildings
-const ctx2 = document.getElementById("canvas2").getContext("2d"); //Buildings
-const ctx25 = document.getElementById("canvas25").getContext("2d"); //Extractors
-const ctx3 = document.getElementById("canvas3").getContext("2d"); //Items
-const ctx4 = document.getElementById("canvas4").getContext("2d"); //Overlays
+const ctx = document.getElementById("canvas").getContext("2d");
+const ctx1 = document.getElementById("canvas1").getContext("2d");
+const ctx2 = document.getElementById("canvas2").getContext("2d");
+const ctx25 = document.getElementById("canvas25").getContext("2d");
+const ctx3 = document.getElementById("canvas3").getContext("2d");
+const ctx4 = document.getElementById("canvas4").getContext("2d");
 const ctxs = [ctx, ctx1, ctx2, ctx25, ctx3, ctx4];
 let fps = [0, 0, 0, 0, 0, 0];
 function runLevel(level, currentFrame) {
     let startFrameTime = new Date();
     level.generateNecessaryChunks();
     level.update(currentFrame);
-    //display
     if (currentFrame.redraw) {
         ctx.clearRect(0, 0, innerWidth, innerHeight);
     }
@@ -86,7 +65,6 @@ function runLevel(level, currentFrame) {
     if (keysPressed.indexOf("shift") != -1) {
         level.displayTooltip(mouseX, mouseY, currentFrame);
     }
-    //display overlays
     ctx4.font = "30px sans-serif";
     ctx4.fillStyle = "#000000";
     ctx4.fillText((Math.round(-(Game.scroll.x * Globals.DISPLAY_SCALE) / Globals.DISPLAY_TILE_SIZE).toString() + ", " + Math.round(-(Game.scroll.y * Globals.DISPLAY_SCALE) / Globals.DISPLAY_TILE_SIZE).toString()), 10, 100);
@@ -180,7 +158,7 @@ function main_loop() {
                     }, __alert[1]);
                 }
                 else {
-                    alert(__alert); //todo replace with a less annoying custom alert box
+                    alert(__alert);
                 }
             }
             alerts = [];
@@ -188,7 +166,7 @@ function main_loop() {
         cancel = requestAnimationFrame(main_loop);
     }
     catch (err) {
-        alert("An error has occurred! Oopsie.\nPlease create an issue on this project's GitHub so I can fix it.\nErr: " + err.message); //todo improve
+        alert("An error has occurred! Oopsie.\nPlease create an issue on this project's GitHub so I can fix it.\nErr: " + err.message);
         ctxs.forEach((ctx) => { ctx.clearRect(0, 0, innerWidth, innerHeight); });
         throw err;
     }
@@ -241,8 +219,6 @@ function runSettings() {
 }
 ;
 function load() {
-    //TODO: add loading GAME_STATE
-    //possibly display an eror here if the textures haven't loaded?
     loadTextures();
     if (Game.persistent.tutorialenabled) {
         setTimeout(() => {
@@ -270,31 +246,6 @@ function checkload() {
         level1 = new Level(314);
         level1.generateNecessaryChunks();
         {
-            /*level1.buildBuilding(4,1,0x0001);
-            level1.buildBuilding(5,1,0x0001);
-            level1.buildBuilding(5,-1,0x0301);
-            level1.buildBuilding(5,1,0x0705);
-            level1.buildBuilding(6,1,0x0001);
-            level1.buildBuilding(6,3,0x0101);
-            level1.buildBuilding(6,1,0x0505);
-            level1.buildBuilding(7,1,0x0001);
-            level1.buildBuilding(7,-1,0x0301);
-            level1.buildBuilding(7,1,0x0705);
-            level1.buildBuilding(8,1,0x0001);
-            level1.buildBuilding(8,3,0x0101);
-            level1.buildBuilding(8,1,0x0505);
-            level1.buildBuilding(9,1,0x0001);
-            level1.buildBuilding(9,-1,0x0301);
-            level1.buildBuilding(9,1,0x0705);
-            level1.buildBuilding(10,1,0x0001);
-            level1.buildBuilding(10,3,0x0101);
-            level1.buildBuilding(10,1,0x0505);
-            level1.buildBuilding(11,1,0x0001);
-            level1.buildBuilding(11,-1,0x0301);
-            level1.buildBuilding(11,1,0x0705);
-            level1.buildBuilding(12,1,0x0001);
-            level1.buildBuilding(12,3,0x0101);
-            level1.buildBuilding(12,1,0x0505);*/
         }
         GAME_STATE = "game";
         Game.forceRedraw = true;

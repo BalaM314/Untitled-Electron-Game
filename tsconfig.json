@@ -6,6 +6,7 @@
             "DOM"
         ],
         "target": "ES2021",
-        "alwaysStrict": true
+        "alwaysStrict": true,
+        "removeComments": true
     }
 }

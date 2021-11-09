@@ -2,7 +2,8 @@
 // 
 // 
 // Fix hasItem and removeItem, they're kinda lost
-// 
+// Fix item tooltips on conveyors no longer working
+// Fix generation not respecting level seed & duplicated generation along x axis near spawn
 // *Code cleanup
 // 
 // 

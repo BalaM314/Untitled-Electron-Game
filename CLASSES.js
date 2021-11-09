@@ -41,7 +41,6 @@ const ItemID = {
     "base_steelIngot": "base_steelIngot"
 };
 const generation_consts = {
-    //All distance values are in chunks.
     perlin_scale: 2 * Math.PI,
     y_offset: 2031,
     ore_scale: 3,
@@ -51,7 +50,7 @@ const generation_consts = {
         stone_threshold: 0.7,
         ore_threshold: 0.8,
         min_iron_distance: 8,
-        min_copper_distance: 12 //Minimum distance from spawn for copper ore to generate.
+        min_copper_distance: 12
     }
 };
 const Globals = {
@@ -78,17 +77,15 @@ class Level {
             this.seed = data ? data : 0;
         }
         else {
-            // Generate a level from JSON
             let { chunks, items, resources, seed, version } = data;
             this.seed = seed;
-            for (var [position, chunkData] of Object.entries(chunks)) { //Get data for a chunk
+            for (var [position, chunkData] of Object.entries(chunks)) {
                 this.storage.set(position, new Chunk({
                     x: parseInt(position.split(",")[0]), y: parseInt(position.split(",")[1]),
                     seed: seed, parent: this
                 }, chunkData).generate());
-                //Generate a chunk with that data
             }
-            if (version !== "alpha 0.0.0") { //Needed because before (e4360ab) items being moved by conveyor belts were in-world and the below code would otherwise dupe them.
+            if (version !== "alpha 0.0.0") {
                 for (var item of items) {
                     let tempItem = new Item(item.x, item.y, item.id, this);
                     if (item.grabbedBy) {
@@ -151,7 +148,6 @@ class Level {
         this.generateChunk(xOffset + 3, yOffset - 1);
         this.generateChunk(xOffset + 3, yOffset);
         this.generateChunk(xOffset + 3, yOffset + 1);
-        //good enough
     }
     buildingIDAtPixel(pixelX, pixelY) {
         return this.getChunk(Math.floor(pixelX / Globals.TILE_SIZE), Math.floor(pixelY / Globals.TILE_SIZE)).buildingAt(tileToChunk(pixelX / Globals.TILE_SIZE), tileToChunk(pixelY / Globals.TILE_SIZE))?.id ?? 0xFFFF;
@@ -184,41 +180,12 @@ class Level {
         if (this.getChunk(tileX, tileY, true) == null) {
             return;
         }
-        switch (buildingID) {
-            case 0x0007:
-                this.getChunk(tileX, tileY).displayBuilding(tileToChunk(tileX), tileToChunk(tileY), buildingID, AlloySmelter.canBuildAt(tileX, tileY, this) ? 1 : 2);
-                break;
-            case 0x0006:
-                this.getChunk(tileX, tileY).displayBuilding(tileToChunk(tileX), tileToChunk(tileY), buildingID, StorageBuilding.canBuildAt(tileX, tileY, this) ? 1 : 2);
-                break;
-            case 0x0005:
-            case 0x0105:
-            case 0x0205:
-            case 0x0305:
-            case 0x0405:
-            case 0x0505:
-            case 0x0605:
-            case 0x0705:
-            case 0x0805:
-            case 0x0905:
-            case 0x0A05:
-            case 0x0B05:
-                this.getChunk(tileX, tileY).displayBuilding(tileToChunk(tileX), tileToChunk(tileY), buildingID, Extractor.canBuildAt(tileX, tileY, this) ? 1 : 2);
-                break;
-            case 0x0004:
-                this.getChunk(tileX, tileY).displayBuilding(tileToChunk(tileX), tileToChunk(tileY), buildingID, Furnace.canBuildAt(tileX, tileY, this) ? 1 : 2);
-                break;
-            case 0x0002:
-                this.getChunk(tileX, tileY).displayBuilding(tileToChunk(tileX), tileToChunk(tileY), buildingID, Miner.canBuildAt(tileX, tileY, this) ? 1 : 2);
-                break;
-            case 0x0001:
-            case 0x0101:
-            case 0x0201:
-            case 0x0301:
+        switch (buildingID % 0x100) {
+            case 0x01:
                 this.getChunk(tileX, tileY).displayBuilding(tileToChunk(tileX), tileToChunk(tileY), this.getTurnedConveyor(tileX, tileY, buildingID >> 8), Conveyor.canBuildAt(tileX, tileY, this) ? 1 : 2);
                 break;
             default:
-                this.getChunk(tileX, tileY).displayBuilding(tileToChunk(tileX), tileToChunk(tileY), buildingID, 1);
+                this.getChunk(tileX, tileY).displayBuilding(tileToChunk(tileX), tileToChunk(tileY), buildingID, BuildingType[buildingID % 0x100].canBuildAt(tileX, tileY, this));
                 break;
         }
     }
@@ -324,17 +291,14 @@ class Level {
     }
     buildBuilding(tileX, tileY, building) {
         if ((building % 0x100 != 5 ? this.buildingIDAtTile(tileX, tileY) : this.extractorAtTile(tileX, tileY)?.id) === building) {
-            if (canOverwriteBuilding) {
-                canOverwriteBuilding = false;
-            }
-            else {
+            if (!canOverwriteBuilding) {
                 return false;
             }
         }
+        canOverwriteBuilding = false;
         this.buildingAtTile(tileX, tileY)?.break();
         var tempBuilding;
-        switch (building) {
-            //A lot of the code here is duplicated, oh well
+        switch (building % 0x100) {
             case 0x0008:
                 if (!ResourceAcceptor.canBuildAt(tileX, tileY, this)) {
                     return;
@@ -354,17 +318,6 @@ class Level {
                 tempBuilding = new StorageBuilding(tileX, tileY, building, this);
                 break;
             case 0x0005:
-            case 0x0105:
-            case 0x0205:
-            case 0x0305:
-            case 0x0405:
-            case 0x0505:
-            case 0x0605:
-            case 0x0705:
-            case 0x0805:
-            case 0x0905:
-            case 0x0A05:
-            case 0x0B05:
                 if (!Extractor.canBuildAt(tileX, tileY, this)) {
                     return;
                 }
@@ -407,17 +360,6 @@ class Level {
                 }
                 break;
             case 0x0001:
-            case 0x0101:
-            case 0x0201:
-            case 0x0301:
-            case 0x0401:
-            case 0x0501:
-            case 0x0601:
-            case 0x0701:
-            case 0x0801:
-            case 0x0901:
-            case 0x0A01:
-            case 0x0B01:
                 if (!Conveyor.canBuildAt(tileX, tileY, this)) {
                     if (Game.tutorial.conveyor.cantbeplacedonwater && Game.persistent.tutorialenabled) {
                         _alert("Conveyors don't float!\nYes, I know, then water chunks are useless... I'll add pontoons in a future update.");
@@ -450,7 +392,6 @@ class Level {
         for (let item of this.items) {
             item.display(currentframe);
         }
-        //Insta returns in the display method if offscreen.
         for (var chunk of this.storage.values()) {
             chunk.display(currentframe);
         }
@@ -504,13 +445,12 @@ class Level {
         for (var item of this.items) {
             items.push(item.export());
         }
-        var output = {
+        return {
             chunks: chunkOutput,
             items: items,
             resources: this.resources,
             seed: this.seed
         };
-        return output;
     }
 }
 class Chunk {
@@ -588,15 +528,13 @@ class Chunk {
     update() {
         for (let row of this.layers[1]) {
             for (let value of row) {
-                if (typeof value?.["update"] == "function") {
-                    value["update"]();
-                }
+                value.update?.();
             }
         }
         for (let row of this.layers[2]) {
             for (let value of row) {
                 if (typeof value?.["update"] == "function") {
-                    value["update"](undefined);
+                    value.update?.(undefined);
                 }
             }
         }
@@ -632,50 +570,40 @@ class Chunk {
         this.layers[2][tileY][tileX] = value;
         return true;
     }
-    /**
-     * @deprecated
-     */
     displayToConsole() {
         console.log(`%c Base layer of chunk [${this.x},${this.y}]`, `font-weight: bold;`);
         console.table(this.layers[0]);
     }
     generate() {
-        //This... needs to be refactored. Oh well.
         let isWet = false;
         let isHilly = false;
         let distanceFromSpawn = Math.sqrt(this.x ** 2 + this.y ** 2);
         let distanceBoost = constrain(Math.log((distanceFromSpawn / generation_consts.ore_scale) + 0.5) / 2, 0, 0.6);
-        //A value added to the perlin noise on each tile to make the amount of stone/ore increase, scales as you go further out.
         if (this.generator.next().value < 0.07 && distanceFromSpawn > generation_consts.min_water_chunk_distance) {
             isWet = true;
         }
         else if (distanceBoost > generation_consts.hilly.terrain_cutoff) {
             isHilly = true;
         }
-        if (isWet) { //Generator for wet chunks.
+        if (isWet) {
             for (var row in this.layers[0]) {
                 for (var tile in this.layers[0][row]) {
-                    //Choose the tile to be placed:
                     if (row == "0" || row == "15" || tile == "0" || tile == "15") {
-                        this.layers[0][row][tile] = 0x02; //If on edge, place water
+                        this.layers[0][row][tile] = 0x02;
                     }
                     else if (row == "1" || row == "14" || tile == "1" || tile == "14") {
-                        this.layers[0][row][tile] = this.generator.next().value > 0.5 ? 0x01 : 0x02; //If near edge, place 50-50 stone or water		
+                        this.layers[0][row][tile] = this.generator.next().value > 0.5 ? 0x01 : 0x02;
                     }
                     else {
                         this.layers[0][row][tile] =
                             this.generator.next().value < 0.1 ?
                                 (this.generator.next().value < 0.3 ? 0x11 : 0x10)
                                 : 0x01;
-                        //Otherwise, stone, iron, or coal.
                     }
                 }
             }
         }
         else if (isHilly) {
-            //Hilly terrain generator:
-            //Based on perlin noise.
-            //Chooses which ore to generate based on RNG and ditance from spawn.
             let oreToGenerate = 0xFF;
             let oreRand = this.generator.next().value;
             if (distanceFromSpawn < generation_consts.hilly.min_iron_distance) {
@@ -689,9 +617,7 @@ class Chunk {
             }
             for (var row in this.layers[0]) {
                 for (var tile in this.layers[0][row]) {
-                    //Choose the tile to be placed:
                     let noiseHeight = Math.abs(noise.perlin2(((this.x * Globals.CHUNK_SIZE) + +tile + this.parent.seed) / generation_consts.perlin_scale, ((this.y * Globals.CHUNK_SIZE) + +row + (this.parent.seed + generation_consts.y_offset)) / generation_consts.perlin_scale));
-                    //This formula just finds the perlin noise value at a tile, but tweaked so it's different per seed and not mirrored diagonally.
                     if ((noiseHeight + distanceBoost / 2) > generation_consts.hilly.ore_threshold) {
                         this.layers[0][row][tile] = oreToGenerate;
                     }
@@ -705,7 +631,6 @@ class Chunk {
             }
         }
         else {
-            //Old terrain generation. I kept it, just only close to spawn.
             for (var row in this.layers[0]) {
                 for (var tile in this.layers[0][row]) {
                     this.layers[0][row][tile] = 0x00;
@@ -720,7 +645,6 @@ class Chunk {
             }
             let hill_x = Math.floor(this.generator.next().value * 16);
             let hill_y = Math.floor(this.generator.next().value * 16);
-            //Makes a "hill", with an ore node in the middle, stone on the sides, and maybe stone in the corners.
             this.setTile(hill_x, hill_y, oreToGenerate);
             this.setTile(hill_x + 1, hill_y, 0x01);
             this.setTile(hill_x - 1, hill_y, 0x01);
@@ -739,7 +663,7 @@ class Chunk {
             (Game.scroll.y * Globals.DISPLAY_SCALE) + this.y * Globals.CHUNK_SIZE * Globals.DISPLAY_TILE_SIZE > window.innerHeight + 1 ||
             (Game.scroll.y * Globals.DISPLAY_SCALE) + this.y * Globals.CHUNK_SIZE * Globals.DISPLAY_TILE_SIZE < -1 - Globals.CHUNK_SIZE * Globals.DISPLAY_TILE_SIZE) {
             return;
-        } //if offscreen return immediately
+        }
         currentframe.cps++;
         ctx.strokeStyle = "#000000";
         ctx.lineWidth = 1;
@@ -967,7 +891,6 @@ class Item {
             Game.tutorial.conveyor.beltchain = false;
         }
         if (this.deleted) {
-            //do stuff
         }
     }
     display(currentframe) {
@@ -976,13 +899,12 @@ class Item {
             Globals.DISPLAY_SCALE * (this.y + Game.scroll.y - 8) < 0 ||
             Globals.DISPLAY_SCALE * (this.y + Game.scroll.y - 8) > window.innerHeight) {
             return;
-        } //if offscreen return immediately
+        }
         currentframe.ips++;
         ctx3.drawImage(textures.get("item_" + this.id), this.x * Globals.DISPLAY_SCALE + (Game.scroll.x * Globals.DISPLAY_SCALE) - 8 * Globals.DISPLAY_SCALE, this.y * Globals.DISPLAY_SCALE + (Game.scroll.y * Globals.DISPLAY_SCALE) - 8 * Globals.DISPLAY_SCALE, 16 * Globals.DISPLAY_SCALE, 16 * Globals.DISPLAY_SCALE);
         if (keysPressed.indexOf("Shift") != -1) {
             var x = (mouseX - (Game.scroll.x * Globals.DISPLAY_SCALE)) / Globals.DISPLAY_SCALE;
             var y = (mouseY - (Game.scroll.y * Globals.DISPLAY_SCALE)) / Globals.DISPLAY_SCALE;
-            //alert(this.x + " " + this.y + "  " + x + " " + y);
             if (x > this.x - (8 * Globals.DISPLAY_SCALE) &&
                 y > this.y - (8 * Globals.DISPLAY_SCALE) &&
                 x < this.x + (8 * Globals.DISPLAY_SCALE) &&
@@ -1031,6 +953,10 @@ class Building {
                 item.grabbedBy = null;
             }
         }
+    }
+    update(...any) {
+    }
+    display(...any) {
     }
     hasItem() {
         if (this.item)
@@ -1239,8 +1165,7 @@ class Conveyor extends Building {
                 }
                 return;
             }
-            switch (this.id >> 8) { //bit masks ftw, this just grabs the first byte
-                //yes I know there's no need to write the ids in hex but why the heck not
+            switch (this.id >> 8) {
                 case 0x00:
                     this.item.y = (Math.floor(this.item.y / Globals.TILE_SIZE) * Globals.TILE_SIZE) + Globals.TILE_SIZE / 2;
                     this.item.x += Globals.buildings.conveyor.SPEED;

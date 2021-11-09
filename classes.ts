@@ -107,15 +107,15 @@ const generation_consts = {
 
 const Globals = {
 	VERSION: "alpha 1.0.0",
-	CHUNK_SIZE: 16,
-	TILE_SIZE: 30,
+	CHUNK_SIZE: 16,//Size of a chunk in tiles.
+	TILE_SIZE: 30,//Sile of a tile in pixels.
 	DISPLAY_SCALE: 1,
 	get DISPLAY_TILE_SIZE(){
 		return this.TILE_SIZE * this.DISPLAY_SCALE;
 	},
 	buildings: {
 		conveyor: {
-			SPEED: 1
+			SPEED: 1//pixels per update
 		}
 	}
 }
@@ -150,7 +150,7 @@ class Level {
 				//Generate a chunk with that data
 			}
 
-			if(version !== "alpha 0.0.0"){//Needed because before (e4360ab) items being moved by conveyor belts were in-world and the below code would otherwise dupe them.
+			if(version !== "alpha 0.0.0"){//Needed because before (e4360ab) items being moved by conveyor belts were also in level.items and the below code would otherwise dupe them due to the removal of an O(n^2) check.
 				for(var item of items){
 					let tempItem = new Item(item.x, item.y, item.id, this);
 					if(item.grabbedBy){
@@ -262,34 +262,21 @@ class Level {
 	displayGhostBuilding(tileX:number, tileY:number, buildingID:BuildingID){
 		tileX = Math.floor(tileX);
 		tileY = Math.floor(tileY);
+		//Tells a chunk to display a ghost building.
 		if(this.getChunk(tileX, tileY, true) == null){
 			return;
 		}
-		switch(buildingID){
-			case 0x0007:
-				this.getChunk(tileX, tileY).displayBuilding(tileToChunk(tileX), tileToChunk(tileY), buildingID, AlloySmelter.canBuildAt(tileX, tileY, this) ? 1 : 2);
-			break;
-			case 0x0006:
-				this.getChunk(tileX, tileY).displayBuilding(tileToChunk(tileX), tileToChunk(tileY), buildingID, StorageBuilding.canBuildAt(tileX, tileY, this) ? 1 : 2);
-			break;
-			case 0x0005: case 0x0105: case 0x0205: case 0x0305: case 0x0405: case 0x0505: case 0x0605: case 0x0705: case 0x0805: case 0x0905: case 0x0A05: case 0x0B05:
-				this.getChunk(tileX, tileY).displayBuilding(tileToChunk(tileX), tileToChunk(tileY), buildingID, Extractor.canBuildAt(tileX, tileY, this) ? 1 : 2);
-			break;
-			case 0x0004:
-				this.getChunk(tileX, tileY).displayBuilding(tileToChunk(tileX), tileToChunk(tileY), buildingID, Furnace.canBuildAt(tileX, tileY, this) ? 1 : 2);
-			break;
-			case 0x0002:
-				this.getChunk(tileX, tileY).displayBuilding(tileToChunk(tileX), tileToChunk(tileY), buildingID, Miner.canBuildAt(tileX, tileY, this) ? 1 : 2);
-			break;
-			case 0x0001: case 0x0101: case 0x0201: case 0x0301:
+		switch(buildingID % 0x100){
+			case 0x01:
 				this.getChunk(tileX, tileY).displayBuilding(tileToChunk(tileX), tileToChunk(tileY), this.getTurnedConveyor(tileX, tileY, buildingID >> 8), Conveyor.canBuildAt(tileX, tileY, this) ? 1 : 2);
 				break;
 			default:
-				this.getChunk(tileX, tileY).displayBuilding(tileToChunk(tileX), tileToChunk(tileY), buildingID, 1);
+				this.getChunk(tileX, tileY).displayBuilding(tileToChunk(tileX), tileToChunk(tileY), buildingID, BuildingType[buildingID % 0x100].canBuildAt(tileX, tileY, this));
 			break;
 		}
 	}
 	getTurnedConveyor(tileX:number, tileY:number, conveyorType:number){
+		//Returns how a conveyor should be turned based on nearby buildings.
 		tileX = Math.floor(tileX);
 		tileY = Math.floor(tileY);
 		let topConveyor:BuildingID | boolean = this.buildingIDAtTile(tileX, tileY - 1);
@@ -373,20 +360,17 @@ class Level {
 		}
 		return false;
 	}
-
-
 	buildBuilding(tileX:number, tileY:number, building:BuildingID):boolean {
 		if((building % 0x100 != 5 ? this.buildingIDAtTile(tileX, tileY) : this.extractorAtTile(tileX, tileY)?.id) === building){
-			if(canOverwriteBuilding){
-				canOverwriteBuilding = false;
-			} else {
+			if(!canOverwriteBuilding){
 				return false;
 			}
-		}
+		}//Only overwrite the same building once per build attempt.
+		//Otherwise, you could constantly overwrite a building on every frame you tried to build, which is not good.
+		canOverwriteBuilding = false;
 		this.buildingAtTile(tileX, tileY)?.break();
 		var tempBuilding:Building;
-		switch(building){
-			//A lot of the code here is duplicated, oh well
+		switch(building % 0x100){
 			case 0x0008:
 				if(!ResourceAcceptor.canBuildAt(tileX, tileY, this)){
 					return;
@@ -405,7 +389,7 @@ class Level {
 				}
 				tempBuilding = new StorageBuilding(tileX, tileY, building, this);
 				break;
-				case 0x0005: case 0x0105: case 0x0205: case 0x0305: case 0x0405: case 0x0505: case 0x0605: case 0x0705: case 0x0805: case 0x0905: case 0x0A05: case 0x0B05:
+			case 0x0005:
 				if(!Extractor.canBuildAt(tileX, tileY, this)){
 					return;
 				}
@@ -446,7 +430,7 @@ class Level {
 					Game.tutorial.miner.placedcorrectly = false;
 				}
 			break;
-			case 0x0001: case 0x0101: case 0x0201: case 0x0301: case 0x0401: case 0x0501: case 0x0601: case 0x0701: case 0x0801: case 0x0901: case 0x0A01: case 0x0B01:
+			case 0x0001:
 				if(!Conveyor.canBuildAt(tileX, tileY, this)){
 					if(Game.tutorial.conveyor.cantbeplacedonwater && Game.persistent.tutorialenabled){
 						_alert("Conveyors don't float!\nYes, I know, then water chunks are useless... I'll add pontoons in a future update.");
@@ -523,9 +507,7 @@ class Level {
 
 
 	export(){
-
-		
-
+		//Exports the level's data to JSON.
 		let chunkOutput = {};
 		for(var [position, chunk] of this.storage.entries()){
 			let output = chunk.export();
@@ -539,14 +521,12 @@ class Level {
 			items.push(item.export());
 		}
 
-		var output = {
+		return {
 			chunks: chunkOutput,
 			items: items,
 			resources: this.resources,
 			seed: this.seed
 		};
-
-		return output;
 	}
 }
 
@@ -606,16 +586,20 @@ class Chunk {
 		}
 
 		if(data){
+			//Import a chunk from JSON data.
 			for(let y in data[0]){
 				for(let x in data[0][y]){
 					let buildingData = data[0][y][x];
 					if(!buildingData) continue;
+
 					let tempBuilding = new BuildingType[buildingData.id % 0x100](parseInt(x) + (Globals.CHUNK_SIZE * this.x), parseInt(y) + (Globals.CHUNK_SIZE * this.y), buildingData.id, this.parent as Level);
 					if(buildingData.item){
+						//If the building has an item, spawn it in.
 						tempBuilding.item = new Item(buildingData.item.x, buildingData.item.y, buildingData.item.id, this.parent as Level);
 						tempBuilding.item.grabbedBy = tempBuilding;
 					}
 					if(buildingData.inv){
+						//If the building has an inventory, spawn in the items.
 						for(var itemData of buildingData.inv){
 							let tempItem = new Item(itemData.x, itemData.y, itemData.id, this.parent as Level);
 							tempItem.grabbedBy = tempBuilding;
@@ -635,8 +619,8 @@ class Chunk {
 						tempBuilding.item = new Item(buildingData.item.x, buildingData.item.y, buildingData.item.id, this.parent as Level);
 						tempBuilding.item.grabbedBy = tempBuilding;
 					}
+					//Same as above but for extractors.
 					this.layers[2][y][x] = tempBuilding;
-
 				}
 			}
 		}
@@ -646,15 +630,13 @@ class Chunk {
 	update():Chunk {
 		for(let row of this.layers[1]){
 			for(let value of row){
-				if(typeof value?.["update"] == "function"){
-					value["update"]();
-				}
+				value.update?.();
 			}
 		}
 		for(let row of this.layers[2]){
 			for(let value of row){
 				if(typeof value?.["update"] == "function"){
-					value["update"](undefined);
+					value.update?.(undefined);
 				}
 			}
 		}
@@ -696,9 +678,10 @@ class Chunk {
 	displayToConsole(){
 		console.log(`%c Base layer of chunk [${this.x},${this.y}]`, `font-weight: bold;`);
 		console.table(this.layers[0]);
+		//The oldest method in this program. Was used a very long time ago.
 	}
 	generate():Chunk {
-		//This... needs to be refactored. Oh well.
+		//This... needs to be refactored.  TODO
 		let isWet = false;
 		let isHilly = false;
 
@@ -1092,6 +1075,12 @@ class Building {
 				item.grabbedBy = null;
 			}
 		}
+	}
+	update(...any:any){
+		
+	}
+	display(...any:any){
+		//for some reason typescript absolutely FREAKED OUT when I added just the update method
 	}
 	hasItem():Item {
 		if(this.item) return this.item;
@@ -1676,7 +1665,9 @@ class ResourceAcceptor extends Building {
 
 
 
-const BuildingType = {
+const BuildingType: {
+	[index:number]: any
+} = {
 	0x01: Conveyor,
 	0x02: Miner,
 	0x03: TrashCan,

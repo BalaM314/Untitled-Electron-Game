@@ -1,13 +1,5 @@
 "use strict";
-/**
- * Library stuff
- */
 noise.seed(1);
-/**
- * Utility Functions
- *
- *
- */
 let mouseX = 0;
 let mouseY = 0;
 let mouseIsPressed = false;
@@ -101,7 +93,6 @@ window.onkeyup = (e) => {
 };
 window.onmousedown = (e) => { mouseIsPressed = true; latestMouseEvent = e; canOverwriteBuilding = true; };
 window.onmouseup = (e) => { mouseIsPressed = false; latestMouseEvent = e; canOverwriteBuilding = true; };
-//general functions
 function sq(x) {
     return x * x;
 }
@@ -161,7 +152,6 @@ function assert(x) {
     }
 }
 function download(filename, text) {
-    //Self explanatory.
     let temp2 = document.createElement('a');
     temp2.setAttribute('href', 'data:text/json;charset=utf-8,' + encodeURIComponent(text));
     temp2.setAttribute('download', filename);
@@ -180,10 +170,6 @@ uploadButton.onchange = function (event) {
         importData(content);
     };
 };
-/**
- * Drawing Functions
- *
- */
 var rectMode;
 (function (rectMode) {
     rectMode[rectMode["CENTER"] = 0] = "CENTER";
@@ -211,9 +197,6 @@ function* pseudoRandom(seed) {
         yield value / 16777216;
     }
 }
-/**
- * Game-related functions
- */
 let alerts = [];
 function _alert(x) {
     alerts.push(x);
@@ -266,7 +249,6 @@ function isConsoleOpen() {
             onConsoleOpen();
             return "[object TestingConsoleOpen]";
         };
-        //yes really. This is **probably** a bug.
         console.log({ e: x });
     });
 }
