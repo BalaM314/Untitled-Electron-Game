@@ -28,67 +28,71 @@ window.onkeydown = (e) => {
     if (keysPressed.indexOf(e.key.toLowerCase()) == -1) {
         keysPressed.push(e.key.toLowerCase());
     }
-    switch (e.key) {
-        case "ArrowRight":
-            placedBuilding.direction = 0x000;
-            break;
-        case "ArrowDown":
-            placedBuilding.direction = 0x100;
-            break;
-        case "ArrowLeft":
-            placedBuilding.direction = 0x200;
-            break;
-        case "ArrowUp":
-            placedBuilding.direction = 0x300;
-            break;
-        case ",":
-            placedBuilding.modifier = 0x000;
-            break;
-        case ".":
-            placedBuilding.modifier = 0x400;
-            break;
-        case "/":
-            // placedBuilding.modifier = 0x800; break;
-            _alert(`"Longer" extractors will be added in the next update.`);
-            break;
-        case "1":
-            placedBuilding.type = 0x0001;
-            break;
-        case "2":
-            placedBuilding.type = 0x0002;
-            break;
-        case "3":
-            placedBuilding.type = 0x0003;
-            break;
-        case "4":
-            placedBuilding.type = 0x0004;
-            break;
-        case "5":
-            placedBuilding.type = 0x0005;
-            break;
-        case "6":
-            placedBuilding.type = 0x0006;
-            break;
-        case "7":
-            placedBuilding.type = 0x0007;
-            break;
-        case "8":
-            placedBuilding.type = 0x0008;
-            break;
-        case "0":
-            placedBuilding.type = 0xFFFF;
-            break;
-        case "s":
-            if (e.ctrlKey)
+    if (e.ctrlKey) {
+        switch (e.key) {
+            case "s":
                 exportData();
-            break;
-        case "o":
-            if (e.ctrlKey)
+                e.preventDefault();
+                break;
+            case "o":
                 uploadButton.click();
-            break;
-        default: return;
+                e.preventDefault();
+                break;
+        }
     }
-    e.preventDefault();
+    else {
+        switch (e.key) {
+            case "ArrowRight":
+                placedBuilding.direction = 0x000;
+                break;
+            case "ArrowDown":
+                placedBuilding.direction = 0x100;
+                break;
+            case "ArrowLeft":
+                placedBuilding.direction = 0x200;
+                break;
+            case "ArrowUp":
+                placedBuilding.direction = 0x300;
+                break;
+            case ",":
+                placedBuilding.modifier = 0x000;
+                break;
+            case ".":
+                placedBuilding.modifier = 0x400;
+                break;
+            case "/":
+                _alert(`"Longer" extractors will be added in the next update.`);
+                e.preventDefault();
+                break;
+            case "1":
+                placedBuilding.type = 0x0001;
+                break;
+            case "2":
+                placedBuilding.type = 0x0002;
+                break;
+            case "3":
+                placedBuilding.type = 0x0003;
+                break;
+            case "4":
+                placedBuilding.type = 0x0004;
+                break;
+            case "5":
+                placedBuilding.type = 0x0005;
+                break;
+            case "6":
+                placedBuilding.type = 0x0006;
+                break;
+            case "7":
+                placedBuilding.type = 0x0007;
+                break;
+            case "8":
+                placedBuilding.type = 0x0008;
+                break;
+            case "0":
+                placedBuilding.type = 0xFFFF;
+                break;
+        }
+    }
 };
 window.onkeyup = (e) => {
     if (keysPressed.indexOf(e.key.toLowerCase()) != -1) {
