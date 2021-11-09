@@ -1,9 +1,9 @@
 // TODOS
-// Make conveyor chains not O(n^2)
-// make buildingbar only display after textures load
+// 
+// 
 // Fix hasItem and removeItem, they're kinda lost
 // 
-// Code cleanup
+// *Code cleanup
 // 
 // 
 // 
