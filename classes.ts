@@ -141,6 +141,7 @@ class Level {
 			// Generate a level from JSON
 			let {chunks, items, resources, seed, version} = data;
 			this.seed = seed;
+			this.resources = resources
 
 			for(var [position, chunkData] of Object.entries(chunks)){//Get data for a chunk
 				this.storage.set(position, new Chunk({
@@ -630,14 +631,12 @@ class Chunk {
 	update():Chunk {
 		for(let row of this.layers[1]){
 			for(let value of row){
-				value.update?.();
+				value?.update?.();
 			}
 		}
 		for(let row of this.layers[2]){
 			for(let value of row){
-				if(typeof value?.["update"] == "function"){
-					value.update?.(undefined);
-				}
+				value?.update?.(undefined);
 			}
 		}
 		return this;
