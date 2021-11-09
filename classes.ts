@@ -862,16 +862,45 @@ class Chunk {
 		let pixelY = ((this.y * Globals.CHUNK_SIZE) + y) * Globals.DISPLAY_TILE_SIZE + (Game.scroll.y * Globals.DISPLAY_SCALE);
 		let _ctx = isGhost ? ctx1 : ctx2;
 		if(isGhost == 2){
-			_ctx.strokeStyle = "#FF0000";
-			_ctx.fillStyle = "#FF0000";
-			_ctx.lineWidth = 2;
+			_ctx.globalAlpha = 0.9;
+			_ctx.drawImage(textures.get("invalidunderlay"), pixelX, pixelY, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE);
+			_ctx.globalAlpha = buildingID % 0x100 == 0x01 ? 0.3 : 0.7;
 		} else if(isGhost == 1){
-			_ctx.strokeStyle = "#444444";
-			_ctx.fillStyle = "#444444";
-			_ctx.lineWidth = 1;
-		} else if(textures.get(buildingID.toString())){
-			return _ctx.drawImage(textures.get(buildingID.toString()), pixelX, pixelY, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE);
-		} else if(settings.debug && false){
+			_ctx.globalAlpha = 0.9;
+			_ctx.drawImage(textures.get("ghostunderlay"), pixelX, pixelY, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE);
+			_ctx.globalAlpha = buildingID % 0x100 == 0x01 ? 0.3 : 0.7;
+		}
+		if(textures.get(buildingID.toString())){
+			switch(buildingID){
+				case 0x0005:
+					_ctx.drawImage(textures.get(buildingID.toString()), pixelX, pixelY, Globals.DISPLAY_TILE_SIZE * 2, Globals.DISPLAY_TILE_SIZE); break;
+				case 0x0105:
+					_ctx.drawImage(textures.get(buildingID.toString()), pixelX, pixelY, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE * 2); break;
+				case 0x0205:
+					_ctx.drawImage(textures.get(buildingID.toString()), pixelX - Globals.DISPLAY_TILE_SIZE, pixelY, Globals.DISPLAY_TILE_SIZE * 2, Globals.DISPLAY_TILE_SIZE); break;
+				case 0x0305:
+					_ctx.drawImage(textures.get(buildingID.toString()), pixelX, pixelY - Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE * 2); break;
+				case 0x0405:
+					_ctx.drawImage(textures.get(buildingID.toString()), pixelX, pixelY, Globals.DISPLAY_TILE_SIZE * 3, Globals.DISPLAY_TILE_SIZE); break;
+				case 0x0505:
+					_ctx.drawImage(textures.get(buildingID.toString()), pixelX, pixelY, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE * 3); break;
+				case 0x0605:
+					_ctx.drawImage(textures.get(buildingID.toString()), pixelX - Globals.DISPLAY_TILE_SIZE * 2, pixelY, Globals.DISPLAY_TILE_SIZE * 3, Globals.DISPLAY_TILE_SIZE); break;
+				case 0x0705:
+					_ctx.drawImage(textures.get(buildingID.toString()), pixelX, pixelY - Globals.DISPLAY_TILE_SIZE * 2, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE * 3); break;
+				case 0x0805:
+					_ctx.drawImage(textures.get(buildingID.toString()), pixelX, pixelY, Globals.DISPLAY_TILE_SIZE * 4, Globals.DISPLAY_TILE_SIZE); break;
+				case 0x0905:
+					_ctx.drawImage(textures.get(buildingID.toString()), pixelX, pixelY, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE * 4); break;
+				case 0x0A05:
+					_ctx.drawImage(textures.get(buildingID.toString()), pixelX - Globals.DISPLAY_TILE_SIZE * 3, pixelY, Globals.DISPLAY_TILE_SIZE * 4, Globals.DISPLAY_TILE_SIZE); break;
+				case 0x0B05:
+					_ctx.drawImage(textures.get(buildingID.toString()), pixelX, pixelY - Globals.DISPLAY_TILE_SIZE * 3, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE * 4); break;
+				default:
+					_ctx.drawImage(textures.get(buildingID.toString()), pixelX, pixelY, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE); break;
+			}
+			_ctx.globalAlpha = 1.0;
+		} else {
 			_ctx.fillStyle = "#FF00FF";
 			rect(pixelX, pixelY, Globals.DISPLAY_TILE_SIZE / 2, Globals.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
 			rect(pixelX + Globals.DISPLAY_TILE_SIZE / 2, pixelY + Globals.DISPLAY_TILE_SIZE / 2, Globals.DISPLAY_TILE_SIZE / 2, Globals.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
@@ -882,299 +911,13 @@ class Chunk {
 			_ctx.fillStyle = "#00FF00";
 			_ctx.fillText(this.buildingAt(x, y).toString(), pixelX + Globals.DISPLAY_TILE_SIZE / 2, pixelY + Globals.DISPLAY_TILE_SIZE / 2);
 		}
-		switch(buildingID as number){//TypeScript big dum dum
-			case 0x0001:
-				_ctx.beginPath();
-				_ctx.moveTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.1, pixelY + Globals.DISPLAY_TILE_SIZE * 0.5);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.9, pixelY + Globals.DISPLAY_TILE_SIZE * 0.5);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.6, pixelY + Globals.DISPLAY_TILE_SIZE * 0.3);
-				_ctx.moveTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.9, pixelY + Globals.DISPLAY_TILE_SIZE * 0.5);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.6, pixelY + Globals.DISPLAY_TILE_SIZE * 0.7);
-				_ctx.stroke();
-				break;
-			case 0x0101:
-				_ctx.beginPath();
-				_ctx.moveTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.5, pixelY + Globals.DISPLAY_TILE_SIZE * 0.1);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.5, pixelY + Globals.DISPLAY_TILE_SIZE * 0.9);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.3, pixelY + Globals.DISPLAY_TILE_SIZE * 0.6);
-				_ctx.moveTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.5, pixelY + Globals.DISPLAY_TILE_SIZE * 0.9);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.7, pixelY + Globals.DISPLAY_TILE_SIZE * 0.6);
-				_ctx.stroke();
-				break;
-			case 0x0201:
-				_ctx.beginPath();
-				_ctx.moveTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.9, pixelY + Globals.DISPLAY_TILE_SIZE * 0.5);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.1, pixelY + Globals.DISPLAY_TILE_SIZE * 0.5);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.4, pixelY + Globals.DISPLAY_TILE_SIZE * 0.3);
-				_ctx.moveTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.1, pixelY + Globals.DISPLAY_TILE_SIZE * 0.5);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.4, pixelY + Globals.DISPLAY_TILE_SIZE * 0.7);
-				_ctx.stroke();
-				break;
-			case 0x0301:
-				_ctx.beginPath();
-				_ctx.moveTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.5, pixelY + Globals.DISPLAY_TILE_SIZE * 0.9);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.5, pixelY + Globals.DISPLAY_TILE_SIZE * 0.1);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.3, pixelY + Globals.DISPLAY_TILE_SIZE * 0.4);
-				_ctx.moveTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.5, pixelY + Globals.DISPLAY_TILE_SIZE * 0.1);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.7, pixelY + Globals.DISPLAY_TILE_SIZE * 0.4);
-				_ctx.stroke();
-				break;
-			case 0x0401:
-				_ctx.beginPath();
-				_ctx.moveTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.5, pixelY + Globals.DISPLAY_TILE_SIZE * 0.9);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.5, pixelY + Globals.DISPLAY_TILE_SIZE * 0.5);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.9, pixelY + Globals.DISPLAY_TILE_SIZE * 0.5);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.6, pixelY + Globals.DISPLAY_TILE_SIZE * 0.3);
-				_ctx.moveTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.9, pixelY + Globals.DISPLAY_TILE_SIZE * 0.5);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.6, pixelY + Globals.DISPLAY_TILE_SIZE * 0.7);
-				_ctx.stroke();
-				break;
-			case 0x0501:
-				_ctx.beginPath();
-				_ctx.moveTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.5, pixelY + Globals.DISPLAY_TILE_SIZE * 0.1);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.5, pixelY + Globals.DISPLAY_TILE_SIZE * 0.5);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.9, pixelY + Globals.DISPLAY_TILE_SIZE * 0.5);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.6, pixelY + Globals.DISPLAY_TILE_SIZE * 0.3);
-				_ctx.moveTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.9, pixelY + Globals.DISPLAY_TILE_SIZE * 0.5);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.6, pixelY + Globals.DISPLAY_TILE_SIZE * 0.7);
-				_ctx.stroke();
-				break;
-			case 0x0601:
-				_ctx.beginPath();
-				_ctx.moveTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.9, pixelY + Globals.DISPLAY_TILE_SIZE * 0.5);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.5, pixelY + Globals.DISPLAY_TILE_SIZE * 0.5);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.5, pixelY + Globals.DISPLAY_TILE_SIZE * 0.9);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.3, pixelY + Globals.DISPLAY_TILE_SIZE * 0.6);
-				_ctx.moveTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.5, pixelY + Globals.DISPLAY_TILE_SIZE * 0.9);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.7, pixelY + Globals.DISPLAY_TILE_SIZE * 0.6);
-				_ctx.stroke();
-				break;
-			case 0x0701:
-				_ctx.beginPath();
-				_ctx.moveTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.1, pixelY + Globals.DISPLAY_TILE_SIZE * 0.5);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.5, pixelY + Globals.DISPLAY_TILE_SIZE * 0.5);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.5, pixelY + Globals.DISPLAY_TILE_SIZE * 0.9);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.3, pixelY + Globals.DISPLAY_TILE_SIZE * 0.6);
-				_ctx.moveTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.5, pixelY + Globals.DISPLAY_TILE_SIZE * 0.9);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.7, pixelY + Globals.DISPLAY_TILE_SIZE * 0.6);
-				_ctx.stroke();
-				break;
-			case 0x0801:
-				_ctx.beginPath();
-				_ctx.moveTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.5, pixelY + Globals.DISPLAY_TILE_SIZE * 0.9);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.5, pixelY + Globals.DISPLAY_TILE_SIZE * 0.5);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.1, pixelY + Globals.DISPLAY_TILE_SIZE * 0.5);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.4, pixelY + Globals.DISPLAY_TILE_SIZE * 0.3);
-				_ctx.moveTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.1, pixelY + Globals.DISPLAY_TILE_SIZE * 0.5);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.4, pixelY + Globals.DISPLAY_TILE_SIZE * 0.7);
-				_ctx.stroke();
-				break;
-			case 0x0901:
-				_ctx.beginPath();
-				_ctx.moveTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.5, pixelY + Globals.DISPLAY_TILE_SIZE * 0.1);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.5, pixelY + Globals.DISPLAY_TILE_SIZE * 0.5);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.1, pixelY + Globals.DISPLAY_TILE_SIZE * 0.5);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.4, pixelY + Globals.DISPLAY_TILE_SIZE * 0.3);
-				_ctx.moveTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.1, pixelY + Globals.DISPLAY_TILE_SIZE * 0.5);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.4, pixelY + Globals.DISPLAY_TILE_SIZE * 0.7);
-				_ctx.stroke();
-				break;
-			case 0x0A01:
-				_ctx.beginPath();
-				_ctx.moveTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.9, pixelY + Globals.DISPLAY_TILE_SIZE * 0.5);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.5, pixelY + Globals.DISPLAY_TILE_SIZE * 0.5);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.5, pixelY + Globals.DISPLAY_TILE_SIZE * 0.1);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.3, pixelY + Globals.DISPLAY_TILE_SIZE * 0.4);
-				_ctx.moveTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.5, pixelY + Globals.DISPLAY_TILE_SIZE * 0.1);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.7, pixelY + Globals.DISPLAY_TILE_SIZE * 0.4);
-				_ctx.stroke();
-				break;
-			case 0x0B01:
-				_ctx.beginPath();
-				_ctx.moveTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.1, pixelY + Globals.DISPLAY_TILE_SIZE * 0.5);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.5, pixelY + Globals.DISPLAY_TILE_SIZE * 0.5);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.5, pixelY + Globals.DISPLAY_TILE_SIZE * 0.1);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.3, pixelY + Globals.DISPLAY_TILE_SIZE * 0.4);
-				_ctx.moveTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.5, pixelY + Globals.DISPLAY_TILE_SIZE * 0.1);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.7, pixelY + Globals.DISPLAY_TILE_SIZE * 0.4);
-				_ctx.stroke();
-				break;
-				
-			case 0x0002:
-				rect(pixelX + Globals.DISPLAY_TILE_SIZE * 0.5, pixelY + Globals.DISPLAY_TILE_SIZE * 0.5, Globals.DISPLAY_TILE_SIZE * 0.6, Globals.DISPLAY_TILE_SIZE * 0.6, rectMode.CENTER, _ctx);
-				break;
-			
-			case 0x0003:
-				rect(pixelX + Globals.DISPLAY_TILE_SIZE * 0.5, pixelY + Globals.DISPLAY_TILE_SIZE * 0.5, Globals.DISPLAY_TILE_SIZE * 0.6, Globals.DISPLAY_TILE_SIZE * 0.6, rectMode.CENTER, _ctx);
-				rect(pixelX + Globals.DISPLAY_TILE_SIZE * 0.1, pixelY + Globals.DISPLAY_TILE_SIZE * 0.1, Globals.DISPLAY_TILE_SIZE * 0.8, Globals.DISPLAY_TILE_SIZE * 0.1, rectMode.CORNER, _ctx);
-				break;
-			
-			case 0x0004:
-				rect(pixelX + Globals.DISPLAY_TILE_SIZE * 0.5, pixelY + Globals.DISPLAY_TILE_SIZE * 0.5, Globals.DISPLAY_TILE_SIZE * 0.8, Globals.DISPLAY_TILE_SIZE * 0.8, rectMode.CENTER, _ctx);
-				_ctx.fillStyle = "#FFCC11";
-				rect(pixelX + Globals.DISPLAY_TILE_SIZE * 0.5, pixelY + Globals.DISPLAY_TILE_SIZE * 0.5, Globals.DISPLAY_TILE_SIZE * 0.4, Globals.DISPLAY_TILE_SIZE * 0.4, rectMode.CENTER, _ctx);
-				break;
-
-			case 0x0005:
-				_ctx.fillRect(pixelX + Globals.DISPLAY_TILE_SIZE * 0.1, pixelY + Globals.DISPLAY_TILE_SIZE * 0.2, Globals.DISPLAY_TILE_SIZE * 0.2, Globals.DISPLAY_TILE_SIZE * 0.6);
-				_ctx.beginPath();
-				_ctx.moveTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.1, pixelY + Globals.DISPLAY_TILE_SIZE * 0.5);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 1.4, pixelY + Globals.DISPLAY_TILE_SIZE * 0.5);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 1.1, pixelY + Globals.DISPLAY_TILE_SIZE * 0.3);
-				_ctx.moveTo(pixelX + Globals.DISPLAY_TILE_SIZE * 1.4, pixelY + Globals.DISPLAY_TILE_SIZE * 0.5);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 1.1, pixelY + Globals.DISPLAY_TILE_SIZE * 0.7);
-				_ctx.stroke();
-				break;
-			case 0x0105:
-				_ctx.fillRect(pixelX + Globals.DISPLAY_TILE_SIZE * 0.2, pixelY + Globals.DISPLAY_TILE_SIZE * 0.1, Globals.DISPLAY_TILE_SIZE * 0.6, Globals.DISPLAY_TILE_SIZE * 0.2);
-				_ctx.beginPath();
-				_ctx.moveTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.5, pixelY + Globals.DISPLAY_TILE_SIZE * 0.1);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.5, pixelY + Globals.DISPLAY_TILE_SIZE * 1.4);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.3, pixelY + Globals.DISPLAY_TILE_SIZE * 1.1);
-				_ctx.moveTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.5, pixelY + Globals.DISPLAY_TILE_SIZE * 1.4);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.7, pixelY + Globals.DISPLAY_TILE_SIZE * 1.1);
-				_ctx.stroke();
-				break;
-			case 0x0205:
-				_ctx.fillRect(pixelX + Globals.DISPLAY_TILE_SIZE * 0.7, pixelY + Globals.DISPLAY_TILE_SIZE * 0.2, Globals.DISPLAY_TILE_SIZE * 0.2, Globals.DISPLAY_TILE_SIZE * 0.6);
-				_ctx.beginPath();
-				_ctx.moveTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.9, pixelY + Globals.DISPLAY_TILE_SIZE * 0.5);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE *-0.4, pixelY + Globals.DISPLAY_TILE_SIZE * 0.5);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE *-0.1, pixelY + Globals.DISPLAY_TILE_SIZE * 0.3);
-				_ctx.moveTo(pixelX + Globals.DISPLAY_TILE_SIZE *-0.4, pixelY + Globals.DISPLAY_TILE_SIZE * 0.5);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE *-0.1, pixelY + Globals.DISPLAY_TILE_SIZE * 0.7);
-				_ctx.stroke();
-				break;
-			case 0x0305:
-				_ctx.fillRect(pixelX + Globals.DISPLAY_TILE_SIZE * 0.2, pixelY + Globals.DISPLAY_TILE_SIZE * 0.7, Globals.DISPLAY_TILE_SIZE * 0.6, Globals.DISPLAY_TILE_SIZE * 0.2);
-				_ctx.beginPath();
-				_ctx.moveTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.5, pixelY + Globals.DISPLAY_TILE_SIZE * 0.9);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.5, pixelY + Globals.DISPLAY_TILE_SIZE *-0.4);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.3, pixelY + Globals.DISPLAY_TILE_SIZE *-0.1);
-				_ctx.moveTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.5, pixelY + Globals.DISPLAY_TILE_SIZE *-0.4);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.7, pixelY + Globals.DISPLAY_TILE_SIZE *-0.1);
-				_ctx.stroke();
-				break;
-			case 0x0405:
-				_ctx.fillRect(pixelX + Globals.DISPLAY_TILE_SIZE * 0.1, pixelY + Globals.DISPLAY_TILE_SIZE * 0.2, Globals.DISPLAY_TILE_SIZE * 0.2, Globals.DISPLAY_TILE_SIZE * 0.6);
-				_ctx.beginPath();
-				_ctx.moveTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.1, pixelY + Globals.DISPLAY_TILE_SIZE * 0.5);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 2.4, pixelY + Globals.DISPLAY_TILE_SIZE * 0.5);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 2.1, pixelY + Globals.DISPLAY_TILE_SIZE * 0.3);
-				_ctx.moveTo(pixelX + Globals.DISPLAY_TILE_SIZE * 2.4, pixelY + Globals.DISPLAY_TILE_SIZE * 0.5);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 2.1, pixelY + Globals.DISPLAY_TILE_SIZE * 0.7);
-				_ctx.stroke();
-				break;
-			case 0x0505:
-				_ctx.fillRect(pixelX + Globals.DISPLAY_TILE_SIZE * 0.2, pixelY + Globals.DISPLAY_TILE_SIZE * 0.1, Globals.DISPLAY_TILE_SIZE * 0.6, Globals.DISPLAY_TILE_SIZE * 0.2);
-				_ctx.beginPath();
-				_ctx.moveTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.5, pixelY + Globals.DISPLAY_TILE_SIZE * 0.1);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.5, pixelY + Globals.DISPLAY_TILE_SIZE * 2.4);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.3, pixelY + Globals.DISPLAY_TILE_SIZE * 2.1);
-				_ctx.moveTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.5, pixelY + Globals.DISPLAY_TILE_SIZE * 2.4);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.7, pixelY + Globals.DISPLAY_TILE_SIZE * 2.1);
-				_ctx.stroke();
-				break;
-			case 0x0605:
-				_ctx.fillRect(pixelX + Globals.DISPLAY_TILE_SIZE * 0.7, pixelY + Globals.DISPLAY_TILE_SIZE * 0.2, Globals.DISPLAY_TILE_SIZE * 0.2, Globals.DISPLAY_TILE_SIZE * 0.6);
-				_ctx.beginPath();
-				_ctx.moveTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.9, pixelY + Globals.DISPLAY_TILE_SIZE * 0.5);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE *-1.4, pixelY + Globals.DISPLAY_TILE_SIZE * 0.5);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE *-1.1, pixelY + Globals.DISPLAY_TILE_SIZE * 0.3);
-				_ctx.moveTo(pixelX + Globals.DISPLAY_TILE_SIZE *-1.4, pixelY + Globals.DISPLAY_TILE_SIZE * 0.5);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE *-1.1, pixelY + Globals.DISPLAY_TILE_SIZE * 0.7);
-				_ctx.stroke();
-				break;
-			case 0x0705:
-				_ctx.fillRect(pixelX + Globals.DISPLAY_TILE_SIZE * 0.2, pixelY + Globals.DISPLAY_TILE_SIZE * 0.7, Globals.DISPLAY_TILE_SIZE * 0.6, Globals.DISPLAY_TILE_SIZE * 0.2);
-				_ctx.beginPath();
-				_ctx.moveTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.5, pixelY + Globals.DISPLAY_TILE_SIZE * 0.9);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.5, pixelY + Globals.DISPLAY_TILE_SIZE *-1.4);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.3, pixelY + Globals.DISPLAY_TILE_SIZE *-1.1);
-				_ctx.moveTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.5, pixelY + Globals.DISPLAY_TILE_SIZE *-1.4);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.7, pixelY + Globals.DISPLAY_TILE_SIZE *-1.1);
-				_ctx.stroke();
-				break;
-			case 0x0805:
-				_ctx.fillRect(pixelX + Globals.DISPLAY_TILE_SIZE * 0.1, pixelY + Globals.DISPLAY_TILE_SIZE * 0.2, Globals.DISPLAY_TILE_SIZE * 0.2, Globals.DISPLAY_TILE_SIZE * 0.6);
-				_ctx.beginPath();
-				_ctx.moveTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.1, pixelY + Globals.DISPLAY_TILE_SIZE * 0.5);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 3.4, pixelY + Globals.DISPLAY_TILE_SIZE * 0.5);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 3.1, pixelY + Globals.DISPLAY_TILE_SIZE * 0.3);
-				_ctx.moveTo(pixelX + Globals.DISPLAY_TILE_SIZE * 3.4, pixelY + Globals.DISPLAY_TILE_SIZE * 0.5);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 3.1, pixelY + Globals.DISPLAY_TILE_SIZE * 0.7);
-				_ctx.stroke();
-				break;
-			case 0x0905:
-				_ctx.fillRect(pixelX + Globals.DISPLAY_TILE_SIZE * 0.2, pixelY + Globals.DISPLAY_TILE_SIZE * 0.1, Globals.DISPLAY_TILE_SIZE * 0.6, Globals.DISPLAY_TILE_SIZE * 0.2);
-				_ctx.beginPath();
-				_ctx.moveTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.5, pixelY + Globals.DISPLAY_TILE_SIZE * 0.1);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.5, pixelY + Globals.DISPLAY_TILE_SIZE * 3.4);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.3, pixelY + Globals.DISPLAY_TILE_SIZE * 3.1);
-				_ctx.moveTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.5, pixelY + Globals.DISPLAY_TILE_SIZE * 3.4);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.7, pixelY + Globals.DISPLAY_TILE_SIZE * 3.1);
-				_ctx.stroke();
-				break;
-			case 0x0A05:
-				_ctx.fillRect(pixelX + Globals.DISPLAY_TILE_SIZE * 0.7, pixelY + Globals.DISPLAY_TILE_SIZE * 0.2, Globals.DISPLAY_TILE_SIZE * 0.2, Globals.DISPLAY_TILE_SIZE * 0.6);
-				_ctx.beginPath();
-				_ctx.moveTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.9, pixelY + Globals.DISPLAY_TILE_SIZE * 0.5);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE *-2.4, pixelY + Globals.DISPLAY_TILE_SIZE * 0.5);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE *-2.1, pixelY + Globals.DISPLAY_TILE_SIZE * 0.3);
-				_ctx.moveTo(pixelX + Globals.DISPLAY_TILE_SIZE *-2.4, pixelY + Globals.DISPLAY_TILE_SIZE * 0.5);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE *-2.1, pixelY + Globals.DISPLAY_TILE_SIZE * 0.7);
-				_ctx.stroke();
-				break;
-			case 0x0B05:
-				_ctx.fillRect(pixelX + Globals.DISPLAY_TILE_SIZE * 0.2, pixelY + Globals.DISPLAY_TILE_SIZE * 0.7, Globals.DISPLAY_TILE_SIZE * 0.6, Globals.DISPLAY_TILE_SIZE * 0.2);
-				_ctx.beginPath();
-				_ctx.moveTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.5, pixelY + Globals.DISPLAY_TILE_SIZE * 0.9);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.5, pixelY + Globals.DISPLAY_TILE_SIZE * -2.4);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.3, pixelY + Globals.DISPLAY_TILE_SIZE * -2.1);
-				_ctx.moveTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.5, pixelY + Globals.DISPLAY_TILE_SIZE * -2.4);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.7, pixelY + Globals.DISPLAY_TILE_SIZE * -2.1);
-				_ctx.stroke();
-				break;
-			
-			case 0x0006:
-				rect(pixelX + Globals.DISPLAY_TILE_SIZE * 0.5, pixelY + Globals.DISPLAY_TILE_SIZE * 0.5, Globals.DISPLAY_TILE_SIZE * 0.8, Globals.DISPLAY_TILE_SIZE * 0.8, rectMode.CENTER, _ctx);
-				_ctx.fillStyle = "#CCCCCC";
-				rect(pixelX + Globals.DISPLAY_TILE_SIZE * 0.45, pixelY + Globals.DISPLAY_TILE_SIZE * 0.1, Globals.DISPLAY_TILE_SIZE * 0.1, Globals.DISPLAY_TILE_SIZE * 0.3, rectMode.CORNER, _ctx);
-				break;
-			
-			case 0x0007:
-				rect(pixelX + Globals.DISPLAY_TILE_SIZE * 0.5, pixelY + Globals.DISPLAY_TILE_SIZE * 0.5, Globals.DISPLAY_TILE_SIZE * 0.8, Globals.DISPLAY_TILE_SIZE * 0.8, rectMode.CENTER, _ctx);
-				_ctx.fillStyle = "#FF0000";
-				rect(pixelX + Globals.DISPLAY_TILE_SIZE * 0.5, pixelY + Globals.DISPLAY_TILE_SIZE * 0.5, Globals.DISPLAY_TILE_SIZE * 0.4, Globals.DISPLAY_TILE_SIZE * 0.4, rectMode.CENTER, _ctx);
-				break;
-
-			default:
-				_ctx.fillStyle = "#FF00FF";
-				rect(pixelX, pixelY, Globals.DISPLAY_TILE_SIZE / 2, Globals.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
-				rect(pixelX + Globals.DISPLAY_TILE_SIZE / 2, pixelY + Globals.DISPLAY_TILE_SIZE / 2, Globals.DISPLAY_TILE_SIZE / 2, Globals.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
-				_ctx.fillStyle = "#000000";
-				rect(pixelX + Globals.DISPLAY_TILE_SIZE / 2, pixelY, Globals.DISPLAY_TILE_SIZE / 2, Globals.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
-				rect(pixelX, pixelY + Globals.DISPLAY_TILE_SIZE / 2, Globals.DISPLAY_TILE_SIZE / 2, Globals.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
-				_ctx.font = "15px sans-serif";
-				_ctx.fillStyle = "#00FF00";
-				_ctx.fillText(buildingID.toString(), pixelX + Globals.DISPLAY_TILE_SIZE / 2, pixelY + Globals.DISPLAY_TILE_SIZE / 2);
-				break;
-		}
 	}
 	displayL3(x:number, y:number, buildingID:BuildingID, isGhost?:number){
 		if(buildingID == 0xFFFF){return;}
 		let pixelX = ((this.x * Globals.CHUNK_SIZE) + x) * Globals.DISPLAY_TILE_SIZE + (Game.scroll.x * Globals.DISPLAY_SCALE);
 		let pixelY = ((this.y * Globals.CHUNK_SIZE) + y) * Globals.DISPLAY_TILE_SIZE + (Game.scroll.y * Globals.DISPLAY_SCALE);
-		let _ctx = isGhost ? ctx1 : ctx25;
-		if(isGhost == 2){
-			_ctx.strokeStyle = "#FF0000";
-			_ctx.fillStyle = "#FF0000";
-			_ctx.lineWidth = 2;
-		} else if(isGhost == 1){
-			_ctx.strokeStyle = "#444444";
-			_ctx.fillStyle = "#444444";
-			_ctx.lineWidth = 1;
-		} else if(textures.get(buildingID.toString())){
+		let _ctx = ctx25;
+		if(textures.get(buildingID.toString())){
 			switch(buildingID){
 				case 0x0005:
 					return _ctx.drawImage(textures.get(buildingID.toString()), pixelX, pixelY, Globals.DISPLAY_TILE_SIZE * 2, Globals.DISPLAY_TILE_SIZE);
@@ -1200,11 +943,8 @@ class Chunk {
 					return _ctx.drawImage(textures.get(buildingID.toString()), pixelX - Globals.DISPLAY_TILE_SIZE * 3, pixelY, Globals.DISPLAY_TILE_SIZE * 4, Globals.DISPLAY_TILE_SIZE);
 				case 0x0B05:
 					return _ctx.drawImage(textures.get(buildingID.toString()), pixelX, pixelY - Globals.DISPLAY_TILE_SIZE * 3, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE * 4);
-				
 			}
-			
-			
-		} else if(settings.debug && false){
+		} else {
 			_ctx.fillStyle = "#FF00FF";
 			rect(pixelX, pixelY, Globals.DISPLAY_TILE_SIZE / 2, Globals.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
 			rect(pixelX + Globals.DISPLAY_TILE_SIZE / 2, pixelY + Globals.DISPLAY_TILE_SIZE / 2, Globals.DISPLAY_TILE_SIZE / 2, Globals.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
@@ -1214,141 +954,6 @@ class Chunk {
 			_ctx.font = "15px sans-serif";
 			_ctx.fillStyle = "#00FF00";
 			_ctx.fillText(this.buildingAt(x, y).toString(), pixelX + Globals.DISPLAY_TILE_SIZE / 2, pixelY + Globals.DISPLAY_TILE_SIZE / 2);
-		}
-		switch(buildingID){//TypeScript big dum dum
-			
-			case 0x0005:
-				_ctx.fillRect(pixelX + Globals.DISPLAY_TILE_SIZE * 0.1, pixelY + Globals.DISPLAY_TILE_SIZE * 0.2, Globals.DISPLAY_TILE_SIZE * 0.2, Globals.DISPLAY_TILE_SIZE * 0.6);
-				_ctx.beginPath();
-				_ctx.moveTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.1, pixelY + Globals.DISPLAY_TILE_SIZE * 0.5);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 1.4, pixelY + Globals.DISPLAY_TILE_SIZE * 0.5);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 1.1, pixelY + Globals.DISPLAY_TILE_SIZE * 0.3);
-				_ctx.moveTo(pixelX + Globals.DISPLAY_TILE_SIZE * 1.4, pixelY + Globals.DISPLAY_TILE_SIZE * 0.5);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 1.1, pixelY + Globals.DISPLAY_TILE_SIZE * 0.7);
-				_ctx.stroke();
-				break;
-			case 0x0105:
-				_ctx.fillRect(pixelX + Globals.DISPLAY_TILE_SIZE * 0.2, pixelY + Globals.DISPLAY_TILE_SIZE * 0.1, Globals.DISPLAY_TILE_SIZE * 0.6, Globals.DISPLAY_TILE_SIZE * 0.2);
-				_ctx.beginPath();
-				_ctx.moveTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.5, pixelY + Globals.DISPLAY_TILE_SIZE * 0.1);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.5, pixelY + Globals.DISPLAY_TILE_SIZE * 1.4);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.3, pixelY + Globals.DISPLAY_TILE_SIZE * 1.1);
-				_ctx.moveTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.5, pixelY + Globals.DISPLAY_TILE_SIZE * 1.4);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.7, pixelY + Globals.DISPLAY_TILE_SIZE * 1.1);
-				_ctx.stroke();
-				break;
-			case 0x0205:
-				_ctx.fillRect(pixelX + Globals.DISPLAY_TILE_SIZE * 0.7, pixelY + Globals.DISPLAY_TILE_SIZE * 0.2, Globals.DISPLAY_TILE_SIZE * 0.2, Globals.DISPLAY_TILE_SIZE * 0.6);
-				_ctx.beginPath();
-				_ctx.moveTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.9, pixelY + Globals.DISPLAY_TILE_SIZE * 0.5);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE *-0.4, pixelY + Globals.DISPLAY_TILE_SIZE * 0.5);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE *-0.1, pixelY + Globals.DISPLAY_TILE_SIZE * 0.3);
-				_ctx.moveTo(pixelX + Globals.DISPLAY_TILE_SIZE *-0.4, pixelY + Globals.DISPLAY_TILE_SIZE * 0.5);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE *-0.1, pixelY + Globals.DISPLAY_TILE_SIZE * 0.7);
-				_ctx.stroke();
-				break;
-			case 0x0305:
-				_ctx.fillRect(pixelX + Globals.DISPLAY_TILE_SIZE * 0.2, pixelY + Globals.DISPLAY_TILE_SIZE * 0.7, Globals.DISPLAY_TILE_SIZE * 0.6, Globals.DISPLAY_TILE_SIZE * 0.2);
-				_ctx.beginPath();
-				_ctx.moveTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.5, pixelY + Globals.DISPLAY_TILE_SIZE * 0.9);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.5, pixelY + Globals.DISPLAY_TILE_SIZE *-0.4);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.3, pixelY + Globals.DISPLAY_TILE_SIZE *-0.1);
-				_ctx.moveTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.5, pixelY + Globals.DISPLAY_TILE_SIZE *-0.4);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.7, pixelY + Globals.DISPLAY_TILE_SIZE *-0.1);
-				_ctx.stroke();
-				break;
-			case 0x0405:
-				_ctx.fillRect(pixelX + Globals.DISPLAY_TILE_SIZE * 0.1, pixelY + Globals.DISPLAY_TILE_SIZE * 0.2, Globals.DISPLAY_TILE_SIZE * 0.2, Globals.DISPLAY_TILE_SIZE * 0.6);
-				_ctx.beginPath();
-				_ctx.moveTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.1, pixelY + Globals.DISPLAY_TILE_SIZE * 0.5);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 2.4, pixelY + Globals.DISPLAY_TILE_SIZE * 0.5);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 2.1, pixelY + Globals.DISPLAY_TILE_SIZE * 0.3);
-				_ctx.moveTo(pixelX + Globals.DISPLAY_TILE_SIZE * 2.4, pixelY + Globals.DISPLAY_TILE_SIZE * 0.5);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 2.1, pixelY + Globals.DISPLAY_TILE_SIZE * 0.7);
-				_ctx.stroke();
-				break;
-			case 0x0505:
-				_ctx.fillRect(pixelX + Globals.DISPLAY_TILE_SIZE * 0.2, pixelY + Globals.DISPLAY_TILE_SIZE * 0.1, Globals.DISPLAY_TILE_SIZE * 0.6, Globals.DISPLAY_TILE_SIZE * 0.2);
-				_ctx.beginPath();
-				_ctx.moveTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.5, pixelY + Globals.DISPLAY_TILE_SIZE * 0.1);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.5, pixelY + Globals.DISPLAY_TILE_SIZE * 2.4);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.3, pixelY + Globals.DISPLAY_TILE_SIZE * 2.1);
-				_ctx.moveTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.5, pixelY + Globals.DISPLAY_TILE_SIZE * 2.4);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.7, pixelY + Globals.DISPLAY_TILE_SIZE * 2.1);
-				_ctx.stroke();
-				break;
-			case 0x0605:
-				_ctx.fillRect(pixelX + Globals.DISPLAY_TILE_SIZE * 0.7, pixelY + Globals.DISPLAY_TILE_SIZE * 0.2, Globals.DISPLAY_TILE_SIZE * 0.2, Globals.DISPLAY_TILE_SIZE * 0.6);
-				_ctx.beginPath();
-				_ctx.moveTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.9, pixelY + Globals.DISPLAY_TILE_SIZE * 0.5);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE *-1.4, pixelY + Globals.DISPLAY_TILE_SIZE * 0.5);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE *-1.1, pixelY + Globals.DISPLAY_TILE_SIZE * 0.3);
-				_ctx.moveTo(pixelX + Globals.DISPLAY_TILE_SIZE *-1.4, pixelY + Globals.DISPLAY_TILE_SIZE * 0.5);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE *-1.1, pixelY + Globals.DISPLAY_TILE_SIZE * 0.7);
-				_ctx.stroke();
-				break;
-			case 0x0705:
-				_ctx.fillRect(pixelX + Globals.DISPLAY_TILE_SIZE * 0.2, pixelY + Globals.DISPLAY_TILE_SIZE * 0.7, Globals.DISPLAY_TILE_SIZE * 0.6, Globals.DISPLAY_TILE_SIZE * 0.2);
-				_ctx.beginPath();
-				_ctx.moveTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.5, pixelY + Globals.DISPLAY_TILE_SIZE * 0.9);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.5, pixelY + Globals.DISPLAY_TILE_SIZE *-1.4);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.3, pixelY + Globals.DISPLAY_TILE_SIZE *-1.1);
-				_ctx.moveTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.5, pixelY + Globals.DISPLAY_TILE_SIZE *-1.4);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.7, pixelY + Globals.DISPLAY_TILE_SIZE *-1.1);
-				_ctx.stroke();
-				break;
-			case 0x0805:
-				_ctx.fillRect(pixelX + Globals.DISPLAY_TILE_SIZE * 0.1, pixelY + Globals.DISPLAY_TILE_SIZE * 0.2, Globals.DISPLAY_TILE_SIZE * 0.2, Globals.DISPLAY_TILE_SIZE * 0.6);
-				_ctx.beginPath();
-				_ctx.moveTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.1, pixelY + Globals.DISPLAY_TILE_SIZE * 0.5);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 3.4, pixelY + Globals.DISPLAY_TILE_SIZE * 0.5);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 3.1, pixelY + Globals.DISPLAY_TILE_SIZE * 0.3);
-				_ctx.moveTo(pixelX + Globals.DISPLAY_TILE_SIZE * 3.4, pixelY + Globals.DISPLAY_TILE_SIZE * 0.5);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 3.1, pixelY + Globals.DISPLAY_TILE_SIZE * 0.7);
-				_ctx.stroke();
-				break;
-			case 0x0905:
-				_ctx.fillRect(pixelX + Globals.DISPLAY_TILE_SIZE * 0.2, pixelY + Globals.DISPLAY_TILE_SIZE * 0.1, Globals.DISPLAY_TILE_SIZE * 0.6, Globals.DISPLAY_TILE_SIZE * 0.2);
-				_ctx.beginPath();
-				_ctx.moveTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.5, pixelY + Globals.DISPLAY_TILE_SIZE * 0.1);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.5, pixelY + Globals.DISPLAY_TILE_SIZE * 3.4);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.3, pixelY + Globals.DISPLAY_TILE_SIZE * 3.1);
-				_ctx.moveTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.5, pixelY + Globals.DISPLAY_TILE_SIZE * 3.4);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.7, pixelY + Globals.DISPLAY_TILE_SIZE * 3.1);
-				_ctx.stroke();
-				break;
-			case 0x0A05:
-				_ctx.fillRect(pixelX + Globals.DISPLAY_TILE_SIZE * 0.7, pixelY + Globals.DISPLAY_TILE_SIZE * 0.2, Globals.DISPLAY_TILE_SIZE * 0.2, Globals.DISPLAY_TILE_SIZE * 0.6);
-				_ctx.beginPath();
-				_ctx.moveTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.9, pixelY + Globals.DISPLAY_TILE_SIZE * 0.5);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE *-2.4, pixelY + Globals.DISPLAY_TILE_SIZE * 0.5);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE *-2.1, pixelY + Globals.DISPLAY_TILE_SIZE * 0.3);
-				_ctx.moveTo(pixelX + Globals.DISPLAY_TILE_SIZE *-2.4, pixelY + Globals.DISPLAY_TILE_SIZE * 0.5);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE *-2.1, pixelY + Globals.DISPLAY_TILE_SIZE * 0.7);
-				_ctx.stroke();
-				break;
-			case 0x0B05:
-				_ctx.fillRect(pixelX + Globals.DISPLAY_TILE_SIZE * 0.2, pixelY + Globals.DISPLAY_TILE_SIZE * 0.7, Globals.DISPLAY_TILE_SIZE * 0.6, Globals.DISPLAY_TILE_SIZE * 0.2);
-				_ctx.beginPath();
-				_ctx.moveTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.5, pixelY + Globals.DISPLAY_TILE_SIZE * 0.9);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.5, pixelY + Globals.DISPLAY_TILE_SIZE * -2.4);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.3, pixelY + Globals.DISPLAY_TILE_SIZE * -2.1);
-				_ctx.moveTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.5, pixelY + Globals.DISPLAY_TILE_SIZE * -2.4);
-				_ctx.lineTo(pixelX + Globals.DISPLAY_TILE_SIZE * 0.7, pixelY + Globals.DISPLAY_TILE_SIZE * -2.1);
-				_ctx.stroke();
-				break;
-			
-			default:
-				_ctx.fillStyle = "#FF00FF";
-				rect(pixelX, pixelY, Globals.DISPLAY_TILE_SIZE / 2, Globals.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
-				rect(pixelX + Globals.DISPLAY_TILE_SIZE / 2, pixelY + Globals.DISPLAY_TILE_SIZE / 2, Globals.DISPLAY_TILE_SIZE / 2, Globals.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
-				_ctx.fillStyle = "#000000";
-				rect(pixelX + Globals.DISPLAY_TILE_SIZE / 2, pixelY, Globals.DISPLAY_TILE_SIZE / 2, Globals.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
-				rect(pixelX, pixelY + Globals.DISPLAY_TILE_SIZE / 2, Globals.DISPLAY_TILE_SIZE / 2, Globals.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
-				_ctx.font = "15px sans-serif";
-				_ctx.fillStyle = "#00FF00";
-				_ctx.fillText(buildingID.toString(), pixelX + Globals.DISPLAY_TILE_SIZE / 2, pixelY + Globals.DISPLAY_TILE_SIZE / 2);
-				break;
 		}
 	}
 	export(){
