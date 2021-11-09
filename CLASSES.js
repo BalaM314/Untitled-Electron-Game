@@ -40,7 +40,7 @@ const ItemID = {
     "base_copperIngot": "base_copperIngot",
     "base_steelIngot": "base_steelIngot"
 };
-const consts = {
+const generation_consts = {
     //All distance values are in chunks.
     perlin_scale: 2 * Math.PI,
     y_offset: 2031,
@@ -666,12 +666,12 @@ class Chunk extends AbstractChunk {
         let isWet = false;
         let isHilly = false;
         let distanceFromSpawn = Math.sqrt(this.x ** 2 + this.y ** 2);
-        let distanceBoost = constrain(Math.log((distanceFromSpawn / consts.ore_scale) + 0.5) / 2, 0, 0.6);
+        let distanceBoost = constrain(Math.log((distanceFromSpawn / generation_consts.ore_scale) + 0.5) / 2, 0, 0.6);
         //A value added to the perlin noise on each tile to make the amount of stone/ore increase, scales as you go further out.
-        if (this.generator.next().value < 0.07 && distanceFromSpawn > consts.min_water_chunk_distance) {
+        if (this.generator.next().value < 0.07 && distanceFromSpawn > generation_consts.min_water_chunk_distance) {
             isWet = true;
         }
-        else if (distanceBoost > consts.hilly.terrain_cutoff) {
+        else if (distanceBoost > generation_consts.hilly.terrain_cutoff) {
             isHilly = true;
         }
         if (isWet) { //Generator for wet chunks.
@@ -700,10 +700,10 @@ class Chunk extends AbstractChunk {
             //Chooses which ore to generate based on RNG and ditance from spawn.
             let oreToGenerate = 0xFF;
             let oreRand = this.generator.next().value;
-            if (distanceFromSpawn < consts.hilly.min_iron_distance) {
+            if (distanceFromSpawn < generation_consts.hilly.min_iron_distance) {
                 oreToGenerate = 0x10;
             }
-            else if (distanceFromSpawn < consts.hilly.min_copper_distance) {
+            else if (distanceFromSpawn < generation_consts.hilly.min_copper_distance) {
                 oreToGenerate = oreRand > 0.5 ? 0x10 : 0x11;
             }
             else {
@@ -712,12 +712,12 @@ class Chunk extends AbstractChunk {
             for (var row in this.layers[0]) {
                 for (var tile in this.layers[0][row]) {
                     //Choose the tile to be placed:
-                    let noiseHeight = Math.abs(noise.perlin2(((this.x * Globals.CHUNK_SIZE) + +tile + this.parent.seed) / consts.perlin_scale, ((this.y * Globals.CHUNK_SIZE) + +row + (this.parent.seed + consts.y_offset)) / consts.perlin_scale));
+                    let noiseHeight = Math.abs(noise.perlin2(((this.x * Globals.CHUNK_SIZE) + +tile + this.parent.seed) / generation_consts.perlin_scale, ((this.y * Globals.CHUNK_SIZE) + +row + (this.parent.seed + generation_consts.y_offset)) / generation_consts.perlin_scale));
                     //This formula just finds the perlin noise value at a tile, but tweaked so it's different per seed and not mirrored diagonally.
-                    if ((noiseHeight + distanceBoost / 2) > consts.hilly.ore_threshold) {
+                    if ((noiseHeight + distanceBoost / 2) > generation_consts.hilly.ore_threshold) {
                         this.layers[0][row][tile] = oreToGenerate;
                     }
-                    else if ((noiseHeight + distanceBoost) > consts.hilly.stone_threshold) {
+                    else if ((noiseHeight + distanceBoost) > generation_consts.hilly.stone_threshold) {
                         this.layers[0][row][tile] = 0x01;
                     }
                     else {
