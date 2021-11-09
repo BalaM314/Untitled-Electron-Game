@@ -32,10 +32,10 @@ type BuildingID =
 0x0505 |	//Long Extractor Facing Down
 0x0605 |	//Long Extractor Facing Left
 0x0705 |	//Long Extractor Facing Up
-0x0805 |	//Really Long Extractor Facing Right
-0x0905 |	//Really Long Extractor Facing Down
-0x0A05 |	//Really Long Extractor Facing Left
-0x0B05 |	//Really Long Extractor Facing Up
+0x0805 |	//Longer Extractor Facing Right
+0x0905 |	//Longer Extractor Facing Down
+0x0A05 |	//Longer Extractor Facing Left
+0x0B05 |	//Longer Extractor Facing Up
 0x0006 |	//Chest
 0x0007 |	//Alloy Smelter
 0x0008 |	//Resource Acceptor
