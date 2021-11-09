@@ -55,7 +55,7 @@ const consts = {
     }
 };
 const Globals = {
-    VERSION: "alpha 0.0.0",
+    VERSION: "alpha 1.0.0",
     CHUNK_SIZE: 16,
     TILE_SIZE: 30,
     DISPLAY_SCALE: 1,
@@ -143,7 +143,7 @@ class Level extends ChunkedDataStorage {
         }
         else {
             // what the heck am I doing
-            let { chunks, items, resources, seed } = data;
+            let { chunks, items, resources, seed, version } = data;
             super(seed, Chunk, {
                 layer1: 0x00,
                 layer2: null,
@@ -158,21 +158,15 @@ class Level extends ChunkedDataStorage {
                     data: chunkData
                 }).generate());
             }
-            for (var item of items) {
-                let foundDuplicate = false;
-                for (let testItem of this.items) {
-                    if (testItem.x == item.x && testItem.y == item.y) {
-                        foundDuplicate = true;
+            if (version !== "alpha 0.0.0") {
+                for (var item of items) {
+                    let tempItem = new Item(item.x, item.y, item.id, this);
+                    if (item.grabbedBy) {
+                        tempItem.grabbedBy = this.buildingAt(item.grabbedBy.x, item.grabbedBy.y);
+                        assert(tempItem.grabbedBy);
                     }
+                    this.items.push(tempItem);
                 }
-                if (foundDuplicate)
-                    continue; //O(n^2) go brrrrrrrrrrr
-                let tempItem = new Item(item.x, item.y, item.id, this);
-                if (item.grabbedBy) {
-                    tempItem.grabbedBy = this.buildingAt(item.grabbedBy.x, item.grabbedBy.y);
-                    assert(tempItem.grabbedBy);
-                }
-                this.items.push(tempItem);
             }
         }
     }
@@ -184,6 +178,9 @@ class Level extends ChunkedDataStorage {
     }
     buildingAt(tileX, tileY) {
         return this.getChunk(Math.floor(tileX), Math.floor(tileY)).atLayer2(tileToChunk(tileX), tileToChunk(tileY));
+    }
+    extractorAt(tileX, tileY) {
+        return this.getChunk(Math.floor(tileX), Math.floor(tileY)).atLayer3(tileToChunk(tileX), tileToChunk(tileY));
     }
     addItem(x, y, id) {
         let tempitem = new Item(x, y, id, this);
@@ -246,13 +243,13 @@ class Level extends ChunkedDataStorage {
         tileX = Math.floor(tileX);
         tileY = Math.floor(tileY);
         let topConveyor = this.buildingIDAtTile(tileX, tileY - 1);
-        topConveyor = topConveyor == 0x0101 || topConveyor == 0x0601 || topConveyor == 0x0701;
+        topConveyor = topConveyor == 0x0101 || topConveyor == 0x0601 || topConveyor == 0x0701 || topConveyor == 0x0002 || topConveyor == 0x0004 || topConveyor == 0x0007;
         let rightConveyor = this.buildingIDAtTile(tileX + 1, tileY);
-        rightConveyor = rightConveyor == 0x0201 || rightConveyor == 0x0801 || rightConveyor == 0x0901;
+        rightConveyor = rightConveyor == 0x0201 || rightConveyor == 0x0801 || rightConveyor == 0x0901 || rightConveyor == 0x0002 || rightConveyor == 0x0004 || rightConveyor == 0x0007;
         let leftConveyor = this.buildingIDAtTile(tileX - 1, tileY);
-        leftConveyor = leftConveyor == 0x0001 || leftConveyor == 0x0401 || leftConveyor == 0x0501;
+        leftConveyor = leftConveyor == 0x0001 || leftConveyor == 0x0401 || leftConveyor == 0x0501 || leftConveyor == 0x0002 || leftConveyor == 0x0004 || leftConveyor == 0x0007;
         let bottomConveyor = this.buildingIDAtTile(tileX, tileY + 1);
-        bottomConveyor = bottomConveyor == 0x0301 || bottomConveyor == 0x0A01 || bottomConveyor == 0x0B01;
+        bottomConveyor = bottomConveyor == 0x0301 || bottomConveyor == 0x0A01 || bottomConveyor == 0x0B01 || bottomConveyor == 0x0002 || bottomConveyor == 0x0004 || bottomConveyor == 0x0007;
         let buildingID = 0xFFFF;
         switch (conveyorType) {
             case 0:
@@ -343,9 +340,15 @@ class Level extends ChunkedDataStorage {
         return false;
     }
     buildBuilding(tileX, tileY, building) {
-        if (this.buildingIDAtTile(tileX, tileY) % 0x100 == building % 0x100) {
-            this.buildingAt(tileX, tileY)?.break();
+        if ((building % 0x100 != 5 ? this.buildingIDAtTile(tileX, tileY) : this.extractorAt(tileX, tileY)?.id) === building) {
+            if (canOverwriteBuilding) {
+                canOverwriteBuilding = false;
+            }
+            else {
+                return false;
+            }
         }
+        this.buildingAt(tileX, tileY)?.break();
         var tempBuilding;
         switch (building) {
             //A lot of the code here is duplicated, oh well
@@ -572,7 +575,6 @@ class AbstractChunk {
                     if (buildingData.item) {
                         tempBuilding.item = new Item(buildingData.item.x, buildingData.item.y, buildingData.item.id, this.parent);
                         tempBuilding.item.grabbedBy = tempBuilding;
-                        this.parent?.items.push(tempBuilding.item);
                     }
                     if (buildingData.inv) {
                         for (var itemData of buildingData.inv) {
@@ -773,6 +775,7 @@ class Chunk extends AbstractChunk {
         for (let y = 0; y < this.layers[1].length; y++) {
             for (let x = 0; x < this.layers[1][y].length; x++) {
                 this.displayBuilding(x, y, this.atLayer2(tileToChunk(x), tileToChunk(y))?.id ?? 0xFFFF);
+                this.layers[1][y][x]?.display?.(currentframe);
             }
         }
         for (let y = 0; y < this.layers[2].length; y++) {
@@ -1363,10 +1366,10 @@ class Item {
         }
     }
     display(currentframe) {
-        if ((Game.scroll.x * Globals.DISPLAY_SCALE) + this.x > window.innerWidth + (8 * Globals.DISPLAY_SCALE) ||
-            (Game.scroll.x * Globals.DISPLAY_SCALE) + this.x < (-8 * Globals.DISPLAY_SCALE) ||
-            (Game.scroll.y * Globals.DISPLAY_SCALE) + this.y > window.innerHeight + +(8 * Globals.DISPLAY_SCALE) ||
-            (Game.scroll.y * Globals.DISPLAY_SCALE) + this.y < (-8 * Globals.DISPLAY_SCALE)) {
+        if (Globals.DISPLAY_SCALE * (this.x + Game.scroll.x - 8) < 0 ||
+            Globals.DISPLAY_SCALE * (this.x + Game.scroll.x - 8) > window.innerWidth ||
+            Globals.DISPLAY_SCALE * (this.y + Game.scroll.y - 8) < 0 ||
+            Globals.DISPLAY_SCALE * (this.y + Game.scroll.y - 8) > window.innerHeight) {
             return;
         } //if offscreen return immediately
         currentframe.ips++;
@@ -1409,7 +1412,6 @@ class Building {
         this.y = tileY;
         this.id = id;
         this.level = level;
-        this.item = null;
         this.inventory = null;
     }
     static canBuildAt(tileX, tileY, level) {
@@ -1445,19 +1447,27 @@ class Building {
     }
     spawnItem(id) {
         id ??= "base_null";
-        if (this.level.buildingIDAtTile(this.x + 1, this.y) === 0x0001 &&
+        if ((this.level.buildingIDAtTile(this.x + 1, this.y) === 0x0001 ||
+            this.level.buildingIDAtTile(this.x + 1, this.y) === 0x0701 ||
+            this.level.buildingIDAtTile(this.x + 1, this.y) === 0x0B01) &&
             this.level.buildingAt(this.x + 1, this.y).item == null) {
             this.level.addItem(this.x * Globals.TILE_SIZE + Globals.TILE_SIZE * 1.1, this.y * Globals.TILE_SIZE + Globals.TILE_SIZE * 0.5, id);
         }
-        else if (this.level.buildingIDAtTile(this.x, this.y + 1) === 0x0101 &&
+        else if ((this.level.buildingIDAtTile(this.x, this.y + 1) === 0x0101 ||
+            this.level.buildingIDAtTile(this.x, this.y + 1) === 0x0501 ||
+            this.level.buildingIDAtTile(this.x, this.y + 1) === 0x0901) &&
             this.level.buildingAt(this.x, this.y + 1).item == null) {
             this.level.addItem(this.x * Globals.TILE_SIZE + Globals.TILE_SIZE * 0.5, this.y * Globals.TILE_SIZE + Globals.TILE_SIZE * 1.1, id);
         }
-        else if (this.level.buildingIDAtTile(this.x - 1, this.y) === 0x0201 &&
+        else if ((this.level.buildingIDAtTile(this.x - 1, this.y) === 0x0201 ||
+            this.level.buildingIDAtTile(this.x - 1, this.y) === 0x0601 ||
+            this.level.buildingIDAtTile(this.x - 1, this.y) === 0x0A01) &&
             this.level.buildingAt(this.x - 1, this.y).item == null) {
             this.level.addItem(this.x * Globals.TILE_SIZE - Globals.TILE_SIZE * 0.1, this.y * Globals.TILE_SIZE + Globals.TILE_SIZE * 0.5, id);
         }
-        else if (this.level.buildingIDAtTile(this.x, this.y - 1) === 0x0301 &&
+        else if ((this.level.buildingIDAtTile(this.x, this.y - 1) === 0x0301 ||
+            this.level.buildingIDAtTile(this.x, this.y - 1) === 0x0401 ||
+            this.level.buildingIDAtTile(this.x, this.y - 1) === 0x0801) &&
             this.level.buildingAt(this.x, this.y - 1).item == null) {
             this.level.addItem(this.x * Globals.TILE_SIZE + Globals.TILE_SIZE * 0.5, this.y * Globals.TILE_SIZE - Globals.TILE_SIZE * 0.1, id);
         }
@@ -1493,6 +1503,19 @@ class Building {
             }
         }
         return null;
+    }
+    acceptItem(item) {
+        if (this.item === null) {
+            this.item = item;
+        }
+        else if (this.inventory?.length < this.inventory?.MAX_LENGTH) {
+            this.inventory.push(item);
+        }
+        else {
+            return false;
+        }
+        item.grabbedBy = this;
+        return true;
     }
     export() {
         var inv = [];
@@ -1551,28 +1574,32 @@ class TrashCan extends Building {
     update() {
         this.grabItem(_ => { return true; }, item => { item.deleted = true; }, true);
     }
+    acceptItem(item) {
+        return true;
+    }
 }
 class Furnace extends Building {
     constructor(tileX, tileY, id, level) {
         super(tileX, tileY, id, level);
         this.timer = 29;
+        this.item = null;
     }
     static canBuildAt(tileX, tileY, level) {
         return level.atLayer1ByTile(tileX, tileY) == 0x01;
     }
     update() {
-        if (this.timer > 0 && this.processingItem) {
+        if (this.timer > 0 && this.item) {
             this.timer--;
         }
-        else if (this.timer <= 0 && this.processingItem) {
-            if (this.spawnItem(smeltFor(this.processingItem.id))) {
+        else if (this.timer <= 0 && this.item) {
+            if (this.spawnItem(smeltFor(this.item.id))) {
                 this.timer = 30;
-                this.processingItem = null;
+                this.item = null;
             }
         }
-        else if (!this.processingItem) {
+        else if (!this.item) {
             this.grabItem(smeltFor, (item) => {
-                this.processingItem = item;
+                this.item = item;
             }, true);
         }
     }
@@ -1583,15 +1610,26 @@ class Conveyor extends Building {
         this.item = null;
     }
     break() {
-        if (this.item instanceof Item && this.item.grabbedBy == this) {
-            this.item.grabbedBy = null;
+        if (this.item instanceof Item) {
+            this.level.items.push(this.item);
+            if (this.item.grabbedBy === this) {
+                this.item.grabbedBy = null;
+            }
         }
         this.item = null;
+    }
+    display(currentFrame) {
+        if (this.item instanceof Item) {
+            this.item.display(currentFrame);
+        }
     }
     update(currentframe, nograb) {
         if (this.item instanceof Item) {
             if (Math.floor(this.item.x / Globals.TILE_SIZE) != this.x || Math.floor(this.item.y / Globals.TILE_SIZE) != this.y) {
-                if (this.item.grabbedBy != this || this.item.deleted) {
+                let building = this.level.buildingAt(Math.floor(this.item.x / Globals.TILE_SIZE), Math.floor(this.item.y / Globals.TILE_SIZE));
+                if (!building)
+                    return;
+                if (building.acceptItem(this.item)) {
                     this.item = null;
                 }
                 return;
@@ -1729,7 +1767,7 @@ class Conveyor extends Building {
             }
         }
         else if (!nograb) {
-            this.grabItem(null, (item) => { this.item = item; }, false);
+            this.grabItem(null, (item) => { this.item = item; }, true);
         }
     }
 }
@@ -1754,20 +1792,8 @@ class Extractor extends Conveyor {
             if (item.deleted)
                 throw "wat?";
             this.item = item;
-            switch ((this.id >> 8) % 4) {
-                case 0:
-                    this.item.y = (this.y + 0.5) * Globals.TILE_SIZE;
-                    break;
-                case 1:
-                    this.item.x = (this.x + 0.5) * Globals.TILE_SIZE;
-                    break;
-                case 2:
-                    this.item.y = (this.y + 0.5) * Globals.TILE_SIZE;
-                    break;
-                case 3:
-                    this.item.x = (this.x + 0.5) * Globals.TILE_SIZE;
-                    break;
-            }
+            this.item.y = (this.y + 0.5) * Globals.TILE_SIZE;
+            this.item.x = (this.x + 0.5) * Globals.TILE_SIZE;
             item.grabbedBy = this;
             if (this.level.items.indexOf(item) != -1) {
                 this.level.items.splice(this.level.items.indexOf(item), 1);
@@ -1933,6 +1959,17 @@ class AlloySmelter extends Building {
         this.processing = false;
         this.hasRunOnce = false;
     }
+    acceptItem(item) {
+        if (!this.item1) {
+            this.item1 = item;
+            return true;
+        }
+        if (!this.item2 && item.id != this.item1.id) {
+            this.item2 = item;
+            return true;
+        }
+        return false;
+    }
     update() {
         if (!this.item1) {
             this.grabItem((item) => { return item.id != this.item2?.id; }, (item) => { this.item1 = item; }, true);
@@ -1974,9 +2011,19 @@ class AlloySmelter extends Building {
     }
 }
 class ResourceAcceptor extends Building {
+    acceptItem(item) {
+        item.deleted = true;
+        item.grabbedBy = null;
+        if (!this.level.resources[item.id]) {
+            this.level.resources[item.id] = 0;
+        }
+        this.level.resources[item.id]++;
+        return true;
+    }
     update() {
         this.grabItem(null, item => {
             item.deleted = true;
+            item.grabbedBy = null;
             if (!this.level.resources[item.id]) {
                 this.level.resources[item.id] = 0;
             }
