@@ -68,13 +68,40 @@ const Globals = {
         }
     }
 };
-class ChunkedDataStorage {
-    constructor(seed, chunk, defaults) {
-        this.storage = new Map();
-        this.seed = seed ? seed : 0;
-        this.defaults = defaults;
-        this.chunk = chunk;
-        this.format = Globals.VERSION;
+class Level {
+    constructor(data) {
+        if (typeof data != "object") {
+            this.storage = new Map();
+            this.seed = data ? data : 0;
+            this.format = Globals.VERSION;
+            this.items = [];
+            this.resources = {};
+        }
+        else {
+            // what the heck am I doing
+            let { chunks, items, resources, seed, version } = data;
+            this.storage = new Map();
+            this.seed = seed;
+            this.format = Globals.VERSION;
+            this.items = [];
+            this.resources = resources;
+            for (var [position, chunkData] of Object.entries(chunks)) {
+                this.storage.set(position, new Chunk({
+                    x: parseInt(position.split(",")[0]), y: parseInt(position.split(",")[1]),
+                    seed: seed, parent: this
+                }, chunkData).generate());
+            }
+            if (version !== "alpha 0.0.0") {
+                for (var item of items) {
+                    let tempItem = new Item(item.x, item.y, item.id, this);
+                    if (item.grabbedBy) {
+                        tempItem.grabbedBy = this.buildingAt(item.grabbedBy.x, item.grabbedBy.y);
+                        assert(tempItem.grabbedBy);
+                    }
+                    this.items.push(tempItem);
+                }
+            }
+        }
     }
     getChunk(tileX, tileY, dontGenerateChunk) {
         if (this.storage.get(`${Math.floor(tileX / Globals.CHUNK_SIZE)},${Math.floor(tileY / Globals.CHUNK_SIZE)}`)) {
@@ -91,7 +118,7 @@ class ChunkedDataStorage {
         if (this.storage.get(`${x},${y}`)) {
             return;
         }
-        this.storage.set(`${x},${y}`, new this.chunk({ x: x, y: y, seed: this.seed, parent: this, defaultValue1: this.defaults.layer1, defaultValue2: this.defaults.layer2, defaultValue3: this.defaults.layer3 })
+        this.storage.set(`${x},${y}`, new Chunk({ x: x, y: y, seed: this.seed, parent: this })
             .generate());
         console.log(`generated chunk ${x}, ${y}`);
         return this.storage.get(`${x},${y}`);
@@ -128,47 +155,6 @@ class ChunkedDataStorage {
         this.generateChunk(xOffset + 3, yOffset - 1);
         this.generateChunk(xOffset + 3, yOffset);
         this.generateChunk(xOffset + 3, yOffset + 1);
-    }
-}
-class Level extends ChunkedDataStorage {
-    constructor(data) {
-        if (typeof data == "number") {
-            super(data, Chunk, {
-                layer1: 0x00,
-                layer2: null,
-                layer3: null
-            });
-            this.items = [];
-            this.resources = {};
-        }
-        else {
-            // what the heck am I doing
-            let { chunks, items, resources, seed, version } = data;
-            super(seed, Chunk, {
-                layer1: 0x00,
-                layer2: null,
-                layer3: null
-            });
-            this.items = [];
-            this.resources = resources;
-            for (var [position, chunkData] of Object.entries(chunks)) {
-                this.storage.set(position, new Chunk({
-                    x: parseInt(position.split(",")[0]), y: parseInt(position.split(",")[1]),
-                    seed: seed, parent: this, defaultValue1: 0x00, defaultValue2: null, defaultValue3: null,
-                    data: chunkData
-                }).generate());
-            }
-            if (version !== "alpha 0.0.0") {
-                for (var item of items) {
-                    let tempItem = new Item(item.x, item.y, item.id, this);
-                    if (item.grabbedBy) {
-                        tempItem.grabbedBy = this.buildingAt(item.grabbedBy.x, item.grabbedBy.y);
-                        assert(tempItem.grabbedBy);
-                    }
-                    this.items.push(tempItem);
-                }
-            }
-        }
     }
     buildingIDAtPixel(pixelX, pixelY) {
         return this.getChunk(Math.floor(pixelX / Globals.TILE_SIZE), Math.floor(pixelY / Globals.TILE_SIZE)).atLayer2(tileToChunk(pixelX / Globals.TILE_SIZE), tileToChunk(pixelY / Globals.TILE_SIZE))?.id ?? 0xFFFF;
@@ -530,8 +516,8 @@ class Level extends ChunkedDataStorage {
         return output;
     }
 }
-class AbstractChunk {
-    constructor({ x, y, seed, parent, defaultValue1, defaultValue2, defaultValue3, data }) {
+class Chunk {
+    constructor({ x, y, seed, parent }, data) {
         this.x = x;
         this.y = y;
         this.parent = parent;
@@ -548,21 +534,21 @@ class AbstractChunk {
         for (let x = 0; x < Globals.CHUNK_SIZE; x++) {
             this.layers[0][x] = [];
             for (let z = 0; z < Globals.CHUNK_SIZE; z++) {
-                this.layers[0][x].push(defaultValue1);
+                this.layers[0][x].push(0xFF);
             }
         }
         this.layers[1] = [];
         for (let x = 0; x < Globals.CHUNK_SIZE; x++) {
             this.layers[1][x] = [];
             for (let z = 0; z < Globals.CHUNK_SIZE; z++) {
-                this.layers[1][x].push(defaultValue2);
+                this.layers[1][x].push(null);
             }
         }
         this.layers[2] = [];
         for (let x = 0; x < Globals.CHUNK_SIZE; x++) {
             this.layers[2][x] = [];
             for (let z = 0; z < Globals.CHUNK_SIZE; z++) {
-                this.layers[2][x].push(defaultValue3);
+                this.layers[2][x].push(null);
             }
         }
         if (data) {
@@ -602,9 +588,6 @@ class AbstractChunk {
         }
         return this;
     }
-    generate() {
-        return this;
-    }
     update() {
         for (let row of this.layers[1]) {
             for (let value of row) {
@@ -616,7 +599,7 @@ class AbstractChunk {
         for (let row of this.layers[2]) {
             for (let value of row) {
                 if (typeof value?.["update"] == "function") {
-                    value["update"]();
+                    value["update"](undefined);
                 }
             }
         }
@@ -659,8 +642,6 @@ class AbstractChunk {
         console.log(`%c Base layer of chunk [${this.x},${this.y}]`, `font-weight: bold;`);
         console.table(this.layers[0]);
     }
-}
-class Chunk extends AbstractChunk {
     generate() {
         //This... needs to be refactored. Oh well.
         let isWet = false;
