@@ -274,7 +274,7 @@ class Level {
 			case 0xFF:
 				break;
 			default:
-				this.getChunk(tileX, tileY).displayBuilding(tileToChunk(tileX), tileToChunk(tileY), buildingID, BuildingType[buildingID % 0x100]?.canBuildAt(tileX, tileY, this));
+				this.getChunk(tileX, tileY).displayBuilding(tileToChunk(tileX), tileToChunk(tileY), buildingID, BuildingType[buildingID % 0x100]?.canBuildAt(tileX, tileY, this) ? 1 : 2);
 			break;
 		}
 	}
