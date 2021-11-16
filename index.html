@@ -3,8 +3,8 @@
   <head>
     <meta charset="UTF-8">
     <title>Untitled Electron Game!</title>
-    <script src='https://josephg.github.io/noisejs/perlin.js'></script>
-
+    
+    <script src='./lib/perlin.js'></script> <!--By Stefan Gustavson, in public domain.-->
     <script src="./CLASSES.js"></script>
     <script src="funcs.js" defer></script>
     <script src="./game_main.js" defer></script>
@@ -156,7 +156,7 @@
       <img src="assets/textures/item/base_copperIngot.png" id="item_base_copperIngot" onload="loadedtextures ++;">
       <img src="assets/textures/item/base_steelIngot.png" id="item_base_steelIngot" onload="loadedtextures ++;">
     </div>
-    <input id="uploadButton" type="file" class="hidden"/>
+    <input id="uploadButton" type="file" accept="application/json" class="hidden"/>
     <canvas id="canvas" width=1200 height=1200></canvas>
     <canvas id="canvas1" width=1200 height=1200></canvas>
     <canvas id="canvas2" width=1200 height=1200></canvas>
