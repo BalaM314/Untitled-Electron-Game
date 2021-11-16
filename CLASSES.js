@@ -305,31 +305,31 @@ class Level {
         this.buildingAtTile(tileX, tileY)?.break();
         var tempBuilding;
         switch (building % 0x100) {
-            case 0x0008:
+            case 0x08:
                 if (!ResourceAcceptor.canBuildAt(tileX, tileY, this)) {
                     return;
                 }
                 tempBuilding = new ResourceAcceptor(tileX, tileY, building, this);
                 break;
-            case 0x0007:
+            case 0x07:
                 if (!AlloySmelter.canBuildAt(tileX, tileY, this)) {
                     return;
                 }
                 tempBuilding = new AlloySmelter(tileX, tileY, building, this);
                 break;
-            case 0x0006:
+            case 0x06:
                 if (!StorageBuilding.canBuildAt(tileX, tileY, this)) {
                     return;
                 }
                 tempBuilding = new StorageBuilding(tileX, tileY, building, this);
                 break;
-            case 0x0005:
+            case 0x05:
                 if (!Extractor.canBuildAt(tileX, tileY, this)) {
                     return;
                 }
                 tempBuilding = new Extractor(tileX, tileY, building, this);
                 break;
-            case 0x0004:
+            case 0x04:
                 if (!Furnace.canBuildAt(tileX, tileY, this)) {
                     if (Game.tutorial.furnace.cantbeplacedongrass && Game.persistent.tutorialenabled) {
                         _alert("The Furnace generates a lot of heat and is pretty heavy, so you can only place it on stone.");
@@ -343,14 +343,14 @@ class Level {
                     Game.tutorial.furnace.placedcorrectly = false;
                 }
                 break;
-            case 0x0003:
+            case 0x03:
                 tempBuilding = new TrashCan(tileX, tileY, 0x0003, this);
                 if (Game.tutorial.trashcan.placedcorrectly && Game.persistent.tutorialenabled) {
                     _alert("The Trash Can is pretty simple: it deletes all items it receives.");
                     Game.tutorial.trashcan.placedcorrectly = false;
                 }
                 break;
-            case 0x0002:
+            case 0x02:
                 if (!Miner.canBuildAt(tileX, tileY, this)) {
                     if (Game.tutorial.miner.cantbeplacedongrass && Game.persistent.tutorialenabled) {
                         _alert("The Miner can only be placed on a resource node(the colored circles).");
@@ -365,7 +365,7 @@ class Level {
                     Game.tutorial.miner.placedcorrectly = false;
                 }
                 break;
-            case 0x0001:
+            case 0x01:
                 if (!Conveyor.canBuildAt(tileX, tileY, this)) {
                     if (Game.tutorial.conveyor.cantbeplacedonwater && Game.persistent.tutorialenabled) {
                         _alert("Conveyors don't float!\nYes, I know, then water chunks are useless... I'll add pontoons in a future update.");
