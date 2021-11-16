@@ -241,6 +241,12 @@ class Level {
 			Math.floor(tileY)
 		).buildingAt(tileToChunk(tileX), tileToChunk(tileY));
 	}
+	buildingAtPixel(pixelX:number, pixelY:number):Building {
+		return this.getChunk(
+			Math.floor(pixelX/Globals.TILE_SIZE),
+			Math.floor(pixelY/Globals.TILE_SIZE)
+		).buildingAt(tileToChunk(pixelX/Globals.TILE_SIZE), tileToChunk(pixelY/Globals.TILE_SIZE));
+	}
 	extractorAtTile(tileX:number, tileY:number):Extractor {
 		return this.getChunk(
 			Math.floor(tileX),
@@ -447,7 +453,7 @@ class Level {
 				}
 				tempBuilding = new Conveyor(tileX, tileY, this.getTurnedConveyor(tileX, tileY, building >> 8), this);
 			break;
-			case 0xFFFF:
+			case 0xFF:
 				this.writeExtractor(tileX, tileY, null);
 				this.writeBuilding(tileX, tileY, null);
 				return;
@@ -488,8 +494,8 @@ class Level {
 				return;
 			}
 		}
-		if(this.buildingIDAtPixel(x, y) !== 0xFFFF){
-			let buildingID = this.buildingIDAtPixel(x, y) % 0x100;
+		if(this.buildingAtPixel(x, y) instanceof Building){
+			let buildingID = this.buildingAtPixel(x, y).id % 0x100;
 			ctx4.fillStyle = "#0033CC";
 			ctx4.fillRect(mousex, mousey, names.building[buildingID].length * 10, 16);
 			ctx4.strokeStyle = "#000000";
