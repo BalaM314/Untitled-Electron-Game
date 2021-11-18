@@ -67,6 +67,16 @@ const Globals = {
         }
     }
 };
+const recipes = {
+    "base_smelting": {
+        "recipes": [
+            { "input": "base_coalOre", "output": "base_ironOre", "duration": 60 }
+        ]
+    },
+    "base_alloying:": {
+        "recipes": []
+    }
+};
 class Level {
     constructor(data) {
         this.storage = new Map();
