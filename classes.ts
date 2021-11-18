@@ -1297,17 +1297,22 @@ class Furnace extends Building {
 	static canBuildAt(tileX:number, tileY:number, level:Level){
 		return level.tileAtByTile(tileX, tileY) == 0x01;
 	}
-	update(){
-
-		if(!this.recipe && this.item){
-			for(var recipe of recipes.base_smelting.recipes){
-				if(this.item.id == recipe.inputs[0]){
-					this.recipe = recipe;
-					this.timer = recipe.duration;
-					break;
-				}
+	findRecipe(item:Item):Recipe {
+		for(var recipe of recipes.base_smelting.recipes){
+			if(item.id == recipe.inputs[0]){
+				return recipe;
 			}
 		}
+		return null;
+	}
+	setRecipe(recipe:Recipe){
+		if(!recipe) return;
+		this.recipe = recipe;
+		this.timer = recipe.duration;
+	}
+	update(){
+
+		if(!this.recipe && this.item) this.setRecipe(this.findRecipe(this.item));
 
 		if(this.timer > 0 && this.item){
 			this.timer --;
@@ -1317,32 +1322,18 @@ class Furnace extends Building {
 				this.item = null;
 			}
 		} else if(!this.item){
-			this.grabItem((item) => {
-				for(var recipe of recipes.base_smelting.recipes){
-					if(item.id == recipe.inputs[0]){
-						this.recipe = recipe;
-						return true;
-					}
-				}
-				return false;
-			}, (item) => {
-				this.item = item;
-				this.timer = this.recipe.duration;
+			this.grabItem(this.findRecipe, (item) => {
+				this.setRecipe(this.findRecipe(item));
 			}, true);
 		}
 	}
 	acceptItem(item:Item){
-		debugger;
 		if(this.item) return false;
-		for(var recipe of recipes.base_smelting.recipes){
-			if(item.id == recipe.inputs[0]){
-				this.item = item;
-				this.recipe = recipe;
-				this.timer = this.recipe.duration;
-				return true;
-			}
+		let recipe = this.findRecipe(item);
+		if(recipe){
+			this.setRecipe(recipe);
+			this.item = item;
 		}
-		return false;
 	}
 }
 
@@ -1677,6 +1668,24 @@ class AlloySmelter extends Building {
 		}
 		return false;
 	}
+	findRecipe(item1:Item, item2:Item):Recipe{
+		for(var recipe of recipes.base_alloying.recipes){
+			if(
+				recipe.inputs[0] == item1.id ||
+				recipe.inputs[1] == item2.id &&
+				recipe.inputs[1] == item1.id ||
+				recipe.inputs[0] == item2.id
+			){
+				return recipe;
+			}
+		}
+		return null;
+	}
+	setRecipe(recipe:Recipe){
+		this.recipe = recipe;
+		this.processing = true;
+		this.timer = recipe.duration;
+	}
 	update(){
 		if(!this.item1){
 			this.grabItem((item) => {return item.id != this.item2?.id;}, (item:Item) => {this.item1 = item;}, true);
@@ -1686,35 +1695,12 @@ class AlloySmelter extends Building {
 		}
 		if(this.item1 instanceof Item && this.item2 instanceof Item){
 			if(!this.processing){
-				for(var recipe of recipes.base_alloying.recipes){
-					if(
-						recipe.inputs[0] == this.item1.id ||
-						recipe.inputs[1] == this.item2.id &&
-						recipe.inputs[1] == this.item1.id ||
-						recipe.inputs[0] == this.item2.id
-					){
-						this.recipe = recipe;
-						this.processing = true;
-						this.timer = recipe.duration;
-						break;
-					}
-				}
+				this.setRecipe(this.findRecipe(this.item1, this.item2));
 				return;
 			} else {
 				if(!this.recipe){
-					for(var recipe of recipes.base_alloying.recipes){
-						if(
-							recipe.inputs[0] == this.item1.id ||
-							recipe.inputs[1] == this.item2.id &&
-							recipe.inputs[1] == this.item1.id ||
-							recipe.inputs[0] == this.item2.id
-						){
-							this.recipe = recipe;
-							this.processing = true;
-							this.timer = recipe.duration;
-							break;
-						}
-					}
+					this.setRecipe(this.findRecipe(this.item1, this.item2));
+					return;
 				}
 				if(this.timer > 0){
 					this.timer --;
