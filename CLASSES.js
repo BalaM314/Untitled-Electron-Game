@@ -25,9 +25,12 @@ const names = {
         "base_coal": "Coal",
         "base_ironOre": "Iron Ore",
         "base_ironIngot": "Iron Ingot",
+        "base_ironPlate": "Iron Plate",
         "base_steelIngot": "Steel Ingot",
+        "base_steelPlate": "Steel Plate",
         "base_copperOre": "Copper Ore",
         "base_copperIngot": "Copper Ingot",
+        "base_copperWire": "Copper Wire"
     }
 };
 var ItemID;
@@ -37,9 +40,12 @@ var ItemID;
     ItemID["base_coal"] = "base_coal";
     ItemID["base_ironOre"] = "base_ironOre";
     ItemID["base_ironIngot"] = "base_ironIngot";
+    ItemID["base_ironPlate"] = "base_ironPlate";
     ItemID["base_copperOre"] = "base_copperOre";
     ItemID["base_copperIngot"] = "base_copperIngot";
     ItemID["base_steelIngot"] = "base_steelIngot";
+    ItemID["base_steelPlate"] = "base_steelPlate";
+    ItemID["base_copperWire"] = "base_copperWire";
 })(ItemID || (ItemID = {}));
 const generation_consts = {
     perlin_scale: 2 * Math.PI,
@@ -96,6 +102,31 @@ const recipes = {
                 "inputs": [ItemID.base_coal, ItemID.base_ironIngot],
                 "outputs": [ItemID.base_steelIngot],
                 duration: 240
+            }
+        ]
+    },
+    "base_wiremilling": {
+        "type": "1-1",
+        "recipes": [
+            {
+                "inputs": [ItemID.base_copperIngot],
+                "outputs": [ItemID.base_copperWire],
+                "duration": 60
+            }
+        ]
+    },
+    "base_compressing": {
+        "type": "1-1",
+        "recipes": [
+            {
+                "inputs": [ItemID.base_ironIngot],
+                "outputs": [ItemID.base_ironPlate],
+                "duration": 60
+            },
+            {
+                "inputs": [ItemID.base_steelIngot],
+                "outputs": [ItemID.base_steelPlate],
+                "duration": 60
             }
         ]
     }

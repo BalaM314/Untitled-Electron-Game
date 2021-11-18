@@ -39,6 +39,8 @@ type BuildingID =
 0x0006 |	//Chest
 0x0007 |	//Alloy Smelter
 0x0008 |	//Resource Acceptor
+0x0009 |	//Wiremill
+0x000A |	//Compressor
 0xFFFF ;	//Unset
 
 type RawBuildingID = 0x01 | 0x02 | 0x03 | 0x04 | 0x05 | 0x06 | 0x07 | 0x08 | 0xFF;
@@ -73,9 +75,12 @@ const names = {
 		"base_coal": "Coal",
 		"base_ironOre": "Iron Ore",
 		"base_ironIngot": "Iron Ingot",
+		"base_ironPlate": "Iron Plate",
 		"base_steelIngot": "Steel Ingot",
+		"base_steelPlate": "Steel Plate",
 		"base_copperOre": "Copper Ore",
 		"base_copperIngot": "Copper Ingot",
+		"base_copperWire": "Copper Wire"
 	}
 };
 
@@ -85,9 +90,12 @@ enum ItemID {
 	base_coal = "base_coal",
 	base_ironOre = "base_ironOre",
 	base_ironIngot = "base_ironIngot",
+	base_ironPlate = "base_ironPlate",
 	base_copperOre = "base_copperOre",
 	base_copperIngot = "base_copperIngot",
-	base_steelIngot = "base_steelIngot"
+	base_steelIngot = "base_steelIngot",
+	base_steelPlate = "base_steelPlate",
+	base_copperWire = "base_copperWire",
 }
 
 const generation_consts = {
@@ -161,6 +169,31 @@ const recipes: {
 				"inputs": [ItemID.base_coal, ItemID.base_ironIngot],
 				"outputs": [ItemID.base_steelIngot],
 				duration: 240
+			}
+		]
+	},
+	"base_wiremilling": {
+		"type": "1-1",
+		"recipes": [
+			{
+				"inputs": [ItemID.base_copperIngot],
+				"outputs": [ItemID.base_copperWire],
+				"duration": 60
+			}
+		]
+	},
+	"base_compressing": {
+		"type": "1-1",
+		"recipes": [
+			{
+				"inputs": [ItemID.base_ironIngot],
+				"outputs": [ItemID.base_ironPlate],
+				"duration": 60
+			},
+			{
+				"inputs": [ItemID.base_steelIngot],
+				"outputs": [ItemID.base_steelPlate],
+				"duration": 60
 			}
 		]
 	}
