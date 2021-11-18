@@ -79,15 +79,15 @@ const names = {
 	}
 };
 
-const ItemID = {
-	"base_null": "base_null",
-	"base_coalOre": "base_coalOre",
-	"base_coal": "base_coal",
-	"base_ironOre": "base_ironOre",
-	"base_ironIngot": "base_ironIngot",
-	"base_copperOre": "base_copperOre",
-	"base_copperIngot": "base_copperIngot",
-	"base_steelIngot": "base_steelIngot"
+enum ItemID {
+	base_null = "base_null",
+	base_coalOre = "base_coalOre",
+	base_coal = "base_coal",
+	base_ironOre = "base_ironOre",
+	base_ironIngot = "base_ironIngot",
+	base_copperOre = "base_copperOre",
+	base_copperIngot = "base_copperIngot",
+	base_steelIngot = "base_steelIngot"
 }
 
 const generation_consts = {

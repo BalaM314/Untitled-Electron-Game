@@ -30,16 +30,17 @@ const names = {
         "base_copperIngot": "Copper Ingot",
     }
 };
-const ItemID = {
-    "base_null": "base_null",
-    "base_coalOre": "base_coalOre",
-    "base_coal": "base_coal",
-    "base_ironOre": "base_ironOre",
-    "base_ironIngot": "base_ironIngot",
-    "base_copperOre": "base_copperOre",
-    "base_copperIngot": "base_copperIngot",
-    "base_steelIngot": "base_steelIngot"
-};
+var ItemID;
+(function (ItemID) {
+    ItemID["base_null"] = "base_null";
+    ItemID["base_coalOre"] = "base_coalOre";
+    ItemID["base_coal"] = "base_coal";
+    ItemID["base_ironOre"] = "base_ironOre";
+    ItemID["base_ironIngot"] = "base_ironIngot";
+    ItemID["base_copperOre"] = "base_copperOre";
+    ItemID["base_copperIngot"] = "base_copperIngot";
+    ItemID["base_steelIngot"] = "base_steelIngot";
+})(ItemID || (ItemID = {}));
 const generation_consts = {
     perlin_scale: 2 * Math.PI,
     y_offset: 2031,
