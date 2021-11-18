@@ -89,7 +89,7 @@ const recipes = {
             }
         ]
     },
-    "base_alloying:": {
+    "base_alloying": {
         "type": "2-1",
         "recipes": [
             {
@@ -1130,14 +1130,6 @@ const oreFor = {
     0x11: ItemID.base_ironOre,
     0x12: ItemID.base_copperOre
 };
-function smeltFor(item) {
-    switch (item instanceof Item ? item.id : item) {
-        case ItemID.base_coalOre: return ItemID.base_coal;
-        case ItemID.base_ironOre: return ItemID.base_ironIngot;
-        case ItemID.base_copperOre: return ItemID.base_copperIngot;
-    }
-    return null;
-}
 class TrashCan extends Building {
     update() {
         this.grabItem(_ => { return true; }, item => { item.deleted = true; }, true);
@@ -1149,7 +1141,7 @@ class TrashCan extends Building {
 class Furnace extends Building {
     constructor(tileX, tileY, id, level) {
         super(tileX, tileY, id, level);
-        this.timer = 29;
+        this.timer = -1;
         this.item = null;
     }
     static canBuildAt(tileX, tileY, level) {
@@ -1159,17 +1151,37 @@ class Furnace extends Building {
         if (this.timer > 0 && this.item) {
             this.timer--;
         }
-        else if (this.timer <= 0 && this.item) {
-            if (this.spawnItem(smeltFor(this.item.id))) {
-                this.timer = 30;
+        else if (this.timer == 0 && this.item) {
+            if (this.spawnItem(this.recipe.outputs[0])) {
+                this.timer = -1;
                 this.item = null;
             }
         }
         else if (!this.item) {
-            this.grabItem(smeltFor, (item) => {
+            this.grabItem((item) => {
+                for (var recipe of recipes.base_smelting.recipes) {
+                    if (item.id == recipe.inputs[0]) {
+                        this.recipe = recipe;
+                        return true;
+                    }
+                }
+                return false;
+            }, (item) => {
                 this.item = item;
+                this.timer = this.recipe.duration;
             }, true);
         }
+    }
+    acceptItem(item) {
+        for (var recipe of recipes.base_smelting.recipes) {
+            if (item.id == recipe.inputs[0]) {
+                this.item = item;
+                this.recipe = recipe;
+                this.timer = this.recipe.duration;
+                return true;
+            }
+        }
+        return false;
     }
 }
 class Conveyor extends Building {
@@ -1512,10 +1524,6 @@ class StorageBuilding extends Building {
         return null;
     }
 }
-let alloysFor = {
-    "base_coal&base_ironIngot": "base_steelIngot",
-    "base_ironIngot&base_coal": "base_steelIngot"
-};
 let totalAlloySmeltersRun = 0;
 class AlloySmelter extends Building {
     constructor(tileX, tileY, id, level) {
@@ -1545,33 +1553,44 @@ class AlloySmelter extends Building {
             this.grabItem((item) => { return item.id != this.item1?.id; }, (item) => { this.item2 = item; }, true);
         }
         if (this.item1 instanceof Item && this.item2 instanceof Item) {
-            if (alloysFor[`${this.item1.id}&${this.item2.id}`]) {
-                this.processing = true;
-            }
-        }
-        if (this.processing) {
-            if (this.timer > 0) {
-                this.timer--;
-            }
-            else {
-                if (!this.hasRunOnce) {
-                    this.hasRunOnce = true;
-                    totalAlloySmeltersRun++;
-                    if (totalAlloySmeltersRun >= 4 && Game.persistent.tutorialenabled && Game.tutorial.multiplesteel) {
-                        Game.tutorial.multiplesteel = false;
-                        _alert("🎉🎉🎉🎉🎉🎉\nWell, that's all the content this game has to offer for now.\nCheck back later for more updates, especially once this game reaches beta.");
+            if (!this.processing) {
+                for (var recipe of recipes.base_alloying.recipes) {
+                    if (recipe.inputs[0] == this.item1.id ||
+                        recipe.inputs[1] == this.item2.id &&
+                            recipe.inputs[1] == this.item1.id ||
+                        recipe.inputs[0] == this.item2.id) {
+                        this.recipe = recipe;
+                        this.processing = true;
+                        this.timer = recipe.duration;
+                        break;
                     }
                 }
-                if (this.spawnItem(alloysFor[`${this.item1.id}&${this.item2.id}`])) {
-                    if (Game.persistent.tutorialenabled && alloysFor[`${this.item1.id}&${this.item2.id}`] == ItemID["base_steelIngot"] && Game.tutorial.item.steel) {
-                        _alert("Well done!\nThis game is in alpha, so steel isn't used for anything yet.");
-                        Game.tutorial.item.steel = false;
-                        _alert(["Hmm, that's REALLY slow.\nYou'll \"need\" more steel than that.\nParallelize!\nYou need to use the extractor(slot 5). It is special, because you can place it on top of other buildings.\nNote: use the comma and period keys to change the length of the extractor(you'll need to use this to make a bridge).\nGood luck!", 3000]);
+                return;
+            }
+            else {
+                if (this.timer > 0) {
+                    this.timer--;
+                }
+                else if (this.timer == 0) {
+                    if (!this.hasRunOnce && this.recipe.outputs[0] == ItemID.base_steelIngot) {
+                        this.hasRunOnce = true;
+                        totalAlloySmeltersRun++;
+                        if (totalAlloySmeltersRun >= 4 && Game.persistent.tutorialenabled && Game.tutorial.multiplesteel) {
+                            Game.tutorial.multiplesteel = false;
+                            _alert("🎉🎉🎉🎉🎉🎉\nWell, that's all the content this game has to offer for now.\nCheck back later for more updates, especially once this game reaches beta.");
+                        }
                     }
-                    this.timer = 240;
-                    this.item1 = null;
-                    this.item2 = null;
-                    this.processing = false;
+                    if (this.spawnItem(this.recipe.outputs[0])) {
+                        if (Game.persistent.tutorialenabled && this.recipe.outputs[0] == ItemID.base_steelIngot && Game.tutorial.item.steel) {
+                            _alert("Well done!\nThis game is in alpha, so steel isn't used for anything yet.");
+                            Game.tutorial.item.steel = false;
+                            _alert(["Hmm, that's REALLY slow.\nYou'll \"need\" more steel than that.\nParallelize!\nYou need to use the extractor(slot 5). It is special, because you can place it on top of other buildings.\nNote: use the comma and period keys to change the length of the extractor(you'll need to use this to make a bridge).\nGood luck!", 3000]);
+                        }
+                        this.timer = -1;
+                        this.item1 = null;
+                        this.item2 = null;
+                        this.processing = false;
+                    }
                 }
             }
         }
