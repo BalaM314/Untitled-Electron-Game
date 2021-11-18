@@ -5,7 +5,7 @@ type Tile =
 0x02 |	//water
 0x10 |  //iron ore
 0x11 |  //coal ore
-0x12 |	//water
+0x12 |	//copper ore
 0xFF ;  //Unset
 type BuildingID = 
 //0x0000 is invalid

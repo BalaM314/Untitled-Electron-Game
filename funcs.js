@@ -81,7 +81,7 @@ window.onkeydown = (e) => {
                 placedBuilding.type = 0x0008;
                 break;
             case "0":
-                placedBuilding.type = 0xFFFF;
+                placedBuilding.type = 0xFF;
                 break;
         }
     }

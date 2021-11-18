@@ -299,6 +299,9 @@ let placedBuilding = {
         else if (this.type == 0x01) {
             return this.type + this.direction;
         }
+        else if (this.type == 0xFF) {
+            return 0xFFFF;
+        }
         else {
             return this.type;
         }

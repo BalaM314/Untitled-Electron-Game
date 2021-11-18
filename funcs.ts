@@ -83,7 +83,7 @@ window.onkeydown = (e:KeyboardEvent) => {
 			case "8":
 				placedBuilding.type = 0x0008; break;
 			case "0":
-				placedBuilding.type = 0xFFFF; break;
+				placedBuilding.type = 0xFF; break;
 		}
 	}
 }
