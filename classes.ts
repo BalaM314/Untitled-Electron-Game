@@ -1321,6 +1321,7 @@ class Furnace extends Building {
 		}
 	}
 	acceptItem(item:Item){
+		if(this.item) return false
 		for(var recipe of recipes.base_smelting.recipes){
 			if(item.id == recipe.inputs[0]){
 				this.item = item;
