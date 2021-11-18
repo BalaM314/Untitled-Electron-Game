@@ -43,7 +43,7 @@ type BuildingID =
 0x000A |	//Compressor
 0xFFFF ;	//Unset
 
-type RawBuildingID = 0x01 | 0x02 | 0x03 | 0x04 | 0x05 | 0x06 | 0x07 | 0x08 | 0xFF;
+type RawBuildingID = 0x01 | 0x02 | 0x03 | 0x04 | 0x05 | 0x06 | 0x07 | 0x08 | 0x09 | 0x0A | 0xFF;
 
 
 
@@ -67,7 +67,9 @@ const names = {
 		0x05: "Extractor",
 		0x06: "Storage",
 		0x07: "Alloy Smelter",
-		0x08: "Resource Acceptor"
+		0x08: "Resource Acceptor",
+		0x09: "Wiremill",
+		0x0A: "Compressor"
 	},
 	item: {
 		"base_null": "Debug Item",
@@ -366,13 +368,13 @@ class Level {
 		tileX = Math.floor(tileX);
 		tileY = Math.floor(tileY);
 		let topConveyor:BuildingID | boolean = this.buildingIDAtTile(tileX, tileY - 1);
-		topConveyor = topConveyor == 0x0101 || topConveyor == 0x0601 || topConveyor == 0x0701 || topConveyor == 0x0002 || topConveyor == 0x0004  || topConveyor == 0x0007;
+		topConveyor = topConveyor == 0x0101 || topConveyor == 0x0601 || topConveyor == 0x0701 || topConveyor == 0x0002 || topConveyor == 0x0004  || topConveyor == 0x0007 || topConveyor == 0x0009 || topConveyor == 0x000A;
 		let rightConveyor:BuildingID | boolean = this.buildingIDAtTile(tileX + 1, tileY);
-		rightConveyor = rightConveyor == 0x0201 || rightConveyor == 0x0801 || rightConveyor == 0x0901 || rightConveyor == 0x0002 || rightConveyor == 0x0004  || rightConveyor == 0x0007;
+		rightConveyor = rightConveyor == 0x0201 || rightConveyor == 0x0801 || rightConveyor == 0x0901 || rightConveyor == 0x0002 || rightConveyor == 0x0004  || rightConveyor == 0x0007 || rightConveyor == 0x0009 || rightConveyor == 0x000A;
 		let leftConveyor:BuildingID | boolean = this.buildingIDAtTile(tileX - 1, tileY);
-		leftConveyor = leftConveyor == 0x0001 || leftConveyor == 0x0401 || leftConveyor == 0x0501 || leftConveyor == 0x0002 || leftConveyor == 0x0004  || leftConveyor == 0x0007;
+		leftConveyor = leftConveyor == 0x0001 || leftConveyor == 0x0401 || leftConveyor == 0x0501 || leftConveyor == 0x0002 || leftConveyor == 0x0004  || leftConveyor == 0x0007 || leftConveyor == 0x0009 || leftConveyor == 0x000A;
 		let bottomConveyor:BuildingID | boolean = this.buildingIDAtTile(tileX, tileY + 1);
-		bottomConveyor = bottomConveyor == 0x0301 || bottomConveyor == 0x0A01 || bottomConveyor == 0x0B01 || bottomConveyor == 0x0002 || bottomConveyor == 0x0004  || bottomConveyor == 0x0007;
+		bottomConveyor = bottomConveyor == 0x0301 || bottomConveyor == 0x0A01 || bottomConveyor == 0x0B01 || bottomConveyor == 0x0002 || bottomConveyor == 0x0004  || bottomConveyor == 0x0007 || bottomConveyor == 0x0009 || bottomConveyor == 0x000A;
 		let buildingID:BuildingID = 0xFFFF;
 		switch(conveyorType){
 			case 0:
@@ -457,46 +459,20 @@ class Level {
 		this.buildingAtTile(tileX, tileY)?.break();
 		var tempBuilding:Building;
 		switch(building % 0x100 as RawBuildingID){
-			case 0x08:
-				if(!ResourceAcceptor.canBuildAt(tileX, tileY, this)){
-					return;
-				}
-				tempBuilding = new ResourceAcceptor(tileX, tileY, building, this);
-				break;
-			case 0x07:
-				if(!AlloySmelter.canBuildAt(tileX, tileY, this)){
-					return;
-				}
-				tempBuilding = new AlloySmelter(tileX, tileY, building, this);
-				break;
-			case 0x06:
-				if(!StorageBuilding.canBuildAt(tileX, tileY, this)){
-					return;
-				}
-				tempBuilding = new StorageBuilding(tileX, tileY, building, this);
-				break;
-			case 0x05:
-				if(!Extractor.canBuildAt(tileX, tileY, this)){
-					return;
-				}
-				tempBuilding = new Extractor(tileX, tileY, building, this);
-				break;
 			case 0x04:
 				if(!Furnace.canBuildAt(tileX, tileY, this)){
 					if(Game.tutorial.furnace.cantbeplacedongrass && Game.persistent.tutorialenabled){
 						_alert("The Furnace generates a lot of heat and is pretty heavy, so you can only place it on stone.");
 						Game.tutorial.furnace.cantbeplacedongrass = false;
 					}
-					return;
+					break;
 				}
-				tempBuilding = new Furnace(tileX, tileY, 0x0004, this);
 				if(Game.tutorial.furnace.placedcorrectly && Game.persistent.tutorialenabled){
 					_alert("The Furnace converts raw ores into their smelted forms. Simply point a conveyor belt carrying ores at it and provide another belt for it to output onto.");
 					Game.tutorial.furnace.placedcorrectly = false;
 				}
 			break;
 			case 0x03:
-				tempBuilding = new TrashCan(tileX, tileY, 0x0003, this);
 				if(Game.tutorial.trashcan.placedcorrectly && Game.persistent.tutorialenabled){
 					_alert("The Trash Can is pretty simple: it deletes all items it receives.");
 					Game.tutorial.trashcan.placedcorrectly = false;
@@ -509,8 +485,7 @@ class Level {
 						Game.tutorial.miner.cantbeplacedongrass = false;
 					}
 					return;
-				};
-				tempBuilding = new Miner(tileX, tileY, 0x0002, this);
+				}
 				if(Game.tutorial.miner.placedcorrectly && Game.persistent.tutorialenabled){
 					_alert("The Miner mines ore nodes, producing one ore per second. \nIt auto-outputs to adjacent conveyor belts.\nAlso, ore nodes are infinite.");
 					Game.tutorial.miner.placedcorrectly = false;
@@ -528,15 +503,20 @@ class Level {
 					_alert("Conveyors are the way to move items around. \nYou can use the arrow keys to change the direction of placed belts. \nTry making a belt chain, then putting a debug item on it with Ctrl+click.\nYou can drag-click to build multiple of the same building.");
 					Game.tutorial.conveyor.placedcorrectly = false;
 				}
-				tempBuilding = new Conveyor(tileX, tileY, this.getTurnedConveyor(tileX, tileY, building >> 8), this);
 			break;
 			case 0xFF:
 				this.writeExtractor(tileX, tileY, null);
 				this.writeBuilding(tileX, tileY, null);
 				return;
-			default:
-				return this.writeBuilding(tileX, tileY, new Building(tileX, tileY, building, this));
-			break;
+		}
+		if(BuildingType[building % 0x100]?.canBuildAt(tileX, tileY, this)){
+			if(building % 0x100 == 0x01){
+				tempBuilding = new BuildingType[building % 0x100](tileX, tileY, this.getTurnedConveyor(tileX, tileY, building >> 8), this);
+			} else {
+				tempBuilding = new BuildingType[building % 0x100](tileX, tileY, building, this);
+			}
+		} else {
+			return;
 		}
 		if(tempBuilding instanceof Extractor){
 			return this.writeExtractor(tileX, tileY, tempBuilding);
@@ -976,7 +956,7 @@ class Chunk {
 			rect(pixelX, pixelY + Globals.DISPLAY_TILE_SIZE / 2, Globals.DISPLAY_TILE_SIZE / 2, Globals.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
 			_ctx.font = "15px sans-serif";
 			_ctx.fillStyle = "#00FF00";
-			_ctx.fillText(this.buildingAt(x, y).toString(), pixelX + Globals.DISPLAY_TILE_SIZE / 2, pixelY + Globals.DISPLAY_TILE_SIZE / 2);
+			_ctx.fillText(buildingID.toString(), pixelX + Globals.DISPLAY_TILE_SIZE / 2, pixelY + Globals.DISPLAY_TILE_SIZE / 2);
 		}
 	}
 	displayL3(x:number, y:number, buildingID:BuildingID, isGhost?:number){
@@ -1360,13 +1340,15 @@ class Furnace extends Building {
 			}, true);
 		}
 	}
-	acceptItem(item:Item){
+	acceptItem(item:Item):boolean {
 		if(this.item) return false;
 		let recipe = this.findRecipe(item);
 		if(recipe){
 			this.setRecipe(recipe);
 			this.item = item;
+			return true;
 		}
+		return false;
 	}
 }
 
@@ -1558,7 +1540,7 @@ class Extractor extends Conveyor {
 	dropItem(){
 		if(this.item instanceof Item){
 			if(
-				this.level.buildingAtPixel(this.item.x, this.item.y).acceptItem(this.item)
+				this.level.buildingAtPixel(this.item.x, this.item.y)?.acceptItem(this.item)
 			){
 				this.level.items.push(this.item);
 				this.item = null;
@@ -1786,10 +1768,109 @@ class ResourceAcceptor extends Building {
 	}
 }
 
+class Wiremill extends Building {
+	timer: number;
+	recipe: Recipe;
+	constructor(tileX, tileY, id, level){
+		super(tileX, tileY, id, level);
+		this.timer = -1;
+		this.item = null;
+	}
+	findRecipe(item:Item):Recipe {
+		for(var recipe of recipes.base_wiremilling.recipes){
+			if(item.id == recipe.inputs[0]){
+				return recipe;
+			}
+		}
+		return null;
+	}
+	setRecipe(recipe:Recipe){
+		if(!recipe) return;
+		this.recipe = recipe;
+		this.timer = recipe.duration;
+	}
+	update(){
+
+		if(!this.recipe && this.item) this.setRecipe(this.findRecipe(this.item));
+
+		if(this.timer > 0 && this.item){
+			this.timer --;
+		} else if(this.timer == 0 && this.item){
+			if(this.spawnItem(this.recipe.outputs[0])){
+				this.timer = -1;
+				this.item = null;
+			}
+		} else if(!this.item){
+			this.grabItem(this.findRecipe, (item) => {
+				this.setRecipe(this.findRecipe(item));
+			}, true);
+		}
+	}
+	acceptItem(item:Item):boolean {
+		if(this.item) return false;
+		let recipe = this.findRecipe(item);
+		if(recipe){
+			this.setRecipe(recipe);
+			this.item = item;
+			return true;
+		}
+		return false;
+	}
+}
+
+class Compressor extends Building {
+	timer: number;
+	recipe: Recipe;
+	constructor(tileX, tileY, id, level){
+		super(tileX, tileY, id, level);
+		this.timer = -1;
+		this.item = null;
+	}
+	findRecipe(item:Item):Recipe {
+		for(var recipe of recipes.base_compressing.recipes){
+			if(item.id == recipe.inputs[0]){
+				return recipe;
+			}
+		}
+		return null;
+	}
+	setRecipe(recipe:Recipe){
+		if(!recipe) return;
+		this.recipe = recipe;
+		this.timer = recipe.duration;
+	}
+	update(){
+
+		if(!this.recipe && this.item) this.setRecipe(this.findRecipe(this.item));
+
+		if(this.timer > 0 && this.item){
+			this.timer --;
+		} else if(this.timer == 0 && this.item){
+			if(this.spawnItem(this.recipe.outputs[0])){
+				this.timer = -1;
+				this.item = null;
+			}
+		} else if(!this.item){
+			this.grabItem(this.findRecipe, (item) => {
+				this.setRecipe(this.findRecipe(item));
+			}, true);
+		}
+	}
+	acceptItem(item:Item):boolean {
+		if(this.item) return false;
+		let recipe = this.findRecipe(item);
+		if(recipe){
+			this.setRecipe(recipe);
+			this.item = item;
+			return true;
+		}
+		return false;
+	}
+}
 
 
 const BuildingType: {
-	[index:number]: any
+	[index:number]: typeof Building
 } = {
 	0x01: Conveyor,
 	0x02: Miner,
@@ -1798,5 +1879,7 @@ const BuildingType: {
 	0x05: Extractor,
 	0x06: StorageBuilding,
 	0x07: AlloySmelter,
-	0x08: ResourceAcceptor
+	0x08: ResourceAcceptor,
+	0x09: Wiremill,
+	0x0A: Compressor
 };

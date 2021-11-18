@@ -309,35 +309,11 @@ function checkload(){
 	if(loadedtextures == document.getElementById("textures").children.length){
 		level1 = new Level(314);
 		level1.generateNecessaryChunks();
+		level1.buildBuilding(0,0,0x0008);
+		level1.buildBuilding(0,-1,0x0008);
+		level1.buildBuilding(-1,0,0x0008);
+		level1.buildBuilding(-1,-1,0x0008);
 
-
-		{
-			/*level1.buildBuilding(4,1,0x0001);
-			level1.buildBuilding(5,1,0x0001);
-			level1.buildBuilding(5,-1,0x0301);
-			level1.buildBuilding(5,1,0x0705);
-			level1.buildBuilding(6,1,0x0001);
-			level1.buildBuilding(6,3,0x0101);
-			level1.buildBuilding(6,1,0x0505);
-			level1.buildBuilding(7,1,0x0001);
-			level1.buildBuilding(7,-1,0x0301);
-			level1.buildBuilding(7,1,0x0705);
-			level1.buildBuilding(8,1,0x0001);
-			level1.buildBuilding(8,3,0x0101);
-			level1.buildBuilding(8,1,0x0505);
-			level1.buildBuilding(9,1,0x0001);
-			level1.buildBuilding(9,-1,0x0301);
-			level1.buildBuilding(9,1,0x0705);
-			level1.buildBuilding(10,1,0x0001);
-			level1.buildBuilding(10,3,0x0101);
-			level1.buildBuilding(10,1,0x0505);
-			level1.buildBuilding(11,1,0x0001);
-			level1.buildBuilding(11,-1,0x0301);
-			level1.buildBuilding(11,1,0x0705);
-			level1.buildBuilding(12,1,0x0001);
-			level1.buildBuilding(12,3,0x0101);
-			level1.buildBuilding(12,1,0x0505);*/
-		}
 		GAME_STATE = "game";
 		Game.forceRedraw = true;
 		document.getElementById("toolbar").classList.remove("hidden");
@@ -417,14 +393,7 @@ let handleMouseDown = (currentFrame:any, e?:MouseEvent) => {
 				level1.addItem((e.x - (Game.scroll.x * Globals.DISPLAY_SCALE))/Globals.DISPLAY_SCALE, (e.y - (Game.scroll.y * Globals.DISPLAY_SCALE)) / Globals.DISPLAY_SCALE, ItemID.base_null);
 				mouseIsPressed = false;
 			} else {
-				if(level1.buildingIDAtTile(Math.floor((e.x - (Game.scroll.x * Globals.DISPLAY_SCALE)) / Globals.DISPLAY_TILE_SIZE), Math.floor((e.y - (Game.scroll.y * Globals.DISPLAY_SCALE)) / Globals.DISPLAY_TILE_SIZE)) == placedBuilding.ID){
-					if(canOverwriteBuilding){
-						level1.buildBuilding(Math.floor((e.x - (Game.scroll.x * Globals.DISPLAY_SCALE)) / Globals.DISPLAY_TILE_SIZE), Math.floor((e.y - (Game.scroll.y * Globals.DISPLAY_SCALE)) / Globals.DISPLAY_TILE_SIZE), placedBuilding.ID);
-					}
-				} else {
-					canOverwriteBuilding = false;
-					level1.buildBuilding(Math.floor((e.x - (Game.scroll.x * Globals.DISPLAY_SCALE)) / Globals.DISPLAY_TILE_SIZE), Math.floor((e.y - (Game.scroll.y * Globals.DISPLAY_SCALE)) / Globals.DISPLAY_TILE_SIZE), placedBuilding.ID);
-				}
+				level1.buildBuilding(Math.floor((e.x - (Game.scroll.x * Globals.DISPLAY_SCALE)) / Globals.DISPLAY_TILE_SIZE), Math.floor((e.y - (Game.scroll.y * Globals.DISPLAY_SCALE)) / Globals.DISPLAY_TILE_SIZE), placedBuilding.ID);
 			}
 			break;
 		case "title":

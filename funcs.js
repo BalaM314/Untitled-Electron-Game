@@ -78,7 +78,10 @@ window.onkeydown = (e) => {
                 placedBuilding.type = 0x0007;
                 break;
             case "8":
-                placedBuilding.type = 0x0008;
+                placedBuilding.type = 0x0009;
+                break;
+            case "9":
+                placedBuilding.type = 0x000A;
                 break;
             case "0":
                 placedBuilding.type = 0xFF;
