@@ -1148,6 +1148,15 @@ class Furnace extends Building {
         return level.tileAtByTile(tileX, tileY) == 0x01;
     }
     update() {
+        if (!this.recipe && this.item) {
+            for (var recipe of recipes.base_smelting.recipes) {
+                if (this.item.id == recipe.inputs[0]) {
+                    this.recipe = recipe;
+                    this.timer = recipe.duration;
+                    break;
+                }
+            }
+        }
         if (this.timer > 0 && this.item) {
             this.timer--;
         }
@@ -1173,6 +1182,7 @@ class Furnace extends Building {
         }
     }
     acceptItem(item) {
+        debugger;
         if (this.item)
             return false;
         for (var recipe of recipes.base_smelting.recipes) {
@@ -1383,7 +1393,7 @@ class Extractor extends Conveyor {
     }
     dropItem() {
         if (this.item instanceof Item) {
-            if (this.level.buildingAtTile(tileAtPixel(this.item.x), tileAtPixel(this.item.y)) instanceof Conveyor && this.level.buildingAtTile(tileAtPixel(this.item.x), tileAtPixel(this.item.y)).item == null) {
+            if (this.level.buildingAtPixel(this.item.x, this.item.y).acceptItem(this.item)) {
                 this.level.items.push(this.item);
                 this.item = null;
             }
@@ -1570,6 +1580,19 @@ class AlloySmelter extends Building {
                 return;
             }
             else {
+                if (!this.recipe) {
+                    for (var recipe of recipes.base_alloying.recipes) {
+                        if (recipe.inputs[0] == this.item1.id ||
+                            recipe.inputs[1] == this.item2.id &&
+                                recipe.inputs[1] == this.item1.id ||
+                            recipe.inputs[0] == this.item2.id) {
+                            this.recipe = recipe;
+                            this.processing = true;
+                            this.timer = recipe.duration;
+                            break;
+                        }
+                    }
+                }
                 if (this.timer > 0) {
                     this.timer--;
                 }
