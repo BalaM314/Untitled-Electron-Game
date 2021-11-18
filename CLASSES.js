@@ -70,12 +70,34 @@ const Globals = {
 };
 const recipes = {
     "base_smelting": {
+        "type": "1-1",
         "recipes": [
-            { "input": "base_coalOre", "output": "base_ironOre", "duration": 60 }
+            {
+                "inputs": [ItemID.base_coalOre],
+                "outputs": [ItemID.base_coal],
+                "duration": 60
+            },
+            {
+                "inputs": [ItemID.base_ironOre],
+                "outputs": [ItemID.base_ironIngot],
+                "duration": 60
+            },
+            {
+                "inputs": [ItemID.base_copperOre],
+                "outputs": [ItemID.base_copperIngot],
+                "duration": 60
+            }
         ]
     },
     "base_alloying:": {
-        "recipes": []
+        "type": "2-1",
+        "recipes": [
+            {
+                "inputs": [ItemID.base_coal, ItemID.base_ironIngot],
+                "outputs": [ItemID.base_steelIngot],
+                duration: 240
+            }
+        ]
     }
 };
 class Level {

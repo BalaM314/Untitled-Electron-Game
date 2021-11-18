@@ -120,16 +120,48 @@ const Globals = {
 	}
 }
 
+interface Recipe {
+	inputs: ItemID[]
+	outputs: ItemID[]
+	duration: number
+}
 
-const recipes = {
+type RecipeType = "1-1" | "2-1";
+
+const recipes: {
+	[index: string]: {
+		type: RecipeType
+		recipes: Recipe[]
+	}
+} = {
 	"base_smelting": {
+		"type": "1-1",
 		"recipes": [
-			{"input": "base_coalOre", "output": "base_ironOre", "duration": 60}
+			{
+				"inputs": [ItemID.base_coalOre],
+				"outputs": [ItemID.base_coal],
+				"duration": 60
+			},
+			{
+				"inputs": [ItemID.base_ironOre],
+				"outputs": [ItemID.base_ironIngot],
+				"duration": 60
+			},
+			{
+				"inputs": [ItemID.base_copperOre],
+				"outputs": [ItemID.base_copperIngot],
+				"duration": 60
+			}
 		]
 	},
 	"base_alloying:": {
+		"type": "2-1",
 		"recipes": [
-
+			{
+				"inputs": [ItemID.base_coal, ItemID.base_ironIngot],
+				"outputs": [ItemID.base_steelIngot],
+				duration: 240
+			}
 		]
 	}
 };
