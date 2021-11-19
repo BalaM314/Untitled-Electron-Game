@@ -1113,54 +1113,14 @@ class Building {
         };
     }
 }
-class Miner extends Building {
-    constructor(tileX, tileY, id, level) {
-        super(tileX, tileY, id, level);
-        this.timer = 61;
-        this.miningItem = oreFor[level.tileAtByTile(tileX, tileY)];
-    }
-    static canBuildAt(tileX, tileY, level) {
-        return level.tileAtByTile(tileX, tileY) >> 4 == 1;
-    }
-    update() {
-        if (this.timer > 0) {
-            this.timer--;
-        }
-        else {
-            this.timer = 61;
-            if (this.spawnItem(this.miningItem)) {
-                if (Game.tutorial.miner.firstoutput && Game.persistent.tutorialenabled && this.miningItem == ItemID.base_coalOre) {
-                    _alert("Nice!\nThis is just coal ore though, not coal. Try placing a furnace(4 key).\nOh also, remember you can scroll to zoom in on that beautiful coal ore texture.");
-                    Game.tutorial.miner.firstoutput = false;
-                }
-            }
-        }
-    }
-}
-const oreFor = {
-    0x10: ItemID.base_coalOre,
-    0x11: ItemID.base_ironOre,
-    0x12: ItemID.base_copperOre
-};
-class TrashCan extends Building {
-    update() {
-        this.grabItem(_ => { return true; }, item => { item.deleted = true; }, true);
-    }
-    acceptItem(item) {
-        return true;
-    }
-}
-class Furnace extends Building {
+class BuildingWithRecipe extends Building {
     constructor(tileX, tileY, id, level) {
         super(tileX, tileY, id, level);
         this.timer = -1;
         this.item = null;
     }
-    static canBuildAt(tileX, tileY, level) {
-        return level.tileAtByTile(tileX, tileY) == 0x01;
-    }
     findRecipe(item) {
-        for (var recipe of recipes.base_smelting.recipes) {
+        for (var recipe of this.constructor.recipeType.recipes) {
             if (item.id == recipe.inputs[0]) {
                 return recipe;
             }
@@ -1203,6 +1163,49 @@ class Furnace extends Building {
         return false;
     }
 }
+class Miner extends Building {
+    constructor(tileX, tileY, id, level) {
+        super(tileX, tileY, id, level);
+        this.timer = 61;
+        this.miningItem = oreFor[level.tileAtByTile(tileX, tileY)];
+    }
+    static canBuildAt(tileX, tileY, level) {
+        return level.tileAtByTile(tileX, tileY) >> 4 == 1;
+    }
+    update() {
+        if (this.timer > 0) {
+            this.timer--;
+        }
+        else {
+            this.timer = 61;
+            if (this.spawnItem(this.miningItem)) {
+                if (Game.tutorial.miner.firstoutput && Game.persistent.tutorialenabled && this.miningItem == ItemID.base_coalOre) {
+                    _alert("Nice!\nThis is just coal ore though, not coal. Try placing a furnace(4 key).\nOh also, remember you can scroll to zoom in on that beautiful coal ore texture.");
+                    Game.tutorial.miner.firstoutput = false;
+                }
+            }
+        }
+    }
+}
+const oreFor = {
+    0x10: ItemID.base_coalOre,
+    0x11: ItemID.base_ironOre,
+    0x12: ItemID.base_copperOre
+};
+class TrashCan extends Building {
+    update() {
+        this.grabItem(_ => { return true; }, item => { item.deleted = true; }, true);
+    }
+    acceptItem(item) {
+        return true;
+    }
+}
+class Furnace extends BuildingWithRecipe {
+    static canBuildAt(tileX, tileY, level) {
+        return level.tileAtByTile(tileX, tileY) == 0x01;
+    }
+}
+Furnace.recipeType = recipes.base_smelting;
 class Conveyor extends Building {
     constructor(tileX, tileY, id, level) {
         super(tileX, tileY, id, level);
@@ -1646,106 +1649,12 @@ class ResourceAcceptor extends Building {
         }, true);
     }
 }
-class Wiremill extends Building {
-    constructor(tileX, tileY, id, level) {
-        super(tileX, tileY, id, level);
-        this.timer = -1;
-        this.item = null;
-    }
-    findRecipe(item) {
-        for (var recipe of recipes.base_wiremilling.recipes) {
-            if (item.id == recipe.inputs[0]) {
-                return recipe;
-            }
-        }
-        return null;
-    }
-    setRecipe(recipe) {
-        if (!recipe)
-            return;
-        this.recipe = recipe;
-        this.timer = recipe.duration;
-    }
-    update() {
-        if (!this.recipe && this.item)
-            this.setRecipe(this.findRecipe(this.item));
-        if (this.timer > 0 && this.item) {
-            this.timer--;
-        }
-        else if (this.timer == 0 && this.item) {
-            if (this.spawnItem(this.recipe.outputs[0])) {
-                this.timer = -1;
-                this.item = null;
-            }
-        }
-        else if (!this.item) {
-            this.grabItem(this.findRecipe, (item) => {
-                this.setRecipe(this.findRecipe(item));
-            }, true);
-        }
-    }
-    acceptItem(item) {
-        if (this.item)
-            return false;
-        let recipe = this.findRecipe(item);
-        if (recipe) {
-            this.setRecipe(recipe);
-            this.item = item;
-            return true;
-        }
-        return false;
-    }
+class Wiremill extends BuildingWithRecipe {
 }
-class Compressor extends Building {
-    constructor(tileX, tileY, id, level) {
-        super(tileX, tileY, id, level);
-        this.timer = -1;
-        this.item = null;
-    }
-    findRecipe(item) {
-        for (var recipe of recipes.base_compressing.recipes) {
-            if (item.id == recipe.inputs[0]) {
-                return recipe;
-            }
-        }
-        return null;
-    }
-    setRecipe(recipe) {
-        if (!recipe)
-            return;
-        this.recipe = recipe;
-        this.timer = recipe.duration;
-    }
-    update() {
-        if (!this.recipe && this.item)
-            this.setRecipe(this.findRecipe(this.item));
-        if (this.timer > 0 && this.item) {
-            this.timer--;
-        }
-        else if (this.timer == 0 && this.item) {
-            if (this.spawnItem(this.recipe.outputs[0])) {
-                this.timer = -1;
-                this.item = null;
-            }
-        }
-        else if (!this.item) {
-            this.grabItem(this.findRecipe, (item) => {
-                this.setRecipe(this.findRecipe(item));
-            }, true);
-        }
-    }
-    acceptItem(item) {
-        if (this.item)
-            return false;
-        let recipe = this.findRecipe(item);
-        if (recipe) {
-            this.setRecipe(recipe);
-            this.item = item;
-            return true;
-        }
-        return false;
-    }
+Wiremill.recipeType = recipes.base_wiremilling;
+class Compressor extends BuildingWithRecipe {
 }
+Compressor.recipeType = recipes.base_compressing;
 const BuildingType = {
     0x01: Conveyor,
     0x02: Miner,

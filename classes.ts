@@ -1255,6 +1255,59 @@ class Building {
 	}
 }
 
+class BuildingWithRecipe extends Building {
+	timer: number;
+	recipe: Recipe;
+	static recipeType: any;
+	constructor(tileX, tileY, id, level){
+		super(tileX, tileY, id, level);
+		this.timer = -1;
+		this.item = null;
+	}
+
+	findRecipe(item:Item):Recipe {
+		for(var recipe of (this.constructor as any).recipeType.recipes){
+			if(item.id == recipe.inputs[0]){
+				return recipe;
+			}
+		}
+		return null;
+	}
+	setRecipe(recipe:Recipe){
+		if(!recipe) return;
+		this.recipe = recipe;
+		this.timer = recipe.duration;
+	}
+	update(){
+
+		if(!this.recipe && this.item) this.setRecipe(this.findRecipe(this.item));
+
+		if(this.timer > 0 && this.item){
+			this.timer --;
+		} else if(this.timer == 0 && this.item){
+			if(this.spawnItem(this.recipe.outputs[0])){
+				this.timer = -1;
+				this.item = null;
+			}
+		} else if(!this.item){
+			this.grabItem(this.findRecipe, (item) => {
+				this.setRecipe(this.findRecipe(item));
+			}, true);
+		}
+	}
+	acceptItem(item:Item):boolean {
+		if(this.item) return false;
+		let recipe = this.findRecipe(item);
+		if(recipe){
+			this.setRecipe(recipe);
+			this.item = item;
+			return true;
+		}
+		return false;
+	}
+
+}
+
 
 class Miner extends Building {
 	timer: number;
@@ -1299,56 +1352,10 @@ class TrashCan extends Building {
 }
 
 
-class Furnace extends Building {
-	timer: number;
-	recipe: Recipe;
-	constructor(tileX, tileY, id, level){
-		super(tileX, tileY, id, level);
-		this.timer = -1;
-		this.item = null;
-	}
+class Furnace extends BuildingWithRecipe {
+	static recipeType = recipes.base_smelting;
 	static canBuildAt(tileX:number, tileY:number, level:Level){
 		return level.tileAtByTile(tileX, tileY) == 0x01;
-	}
-	findRecipe(item:Item):Recipe {
-		for(var recipe of recipes.base_smelting.recipes){
-			if(item.id == recipe.inputs[0]){
-				return recipe;
-			}
-		}
-		return null;
-	}
-	setRecipe(recipe:Recipe){
-		if(!recipe) return;
-		this.recipe = recipe;
-		this.timer = recipe.duration;
-	}
-	update(){
-
-		if(!this.recipe && this.item) this.setRecipe(this.findRecipe(this.item));
-
-		if(this.timer > 0 && this.item){
-			this.timer --;
-		} else if(this.timer == 0 && this.item){
-			if(this.spawnItem(this.recipe.outputs[0])){
-				this.timer = -1;
-				this.item = null;
-			}
-		} else if(!this.item){
-			this.grabItem(this.findRecipe, (item) => {
-				this.setRecipe(this.findRecipe(item));
-			}, true);
-		}
-	}
-	acceptItem(item:Item):boolean {
-		if(this.item) return false;
-		let recipe = this.findRecipe(item);
-		if(recipe){
-			this.setRecipe(recipe);
-			this.item = item;
-			return true;
-		}
-		return false;
 	}
 }
 
@@ -1768,104 +1775,12 @@ class ResourceAcceptor extends Building {
 	}
 }
 
-class Wiremill extends Building {
-	timer: number;
-	recipe: Recipe;
-	constructor(tileX, tileY, id, level){
-		super(tileX, tileY, id, level);
-		this.timer = -1;
-		this.item = null;
-	}
-	findRecipe(item:Item):Recipe {
-		for(var recipe of recipes.base_wiremilling.recipes){
-			if(item.id == recipe.inputs[0]){
-				return recipe;
-			}
-		}
-		return null;
-	}
-	setRecipe(recipe:Recipe){
-		if(!recipe) return;
-		this.recipe = recipe;
-		this.timer = recipe.duration;
-	}
-	update(){
-
-		if(!this.recipe && this.item) this.setRecipe(this.findRecipe(this.item));
-
-		if(this.timer > 0 && this.item){
-			this.timer --;
-		} else if(this.timer == 0 && this.item){
-			if(this.spawnItem(this.recipe.outputs[0])){
-				this.timer = -1;
-				this.item = null;
-			}
-		} else if(!this.item){
-			this.grabItem(this.findRecipe, (item) => {
-				this.setRecipe(this.findRecipe(item));
-			}, true);
-		}
-	}
-	acceptItem(item:Item):boolean {
-		if(this.item) return false;
-		let recipe = this.findRecipe(item);
-		if(recipe){
-			this.setRecipe(recipe);
-			this.item = item;
-			return true;
-		}
-		return false;
-	}
+class Wiremill extends BuildingWithRecipe {
+	static recipeType = recipes.base_wiremilling;
 }
 
-class Compressor extends Building {
-	timer: number;
-	recipe: Recipe;
-	constructor(tileX, tileY, id, level){
-		super(tileX, tileY, id, level);
-		this.timer = -1;
-		this.item = null;
-	}
-	findRecipe(item:Item):Recipe {
-		for(var recipe of recipes.base_compressing.recipes){
-			if(item.id == recipe.inputs[0]){
-				return recipe;
-			}
-		}
-		return null;
-	}
-	setRecipe(recipe:Recipe){
-		if(!recipe) return;
-		this.recipe = recipe;
-		this.timer = recipe.duration;
-	}
-	update(){
-
-		if(!this.recipe && this.item) this.setRecipe(this.findRecipe(this.item));
-
-		if(this.timer > 0 && this.item){
-			this.timer --;
-		} else if(this.timer == 0 && this.item){
-			if(this.spawnItem(this.recipe.outputs[0])){
-				this.timer = -1;
-				this.item = null;
-			}
-		} else if(!this.item){
-			this.grabItem(this.findRecipe, (item) => {
-				this.setRecipe(this.findRecipe(item));
-			}, true);
-		}
-	}
-	acceptItem(item:Item):boolean {
-		if(this.item) return false;
-		let recipe = this.findRecipe(item);
-		if(recipe){
-			this.setRecipe(recipe);
-			this.item = item;
-			return true;
-		}
-		return false;
-	}
+class Compressor extends BuildingWithRecipe {
+	static recipeType = recipes.base_compressing;
 }
 
 
