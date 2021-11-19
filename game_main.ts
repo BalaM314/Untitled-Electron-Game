@@ -37,21 +37,21 @@ let Game = {
 	},
 	tutorial: {
 		conveyor: {
-			placedcorrectly: true,
+			placed: true,
 			beltchain: true,
-			cantbeplacedonwater: true
+			placefail: true
 		},
 		miner: {
-			cantbeplacedongrass: true,
-			placedcorrectly: true,
-			firstoutput: true
+			placefail: true,
+			placed: true,
+			coaloutput: true
 		},
 		trashcan: {
-			placedcorrectly: true
+			placed: true
 		},
 		furnace: {
-			cantbeplacedongrass: true,
-			placedcorrectly: true
+			placefail: true,
+			placed: true
 		},
 		item: {
 			coal: true,

@@ -139,7 +139,7 @@ interface Recipe {
 type RecipeType = "1-1" | "2-1";
 
 const recipes: {
-	[index: string]: {
+	[index: `${string}_${string}`]: {
 		type: RecipeType
 		recipes: Recipe[]
 	}
@@ -200,6 +200,122 @@ const recipes: {
 		]
 	}
 };
+
+enum triggerType {
+	placeBuilding,
+	placeBuildingFail,
+	spawnItem,
+	buildingRun
+}
+
+function trigger(type:triggerType, buildingID?:RawBuildingID, itemID?:ItemID){
+	switch(type){
+		case triggerType.placeBuilding:
+			switch(buildingID){
+				case 0x04:
+					if(Game.tutorial.furnace.placed && Game.persistent.tutorialenabled){
+						_alert("The Furnace converts raw ores into their smelted forms. Simply point a conveyor belt carrying ores at it and provide another belt for it to output onto.");
+						Game.tutorial.furnace.placed = false;
+					}
+				break;
+				case 0x03:
+					if(Game.tutorial.trashcan.placed && Game.persistent.tutorialenabled){
+						_alert("The Trash Can is pretty simple: it deletes all items it receives.");
+						Game.tutorial.trashcan.placed = false;
+					}
+				break;
+				case 0x02:
+					if(Game.tutorial.miner.placed && Game.persistent.tutorialenabled){
+						_alert("The Miner mines ore nodes, producing one ore per second. \nIt auto-outputs to adjacent conveyor belts.\nAlso, ore nodes are infinite.");
+						Game.tutorial.miner.placed = false;
+					}
+				break;
+				case 0x01:
+					if(Game.tutorial.conveyor.placed && Game.persistent.tutorialenabled){
+						_alert("Conveyors are the way to move items around. \nYou can use the arrow keys to change the direction of placed belts. \nTry making a belt chain, then putting a debug item on it with Ctrl+click.\nYou can drag-click to build multiple of the same building.");
+						Game.tutorial.conveyor.placed = false;
+					}
+				break;
+			}
+			break;
+
+
+		case triggerType.placeBuildingFail:
+			switch(buildingID){
+				case 0x04:
+					if(Game.tutorial.furnace.placefail && Game.persistent.tutorialenabled){
+						_alert("The Furnace generates a lot of heat and is pretty heavy, so you can only place it on stone.");
+						Game.tutorial.furnace.placefail = false;
+					}
+				break;
+				case 0x03:
+
+				break;
+				case 0x02:
+					if(Game.tutorial.miner.placefail && Game.persistent.tutorialenabled){
+						_alert("The Miner can only be placed on a resource node(the colored circles).");
+						Game.tutorial.miner.placefail = false;
+					}
+				break;
+				case 0x01:
+					if(Game.tutorial.conveyor.placefail && Game.persistent.tutorialenabled){
+						_alert("Conveyors don't float!\nYes, I know, then water chunks are useless... I'll add pontoons in a future update.");
+						Game.tutorial.conveyor.placefail = false;
+					}
+				break;
+			}
+			break;
+
+
+		case triggerType.spawnItem:
+			switch(itemID){
+				case ItemID.base_coal:
+					if(Game.tutorial.item.coal){
+						_alert("Congratulations! You just automated coal!");
+						_alert(["Try doing the same thing for iron: Iron nodes are whiteish and are a bit further from the center of the map.\nUse WASD to scroll.", 3000]);
+						Game.tutorial.item.coal = false;
+					}
+					break;
+				case ItemID.base_ironIngot:
+					if(Game.tutorial.item.iron){
+						_alert("Nice job!");
+						_alert(["The next automateable resource is steel.\nYou'll need to use the alloy smelter(slot 7), which needs two inputs(coal and iron).", 3000]);
+						Game.tutorial.item.iron = false;
+					}
+					break;
+			}
+			break;
+
+
+		case triggerType.buildingRun:
+			switch(buildingID){
+				case 0x02:
+					if(Game.tutorial.miner.coaloutput && Game.persistent.tutorialenabled && itemID == ItemID.base_coalOre){
+						_alert("Nice!\nThis is just coal ore though, not coal. Try placing a furnace(4 key).\nOh also, remember you can scroll to zoom in on that beautiful coal ore texture.");
+						Game.tutorial.miner.coaloutput = false;
+					}
+					break;
+				case 0x07:
+
+					break;
+			}
+			break;
+	}
+
+}
+
+
+
+
+
+
+
+
+
+
+/*
+	Classes
+*/
 
 class Level {
 	items: Item[];
@@ -458,64 +574,21 @@ class Level {
 		canOverwriteBuilding = false;
 		this.buildingAtTile(tileX, tileY)?.break();
 		var tempBuilding:Building;
-		switch(building % 0x100 as RawBuildingID){
-			case 0x04:
-				if(!Furnace.canBuildAt(tileX, tileY, this)){
-					if(Game.tutorial.furnace.cantbeplacedongrass && Game.persistent.tutorialenabled){
-						_alert("The Furnace generates a lot of heat and is pretty heavy, so you can only place it on stone.");
-						Game.tutorial.furnace.cantbeplacedongrass = false;
-					}
-					break;
-				}
-				if(Game.tutorial.furnace.placedcorrectly && Game.persistent.tutorialenabled){
-					_alert("The Furnace converts raw ores into their smelted forms. Simply point a conveyor belt carrying ores at it and provide another belt for it to output onto.");
-					Game.tutorial.furnace.placedcorrectly = false;
-				}
-			break;
-			case 0x03:
-				if(Game.tutorial.trashcan.placedcorrectly && Game.persistent.tutorialenabled){
-					_alert("The Trash Can is pretty simple: it deletes all items it receives.");
-					Game.tutorial.trashcan.placedcorrectly = false;
-				}
-			break;
-			case 0x02:
-				if(!Miner.canBuildAt(tileX, tileY, this)){
-					if(Game.tutorial.miner.cantbeplacedongrass && Game.persistent.tutorialenabled){
-						_alert("The Miner can only be placed on a resource node(the colored circles).");
-						Game.tutorial.miner.cantbeplacedongrass = false;
-					}
-					return;
-				}
-				if(Game.tutorial.miner.placedcorrectly && Game.persistent.tutorialenabled){
-					_alert("The Miner mines ore nodes, producing one ore per second. \nIt auto-outputs to adjacent conveyor belts.\nAlso, ore nodes are infinite.");
-					Game.tutorial.miner.placedcorrectly = false;
-				}
-			break;
-			case 0x01:
-				if(!Conveyor.canBuildAt(tileX, tileY, this)){
-					if(Game.tutorial.conveyor.cantbeplacedonwater && Game.persistent.tutorialenabled){
-						_alert("Conveyors don't float!\nYes, I know, then water chunks are useless... I'll add pontoons in a future update.");
-						Game.tutorial.conveyor.cantbeplacedonwater = false;
-					}
-					return;
-				}
-				if(Game.tutorial.conveyor.placedcorrectly && Game.persistent.tutorialenabled){
-					_alert("Conveyors are the way to move items around. \nYou can use the arrow keys to change the direction of placed belts. \nTry making a belt chain, then putting a debug item on it with Ctrl+click.\nYou can drag-click to build multiple of the same building.");
-					Game.tutorial.conveyor.placedcorrectly = false;
-				}
-			break;
-			case 0xFF:
-				this.writeExtractor(tileX, tileY, null);
-				this.writeBuilding(tileX, tileY, null);
-				return;
+		
+		if(building == 0xFFFF){
+			this.writeExtractor(tileX, tileY, null);
+			this.writeBuilding(tileX, tileY, null);
+			return;
 		}
 		if(BuildingType[building % 0x100]?.canBuildAt(tileX, tileY, this)){
+			trigger(triggerType.placeBuilding, building % 0x100 as RawBuildingID);
 			if(building % 0x100 == 0x01){
 				tempBuilding = new BuildingType[building % 0x100](tileX, tileY, this.getTurnedConveyor(tileX, tileY, building >> 8), this);
 			} else {
 				tempBuilding = new BuildingType[building % 0x100](tileX, tileY, building, this);
 			}
 		} else {
+			trigger(triggerType.placeBuildingFail, building % 0x100 as RawBuildingID);
 			return;
 		}
 		if(tempBuilding instanceof Extractor){
@@ -1195,16 +1268,6 @@ class Building {
 		} else {
 			return false;
 		}
-		if(Game.persistent.tutorialenabled && id == ItemID.base_coal && Game.tutorial.item.coal){
-			_alert("Congratulations! You just automated coal!");
-			_alert(["Try doing the same thing for iron: Iron nodes are whiteish and are a bit further from the center of the map.\nUse WASD to scroll.", 3000]);
-			Game.tutorial.item.coal = false;
-		}
-		if(Game.persistent.tutorialenabled && id == ItemID.base_ironIngot && Game.tutorial.item.iron){
-			_alert("Nice job!");
-			Game.tutorial.item.iron = false;
-			_alert(["The next automateable resource is steel.\nYou'll need to use the alloy smelter(slot 7), which needs two inputs(coal and iron).", 3000]);
-		}
 		return true;
 	}
 	grabItem(filter:(item:Item) => any, callback:(item:Item) => void, remove:boolean, grabDistance?:number){
@@ -1308,10 +1371,78 @@ class BuildingWithRecipe extends Building {
 
 }
 
+class BuildingWithTwoRecipe extends Building {
+	timer: number;
+	item1: Item;
+	item2: Item;
+	hasRunOnce: boolean;
+	recipe: Recipe;
+	constructor(tileX:number, tileY:number, id:BuildingID, level:Level){
+		super(tileX, tileY, id, level);
+		this.timer = -1;
+		this.item1 = null;
+		this.item2 = null;
+		this.hasRunOnce = false;
+	}
+	acceptItem(item:Item){
+		if(!this.item1){
+			this.item1 = item;
+			return true;
+		}
+		if(!this.item2 && item.id != this.item1.id){
+			this.item2 = item;
+			return true;
+		}
+		return false;
+	}
+	findRecipe(item1:Item, item2:Item):Recipe{
+		for(var recipe of (this.constructor as any).recipeType.recipes){
+			if(
+				recipe.inputs[0] == item1.id ||
+				recipe.inputs[1] == item2.id &&
+				recipe.inputs[1] == item1.id ||
+				recipe.inputs[0] == item2.id
+			){
+				return recipe;
+			}
+		}
+		return null;
+	}
+	setRecipe(recipe:Recipe){
+		if(recipe == null) return;
+		this.recipe = recipe;
+		this.timer = recipe.duration;
+	}
+	update(){
+		if(!this.item1){
+			this.grabItem((item) => {return item.id != this.item2?.id;}, (item:Item) => {this.item1 = item;}, true);
+		}
+		if(!this.item2){
+			this.grabItem((item) => {return item.id != this.item1?.id;}, (item:Item) => {this.item2 = item;}, true);
+		}
+		if(this.item1 instanceof Item && this.item2 instanceof Item){
+			if(!this.recipe){
+				this.setRecipe(this.findRecipe(this.item1, this.item2));
+				return;
+			}
+			if(this.timer > 0){
+				this.timer --;
+			} else if(this.timer == 0){
+				if(this.spawnItem(this.recipe.outputs[0])){
+					this.timer = -1;
+					this.item1 = null;
+					this.item2 = null;
+					this.recipe = null;
+				}
+			}
+		}
+	}
+}
+
 
 class Miner extends Building {
 	timer: number;
-	miningItem: string;
+	miningItem: ItemID;
 	constructor(tileX:number, tileY:number, id:BuildingID, level:Level){
 		super(tileX, tileY, id, level);
 		this.timer = 61;
@@ -1326,10 +1457,7 @@ class Miner extends Building {
 		} else {
 			this.timer = 61;
 			if(this.spawnItem(this.miningItem)){
-				if(Game.tutorial.miner.firstoutput && Game.persistent.tutorialenabled && this.miningItem == ItemID.base_coalOre){
-					_alert("Nice!\nThis is just coal ore though, not coal. Try placing a furnace(4 key).\nOh also, remember you can scroll to zoom in on that beautiful coal ore texture.");
-					Game.tutorial.miner.firstoutput = false;
-				}
+				trigger(triggerType.buildingRun, this.id % 0x100 as RawBuildingID, this.miningItem);
 			}
 		}
 	}
@@ -1664,93 +1792,8 @@ class StorageBuilding extends Building {
 
 
 let totalAlloySmeltersRun = 0;
-class AlloySmelter extends Building {
-	timer: number;
-	item1: Item;
-	item2: Item;
-	processing: boolean;
-	hasRunOnce: boolean;
-	recipe: Recipe;
-	constructor(tileX:number, tileY:number, id:BuildingID, level:Level){
-		super(tileX, tileY, id, level);
-		this.timer = 240;
-		this.item1 = null;
-		this.item2 = null;
-		this.processing = false;
-		this.hasRunOnce = false;
-	}
-	acceptItem(item:Item){
-		if(!this.item1){
-			this.item1 = item;
-			return true;
-		}
-		if(!this.item2 && item.id != this.item1.id){
-			this.item2 = item;
-			return true;
-		}
-		return false;
-	}
-	findRecipe(item1:Item, item2:Item):Recipe{
-		for(var recipe of recipes.base_alloying.recipes){
-			if(
-				recipe.inputs[0] == item1.id ||
-				recipe.inputs[1] == item2.id &&
-				recipe.inputs[1] == item1.id ||
-				recipe.inputs[0] == item2.id
-			){
-				return recipe;
-			}
-		}
-		return null;
-	}
-	setRecipe(recipe:Recipe){
-		this.recipe = recipe;
-		this.processing = true;
-		this.timer = recipe.duration;
-	}
-	update(){
-		if(!this.item1){
-			this.grabItem((item) => {return item.id != this.item2?.id;}, (item:Item) => {this.item1 = item;}, true);
-		}
-		if(!this.item2){
-			this.grabItem((item) => {return item.id != this.item1?.id;}, (item:Item) => {this.item2 = item;}, true);
-		}
-		if(this.item1 instanceof Item && this.item2 instanceof Item){
-			if(!this.processing){
-				this.setRecipe(this.findRecipe(this.item1, this.item2));
-				return;
-			} else {
-				if(!this.recipe){
-					this.setRecipe(this.findRecipe(this.item1, this.item2));
-					return;
-				}
-				if(this.timer > 0){
-					this.timer --;
-				} else if(this.timer == 0){
-					if(!this.hasRunOnce && this.recipe.outputs[0] == ItemID.base_steelIngot){
-						this.hasRunOnce = true;
-						totalAlloySmeltersRun ++;
-						if(totalAlloySmeltersRun >= 4 && Game.persistent.tutorialenabled && Game.tutorial.multiplesteel){
-							Game.tutorial.multiplesteel = false;
-							_alert("🎉🎉🎉🎉🎉🎉\nWell, that's all the content this game has to offer for now.\nCheck back later for more updates, especially once this game reaches beta.");
-						}
-					}
-
-					if(this.spawnItem(this.recipe.outputs[0])){
-						if(Game.persistent.tutorialenabled && this.recipe.outputs[0] == ItemID.base_steelIngot && Game.tutorial.item.steel){
-							_alert("Well done!\nThis game is in alpha, so steel isn't used for anything yet.");
-							Game.tutorial.item.steel = false;
-							_alert(["Hmm, that's REALLY slow.\nYou'll \"need\" more steel than that.\nParallelize!\nYou need to use the extractor(slot 5). It is special, because you can place it on top of other buildings.\nNote: use the comma and period keys to change the length of the extractor(you'll need to use this to make a bridge).\nGood luck!", 3000]);
-						}
-						this.timer = -1;
-						this.item1 = null;
-						this.item2 = null;
-						this.processing = false;
-					}
-				}
-			}
-		}
-	}
+class AlloySmelter extends BuildingWithTwoRecipe {
+	static recipeType = recipes.base_alloying;
 }
 
 class ResourceAcceptor extends Building {
