@@ -20,7 +20,8 @@ const names = {
         0x08: "Resource Acceptor",
         0x09: "Wiremill",
         0x0A: "Compressor",
-        0x0B: "Lathe"
+        0x0B: "Lathe",
+        0x0C: "Assembler"
     },
     item: {
         "base_null": "Debug Item",
@@ -404,13 +405,13 @@ class Level {
         tileX = Math.floor(tileX);
         tileY = Math.floor(tileY);
         let topConveyor = this.buildingIDAtTile(tileX, tileY - 1);
-        topConveyor = topConveyor == 0x0101 || topConveyor == 0x0601 || topConveyor == 0x0701 || topConveyor == 0x0002 || topConveyor == 0x0004 || topConveyor == 0x0007 || topConveyor == 0x0009 || topConveyor == 0x000A || topConveyor == 0x000B;
+        topConveyor = topConveyor == 0x0101 || topConveyor == 0x0601 || topConveyor == 0x0701 || topConveyor == 0x0002 || topConveyor == 0x0004 || topConveyor == 0x0007 || topConveyor == 0x0009 || topConveyor == 0x000A || topConveyor == 0x000B || topConveyor == 0x000C;
         let rightConveyor = this.buildingIDAtTile(tileX + 1, tileY);
-        rightConveyor = rightConveyor == 0x0201 || rightConveyor == 0x0801 || rightConveyor == 0x0901 || rightConveyor == 0x0002 || rightConveyor == 0x0004 || rightConveyor == 0x0007 || rightConveyor == 0x0009 || rightConveyor == 0x000A || rightConveyor == 0x000B;
+        rightConveyor = rightConveyor == 0x0201 || rightConveyor == 0x0801 || rightConveyor == 0x0901 || rightConveyor == 0x0002 || rightConveyor == 0x0004 || rightConveyor == 0x0007 || rightConveyor == 0x0009 || rightConveyor == 0x000A || rightConveyor == 0x000B || rightConveyor == 0x000C;
         let leftConveyor = this.buildingIDAtTile(tileX - 1, tileY);
-        leftConveyor = leftConveyor == 0x0001 || leftConveyor == 0x0401 || leftConveyor == 0x0501 || leftConveyor == 0x0002 || leftConveyor == 0x0004 || leftConveyor == 0x0007 || leftConveyor == 0x0009 || leftConveyor == 0x000A || leftConveyor == 0x000B;
+        leftConveyor = leftConveyor == 0x0001 || leftConveyor == 0x0401 || leftConveyor == 0x0501 || leftConveyor == 0x0002 || leftConveyor == 0x0004 || leftConveyor == 0x0007 || leftConveyor == 0x0009 || leftConveyor == 0x000A || leftConveyor == 0x000B || leftConveyor == 0x000C;
         let bottomConveyor = this.buildingIDAtTile(tileX, tileY + 1);
-        bottomConveyor = bottomConveyor == 0x0301 || bottomConveyor == 0x0A01 || bottomConveyor == 0x0B01 || bottomConveyor == 0x0002 || bottomConveyor == 0x0004 || bottomConveyor == 0x0007 || bottomConveyor == 0x0009 || bottomConveyor == 0x000A || bottomConveyor == 0x000B;
+        bottomConveyor = bottomConveyor == 0x0301 || bottomConveyor == 0x0A01 || bottomConveyor == 0x0B01 || bottomConveyor == 0x0002 || bottomConveyor == 0x0004 || bottomConveyor == 0x0007 || bottomConveyor == 0x0009 || bottomConveyor == 0x000A || bottomConveyor == 0x000B || bottomConveyor == 0x000C;
         let buildingID = 0xFFFF;
         switch (conveyorType) {
             case 0:
@@ -1724,6 +1725,9 @@ Compressor.recipeType = recipes.base_compressing;
 class Lathe extends BuildingWithRecipe {
 }
 Lathe.recipeType = recipes.base_lathing;
+class Assembler extends BuildingWithTwoRecipe {
+}
+Assembler.recipeType = recipes.base_assembling;
 const BuildingType = {
     0x01: Conveyor,
     0x02: Miner,
@@ -1735,5 +1739,6 @@ const BuildingType = {
     0x08: ResourceAcceptor,
     0x09: Wiremill,
     0x0A: Compressor,
-    0x0B: Lathe
+    0x0B: Lathe,
+    0x0C: Assembler
 };
