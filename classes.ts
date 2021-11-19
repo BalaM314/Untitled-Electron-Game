@@ -86,7 +86,10 @@ const names = {
 		"base_steelRod": "Steel Rod",
 		"base_copperOre": "Copper Ore",
 		"base_copperIngot": "Copper Ingot",
-		"base_copperWire": "Copper Wire"
+		"base_copperWire": "Copper Wire",
+		"base_stator": "Stator",
+		"base_rotor": "Rotor",
+		"base_motor": "Motor"
 	}
 };
 
@@ -103,7 +106,10 @@ enum ItemID {
 	base_copperWire = "base_copperWire",
 	base_steelIngot = "base_steelIngot",
 	base_steelPlate = "base_steelPlate",
-	base_steelRod = "base_steelRod"
+	base_steelRod = "base_steelRod",
+	base_stator = "base_stator",
+	base_rotor = "base_rotor",
+	base_motor = "base_motor"
 }
 
 const generation_consts = {
@@ -217,6 +223,26 @@ const recipes: {
 				"inputs": [ItemID.base_steelIngot],
 				"outputs": [ItemID.base_steelRod],
 				"duration": 60
+			}
+		]
+	},
+	"base_assembling": {
+		"type": "2-1",
+		recipes: [
+			{
+				"inputs": [ItemID.base_steelRod, ItemID.base_copperWire],
+				"outputs": [ItemID.base_rotor],
+				duration: 120
+			},
+			{
+				"inputs": [ItemID.base_ironPlate, ItemID.base_copperWire],
+				"outputs": [ItemID.base_stator],
+				duration: 120
+			},
+			{
+				"inputs": [ItemID.base_stator, ItemID.base_rotor],
+				"outputs": [ItemID.base_motor],
+				duration: 120
 			}
 		]
 	}

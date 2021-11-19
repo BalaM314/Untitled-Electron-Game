@@ -35,7 +35,10 @@ const names = {
         "base_steelRod": "Steel Rod",
         "base_copperOre": "Copper Ore",
         "base_copperIngot": "Copper Ingot",
-        "base_copperWire": "Copper Wire"
+        "base_copperWire": "Copper Wire",
+        "base_stator": "Stator",
+        "base_rotor": "Rotor",
+        "base_motor": "Motor"
     }
 };
 var ItemID;
@@ -53,6 +56,9 @@ var ItemID;
     ItemID["base_steelIngot"] = "base_steelIngot";
     ItemID["base_steelPlate"] = "base_steelPlate";
     ItemID["base_steelRod"] = "base_steelRod";
+    ItemID["base_stator"] = "base_stator";
+    ItemID["base_rotor"] = "base_rotor";
+    ItemID["base_motor"] = "base_motor";
 })(ItemID || (ItemID = {}));
 const generation_consts = {
     perlin_scale: 2 * Math.PI,
@@ -149,6 +155,26 @@ const recipes = {
                 "inputs": [ItemID.base_steelIngot],
                 "outputs": [ItemID.base_steelRod],
                 "duration": 60
+            }
+        ]
+    },
+    "base_assembling": {
+        "type": "2-1",
+        recipes: [
+            {
+                "inputs": [ItemID.base_steelRod, ItemID.base_copperWire],
+                "outputs": [ItemID.base_rotor],
+                duration: 120
+            },
+            {
+                "inputs": [ItemID.base_ironPlate, ItemID.base_copperWire],
+                "outputs": [ItemID.base_stator],
+                duration: 120
+            },
+            {
+                "inputs": [ItemID.base_stator, ItemID.base_rotor],
+                "outputs": [ItemID.base_motor],
+                duration: 120
             }
         ]
     }
