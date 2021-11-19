@@ -19,7 +19,8 @@ const names = {
         0x07: "Alloy Smelter",
         0x08: "Resource Acceptor",
         0x09: "Wiremill",
-        0x0A: "Compressor"
+        0x0A: "Compressor",
+        0x0B: "Lathe"
     },
     item: {
         "base_null": "Debug Item",
@@ -28,8 +29,10 @@ const names = {
         "base_ironOre": "Iron Ore",
         "base_ironIngot": "Iron Ingot",
         "base_ironPlate": "Iron Plate",
+        "base_ironRod": "Iron Rod",
         "base_steelIngot": "Steel Ingot",
         "base_steelPlate": "Steel Plate",
+        "base_steelRod": "Steel Rod",
         "base_copperOre": "Copper Ore",
         "base_copperIngot": "Copper Ingot",
         "base_copperWire": "Copper Wire"
