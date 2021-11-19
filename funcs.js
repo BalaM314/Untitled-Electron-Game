@@ -17,6 +17,12 @@ window.onkeydown = (e) => {
         }
         document.getElementById("toolbar").children?.[parseInt(e.key) - 1]?.classList.add("selected");
     }
+    if (parseInt(e.key[1])) {
+        for (var x of document.getElementById("toolbar").children) {
+            x.classList.remove("selected");
+        }
+        document.getElementById("toolbar").children?.[parseInt(e.key[1]) + 8]?.classList.add("selected");
+    }
     if (keysPressed.indexOf(e.key.toLowerCase()) == -1) {
         keysPressed.push(e.key.toLowerCase());
     }
@@ -82,6 +88,13 @@ window.onkeydown = (e) => {
                 break;
             case "9":
                 placedBuilding.type = 0x000A;
+                break;
+            case "F1":
+                placedBuilding.type = 0x000B;
+                e.preventDefault();
+                break;
+            case "F2":
+                e.preventDefault();
                 break;
             case "0":
                 placedBuilding.type = 0xFF;

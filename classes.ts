@@ -41,9 +41,10 @@ type BuildingID =
 0x0008 |	//Resource Acceptor
 0x0009 |	//Wiremill
 0x000A |	//Compressor
+0x000B |	//Lathe
 0xFFFF ;	//Unset
 
-type RawBuildingID = 0x01 | 0x02 | 0x03 | 0x04 | 0x05 | 0x06 | 0x07 | 0x08 | 0x09 | 0x0A | 0xFF;
+type RawBuildingID = 0x01 | 0x02 | 0x03 | 0x04 | 0x05 | 0x06 | 0x07 | 0x08 | 0x09 | 0x0A | 0x0B | 0xFF;
 
 
 
@@ -93,11 +94,13 @@ enum ItemID {
 	base_ironOre = "base_ironOre",
 	base_ironIngot = "base_ironIngot",
 	base_ironPlate = "base_ironPlate",
+	base_ironRod = "base_ironRod",
 	base_copperOre = "base_copperOre",
 	base_copperIngot = "base_copperIngot",
+	base_copperWire = "base_copperWire",
 	base_steelIngot = "base_steelIngot",
 	base_steelPlate = "base_steelPlate",
-	base_copperWire = "base_copperWire",
+	base_steelRod = "base_steelRod"
 }
 
 const generation_consts = {
@@ -195,6 +198,21 @@ const recipes: {
 			{
 				"inputs": [ItemID.base_steelIngot],
 				"outputs": [ItemID.base_steelPlate],
+				"duration": 60
+			}
+		]
+	},
+	"base_lathing": {
+		"type": "1-1",
+		"recipes": [
+			{
+				"inputs": [ItemID.base_ironIngot],
+				"outputs": [ItemID.base_ironRod],
+				"duration": 60
+			},
+			{
+				"inputs": [ItemID.base_steelIngot],
+				"outputs": [ItemID.base_steelRod],
 				"duration": 60
 			}
 		]
@@ -483,14 +501,15 @@ class Level {
 		//Returns how a conveyor should be turned based on nearby buildings.
 		tileX = Math.floor(tileX);
 		tileY = Math.floor(tileY);
+		//TODO fix this 🍝
 		let topConveyor:BuildingID | boolean = this.buildingIDAtTile(tileX, tileY - 1);
-		topConveyor = topConveyor == 0x0101 || topConveyor == 0x0601 || topConveyor == 0x0701 || topConveyor == 0x0002 || topConveyor == 0x0004  || topConveyor == 0x0007 || topConveyor == 0x0009 || topConveyor == 0x000A;
+		topConveyor = topConveyor == 0x0101 || topConveyor == 0x0601 || topConveyor == 0x0701 || topConveyor == 0x0002 || topConveyor == 0x0004  || topConveyor == 0x0007 || topConveyor == 0x0009 || topConveyor == 0x000A  || topConveyor == 0x000B;
 		let rightConveyor:BuildingID | boolean = this.buildingIDAtTile(tileX + 1, tileY);
-		rightConveyor = rightConveyor == 0x0201 || rightConveyor == 0x0801 || rightConveyor == 0x0901 || rightConveyor == 0x0002 || rightConveyor == 0x0004  || rightConveyor == 0x0007 || rightConveyor == 0x0009 || rightConveyor == 0x000A;
+		rightConveyor = rightConveyor == 0x0201 || rightConveyor == 0x0801 || rightConveyor == 0x0901 || rightConveyor == 0x0002 || rightConveyor == 0x0004  || rightConveyor == 0x0007 || rightConveyor == 0x0009 || rightConveyor == 0x000A  || rightConveyor == 0x000B;
 		let leftConveyor:BuildingID | boolean = this.buildingIDAtTile(tileX - 1, tileY);
-		leftConveyor = leftConveyor == 0x0001 || leftConveyor == 0x0401 || leftConveyor == 0x0501 || leftConveyor == 0x0002 || leftConveyor == 0x0004  || leftConveyor == 0x0007 || leftConveyor == 0x0009 || leftConveyor == 0x000A;
+		leftConveyor = leftConveyor == 0x0001 || leftConveyor == 0x0401 || leftConveyor == 0x0501 || leftConveyor == 0x0002 || leftConveyor == 0x0004  || leftConveyor == 0x0007 || leftConveyor == 0x0009 || leftConveyor == 0x000A  || leftConveyor == 0x000B;
 		let bottomConveyor:BuildingID | boolean = this.buildingIDAtTile(tileX, tileY + 1);
-		bottomConveyor = bottomConveyor == 0x0301 || bottomConveyor == 0x0A01 || bottomConveyor == 0x0B01 || bottomConveyor == 0x0002 || bottomConveyor == 0x0004  || bottomConveyor == 0x0007 || bottomConveyor == 0x0009 || bottomConveyor == 0x000A;
+		bottomConveyor = bottomConveyor == 0x0301 || bottomConveyor == 0x0A01 || bottomConveyor == 0x0B01 || bottomConveyor == 0x0002 || bottomConveyor == 0x0004  || bottomConveyor == 0x0007 || bottomConveyor == 0x0009 || bottomConveyor == 0x000A  || bottomConveyor == 0x000B;
 		let buildingID:BuildingID = 0xFFFF;
 		switch(conveyorType){
 			case 0:
@@ -1826,6 +1845,10 @@ class Compressor extends BuildingWithRecipe {
 	static recipeType = recipes.base_compressing;
 }
 
+class Lathe extends BuildingWithRecipe {
+	static recipeType = recipes.base_lathing;
+}
+
 
 const BuildingType: {
 	[index:number]: typeof Building
@@ -1839,5 +1862,6 @@ const BuildingType: {
 	0x07: AlloySmelter,
 	0x08: ResourceAcceptor,
 	0x09: Wiremill,
-	0x0A: Compressor
+	0x0A: Compressor,
+	0x0B: Lathe
 };

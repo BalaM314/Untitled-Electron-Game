@@ -43,11 +43,13 @@ var ItemID;
     ItemID["base_ironOre"] = "base_ironOre";
     ItemID["base_ironIngot"] = "base_ironIngot";
     ItemID["base_ironPlate"] = "base_ironPlate";
+    ItemID["base_ironRod"] = "base_ironRod";
     ItemID["base_copperOre"] = "base_copperOre";
     ItemID["base_copperIngot"] = "base_copperIngot";
+    ItemID["base_copperWire"] = "base_copperWire";
     ItemID["base_steelIngot"] = "base_steelIngot";
     ItemID["base_steelPlate"] = "base_steelPlate";
-    ItemID["base_copperWire"] = "base_copperWire";
+    ItemID["base_steelRod"] = "base_steelRod";
 })(ItemID || (ItemID = {}));
 const generation_consts = {
     perlin_scale: 2 * Math.PI,
@@ -128,6 +130,21 @@ const recipes = {
             {
                 "inputs": [ItemID.base_steelIngot],
                 "outputs": [ItemID.base_steelPlate],
+                "duration": 60
+            }
+        ]
+    },
+    "base_lathing": {
+        "type": "1-1",
+        "recipes": [
+            {
+                "inputs": [ItemID.base_ironIngot],
+                "outputs": [ItemID.base_ironRod],
+                "duration": 60
+            },
+            {
+                "inputs": [ItemID.base_steelIngot],
+                "outputs": [ItemID.base_steelRod],
                 "duration": 60
             }
         ]
@@ -358,13 +375,13 @@ class Level {
         tileX = Math.floor(tileX);
         tileY = Math.floor(tileY);
         let topConveyor = this.buildingIDAtTile(tileX, tileY - 1);
-        topConveyor = topConveyor == 0x0101 || topConveyor == 0x0601 || topConveyor == 0x0701 || topConveyor == 0x0002 || topConveyor == 0x0004 || topConveyor == 0x0007 || topConveyor == 0x0009 || topConveyor == 0x000A;
+        topConveyor = topConveyor == 0x0101 || topConveyor == 0x0601 || topConveyor == 0x0701 || topConveyor == 0x0002 || topConveyor == 0x0004 || topConveyor == 0x0007 || topConveyor == 0x0009 || topConveyor == 0x000A || topConveyor == 0x000B;
         let rightConveyor = this.buildingIDAtTile(tileX + 1, tileY);
-        rightConveyor = rightConveyor == 0x0201 || rightConveyor == 0x0801 || rightConveyor == 0x0901 || rightConveyor == 0x0002 || rightConveyor == 0x0004 || rightConveyor == 0x0007 || rightConveyor == 0x0009 || rightConveyor == 0x000A;
+        rightConveyor = rightConveyor == 0x0201 || rightConveyor == 0x0801 || rightConveyor == 0x0901 || rightConveyor == 0x0002 || rightConveyor == 0x0004 || rightConveyor == 0x0007 || rightConveyor == 0x0009 || rightConveyor == 0x000A || rightConveyor == 0x000B;
         let leftConveyor = this.buildingIDAtTile(tileX - 1, tileY);
-        leftConveyor = leftConveyor == 0x0001 || leftConveyor == 0x0401 || leftConveyor == 0x0501 || leftConveyor == 0x0002 || leftConveyor == 0x0004 || leftConveyor == 0x0007 || leftConveyor == 0x0009 || leftConveyor == 0x000A;
+        leftConveyor = leftConveyor == 0x0001 || leftConveyor == 0x0401 || leftConveyor == 0x0501 || leftConveyor == 0x0002 || leftConveyor == 0x0004 || leftConveyor == 0x0007 || leftConveyor == 0x0009 || leftConveyor == 0x000A || leftConveyor == 0x000B;
         let bottomConveyor = this.buildingIDAtTile(tileX, tileY + 1);
-        bottomConveyor = bottomConveyor == 0x0301 || bottomConveyor == 0x0A01 || bottomConveyor == 0x0B01 || bottomConveyor == 0x0002 || bottomConveyor == 0x0004 || bottomConveyor == 0x0007 || bottomConveyor == 0x0009 || bottomConveyor == 0x000A;
+        bottomConveyor = bottomConveyor == 0x0301 || bottomConveyor == 0x0A01 || bottomConveyor == 0x0B01 || bottomConveyor == 0x0002 || bottomConveyor == 0x0004 || bottomConveyor == 0x0007 || bottomConveyor == 0x0009 || bottomConveyor == 0x000A || bottomConveyor == 0x000B;
         let buildingID = 0xFFFF;
         switch (conveyorType) {
             case 0:
@@ -1675,6 +1692,9 @@ Wiremill.recipeType = recipes.base_wiremilling;
 class Compressor extends BuildingWithRecipe {
 }
 Compressor.recipeType = recipes.base_compressing;
+class Lathe extends BuildingWithRecipe {
+}
+Lathe.recipeType = recipes.base_lathing;
 const BuildingType = {
     0x01: Conveyor,
     0x02: Miner,
@@ -1685,5 +1705,6 @@ const BuildingType = {
     0x07: AlloySmelter,
     0x08: ResourceAcceptor,
     0x09: Wiremill,
-    0x0A: Compressor
+    0x0A: Compressor,
+    0x0B: Lathe
 };
