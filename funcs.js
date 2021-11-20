@@ -94,6 +94,7 @@ window.onkeydown = (e) => {
                 e.preventDefault();
                 break;
             case "F2":
+                placedBuilding.type = 0x000C;
                 e.preventDefault();
                 break;
             case "0":
