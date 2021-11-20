@@ -1374,6 +1374,7 @@ class BuildingWithRecipe extends Building {
 	static recipeType: any;
 	constructor(tileX, tileY, id, level){
 		super(tileX, tileY, id, level);
+		if(this.constructor === BuildingWithRecipe) throw this;
 		this.timer = -1;
 		this.item = null;
 	}
@@ -1429,6 +1430,7 @@ class BuildingWithTwoRecipe extends Building {
 	recipe: Recipe;
 	constructor(tileX:number, tileY:number, id:BuildingID, level:Level){
 		super(tileX, tileY, id, level);
+		if(this.constructor === BuildingWithTwoRecipe) throw this;
 		this.timer = -1;
 		this.item1 = null;
 		this.item2 = null;
