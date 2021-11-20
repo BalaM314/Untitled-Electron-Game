@@ -1234,7 +1234,7 @@ class BuildingWithRecipe extends Building {
             }
         }
         else if (!this.item) {
-            this.grabItem(this.findRecipe, (item) => {
+            this.grabItem(this.findRecipe.bind(this), (item) => {
                 this.setRecipe(this.findRecipe(item));
             }, true);
         }
@@ -1291,10 +1291,10 @@ class BuildingWithTwoRecipe extends Building {
     }
     update() {
         if (!this.item1) {
-            this.grabItem((item) => { return item.id != this.item2?.id; }, (item) => { this.item1 = item; }, true);
+            this.grabItem(((item) => { return item.id != this.item2?.id; }).bind(this), (item) => { this.item1 = item; }, true);
         }
         if (!this.item2) {
-            this.grabItem((item) => { return item.id != this.item1?.id; }, (item) => { this.item2 = item; }, true);
+            this.grabItem(((item) => { return item.id != this.item1?.id; }).bind(this), (item) => { this.item2 = item; }, true);
         }
         if (this.item1 instanceof Item && this.item2 instanceof Item) {
             if (!this.recipe) {
