@@ -1221,6 +1221,12 @@ class BuildingWithRecipe extends Building {
         this.recipe = recipe;
         this.timer = recipe.duration;
     }
+    hasItem() {
+        return null;
+    }
+    removeItem() {
+        return null;
+    }
     update() {
         if (!this.recipe && this.item)
             this.setRecipe(this.findRecipe(this.item));
@@ -1281,6 +1287,12 @@ class BuildingWithTwoRecipe extends Building {
                 return recipe;
             }
         }
+        return null;
+    }
+    hasItem() {
+        return null;
+    }
+    removeItem() {
         return null;
     }
     setRecipe(recipe) {
@@ -1534,7 +1546,6 @@ class Extractor extends Conveyor {
         filter ??= (item) => { return item instanceof Item; };
         callback ??= () => { };
         if (this.level.buildingAtTile(this.x, this.y) instanceof Building &&
-            this.level.buildingAtTile(this.x, this.y).hasItem() &&
             filter(this.level.buildingAtTile(this.x, this.y).hasItem())) {
             let item = this.level.buildingAtTile(this.x, this.y).removeItem();
             if (!(item instanceof Item))
