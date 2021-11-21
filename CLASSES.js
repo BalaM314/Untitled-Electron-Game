@@ -1216,7 +1216,7 @@ class BuildingWithRecipe extends Building {
         return null;
     }
     setRecipe(recipe) {
-        if (!recipe)
+        if (!(recipe?.inputs instanceof Array))
             return;
         this.recipe = recipe;
         this.timer = recipe.duration;
@@ -1284,7 +1284,7 @@ class BuildingWithTwoRecipe extends Building {
         return null;
     }
     setRecipe(recipe) {
-        if (recipe == null)
+        if (!(recipe?.inputs instanceof Array))
             return;
         this.recipe = recipe;
         this.timer = recipe.duration;
@@ -1553,7 +1553,6 @@ class Extractor extends Conveyor {
     dropItem() {
         if (this.item instanceof Item) {
             if (this.level.buildingAtPixel(this.item.x, this.item.y)?.acceptItem(this.item)) {
-                this.level.items.push(this.item);
                 this.item = null;
             }
         }
