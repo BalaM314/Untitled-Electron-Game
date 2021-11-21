@@ -1269,21 +1269,31 @@ class BuildingWithTwoRecipe extends Building {
     }
     acceptItem(item) {
         if (!this.item1) {
-            this.item1 = item;
-            return true;
+            for (var recipe of this.constructor.recipeType.recipes) {
+                if (recipe.inputs[0] == item.id || recipe.inputs[1] == item.id) {
+                    this.item1 = item;
+                    return true;
+                }
+            }
+            return false;
         }
-        if (!this.item2 && item.id != this.item1.id) {
-            this.item2 = item;
-            return true;
+        if (!this.item2 && this.item1.id != item.id) {
+            for (var recipe of this.constructor.recipeType.recipes) {
+                if (recipe.inputs[0] == item.id || recipe.inputs[1] == item.id) {
+                    this.item2 = item;
+                    return true;
+                }
+            }
+            return false;
         }
         return false;
     }
     findRecipe(item1, item2) {
         for (var recipe of this.constructor.recipeType.recipes) {
-            if (recipe.inputs[0] == item1.id ||
-                recipe.inputs[1] == item2.id &&
-                    recipe.inputs[1] == item1.id ||
-                recipe.inputs[0] == item2.id) {
+            if (recipe.inputs[0] == item1?.id ||
+                recipe.inputs[1] == item2?.id &&
+                    recipe.inputs[1] == item1?.id ||
+                recipe.inputs[0] == item2?.id) {
                 return recipe;
             }
         }

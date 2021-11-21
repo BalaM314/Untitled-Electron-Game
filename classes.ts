@@ -1442,24 +1442,34 @@ class BuildingWithTwoRecipe extends Building {
 		this.item2 = null;
 		this.hasRunOnce = false;
 	}
-	acceptItem(item:Item){
+	acceptItem(item:Item):boolean {
 		if(!this.item1){
-			this.item1 = item;
-			return true;
+			for(var recipe of <Recipe[]>(this.constructor as any).recipeType.recipes){
+				if(recipe.inputs[0] == item.id || recipe.inputs[1] == item.id){
+					this.item1 = item;
+					return true;
+				}
+			}
+			return false;
 		}
-		if(!this.item2 && item.id != this.item1.id){
-			this.item2 = item;
-			return true;
+		if(!this.item2 && this.item1.id != item.id){
+			for(var recipe of <Recipe[]>(this.constructor as any).recipeType.recipes){
+				if(recipe.inputs[0] == item.id || recipe.inputs[1] == item.id){
+					this.item2 = item;
+					return true;
+				}
+			}
+			return false;
 		}
 		return false;
 	}
-	findRecipe(item1:Item, item2:Item):Recipe{
+	findRecipe(item1:Item, item2:Item):Recipe {
 		for(var recipe of (this.constructor as any).recipeType.recipes){
 			if(
-				recipe.inputs[0] == item1.id ||
-				recipe.inputs[1] == item2.id &&
-				recipe.inputs[1] == item1.id ||
-				recipe.inputs[0] == item2.id
+				recipe.inputs[0] == item1?.id ||
+				recipe.inputs[1] == item2?.id &&
+				recipe.inputs[1] == item1?.id ||
+				recipe.inputs[0] == item2?.id
 			){
 				return recipe;
 			}
