@@ -4,7 +4,7 @@
 // Fix hasItem and removeItem, they're kinda lost
 // Fix item tooltips on conveyors no longer working
 // Fix generation not respecting level seed & duplicated generation along x axis near spawn
-// *Code cleanup
+// 
 // 
 // 
 // 
@@ -295,6 +295,7 @@ Press 0 to "place air"(delete buildings).
 Use WASD to move around the map and mouse wheel to zoom.
 Press Shift to move faster and for tooltips.`
 			);
+			alert("The textures for rotors and motors are placeholders, as I cannot for the life of me draw a pixel art motor or rotor.");
 		}, 500);
 	}
 
