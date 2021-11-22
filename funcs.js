@@ -59,7 +59,7 @@ window.onkeydown = (e) => {
                 placedBuilding.modifier = 0x400;
                 break;
             case "/":
-                _alert(`"Longer" extractors will be added in the next update.`);
+                placedBuilding.modifier = 0x800;
                 e.preventDefault();
                 break;
             case "1":

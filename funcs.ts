@@ -71,7 +71,7 @@ window.onkeydown = (e:KeyboardEvent) => {
 			case ".":
 				placedBuilding.modifier = 0x400; break;
 			case "/":
-				_alert(`"Longer" extractors will be added in the next update.`); e.preventDefault(); break;
+				placedBuilding.modifier = 0x800; e.preventDefault(); break;
 			case "1":
 				placedBuilding.type = 0x0001; break;
 			case "2":
