@@ -242,6 +242,15 @@ Press Shift to move faster and for tooltips.`);
 }
 let loadedtextures = 0;
 let level1;
+for (var element of document.getElementById("textures").children) {
+    element.addEventListener("load", () => {
+        loadedtextures++;
+    });
+    element.addEventListener("error", (err) => {
+        alert("Failed to load texture " + err.target.src.split("assets/textures/")[1]);
+        throw err;
+    });
+}
 function checkload() {
     if (loadedtextures == document.getElementById("textures").children.length) {
         level1 = new Level(314);
