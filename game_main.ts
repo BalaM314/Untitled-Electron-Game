@@ -295,7 +295,6 @@ Press 0 to "place air"(delete buildings).
 Use WASD to move around the map and mouse wheel to zoom.
 Press Shift to move faster and for tooltips.`
 			);
-			alert("The textures for rotors and motors are placeholders, as I cannot for the life of me draw a pixel art motor or rotor.");
 		}, 500);
 	}
 
@@ -313,6 +312,16 @@ for(var element of document.getElementById("textures").children){
 	element.addEventListener("error", (err) => {
 		alert("Failed to load texture " + (err.target as HTMLImageElement).src.split("assets/textures/")[1]);
 		throw err;
+	});
+}
+
+for(var element of document.getElementById("toolbar").children){
+	element.addEventListener("click", (event:MouseEvent) => {
+		for(var x of document.getElementById("toolbar").children){
+			x.classList.remove("selected");
+		}
+		(event.target as HTMLElement).classList.add("selected");
+		placedBuilding.type = <RawBuildingID>parseInt((event.target as HTMLElement).id);
 	});
 }
 

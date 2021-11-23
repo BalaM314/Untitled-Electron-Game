@@ -235,7 +235,6 @@ Use the number keys to choose the type of building.
 Press 0 to "place air"(delete buildings).
 Use WASD to move around the map and mouse wheel to zoom.
 Press Shift to move faster and for tooltips.`);
-            alert("The textures for rotors and motors are placeholders, as I cannot for the life of me draw a pixel art motor or rotor.");
         }, 500);
     }
     checkload();
@@ -249,6 +248,15 @@ for (var element of document.getElementById("textures").children) {
     element.addEventListener("error", (err) => {
         alert("Failed to load texture " + err.target.src.split("assets/textures/")[1]);
         throw err;
+    });
+}
+for (var element of document.getElementById("toolbar").children) {
+    element.addEventListener("click", (event) => {
+        for (var x of document.getElementById("toolbar").children) {
+            x.classList.remove("selected");
+        }
+        event.target.classList.add("selected");
+        placedBuilding.type = parseInt(event.target.id);
     });
 }
 function checkload() {
