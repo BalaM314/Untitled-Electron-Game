@@ -257,6 +257,7 @@ for (var element of document.getElementById("toolbar").children) {
         }
         event.target.classList.add("selected");
         placedBuilding.type = parseInt(event.target.id);
+        mouseIsPressed = false;
     });
 }
 function checkload() {

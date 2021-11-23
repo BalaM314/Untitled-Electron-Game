@@ -70,21 +70,32 @@
       .selected {
         border: 5px ridge green;
       }
+      #clickcapture {
+        z-index: 7;
+        position: absolute;
+        width: 100%;
+        height: 100%;
+      }
       #resources {
         position: absolute;
-        z-index: 7;
+        z-index: 9;
         margin-left: 40%;
         margin-right: 40%;
         width: 20%;
         text-align: center;
         font-size: 32px;
         font-family: sans-serif;
+        border: 2px solid gray;
+        background-color: rgba(0, 0, 255, 0.2);
+      }
+      #resources span {
+        margin-left: 4px;
+        margin-right: 4px;
       }
       #resources span::before {
         width: 32px;
         height: 32px;
         margin-right: 4px;
-        margin-left: 32px;
         background-size: 32px;
         content: "";
         display: inline-block !important;
@@ -171,6 +182,7 @@
     <canvas id="canvas25" width=1200 height=1200></canvas>
     <canvas id="canvas3" width=1200 height=1200></canvas>
     <canvas id="canvas4" width=1200 height=1200></canvas>
+    <div id="clickcapture"></div>
     <div id="resources" class="hidden">
       <span id="base_coal">0</span>
       <span id="base_ironIngot">0</span>

@@ -105,8 +105,16 @@ window.onkeyup = (e:KeyboardEvent) => {
 	}
 }
 
-window.onmousedown = (e:MouseEvent) => {mouseIsPressed = true; latestMouseEvent = e; canOverwriteBuilding = true;}
-window.onmouseup = (e:MouseEvent) => {mouseIsPressed = false; latestMouseEvent = e; canOverwriteBuilding = true;}
+document.getElementById("clickcapture").onmousedown = (e:MouseEvent) => {
+	mouseIsPressed = true;
+	latestMouseEvent = e;
+	canOverwriteBuilding = true;
+}
+document.getElementById("clickcapture").onmouseup = (e:MouseEvent) => {
+	mouseIsPressed = false;
+	latestMouseEvent = e;
+	canOverwriteBuilding = true;
+}
 
 
 

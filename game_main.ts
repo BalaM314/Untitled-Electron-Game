@@ -322,6 +322,7 @@ for(var element of document.getElementById("toolbar").children){
 		}
 		(event.target as HTMLElement).classList.add("selected");
 		placedBuilding.type = <RawBuildingID>parseInt((event.target as HTMLElement).id);
+		mouseIsPressed = false;
 	});
 }
 

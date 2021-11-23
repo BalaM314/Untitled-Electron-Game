@@ -108,8 +108,16 @@ window.onkeyup = (e) => {
         keysPressed.splice(keysPressed.indexOf(e.key.toLowerCase()), 1);
     }
 };
-window.onmousedown = (e) => { mouseIsPressed = true; latestMouseEvent = e; canOverwriteBuilding = true; };
-window.onmouseup = (e) => { mouseIsPressed = false; latestMouseEvent = e; canOverwriteBuilding = true; };
+document.getElementById("clickcapture").onmousedown = (e) => {
+    mouseIsPressed = true;
+    latestMouseEvent = e;
+    canOverwriteBuilding = true;
+};
+document.getElementById("clickcapture").onmouseup = (e) => {
+    mouseIsPressed = false;
+    latestMouseEvent = e;
+    canOverwriteBuilding = true;
+};
 function sq(x) {
     return x * x;
 }
