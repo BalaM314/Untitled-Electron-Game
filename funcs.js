@@ -11,7 +11,7 @@ window.onmousemove = (e) => {
 };
 let keysPressed = [];
 window.onkeydown = (e) => {
-    if (parseInt(e.key)) {
+    if (typeof parseInt(e.key) == "number") {
         for (var x of document.getElementById("toolbar").children) {
             x.classList.remove("selected");
         }
