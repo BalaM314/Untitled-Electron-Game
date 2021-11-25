@@ -142,22 +142,43 @@ const Globals = {
 			SPEED: 1//pixels per update
 		}
 	}
-}
+};
 
 interface Recipe {
-	inputs: ItemID[]
-	outputs: ItemID[]
-	duration: number
+	inputs?: ItemID[];
+	outputs: ItemID[];
+	duration: number;
+	tile?: Tile;
 }
 
-type RecipeType = "1-1" | "2-1";
+type RecipeType = "1-1" | "2-1" | "t-1";
 
 const recipes: {
 	[index: `${string}_${string}`]: {
-		type: RecipeType
-		recipes: Recipe[]
+		type: RecipeType;
+		recipes: Recipe[];
 	}
 } = {
+	"base_mining": {
+		"type": "t-1",
+		"recipes": [
+			{
+				"outputs": [ItemID.base_coalOre],
+				"duration": 60,
+				"tile": 0x10
+			},
+			{
+				"outputs": [ItemID.base_ironOre],
+				"duration": 60,
+				"tile": 0x11
+			},
+			{
+				"outputs": [ItemID.base_copperOre],
+				"duration": 60,
+				"tile": 0x12
+			},
+		]
+	},
 	"base_smelting": {
 		"type": "1-1",
 		"recipes": [
@@ -666,31 +687,31 @@ class Level {
 		for(let item of this.items){
 			if((Math.abs(item.x - x) < 16) && Math.abs(item.y - y) < 16){
 				ctx4.fillStyle = "#0033CC";
-				ctx4.fillRect(mousex, mousey, names.item[item.id].length * 10, 16);
+				ctx4.fillRect(mousex, mousey, (names.item[item.id] ?? item.id).length * 10, 16);
 				ctx4.strokeStyle = "#000000";
-				ctx4.strokeRect(mousex, mousey, names.item[item.id].length * 10, 16);
+				ctx4.strokeRect(mousex, mousey, (names.item[item.id] ?? item.id).length * 10, 16);
 				ctx4.fillStyle = "#FFFFFF";
-				ctx4.fillText(names.item[item.id], mousex + 2, mousey + 10);
+				ctx4.fillText((names.item[item.id] ?? item.id), mousex + 2, mousey + 10);
 				return;
 			}
 		}
 		if(this.buildingAtPixel(x, y) instanceof Building){
 			let buildingID = this.buildingAtPixel(x, y).id % 0x100;
 			ctx4.fillStyle = "#0033CC";
-			ctx4.fillRect(mousex, mousey, names.building[buildingID].length * 10, 16);
+			ctx4.fillRect(mousex, mousey, (names.building[buildingID] ?? buildingID).length * 10, 16);
 			ctx4.strokeStyle = "#000000";
-			ctx4.strokeRect(mousex, mousey, names.building[buildingID].length * 10, 16);
+			ctx4.strokeRect(mousex, mousey, (names.building[buildingID] ?? buildingID).length * 10, 16);
 			ctx4.fillStyle = "#FFFFFF";
-			ctx4.fillText(names.building[buildingID], mousex + 2, mousey + 10);
+			ctx4.fillText((names.building[buildingID] ?? buildingID), mousex + 2, mousey + 10);
 			return;
 		}
 		let tileID = this.tileAtByPixel(x, y);
 		ctx4.fillStyle = "#0033CC";
-		ctx4.fillRect(mousex, mousey, names.tile[tileID].length * 10, 16);
+		ctx4.fillRect(mousex, mousey, (names.tile[tileID] ?? tileID).length * 10, 16);
 		ctx4.strokeStyle = "#000000";
-		ctx4.strokeRect(mousex, mousey, names.tile[tileID].length * 10, 16);
+		ctx4.strokeRect(mousex, mousey, (names.tile[tileID] ?? tileID).length * 10, 16);
 		ctx4.fillStyle = "#FFFFFF";
-		ctx4.fillText(names.tile[tileID], mousex + 2, mousey + 10);
+		ctx4.fillText((names.tile[tileID] ?? tileID), mousex + 2, mousey + 10);
 		return;
 	}
 
@@ -1214,11 +1235,11 @@ class Item {
 			){
 				ctx4.font = "16px monospace";
 				ctx4.fillStyle = "#0033CC";
-				ctx4.fillRect(mouseX, mouseY, names.item[this.id].length * 10, 16);
+				ctx4.fillRect(mouseX, mouseY, (names.item[this.id] ?? this.id).length * 10, 16);
 				ctx4.strokeStyle = "#000000";
-				ctx4.strokeRect(mouseX, mouseY, names.item[this.id].length * 10, 16);
+				ctx4.strokeRect(mouseX, mouseY, (names.item[this.id] ?? this.id).length * 10, 16);
 				ctx4.fillStyle = "#FFFFFF";
-				ctx4.fillText(names.item[this.id], mouseX + 2, mouseY + 10);
+				ctx4.fillText((names.item[this.id] ?? this.id), mouseX + 2, mouseY + 10);
 				if(currentframe?.tooltip){
 					currentframe.tooltip = false;
 				}
@@ -1520,7 +1541,11 @@ class Miner extends Building {
 	constructor(tileX:number, tileY:number, id:BuildingID, level:Level){
 		super(tileX, tileY, id, level);
 		this.timer = 61;
-		this.miningItem = oreFor[level.tileAtByTile(tileX, tileY)];
+		for(var recipe of recipes.base_mining.recipes){
+			if(recipe.tile == level.tileAtByTile(tileX, tileY)){
+				this.miningItem = recipe.outputs[0];
+			}
+		}
 	}
 	static canBuildAt(tileX:number, tileY:number, level:Level):boolean {
 		return level.tileAtByTile(tileX, tileY) >> 4 == 1;
@@ -1537,11 +1562,6 @@ class Miner extends Building {
 	}
 }
 
-const oreFor = {
-	0x10: ItemID.base_coalOre,
-	0x11: ItemID.base_ironOre,
-	0x12: ItemID.base_copperOre
-};
 
 
 class TrashCan extends Building {
