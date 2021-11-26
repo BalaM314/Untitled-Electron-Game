@@ -1,7 +1,7 @@
 // TODOS
 // 
 // 
-// *Change the way buildings display
+// Add animation to some buildings 👀
 // Fix item tooltips on conveyors no longer working
 // Fix generation not respecting level seed & duplicated generation along x axis near spawn
 // 
