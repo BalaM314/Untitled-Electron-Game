@@ -412,12 +412,12 @@ class Level {
         }
         switch (buildingID % 0x100) {
             case 0x01:
-                this.getChunk(tileX, tileY).displayBuilding(tileToChunk(tileX), tileToChunk(tileY), this.getTurnedConveyor(tileX, tileY, buildingID >> 8), Conveyor.canBuildAt(tileX, tileY, this) ? 1 : 2);
+                this.getChunk(tileX, tileY).displayGhostBuilding(tileToChunk(tileX), tileToChunk(tileY), this.getTurnedConveyor(tileX, tileY, buildingID >> 8), !Conveyor.canBuildAt(tileX, tileY, this));
                 break;
             case 0xFF:
                 break;
             default:
-                this.getChunk(tileX, tileY).displayBuilding(tileToChunk(tileX), tileToChunk(tileY), buildingID, BuildingType[buildingID % 0x100]?.canBuildAt(tileX, tileY, this) ? 1 : 2);
+                this.getChunk(tileX, tileY).displayGhostBuilding(tileToChunk(tileX), tileToChunk(tileY), buildingID, !BuildingType[buildingID % 0x100]?.canBuildAt(tileX, tileY, this));
                 break;
         }
     }
@@ -841,8 +841,9 @@ class Chunk {
         }
         for (let y = 0; y < this.layers[1].length; y++) {
             for (let x = 0; x < this.layers[1][y].length; x++) {
-                this.displayBuilding(x, y, this.buildingAt(tileToChunk(x), tileToChunk(y))?.id ?? 0xFFFF);
-                this.layers[1][y][x]?.display?.(currentframe);
+                if (this.layers[1][y][x] instanceof Building) {
+                    this.layers[1][y][x].display(currentframe);
+                }
             }
         }
         for (let y = 0; y < this.layers[2].length; y++) {
@@ -885,19 +886,19 @@ class Chunk {
         if (currentframe.debug)
             ctx.strokeRect(pixelX, pixelY, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE);
     }
-    displayBuilding(x, y, buildingID, isGhost) {
+    displayGhostBuilding(x, y, buildingID, isError) {
         if (buildingID == 0xFFFF) {
             return;
         }
         let pixelX = ((this.x * Globals.CHUNK_SIZE) + x) * Globals.DISPLAY_TILE_SIZE + (Game.scroll.x * Globals.DISPLAY_SCALE);
         let pixelY = ((this.y * Globals.CHUNK_SIZE) + y) * Globals.DISPLAY_TILE_SIZE + (Game.scroll.y * Globals.DISPLAY_SCALE);
-        let _ctx = isGhost ? ctx1 : ctx2;
-        if (isGhost == 2) {
+        let _ctx = ctx1;
+        if (isError) {
             _ctx.globalAlpha = 0.9;
             _ctx.drawImage(textures.get("invalidunderlay"), pixelX, pixelY, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE);
             _ctx.globalAlpha = buildingID % 0x100 == 0x01 ? 0.3 : 0.7;
         }
-        else if (isGhost == 1) {
+        else {
             _ctx.globalAlpha = 0.9;
             _ctx.drawImage(textures.get("ghostunderlay"), pixelX, pixelY, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE);
             _ctx.globalAlpha = buildingID % 0x100 == 0x01 ? 0.3 : 0.7;
@@ -1121,7 +1122,65 @@ class Building {
     }
     update(...any) {
     }
-    display(...any) {
+    display(currentFrame) {
+        let pixelX = this.x * Globals.DISPLAY_TILE_SIZE + Game.scroll.x * Globals.DISPLAY_SCALE;
+        let pixelY = this.y * Globals.DISPLAY_TILE_SIZE + Game.scroll.y * Globals.DISPLAY_SCALE;
+        let _ctx = ctx2;
+        let texture = textures.get(this.id.toString());
+        if (texture) {
+            switch (this.id) {
+                case 0x0005:
+                    _ctx.drawImage(texture, pixelX, pixelY, Globals.DISPLAY_TILE_SIZE * 2, Globals.DISPLAY_TILE_SIZE);
+                    break;
+                case 0x0105:
+                    _ctx.drawImage(texture, pixelX, pixelY, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE * 2);
+                    break;
+                case 0x0205:
+                    _ctx.drawImage(texture, pixelX - Globals.DISPLAY_TILE_SIZE, pixelY, Globals.DISPLAY_TILE_SIZE * 2, Globals.DISPLAY_TILE_SIZE);
+                    break;
+                case 0x0305:
+                    _ctx.drawImage(texture, pixelX, pixelY - Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE * 2);
+                    break;
+                case 0x0405:
+                    _ctx.drawImage(texture, pixelX, pixelY, Globals.DISPLAY_TILE_SIZE * 3, Globals.DISPLAY_TILE_SIZE);
+                    break;
+                case 0x0505:
+                    _ctx.drawImage(texture, pixelX, pixelY, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE * 3);
+                    break;
+                case 0x0605:
+                    _ctx.drawImage(texture, pixelX - Globals.DISPLAY_TILE_SIZE * 2, pixelY, Globals.DISPLAY_TILE_SIZE * 3, Globals.DISPLAY_TILE_SIZE);
+                    break;
+                case 0x0705:
+                    _ctx.drawImage(texture, pixelX, pixelY - Globals.DISPLAY_TILE_SIZE * 2, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE * 3);
+                    break;
+                case 0x0805:
+                    _ctx.drawImage(texture, pixelX, pixelY, Globals.DISPLAY_TILE_SIZE * 4, Globals.DISPLAY_TILE_SIZE);
+                    break;
+                case 0x0905:
+                    _ctx.drawImage(texture, pixelX, pixelY, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE * 4);
+                    break;
+                case 0x0A05:
+                    _ctx.drawImage(texture, pixelX - Globals.DISPLAY_TILE_SIZE * 3, pixelY, Globals.DISPLAY_TILE_SIZE * 4, Globals.DISPLAY_TILE_SIZE);
+                    break;
+                case 0x0B05:
+                    _ctx.drawImage(texture, pixelX, pixelY - Globals.DISPLAY_TILE_SIZE * 3, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE * 4);
+                    break;
+                default:
+                    _ctx.drawImage(texture, pixelX, pixelY, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE);
+                    break;
+            }
+        }
+        else {
+            _ctx.fillStyle = "#FF00FF";
+            rect(pixelX, pixelY, Globals.DISPLAY_TILE_SIZE / 2, Globals.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
+            rect(pixelX + Globals.DISPLAY_TILE_SIZE / 2, pixelY + Globals.DISPLAY_TILE_SIZE / 2, Globals.DISPLAY_TILE_SIZE / 2, Globals.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
+            _ctx.fillStyle = "#000000";
+            rect(pixelX + Globals.DISPLAY_TILE_SIZE / 2, pixelY, Globals.DISPLAY_TILE_SIZE / 2, Globals.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
+            rect(pixelX, pixelY + Globals.DISPLAY_TILE_SIZE / 2, Globals.DISPLAY_TILE_SIZE / 2, Globals.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
+            _ctx.font = "15px sans-serif";
+            _ctx.fillStyle = "#00FF00";
+            _ctx.fillText(this.id.toString(), pixelX + Globals.DISPLAY_TILE_SIZE / 2, pixelY + Globals.DISPLAY_TILE_SIZE / 2);
+        }
     }
     hasItem() {
         if (this.item)
@@ -1411,6 +1470,7 @@ class Conveyor extends Building {
         this.item = null;
     }
     display(currentFrame) {
+        super.display(currentFrame);
         if (this.item instanceof Item) {
             this.item.display(currentFrame);
         }
@@ -1567,6 +1627,7 @@ class Extractor extends Conveyor {
         super(x, y, id, level);
     }
     display(currentFrame) {
+        super.display(currentFrame);
         if (this.item instanceof Item) {
             this.item.display(currentFrame);
         }
@@ -1735,9 +1796,6 @@ class StorageBuilding extends Building {
     }
 }
 let totalAlloySmeltersRun = 0;
-class AlloySmelter extends BuildingWithTwoRecipe {
-}
-AlloySmelter.recipeType = recipes.base_alloying;
 class ResourceAcceptor extends Building {
     acceptItem(item) {
         item.deleted = true;
@@ -1759,6 +1817,9 @@ class ResourceAcceptor extends Building {
         }, true);
     }
 }
+class AlloySmelter extends BuildingWithTwoRecipe {
+}
+AlloySmelter.recipeType = recipes.base_alloying;
 class Wiremill extends BuildingWithRecipe {
 }
 Wiremill.recipeType = recipes.base_wiremilling;
