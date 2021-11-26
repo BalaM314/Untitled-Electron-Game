@@ -762,7 +762,7 @@ class Chunk {
 		let tweakedX = x == 0 ? 5850 : x;
 		let tweakedY = y == 0 ? 9223 : y;
 		this.chunkSeed = Math.abs(
-			(((tweakedX) ** 3) * (tweakedY ** 5) + 3850) % (2 ** 16)
+			(((tweakedX) ** 3) * (tweakedY ** 5) + 3850 + ((seed - 314) * 11)) % (2 ** 16)
 		);
 		this.generator = pseudoRandom(this.chunkSeed);
 		this.layers = [
