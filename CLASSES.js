@@ -1201,7 +1201,7 @@ class Building {
         return null;
     }
     spawnItem(id) {
-        id ??= "base_null";
+        id ?? (id = "base_null");
         if ((this.level.buildingIDAtTile(this.x + 1, this.y) === 0x0001 ||
             this.level.buildingIDAtTile(this.x + 1, this.y) === 0x0701 ||
             this.level.buildingIDAtTile(this.x + 1, this.y) === 0x0B01) &&
@@ -1232,8 +1232,8 @@ class Building {
         return true;
     }
     grabItem(filter, callback, remove, grabDistance) {
-        grabDistance ??= 0.5;
-        filter ??= () => { return true; };
+        grabDistance ?? (grabDistance = 0.5);
+        filter ?? (filter = () => { return true; });
         for (var item in this.level.items) {
             if ((Math.abs(this.level.items[item].x - ((this.x + grabDistance) * Globals.TILE_SIZE)) <= Globals.TILE_SIZE * grabDistance) &&
                 (Math.abs(this.level.items[item].y - ((this.y + grabDistance) * Globals.TILE_SIZE)) <= Globals.TILE_SIZE * grabDistance) &&
@@ -1633,8 +1633,8 @@ class Extractor extends Conveyor {
         }
     }
     grabItemFromTile(filter, callback, remove, grabDistance) {
-        filter ??= (item) => { return item instanceof Item; };
-        callback ??= () => { };
+        filter ?? (filter = (item) => { return item instanceof Item; });
+        callback ?? (callback = () => { });
         if (this.level.buildingAtTile(this.x, this.y) instanceof Building &&
             filter(this.level.buildingAtTile(this.x, this.y).hasItem())) {
             let item = this.level.buildingAtTile(this.x, this.y).removeItem();
