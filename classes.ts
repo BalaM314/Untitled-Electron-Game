@@ -553,7 +553,7 @@ class Level {
 		//Returns how a conveyor should be turned based on nearby buildings.
 		tileX = Math.floor(tileX);
 		tileY = Math.floor(tileY);
-		//TODO fix this 🍝
+		//🍝👨‍💻 is delicious
 		let topConveyor:BuildingID | boolean = this.buildingIDAtTile(tileX, tileY - 1);
 		topConveyor = topConveyor == 0x0101 || topConveyor == 0x0601 || topConveyor == 0x0701 || topConveyor == 0x0002 || topConveyor == 0x0004  || topConveyor == 0x0007 || topConveyor == 0x0009 || topConveyor == 0x000A || topConveyor == 0x000B || topConveyor == 0x000C;
 		let rightConveyor:BuildingID | boolean = this.buildingIDAtTile(tileX + 1, tileY);
