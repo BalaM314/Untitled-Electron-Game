@@ -3,6 +3,9 @@ noise.seed(1);
 Array.prototype.contains = function (val) {
     return this.indexOf(val) != -1;
 };
+Object.defineProperty(Array.prototype, "contains", {
+    enumerable: false
+});
 let mouseX = 0;
 let mouseY = 0;
 let mouseIsPressed = false;
