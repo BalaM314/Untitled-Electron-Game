@@ -661,7 +661,14 @@ class Chunk {
                     let buildingData = data[0][y][x];
                     if (!buildingData)
                         continue;
-                    let tempBuilding = new BuildingType[buildingData.id % 0x100](parseInt(x) + (Globals.CHUNK_SIZE * this.x), parseInt(y) + (Globals.CHUNK_SIZE * this.y), buildingData.id, this.parent);
+                    let tempBuilding;
+                    try {
+                        tempBuilding = new BuildingType[buildingData.id % 0x100](parseInt(x) + (Globals.CHUNK_SIZE * this.x), parseInt(y) + (Globals.CHUNK_SIZE * this.y), buildingData.id, this.parent);
+                    }
+                    catch (err) {
+                        console.warn(`Failed to import building id ${buildingData.id} at position ${x},${y} in chunk ${this.x},${this.y}`);
+                        continue;
+                    }
                     if (buildingData.item) {
                         tempBuilding.item = new Item(buildingData.item.x, buildingData.item.y, buildingData.item.id, this.parent);
                         tempBuilding.item.grabbedBy = tempBuilding;
