@@ -1265,6 +1265,7 @@ class Building {
 	item: Item;
 	inventory: StorageInventory;
 	level: Level;
+	static animated = false;
 	constructor(tileX:number, tileY: number, id:BuildingID, level:Level){
 		this.x = tileX;
 		this.y = tileY;
@@ -1294,33 +1295,38 @@ class Building {
 		let _ctx = ctx2;
 		let texture = textures.get(this.id.toString());
 		if(texture){
-			switch(this.id){
-				case 0x0005:
-					_ctx.drawImage(texture, pixelX, pixelY, Globals.DISPLAY_TILE_SIZE * 2, Globals.DISPLAY_TILE_SIZE); break;
-				case 0x0105:
-					_ctx.drawImage(texture, pixelX, pixelY, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE * 2); break;
-				case 0x0205:
-					_ctx.drawImage(texture, pixelX - Globals.DISPLAY_TILE_SIZE, pixelY, Globals.DISPLAY_TILE_SIZE * 2, Globals.DISPLAY_TILE_SIZE); break;
-				case 0x0305:
-					_ctx.drawImage(texture, pixelX, pixelY - Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE * 2); break;
-				case 0x0405:
-					_ctx.drawImage(texture, pixelX, pixelY, Globals.DISPLAY_TILE_SIZE * 3, Globals.DISPLAY_TILE_SIZE); break;
-				case 0x0505:
-					_ctx.drawImage(texture, pixelX, pixelY, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE * 3); break;
-				case 0x0605:
-					_ctx.drawImage(texture, pixelX - Globals.DISPLAY_TILE_SIZE * 2, pixelY, Globals.DISPLAY_TILE_SIZE * 3, Globals.DISPLAY_TILE_SIZE); break;
-				case 0x0705:
-					_ctx.drawImage(texture, pixelX, pixelY - Globals.DISPLAY_TILE_SIZE * 2, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE * 3); break;
-				case 0x0805:
-					_ctx.drawImage(texture, pixelX, pixelY, Globals.DISPLAY_TILE_SIZE * 4, Globals.DISPLAY_TILE_SIZE); break;
-				case 0x0905:
-					_ctx.drawImage(texture, pixelX, pixelY, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE * 4); break;
-				case 0x0A05:
-					_ctx.drawImage(texture, pixelX - Globals.DISPLAY_TILE_SIZE * 3, pixelY, Globals.DISPLAY_TILE_SIZE * 4, Globals.DISPLAY_TILE_SIZE); break;
-				case 0x0B05:
-					_ctx.drawImage(texture, pixelX, pixelY - Globals.DISPLAY_TILE_SIZE * 3, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE * 4); break;
-				default:
-					_ctx.drawImage(texture, pixelX, pixelY, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE); break;
+			if(this.id % 0x100 == 5){
+				switch(this.id){
+					case 0x0005:
+						_ctx.drawImage(texture, pixelX, pixelY, Globals.DISPLAY_TILE_SIZE * 2, Globals.DISPLAY_TILE_SIZE); break;
+					case 0x0105:
+						_ctx.drawImage(texture, pixelX, pixelY, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE * 2); break;
+					case 0x0205:
+						_ctx.drawImage(texture, pixelX - Globals.DISPLAY_TILE_SIZE, pixelY, Globals.DISPLAY_TILE_SIZE * 2, Globals.DISPLAY_TILE_SIZE); break;
+					case 0x0305:
+						_ctx.drawImage(texture, pixelX, pixelY - Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE * 2); break;
+					case 0x0405:
+						_ctx.drawImage(texture, pixelX, pixelY, Globals.DISPLAY_TILE_SIZE * 3, Globals.DISPLAY_TILE_SIZE); break;
+					case 0x0505:
+						_ctx.drawImage(texture, pixelX, pixelY, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE * 3); break;
+					case 0x0605:
+						_ctx.drawImage(texture, pixelX - Globals.DISPLAY_TILE_SIZE * 2, pixelY, Globals.DISPLAY_TILE_SIZE * 3, Globals.DISPLAY_TILE_SIZE); break;
+					case 0x0705:
+						_ctx.drawImage(texture, pixelX, pixelY - Globals.DISPLAY_TILE_SIZE * 2, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE * 3); break;
+					case 0x0805:
+						_ctx.drawImage(texture, pixelX, pixelY, Globals.DISPLAY_TILE_SIZE * 4, Globals.DISPLAY_TILE_SIZE); break;
+					case 0x0905:
+						_ctx.drawImage(texture, pixelX, pixelY, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE * 4); break;
+					case 0x0A05:
+						_ctx.drawImage(texture, pixelX - Globals.DISPLAY_TILE_SIZE * 3, pixelY, Globals.DISPLAY_TILE_SIZE * 4, Globals.DISPLAY_TILE_SIZE); break;
+					case 0x0B05:
+						_ctx.drawImage(texture, pixelX, pixelY - Globals.DISPLAY_TILE_SIZE * 3, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE * 4); break;
+				}
+			} else {
+				_ctx.drawImage(texture, pixelX, pixelY, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE);
+				if((this.constructor as typeof Building).animated){
+					//do animations
+				}
 			}
 		} else {
 			_ctx.fillStyle = "#FF00FF";
@@ -1620,6 +1626,7 @@ class TrashCan extends Building {
 
 class Furnace extends BuildingWithRecipe {
 	static recipeType = recipes.base_smelting;
+	static animated = true;
 	static canBuildAt(tileX:number, tileY:number, level:Level){
 		return level.tileAtByTile(tileX, tileY) == 0x01;
 	}
@@ -1953,6 +1960,7 @@ class ResourceAcceptor extends Building {
 
 //I love abstraction
 class AlloySmelter extends BuildingWithTwoRecipe {
+	static animated = true;
 	static recipeType = recipes.base_alloying;
 }
 

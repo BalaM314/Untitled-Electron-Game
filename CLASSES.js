@@ -1128,46 +1128,50 @@ class Building {
         let _ctx = ctx2;
         let texture = textures.get(this.id.toString());
         if (texture) {
-            switch (this.id) {
-                case 0x0005:
-                    _ctx.drawImage(texture, pixelX, pixelY, Globals.DISPLAY_TILE_SIZE * 2, Globals.DISPLAY_TILE_SIZE);
-                    break;
-                case 0x0105:
-                    _ctx.drawImage(texture, pixelX, pixelY, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE * 2);
-                    break;
-                case 0x0205:
-                    _ctx.drawImage(texture, pixelX - Globals.DISPLAY_TILE_SIZE, pixelY, Globals.DISPLAY_TILE_SIZE * 2, Globals.DISPLAY_TILE_SIZE);
-                    break;
-                case 0x0305:
-                    _ctx.drawImage(texture, pixelX, pixelY - Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE * 2);
-                    break;
-                case 0x0405:
-                    _ctx.drawImage(texture, pixelX, pixelY, Globals.DISPLAY_TILE_SIZE * 3, Globals.DISPLAY_TILE_SIZE);
-                    break;
-                case 0x0505:
-                    _ctx.drawImage(texture, pixelX, pixelY, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE * 3);
-                    break;
-                case 0x0605:
-                    _ctx.drawImage(texture, pixelX - Globals.DISPLAY_TILE_SIZE * 2, pixelY, Globals.DISPLAY_TILE_SIZE * 3, Globals.DISPLAY_TILE_SIZE);
-                    break;
-                case 0x0705:
-                    _ctx.drawImage(texture, pixelX, pixelY - Globals.DISPLAY_TILE_SIZE * 2, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE * 3);
-                    break;
-                case 0x0805:
-                    _ctx.drawImage(texture, pixelX, pixelY, Globals.DISPLAY_TILE_SIZE * 4, Globals.DISPLAY_TILE_SIZE);
-                    break;
-                case 0x0905:
-                    _ctx.drawImage(texture, pixelX, pixelY, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE * 4);
-                    break;
-                case 0x0A05:
-                    _ctx.drawImage(texture, pixelX - Globals.DISPLAY_TILE_SIZE * 3, pixelY, Globals.DISPLAY_TILE_SIZE * 4, Globals.DISPLAY_TILE_SIZE);
-                    break;
-                case 0x0B05:
-                    _ctx.drawImage(texture, pixelX, pixelY - Globals.DISPLAY_TILE_SIZE * 3, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE * 4);
-                    break;
-                default:
-                    _ctx.drawImage(texture, pixelX, pixelY, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE);
-                    break;
+            if (this.id % 0x100 == 5) {
+                switch (this.id) {
+                    case 0x0005:
+                        _ctx.drawImage(texture, pixelX, pixelY, Globals.DISPLAY_TILE_SIZE * 2, Globals.DISPLAY_TILE_SIZE);
+                        break;
+                    case 0x0105:
+                        _ctx.drawImage(texture, pixelX, pixelY, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE * 2);
+                        break;
+                    case 0x0205:
+                        _ctx.drawImage(texture, pixelX - Globals.DISPLAY_TILE_SIZE, pixelY, Globals.DISPLAY_TILE_SIZE * 2, Globals.DISPLAY_TILE_SIZE);
+                        break;
+                    case 0x0305:
+                        _ctx.drawImage(texture, pixelX, pixelY - Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE * 2);
+                        break;
+                    case 0x0405:
+                        _ctx.drawImage(texture, pixelX, pixelY, Globals.DISPLAY_TILE_SIZE * 3, Globals.DISPLAY_TILE_SIZE);
+                        break;
+                    case 0x0505:
+                        _ctx.drawImage(texture, pixelX, pixelY, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE * 3);
+                        break;
+                    case 0x0605:
+                        _ctx.drawImage(texture, pixelX - Globals.DISPLAY_TILE_SIZE * 2, pixelY, Globals.DISPLAY_TILE_SIZE * 3, Globals.DISPLAY_TILE_SIZE);
+                        break;
+                    case 0x0705:
+                        _ctx.drawImage(texture, pixelX, pixelY - Globals.DISPLAY_TILE_SIZE * 2, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE * 3);
+                        break;
+                    case 0x0805:
+                        _ctx.drawImage(texture, pixelX, pixelY, Globals.DISPLAY_TILE_SIZE * 4, Globals.DISPLAY_TILE_SIZE);
+                        break;
+                    case 0x0905:
+                        _ctx.drawImage(texture, pixelX, pixelY, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE * 4);
+                        break;
+                    case 0x0A05:
+                        _ctx.drawImage(texture, pixelX - Globals.DISPLAY_TILE_SIZE * 3, pixelY, Globals.DISPLAY_TILE_SIZE * 4, Globals.DISPLAY_TILE_SIZE);
+                        break;
+                    case 0x0B05:
+                        _ctx.drawImage(texture, pixelX, pixelY - Globals.DISPLAY_TILE_SIZE * 3, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE * 4);
+                        break;
+                }
+            }
+            else {
+                _ctx.drawImage(texture, pixelX, pixelY, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE);
+                if (this.constructor.animated) {
+                }
             }
         }
         else {
@@ -1278,6 +1282,7 @@ class Building {
         };
     }
 }
+Building.animated = false;
 class BuildingWithRecipe extends Building {
     constructor(tileX, tileY, id, level) {
         super(tileX, tileY, id, level);
@@ -1455,6 +1460,7 @@ class Furnace extends BuildingWithRecipe {
     }
 }
 Furnace.recipeType = recipes.base_smelting;
+Furnace.animated = true;
 class Conveyor extends Building {
     constructor(tileX, tileY, id, level) {
         super(tileX, tileY, id, level);
@@ -1819,6 +1825,7 @@ class ResourceAcceptor extends Building {
 }
 class AlloySmelter extends BuildingWithTwoRecipe {
 }
+AlloySmelter.animated = true;
 AlloySmelter.recipeType = recipes.base_alloying;
 class Wiremill extends BuildingWithRecipe {
 }
