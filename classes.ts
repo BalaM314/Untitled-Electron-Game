@@ -154,11 +154,13 @@ interface Recipe {
 type RecipeType = "1-1" | "2-1" | "t-1";
 
 const recipes: {
+	maxInputs: number;
 	[index: `${string}_${string}`]: {
 		type: RecipeType;
 		recipes: Recipe[];
-	}
+	};
 } = {
+	maxInputs: 3,
 	"base_mining": {
 		"type": "t-1",
 		"recipes": [
@@ -1455,34 +1457,23 @@ abstract class BuildingWithRecipe extends Building {
 		super(tileX, tileY, id, level);
 		if(this.constructor === BuildingWithRecipe) throw this;
 		this.timer = -1;
-		this.items = [null];
+		this.items = [];
 	}
 	acceptItem(item:Item):boolean {
-		if(!this.items[0]){
-			for(var recipe of (this.constructor as typeof BuildingWithRecipe).recipeType.recipes){
-				if(recipe.inputs.contains(item.id)){
-					this.items[0] = item;
-					if(recipe.inputs.length == 1){
-						this.setRecipe(recipe);
+		for(var i = 0; i < recipes.maxInputs; i ++){
+			if(!this.items[i] && !this.items.map(item => item.id).contains(item.id)){
+				for(var recipe of (this.constructor as typeof BuildingWithRecipe).recipeType.recipes){
+					if(!this.items.map(item => recipe.inputs.contains(item.id)).contains(false) && recipe.inputs.contains(item.id)){
+						this.items[i] = item;
+						if(recipe.inputs.length == i + 1){
+							this.setRecipe(recipe);
+						}
+						return true;
 					}
-					return true;
 				}
+				return false;
 			}
-			return false;
 		}
-		if(!this.items[1] && !this.items.map(item => item.id).contains(item.id)){
-			for(var recipe of (this.constructor as typeof BuildingWithRecipe).recipeType.recipes){
-				if(recipe.inputs.contains(this.items[0].id) && recipe.inputs.contains(item.id)){
-					this.items[1] = item;
-					if(recipe.inputs.length == 2){
-						this.setRecipe(recipe);
-					}
-					return true;
-				}
-			}
-			return false;
-		}
-		return false;
 	}
 	hasItem():Item {
 		return null;
