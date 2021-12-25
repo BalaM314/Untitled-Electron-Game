@@ -1761,29 +1761,39 @@ Compressor.recipeType = recipes.base_compressing;
 class Lathe extends BuildingWithRecipe {
 }
 Lathe.recipeType = recipes.base_lathing;
-class Assembler extends BuildingWithRecipe {
-}
-Assembler.recipeType = recipes.base_assembling;
 class MultiBlockController extends BuildingWithRecipe {
     break() {
         this.secondaries.forEach(secondary => secondary.break(true));
+        this.secondaries = [];
+    }
+    update() {
+        if (this.secondaries.length != this.constructor.size[0] * this.constructor.size[1]) {
+            this.break();
+        }
     }
 }
+MultiBlockController.size = [1, 1];
 class MultiBlockSecondary extends Building {
-    constructor(tileX, tileY, id, level, controller) {
-        super(tileX, tileY, id, level);
-        this.controller = controller;
-    }
     acceptItem(item) {
         return this.controller.acceptItem(item);
     }
     break(isRecursive) {
         if (!isRecursive) {
-            this.controller.break();
+            this.controller?.break();
         }
+        this.controller = null;
         super.break();
     }
+    update() {
+        if (!(this.controller instanceof MultiBlockController)) {
+            this.break();
+        }
+    }
 }
+class Assembler extends MultiBlockController {
+}
+Assembler.recipeType = recipes.base_assembling;
+Assembler.size = [2, 2];
 const BuildingType = {
     0x01: Conveyor,
     0x02: Miner,
@@ -1796,5 +1806,6 @@ const BuildingType = {
     0x09: Wiremill,
     0x0A: Compressor,
     0x0B: Lathe,
-    0x0C: Assembler
+    0x0C: Assembler,
+    0x0F: MultiBlockSecondary
 };

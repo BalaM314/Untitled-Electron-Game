@@ -1897,35 +1897,44 @@ class Lathe extends BuildingWithRecipe {
 	static recipeType = recipes.base_lathing;
 }
 
-class Assembler extends BuildingWithRecipe {
-	static recipeType = recipes.base_assembling;
-}
 
 class MultiBlockController extends BuildingWithRecipe {
 	secondaries: MultiBlockSecondary[];
+	static size = [1, 1];
 	break(){
 		this.secondaries.forEach(secondary => secondary.break(true));
+		this.secondaries = [];
+	}
+	update(): void {
+		if(this.secondaries.length != (this.constructor as typeof MultiBlockController).size[0] * (this.constructor as typeof MultiBlockController).size[1]){
+			this.break();
+		}
 	}
 }
 
 class MultiBlockSecondary extends Building {
 	controller: MultiBlockController;
-	constructor(tileX:number, tileY: number, id:BuildingID, level:Level, controller: MultiBlockController){
-		super(tileX, tileY, id, level);
-		this.controller = controller;
-	}
 	acceptItem(item: Item):boolean {
 		return this.controller.acceptItem(item);
 	}
 	break(isRecursive?:boolean){
 		if(!isRecursive){
-			this.controller.break();
+			this.controller?.break();
 		}
+		this.controller = null;
 		super.break();
 	}
-	
+	update(){
+		if(!(this.controller instanceof MultiBlockController)){
+			this.break();
+		}
+	}
 }
 
+class Assembler extends MultiBlockController {
+	static recipeType = recipes.base_assembling;
+	static size = [2, 2];
+}
 
 const BuildingType: {
 	[index:number]: typeof Building
@@ -1941,5 +1950,6 @@ const BuildingType: {
 	0x09: Wiremill,
 	0x0A: Compressor,
 	0x0B: Lathe,
-	0x0C: Assembler
+	0x0C: Assembler,
+	0x0F: MultiBlockSecondary
 };
