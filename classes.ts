@@ -1901,6 +1901,31 @@ class Assembler extends BuildingWithRecipe {
 	static recipeType = recipes.base_assembling;
 }
 
+class MultiBlockController extends BuildingWithRecipe {
+	secondaries: MultiBlockSecondary[];
+	break(){
+		this.secondaries.forEach(secondary => secondary.break(true));
+	}
+}
+
+class MultiBlockSecondary extends Building {
+	controller: MultiBlockController;
+	constructor(tileX:number, tileY: number, id:BuildingID, level:Level, controller: MultiBlockController){
+		super(tileX, tileY, id, level);
+		this.controller = controller;
+	}
+	acceptItem(item: Item):boolean {
+		return this.controller.acceptItem(item);
+	}
+	break(isRecursive?:boolean){
+		if(!isRecursive){
+			this.controller.break();
+		}
+		super.break();
+	}
+	
+}
+
 
 const BuildingType: {
 	[index:number]: typeof Building

@@ -1764,6 +1764,26 @@ Lathe.recipeType = recipes.base_lathing;
 class Assembler extends BuildingWithRecipe {
 }
 Assembler.recipeType = recipes.base_assembling;
+class MultiBlockController extends BuildingWithRecipe {
+    break() {
+        this.secondaries.forEach(secondary => secondary.break(true));
+    }
+}
+class MultiBlockSecondary extends Building {
+    constructor(tileX, tileY, id, level, controller) {
+        super(tileX, tileY, id, level);
+        this.controller = controller;
+    }
+    acceptItem(item) {
+        return this.controller.acceptItem(item);
+    }
+    break(isRecursive) {
+        if (!isRecursive) {
+            this.controller.break();
+        }
+        super.break();
+    }
+}
 const BuildingType = {
     0x01: Conveyor,
     0x02: Miner,
