@@ -1068,7 +1068,7 @@ class Item {
         }
         currentframe.ips++;
         ctx3.drawImage(textures.get("item_" + this.id), this.x * Globals.DISPLAY_SCALE + (Game.scroll.x * Globals.DISPLAY_SCALE) - 8 * Globals.DISPLAY_SCALE, this.y * Globals.DISPLAY_SCALE + (Game.scroll.y * Globals.DISPLAY_SCALE) - 8 * Globals.DISPLAY_SCALE, 16 * Globals.DISPLAY_SCALE, 16 * Globals.DISPLAY_SCALE);
-        if (keysPressed.indexOf("Shift") != -1) {
+        if (keysPressed.contains("Shift")) {
             var x = (mouseX - (Game.scroll.x * Globals.DISPLAY_SCALE)) / Globals.DISPLAY_SCALE;
             var y = (mouseY - (Game.scroll.y * Globals.DISPLAY_SCALE)) / Globals.DISPLAY_SCALE;
             if (x > this.x - (8 * Globals.DISPLAY_SCALE) &&
@@ -1294,7 +1294,7 @@ class BuildingWithRecipe extends Building {
     acceptItem(item) {
         if (!this.items[0]) {
             for (var recipe of this.constructor.recipeType.recipes) {
-                if (recipe.inputs.indexOf(this.items[0].id) != -1) {
+                if (recipe.inputs.contains(item.id)) {
                     this.items[0] = item;
                     if (recipe.inputs.length == 1) {
                         this.setRecipe(recipe);
@@ -1304,9 +1304,9 @@ class BuildingWithRecipe extends Building {
             }
             return false;
         }
-        if (!this.items[1] && this.items.map(item => item.id).indexOf(item.id) == -1) {
+        if (!this.items[1] && !this.items.map(item => item.id).contains(item.id)) {
             for (var recipe of this.constructor.recipeType.recipes) {
-                if (recipe.inputs.indexOf(this.items[0].id) != -1 && recipe.inputs.indexOf(this.items[1].id) != -1) {
+                if (recipe.inputs.contains(this.items[0].id) && recipe.inputs.contains(item.id)) {
                     this.items[1] = item;
                     if (recipe.inputs.length == 2) {
                         this.setRecipe(recipe);
@@ -1580,7 +1580,7 @@ class Extractor extends Conveyor {
             this.item.y = (this.y + 0.5) * Globals.TILE_SIZE;
             this.item.x = (this.x + 0.5) * Globals.TILE_SIZE;
             item.grabbedBy = this;
-            if (this.level.items.indexOf(item) != -1) {
+            if (this.level.items.contains(item)) {
                 this.level.items.splice(this.level.items.indexOf(item), 1);
             }
         }

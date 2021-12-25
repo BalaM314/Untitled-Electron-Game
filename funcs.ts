@@ -21,6 +21,15 @@ noise.seed(1);
  * 
  */
 
+interface Array<T>{
+	contains: (val:T) => boolean
+}
+
+Array.prototype.contains = (val) => {
+	return this.indexOf(val) != -1;
+}
+
+
 
 
 let mouseX = 0;
