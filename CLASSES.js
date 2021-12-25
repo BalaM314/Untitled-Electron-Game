@@ -1349,7 +1349,6 @@ class BuildingWithTwoRecipe extends Building {
         this.timer = -1;
         this.item1 = null;
         this.item2 = null;
-        this.hasRunOnce = false;
     }
     acceptItem(item) {
         if (!this.item1) {
@@ -1374,10 +1373,10 @@ class BuildingWithTwoRecipe extends Building {
     }
     findRecipe(item1, item2) {
         for (var recipe of this.constructor.recipeType.recipes) {
-            if (recipe.inputs[0] == item1?.id ||
-                recipe.inputs[1] == item2?.id &&
-                    recipe.inputs[1] == item1?.id ||
-                recipe.inputs[0] == item2?.id) {
+            if ((recipe.inputs[0] == item1?.id &&
+                recipe.inputs[1] == item2?.id) ||
+                (recipe.inputs[1] == item1?.id &&
+                    recipe.inputs[0] == item2?.id)) {
                 return recipe;
             }
         }

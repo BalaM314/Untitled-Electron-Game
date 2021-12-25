@@ -1439,7 +1439,7 @@ class Building {
 	}
 }
 
-class BuildingWithRecipe extends Building {
+abstract class BuildingWithRecipe extends Building {
 	timer: number;
 	recipe: Recipe;
 	static recipeType: any;
@@ -1499,19 +1499,17 @@ class BuildingWithRecipe extends Building {
 
 }
 
-class BuildingWithTwoRecipe extends Building {
+abstract class BuildingWithTwoRecipe extends Building {
 	timer: number;
+	recipe: Recipe;
 	item1: Item;
 	item2: Item;
-	hasRunOnce: boolean;
-	recipe: Recipe;
 	constructor(tileX:number, tileY:number, id:BuildingID, level:Level){
 		super(tileX, tileY, id, level);
 		if(this.constructor === BuildingWithTwoRecipe) throw this;
 		this.timer = -1;
 		this.item1 = null;
 		this.item2 = null;
-		this.hasRunOnce = false;
 	}
 	acceptItem(item:Item):boolean {
 		if(!this.item1){
@@ -1537,10 +1535,10 @@ class BuildingWithTwoRecipe extends Building {
 	findRecipe(item1:Item, item2:Item):Recipe {
 		for(var recipe of (this.constructor as any).recipeType.recipes){
 			if(
-				recipe.inputs[0] == item1?.id ||
-				recipe.inputs[1] == item2?.id &&
-				recipe.inputs[1] == item1?.id ||
-				recipe.inputs[0] == item2?.id
+				(recipe.inputs[0] == item1?.id &&
+				recipe.inputs[1] == item2?.id) ||
+				(recipe.inputs[1] == item1?.id &&
+				recipe.inputs[0] == item2?.id)
 			){
 				return recipe;
 			}
