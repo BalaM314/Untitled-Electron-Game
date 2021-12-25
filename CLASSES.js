@@ -1289,14 +1289,39 @@ class BuildingWithRecipe extends Building {
         if (this.constructor === BuildingWithRecipe)
             throw this;
         this.timer = -1;
-        this.item = null;
+        this.items = [null];
     }
-    findRecipe(item) {
-        for (var recipe of this.constructor.recipeType.recipes) {
-            if (item.id == recipe.inputs[0]) {
-                return recipe;
+    acceptItem(item) {
+        if (!this.items[0]) {
+            for (var recipe of this.constructor.recipeType.recipes) {
+                if (recipe.inputs.indexOf(this.items[0].id) != -1) {
+                    this.items[0] = item;
+                    if (recipe.inputs.length == 1) {
+                        this.setRecipe(recipe);
+                    }
+                    return true;
+                }
             }
+            return false;
         }
+        if (!this.items[1] && this.items.map(item => item.id).indexOf(item.id) == -1) {
+            for (var recipe of this.constructor.recipeType.recipes) {
+                if (recipe.inputs.indexOf(this.items[0].id) != -1 && recipe.inputs.indexOf(this.items[1].id) != -1) {
+                    this.items[1] = item;
+                    if (recipe.inputs.length == 2) {
+                        this.setRecipe(recipe);
+                    }
+                    return true;
+                }
+            }
+            return false;
+        }
+        return false;
+    }
+    hasItem() {
+        return null;
+    }
+    removeItem() {
         return null;
     }
     setRecipe(recipe) {
@@ -1305,117 +1330,21 @@ class BuildingWithRecipe extends Building {
         this.recipe = recipe;
         this.timer = recipe.duration;
     }
-    hasItem() {
-        return null;
-    }
-    removeItem() {
-        return null;
-    }
     update() {
-        if (!this.recipe && this.item)
-            this.setRecipe(this.findRecipe(this.item));
-        if (this.timer > 0 && this.item) {
+        if (!this.items[0]) {
+            this.grabItem(this.acceptItem.bind(this), null, true);
+        }
+        if (!this.items[1]) {
+            this.grabItem(this.acceptItem.bind(this).bind(this), null, true);
+        }
+        if (this.timer > 0) {
             this.timer--;
         }
-        else if (this.timer == 0 && this.item) {
+        else if (this.timer == 0) {
             if (this.spawnItem(this.recipe.outputs[0])) {
                 this.timer = -1;
-                this.item = null;
-            }
-        }
-        else if (!this.item) {
-            this.grabItem(this.findRecipe.bind(this), (item) => {
-                this.setRecipe(this.findRecipe(item));
-            }, true);
-        }
-    }
-    acceptItem(item) {
-        if (this.item)
-            return false;
-        let recipe = this.findRecipe(item);
-        if (recipe) {
-            this.setRecipe(recipe);
-            this.item = item;
-            return true;
-        }
-        return false;
-    }
-}
-class BuildingWithTwoRecipe extends Building {
-    constructor(tileX, tileY, id, level) {
-        super(tileX, tileY, id, level);
-        if (this.constructor === BuildingWithTwoRecipe)
-            throw this;
-        this.timer = -1;
-        this.item1 = null;
-        this.item2 = null;
-    }
-    acceptItem(item) {
-        if (!this.item1) {
-            for (var recipe of this.constructor.recipeType.recipes) {
-                if (recipe.inputs[0] == item.id || recipe.inputs[1] == item.id) {
-                    this.item1 = item;
-                    return true;
-                }
-            }
-            return false;
-        }
-        if (!this.item2 && this.item1.id != item.id) {
-            for (var recipe of this.constructor.recipeType.recipes) {
-                if (recipe.inputs[0] == item.id || recipe.inputs[1] == item.id) {
-                    this.item2 = item;
-                    return true;
-                }
-            }
-            return false;
-        }
-        return false;
-    }
-    findRecipe(item1, item2) {
-        for (var recipe of this.constructor.recipeType.recipes) {
-            if ((recipe.inputs[0] == item1?.id &&
-                recipe.inputs[1] == item2?.id) ||
-                (recipe.inputs[1] == item1?.id &&
-                    recipe.inputs[0] == item2?.id)) {
-                return recipe;
-            }
-        }
-        return null;
-    }
-    hasItem() {
-        return null;
-    }
-    removeItem() {
-        return null;
-    }
-    setRecipe(recipe) {
-        if (!(recipe?.inputs instanceof Array))
-            return;
-        this.recipe = recipe;
-        this.timer = recipe.duration;
-    }
-    update() {
-        if (!this.item1) {
-            this.grabItem(((item) => { return item.id != this.item2?.id; }).bind(this), (item) => { this.item1 = item; }, true);
-        }
-        if (!this.item2) {
-            this.grabItem(((item) => { return item.id != this.item1?.id; }).bind(this), (item) => { this.item2 = item; }, true);
-        }
-        if (this.item1 instanceof Item && this.item2 instanceof Item) {
-            if (!this.recipe) {
-                this.setRecipe(this.findRecipe(this.item1, this.item2));
-                return;
-            }
-            if (this.timer > 0) {
-                this.timer--;
-            }
-            else if (this.timer == 0) {
-                if (this.spawnItem(this.recipe.outputs[0])) {
-                    this.timer = -1;
-                    this.item1 = null;
-                    this.item2 = null;
-                    this.recipe = null;
-                }
+                this.items = [];
+                this.recipe = null;
             }
         }
     }
@@ -1822,7 +1751,7 @@ class ResourceAcceptor extends Building {
         }, true);
     }
 }
-class AlloySmelter extends BuildingWithTwoRecipe {
+class AlloySmelter extends BuildingWithRecipe {
 }
 AlloySmelter.animated = true;
 AlloySmelter.recipeType = recipes.base_alloying;
@@ -1835,7 +1764,7 @@ Compressor.recipeType = recipes.base_compressing;
 class Lathe extends BuildingWithRecipe {
 }
 Lathe.recipeType = recipes.base_lathing;
-class Assembler extends BuildingWithTwoRecipe {
+class Assembler extends BuildingWithRecipe {
 }
 Assembler.recipeType = recipes.base_assembling;
 const BuildingType = {
