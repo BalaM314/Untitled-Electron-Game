@@ -25,7 +25,7 @@ interface Array<T>{
 	contains: (val:T) => boolean
 }
 
-Array.prototype.contains = (val) => {
+Array.prototype.contains = function(val){
 	return this.indexOf(val) != -1;
 }
 

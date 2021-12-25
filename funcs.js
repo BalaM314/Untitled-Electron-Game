@@ -1,6 +1,6 @@
 "use strict";
 noise.seed(1);
-Array.prototype.contains = (val) => {
+Array.prototype.contains = function (val) {
     return this.indexOf(val) != -1;
 };
 let mouseX = 0;
