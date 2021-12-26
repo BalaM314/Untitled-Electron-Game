@@ -132,7 +132,7 @@ const generation_consts = {
 };
 
 const Globals = {
-	VERSION: "alpha 1.0.0",
+	VERSION: "alpha 1.1.0",
 	CHUNK_SIZE: 16,//Size of a chunk in tiles.
 	TILE_SIZE: 30,//Sile of a tile in pixels.
 	DISPLAY_SCALE: 1,
@@ -155,14 +155,14 @@ interface Recipe {
 
 type RecipeType = "1-1" | "2-1" | "t-1";
 
-const recipes: {
+const recipes: {//List of all recipes.
 	maxInputs: number;
 	[index: `${string}_${string}`]: {
 		type: RecipeType;
 		recipes: Recipe[];
 	};
 } = {
-	maxInputs: 3,
+	maxInputs: 3,//temp, max inputs that are checked for
 	"base_mining": {
 		"type": "t-1",
 		"recipes": [
@@ -283,6 +283,7 @@ enum triggerType {
 }
 
 function trigger(type:triggerType, buildingID?:RawBuildingID, itemID?:ItemID){
+	//Used to handle tutorial, and maybe achievements.
 	switch(type){
 		case triggerType.placeBuilding:
 			switch(buildingID){
