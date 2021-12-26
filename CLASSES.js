@@ -538,6 +538,9 @@ class Level {
             return true;
         }
         if ((building % 0x100) >> 4 == 0x1) {
+            this.buildingAtTile(tileX + 1, tileY)?.break();
+            this.buildingAtTile(tileX, tileY + 1)?.break();
+            this.buildingAtTile(tileX + 1, tileY + 1)?.break();
             switch (building % 0x100) {
                 case 0x11:
                     let controller = new BuildingType[building % 0x100](tileX, tileY, building, this);
