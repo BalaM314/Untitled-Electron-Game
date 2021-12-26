@@ -32,6 +32,14 @@ Object.defineProperty(Array.prototype, "contains", {
 	enumerable: false
 });
 
+function makeError(name){
+	return class TempName extends Error {
+		constructor(){
+			super(...arguments);
+			this.name = name;
+		}
+	}
+}
 
 
 

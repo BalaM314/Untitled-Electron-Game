@@ -6,6 +6,8 @@ Array.prototype.contains = function (val) {
 Object.defineProperty(Array.prototype, "contains", {
     enumerable: false
 });
+class ShouldNotBePossibleError extends Error {
+}
 let mouseX = 0;
 let mouseY = 0;
 let mouseIsPressed = false;
