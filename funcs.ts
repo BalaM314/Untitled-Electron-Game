@@ -105,7 +105,7 @@ window.onkeydown = (e:KeyboardEvent) => {
 			case "F1":
 				placedBuilding.type = 0x000B; e.preventDefault(); break;
 			case "F2":
-				placedBuilding.type = 0x000C; e.preventDefault(); break;
+				placedBuilding.type = 0x0011; e.preventDefault(); break;
 			case "0":
 				placedBuilding.type = 0xFF; break;
 		}

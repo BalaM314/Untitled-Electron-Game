@@ -3,9 +3,9 @@
 // 
 // Add animation to some buildings 👀
 // Fix item tooltips on conveyors no longer working
-// Fix generation not respecting level seed & duplicated generation along x axis near spawn
-// 
-// 
+// Fix duplicated displayBuilding code
+// Add comments
+// Refactor codebase into different files
 // 
 // 
 // 

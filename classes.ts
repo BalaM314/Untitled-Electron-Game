@@ -42,10 +42,11 @@ type BuildingID =
 0x0009 |	//Wiremill
 0x000A |	//Compressor
 0x000B |	//Lathe
-0x000C |	//Assembler
+0x0010 |	//Multiblock secondary
+0x0011 |	//Assembler
 0xFFFF ;	//Unset
 
-type RawBuildingID = 0x01 | 0x02 | 0x03 | 0x04 | 0x05 | 0x06 | 0x07 | 0x08 | 0x09 | 0x0A | 0x0B | 0x0C | 0xFF;
+type RawBuildingID = 0x01 | 0x02 | 0x03 | 0x04 | 0x05 | 0x06 | 0x07 | 0x08 | 0x09 | 0x0A | 0x0B | 0x10 | 0x11 | 0xFF;
 
 
 
@@ -73,7 +74,8 @@ const names = {
 		0x09: "Wiremill",
 		0x0A: "Compressor",
 		0x0B: "Lathe",
-		0x0C: "Assembler"
+		0x10: "Multiblock Secondary",
+		0x11: "Assembler"
 	},
 	item: {
 		"base_null": "Debug Item",
@@ -557,13 +559,13 @@ class Level {
 		tileY = Math.floor(tileY);
 		//🍝👨‍💻 is delicious
 		let topConveyor:BuildingID | boolean = this.buildingIDAtTile(tileX, tileY - 1);
-		topConveyor = topConveyor == 0x0101 || topConveyor == 0x0601 || topConveyor == 0x0701 || topConveyor == 0x0002 || topConveyor == 0x0004  || topConveyor == 0x0007 || topConveyor == 0x0009 || topConveyor == 0x000A || topConveyor == 0x000B || topConveyor == 0x000C;
+		topConveyor = topConveyor == 0x0101 || topConveyor == 0x0601 || topConveyor == 0x0701 || topConveyor == 0x0002 || topConveyor == 0x0004  || topConveyor == 0x0007 || topConveyor == 0x0009 || topConveyor == 0x000A || topConveyor == 0x000B || topConveyor == 0x0011;
 		let rightConveyor:BuildingID | boolean = this.buildingIDAtTile(tileX + 1, tileY);
-		rightConveyor = rightConveyor == 0x0201 || rightConveyor == 0x0801 || rightConveyor == 0x0901 || rightConveyor == 0x0002 || rightConveyor == 0x0004  || rightConveyor == 0x0007 || rightConveyor == 0x0009 || rightConveyor == 0x000A || rightConveyor == 0x000B || rightConveyor == 0x000C;
+		rightConveyor = rightConveyor == 0x0201 || rightConveyor == 0x0801 || rightConveyor == 0x0901 || rightConveyor == 0x0002 || rightConveyor == 0x0004  || rightConveyor == 0x0007 || rightConveyor == 0x0009 || rightConveyor == 0x000A || rightConveyor == 0x000B || rightConveyor == 0x0011;
 		let leftConveyor:BuildingID | boolean = this.buildingIDAtTile(tileX - 1, tileY);
-		leftConveyor = leftConveyor == 0x0001 || leftConveyor == 0x0401 || leftConveyor == 0x0501 || leftConveyor == 0x0002 || leftConveyor == 0x0004  || leftConveyor == 0x0007 || leftConveyor == 0x0009 || leftConveyor == 0x000A || leftConveyor == 0x000B || leftConveyor == 0x000C;
+		leftConveyor = leftConveyor == 0x0001 || leftConveyor == 0x0401 || leftConveyor == 0x0501 || leftConveyor == 0x0002 || leftConveyor == 0x0004  || leftConveyor == 0x0007 || leftConveyor == 0x0009 || leftConveyor == 0x000A || leftConveyor == 0x000B || leftConveyor == 0x0011;
 		let bottomConveyor:BuildingID | boolean = this.buildingIDAtTile(tileX, tileY + 1);
-		bottomConveyor = bottomConveyor == 0x0301 || bottomConveyor == 0x0A01 || bottomConveyor == 0x0B01 || bottomConveyor == 0x0002 || bottomConveyor == 0x0004  || bottomConveyor == 0x0007 || bottomConveyor == 0x0009 || bottomConveyor == 0x000A || bottomConveyor == 0x000B || bottomConveyor == 0x000C;
+		bottomConveyor = bottomConveyor == 0x0301 || bottomConveyor == 0x0A01 || bottomConveyor == 0x0B01 || bottomConveyor == 0x0002 || bottomConveyor == 0x0004  || bottomConveyor == 0x0007 || bottomConveyor == 0x0009 || bottomConveyor == 0x000A || bottomConveyor == 0x000B || bottomConveyor == 0x0011;
 		let buildingID:BuildingID = 0xFFFF;
 		switch(conveyorType){
 			case 0:
@@ -651,7 +653,27 @@ class Level {
 		if(building == 0xFFFF){
 			this.writeExtractor(tileX, tileY, null);
 			this.writeBuilding(tileX, tileY, null);
-			return;
+			return true;
+		}
+		if((building % 0x100) >> 4 == 0x1){
+			//Multiblock handling
+			switch(building % 0x100){
+				case 0x11:
+					let controller = new BuildingType[building % 0x100](tileX, tileY, building, this) as MultiBlockController;
+					let secondary1 = new MultiBlockSecondary(tileX + 1, tileY, 0x0010, this);
+					let secondary2 = new MultiBlockSecondary(tileX, tileY + 1, 0x0010, this);
+					let secondary3 = new MultiBlockSecondary(tileX+1, tileY+1, 0x0010, this);
+					controller.secondaries = [secondary1, secondary2, secondary3];
+					[secondary1, secondary2, secondary3].forEach(secondary => secondary.controller = controller);
+					level1.writeBuilding(tileX, tileY, controller);
+					level1.writeBuilding(tileX + 1, tileY, secondary1);
+					level1.writeBuilding(tileX, tileY + 1, secondary2);
+					level1.writeBuilding(tileX+1, tileY+1, secondary3);
+				break;
+				default:
+					return false;
+			}
+			return true;
 		}
 		if(BuildingType[building % 0x100]?.canBuildAt(tileX, tileY, this)){
 			trigger(triggerType.placeBuilding, building % 0x100 as RawBuildingID);
@@ -1066,7 +1088,11 @@ class Chunk {
 			_ctx.globalAlpha = buildingID % 0x100 == 0x01 ? 0.3 : 0.7;
 		} else {
 			_ctx.globalAlpha = 0.9;
-			_ctx.drawImage(textures.get("ghostunderlay"), pixelX, pixelY, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE);
+			if((buildingID & 0x00F0) == 0x10){
+				_ctx.drawImage(textures.get("ghostunderlay"), pixelX, pixelY, Globals.DISPLAY_TILE_SIZE * 2, Globals.DISPLAY_TILE_SIZE * 2);
+			} else {
+				_ctx.drawImage(textures.get("ghostunderlay"), pixelX, pixelY, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE);
+			}
 			_ctx.globalAlpha = buildingID % 0x100 == 0x01 ? 0.3 : 0.7;
 		}
 		if(textures.get(buildingID.toString())){
@@ -1095,6 +1121,8 @@ class Chunk {
 					_ctx.drawImage(textures.get(buildingID.toString()), pixelX - Globals.DISPLAY_TILE_SIZE * 3, pixelY, Globals.DISPLAY_TILE_SIZE * 4, Globals.DISPLAY_TILE_SIZE); break;
 				case 0x0B05:
 					_ctx.drawImage(textures.get(buildingID.toString()), pixelX, pixelY - Globals.DISPLAY_TILE_SIZE * 3, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE * 4); break;
+				case 0x0011:
+					_ctx.drawImage(textures.get(buildingID.toString()), pixelX, pixelY, Globals.DISPLAY_TILE_SIZE * 2, Globals.DISPLAY_TILE_SIZE * 2); break;
 				default:
 					_ctx.drawImage(textures.get(buildingID.toString()), pixelX, pixelY, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE); break;
 			}
@@ -1292,6 +1320,7 @@ class Building {
 				item.grabbedBy = null;
 			}
 		}
+		this.level.writeBuilding(this.x, this.y, null);
 	}
 	update(...any:any){
 		
@@ -1329,6 +1358,9 @@ class Building {
 					case 0x0B05:
 						_ctx.drawImage(texture, pixelX, pixelY - Globals.DISPLAY_TILE_SIZE * 3, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE * 4); break;
 				}
+			} else if((this.id & 0x00F0) == 0x10){
+				//Multiblock
+				_ctx.drawImage(texture, pixelX, pixelY, Globals.DISPLAY_TILE_SIZE * 2, Globals.DISPLAY_TILE_SIZE * 2);
 			} else {
 				_ctx.drawImage(texture, pixelX, pixelY, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE);
 				if((this.constructor as typeof Building).animated){
@@ -1566,6 +1598,7 @@ class Conveyor extends Building {
 			}
 		}
 		this.item = null;
+		super.break();
 	}
 	display(currentFrame:currentFrame){
 		super.display(currentFrame);
@@ -1800,7 +1833,7 @@ class Extractor extends Conveyor {
 					}
 					break;
 				case 0x0805:
-					if(this.item.x > (this.x + 3.5) * Globals.TILE_SIZE){return this.dropItem();} else {
+				if(this.item.x > (this.x + 3.5) * Globals.TILE_SIZE){return this.dropItem();} else {
 						this.item.x ++;
 					}
 					break;
@@ -1904,11 +1937,13 @@ class MultiBlockController extends BuildingWithRecipe {
 	break(){
 		this.secondaries.forEach(secondary => secondary.break(true));
 		this.secondaries = [];
+		super.break();
 	}
 	update(): void {
-		if(this.secondaries.length != (this.constructor as typeof MultiBlockController).size[0] * (this.constructor as typeof MultiBlockController).size[1]){
+		if(this.secondaries.length != (this.constructor as typeof MultiBlockController).size[0] * (this.constructor as typeof MultiBlockController).size[1] - 1){
 			this.break();
 		}
+		super.update();
 	}
 }
 
@@ -1920,10 +1955,13 @@ class MultiBlockSecondary extends Building {
 	break(isRecursive?:boolean){
 		if(!isRecursive){
 			this.controller?.break();
+		} else {
+			this.controller = null;
+			console.log("aight imma head out");
+			super.break();
 		}
-		this.controller = null;
-		super.break();
 	}
+	display(currentFrame:currentFrame){}
 	update(){
 		if(!(this.controller instanceof MultiBlockController)){
 			this.break();
@@ -1950,6 +1988,6 @@ const BuildingType: {
 	0x09: Wiremill,
 	0x0A: Compressor,
 	0x0B: Lathe,
-	0x0C: Assembler,
-	0x0F: MultiBlockSecondary
+	0x10: MultiBlockSecondary,
+	0x11: Assembler
 };
