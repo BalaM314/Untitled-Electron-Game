@@ -56,7 +56,7 @@ interface Recipe {
 	tile?: Tile;
 }
 
-declare var noise: {
+declare let noise: {
 	seed: (seed:number) => void;
 	perlin2: (x:number, y:number) => number;
 	simplex2: (x:number, y:number) => number;

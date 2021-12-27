@@ -247,7 +247,7 @@ let Game = {
         multiplesteel: false
     }
 };
-var GAME_STATE = "title";
+let GAME_STATE = "title";
 const ctx = document.getElementById("canvas").getContext("2d");
 const ctx1 = document.getElementById("canvas1").getContext("2d");
 const ctx2 = document.getElementById("canvas2").getContext("2d");

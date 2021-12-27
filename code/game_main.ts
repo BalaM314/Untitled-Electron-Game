@@ -37,13 +37,13 @@ window.onmousemove = (e:MouseEvent) => {
 
 window.onkeydown = (e:KeyboardEvent) => {
 	if(typeof parseInt(e.key) == "number"){
-		for(var x of document.getElementById("toolbar").children){
+		for(let x of document.getElementById("toolbar").children){
 			x.classList.remove("selected");
 		}
 		(document.getElementById("toolbar").children?.[parseInt(e.key) - 1] as HTMLElement)?.classList.add("selected");
 	}
 	if(parseInt(e.key[1])){
-		for(var x of document.getElementById("toolbar").children){
+		for(let x of document.getElementById("toolbar").children){
 			x.classList.remove("selected");
 		}
 		(document.getElementById("toolbar").children?.[parseInt(e.key[1]) + 8] as HTMLElement)?.classList.add("selected");
@@ -188,7 +188,7 @@ function runLevel(level:Level, currentFrame:any){
 		ctx4.fillText("I: " + currentFrame.ips, 10, 200);
 	}
 
-	for(var item of (<HTMLDivElement>document.getElementById("resources")!).children){
+	for(let item of (<HTMLDivElement>document.getElementById("resources")!).children){
 		item.innerHTML = (level1.resources[item.id] ?? 0).toString();
 	}
 	
@@ -214,7 +214,7 @@ function handleKeysPressed(currentframe:any){
 }
 
 function fixSizes(){
-	for(var x of ctxs){
+	for(let x of ctxs){
 		if(x.canvas.width != window.innerWidth){
 			x.canvas.width = window.innerWidth;
 			Game.forceRedraw = true;
@@ -225,7 +225,7 @@ function fixSizes(){
 		}
 	}
 }
-var cancel = null;
+let cancel = null;
 
 
 
@@ -271,7 +271,7 @@ function main_loop(){
 		}
 		if(alerts.length){
 			mouseIsPressed = false;
-			for(var __alert of alerts){
+			for(let __alert of alerts){
 				if(__alert instanceof Array){
 					setTimeout(() => {
 						_alert(__alert[0]);
@@ -372,7 +372,7 @@ let loadedtextures = 0;
 
 let level1:Level;
 
-for(var element of document.getElementById("textures").children){
+for(let element of document.getElementById("textures").children){
 	element.addEventListener("load", () => {
 		loadedtextures ++;
 	});
@@ -382,9 +382,9 @@ for(var element of document.getElementById("textures").children){
 	});
 }
 
-for(var element of document.getElementById("toolbar").children){
+for(let element of document.getElementById("toolbar").children){
 	element.addEventListener("click", (event:MouseEvent) => {
-		for(var x of document.getElementById("toolbar").children){
+		for(let x of document.getElementById("toolbar").children){
 			x.classList.remove("selected");
 		}
 		(event.target as HTMLElement).classList.add("selected");

@@ -12,13 +12,13 @@ window.onmousemove = (e) => {
 };
 window.onkeydown = (e) => {
     if (typeof parseInt(e.key) == "number") {
-        for (var x of document.getElementById("toolbar").children) {
+        for (let x of document.getElementById("toolbar").children) {
             x.classList.remove("selected");
         }
         document.getElementById("toolbar").children?.[parseInt(e.key) - 1]?.classList.add("selected");
     }
     if (parseInt(e.key[1])) {
-        for (var x of document.getElementById("toolbar").children) {
+        for (let x of document.getElementById("toolbar").children) {
             x.classList.remove("selected");
         }
         document.getElementById("toolbar").children?.[parseInt(e.key[1]) + 8]?.classList.add("selected");
@@ -171,7 +171,7 @@ function runLevel(level, currentFrame) {
         ctx4.fillText("C: " + currentFrame.cps, 10, 150);
         ctx4.fillText("I: " + currentFrame.ips, 10, 200);
     }
-    for (var item of document.getElementById("resources").children) {
+    for (let item of document.getElementById("resources").children) {
         item.innerHTML = (level1.resources[item.id] ?? 0).toString();
     }
 }
@@ -194,7 +194,7 @@ function handleKeysPressed(currentframe) {
     }
 }
 function fixSizes() {
-    for (var x of ctxs) {
+    for (let x of ctxs) {
         if (x.canvas.width != window.innerWidth) {
             x.canvas.width = window.innerWidth;
             Game.forceRedraw = true;
@@ -205,7 +205,7 @@ function fixSizes() {
         }
     }
 }
-var cancel = null;
+let cancel = null;
 function main_loop() {
     try {
         let currentFrame = {
@@ -245,7 +245,7 @@ function main_loop() {
         }
         if (alerts.length) {
             mouseIsPressed = false;
-            for (var __alert of alerts) {
+            for (let __alert of alerts) {
                 if (__alert instanceof Array) {
                     setTimeout(() => {
                         _alert(__alert[0]);
@@ -335,7 +335,7 @@ Press Shift to move faster and for tooltips.`);
 }
 let loadedtextures = 0;
 let level1;
-for (var element of document.getElementById("textures").children) {
+for (let element of document.getElementById("textures").children) {
     element.addEventListener("load", () => {
         loadedtextures++;
     });
@@ -344,9 +344,9 @@ for (var element of document.getElementById("textures").children) {
         throw err;
     });
 }
-for (var element of document.getElementById("toolbar").children) {
+for (let element of document.getElementById("toolbar").children) {
     element.addEventListener("click", (event) => {
-        for (var x of document.getElementById("toolbar").children) {
+        for (let x of document.getElementById("toolbar").children) {
             x.classList.remove("selected");
         }
         event.target.classList.add("selected");

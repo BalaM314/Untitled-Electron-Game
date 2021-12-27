@@ -24,7 +24,8 @@ class Level {
 			this.seed = seed;
 			this.resources = resources
 			try {
-				for(var [position, chunkData] of Object.entries(chunks)){//Get data for a chunk
+				for(var [position, chunkData] of Object.entries(chunks)){//Use of var here is intentional.
+					
 					this.storage.set(position, new Chunk({
 						x: parseInt(position.split(",")[0]), y: parseInt(position.split(",")[1]),
 						seed: seed, parent: this
@@ -36,7 +37,7 @@ class Level {
 			}
 
 			if(version !== "alpha 0.0.0"){//Needed because before (e4360ab) items being moved by conveyor belts were also in level.items and the below code would otherwise dupe them due to the removal of an O(n^2) check.
-				for(var item of items){
+				for(let item of items){
 					let tempItem = new Item(item.x, item.y, item.id, this);
 					if(item.grabbedBy){
 						tempItem.grabbedBy = this.buildingAtTile(item.grabbedBy.x, item.grabbedBy.y);
@@ -88,8 +89,8 @@ class Level {
 		return false;
 	}
 	generateNecessaryChunks(){
-		var xOffset = - Math.floor((Game.scroll.x * Globals.DISPLAY_SCALE) / (Globals.DISPLAY_TILE_SIZE * Globals.CHUNK_SIZE));
-		var yOffset = - Math.floor((Game.scroll.y * Globals.DISPLAY_SCALE) / (Globals.DISPLAY_TILE_SIZE * Globals.CHUNK_SIZE));
+		let xOffset = - Math.floor((Game.scroll.x * Globals.DISPLAY_SCALE) / (Globals.DISPLAY_TILE_SIZE * Globals.CHUNK_SIZE));
+		let yOffset = - Math.floor((Game.scroll.y * Globals.DISPLAY_SCALE) / (Globals.DISPLAY_TILE_SIZE * Globals.CHUNK_SIZE));
 		this.generateChunk(xOffset - 1, yOffset - 1);
 		this.generateChunk(xOffset, yOffset - 1);
 		this.generateChunk(xOffset + 1, yOffset - 1);
@@ -143,10 +144,10 @@ class Level {
 		return tempitem;
 	}
 	update(currentframe){
-		for(var item of this.items){
+		for(let item of this.items){
 			item.update(currentframe);
 		}
-		for(var chunk of level1.storage.values()){
+		for(let chunk of level1.storage.values()){
 			chunk.update();
 		}
 	}
@@ -263,7 +264,7 @@ class Level {
 		//Otherwise, you could constantly overwrite a building on every frame you tried to build, which is not good.
 		canOverwriteBuilding = false;
 		this.buildingAtTile(tileX, tileY)?.break();
-		var tempBuilding:Building;
+		let tempBuilding:Building;
 		
 		if(building == 0xFFFF){
 			this.writeExtractor(tileX, tileY, null);
@@ -319,15 +320,15 @@ class Level {
 		}
 		
 		//Insta returns in the display method if offscreen.
-		for(var chunk of this.storage.values()){
+		for(let chunk of this.storage.values()){
 			chunk.display(currentframe);
 		}
 		
 	}
 	displayTooltip(mousex:number, mousey:number, currentframe){
 		if(!currentframe.tooltip){return;}
-		var x = (mousex - (Game.scroll.x * Globals.DISPLAY_SCALE))/Globals.DISPLAY_SCALE;
-		var y = (mousey - (Game.scroll.y * Globals.DISPLAY_SCALE))/Globals.DISPLAY_SCALE;
+		let x = (mousex - (Game.scroll.x * Globals.DISPLAY_SCALE))/Globals.DISPLAY_SCALE;
+		let y = (mousey - (Game.scroll.y * Globals.DISPLAY_SCALE))/Globals.DISPLAY_SCALE;
 		ctx4.font = "16px monospace";
 		for(let item of this.items){
 			if((Math.abs(item.x - x) < 16) && Math.abs(item.y - y) < 16){
@@ -364,7 +365,7 @@ class Level {
 	export(){
 		//Exports the level's data to JSON.
 		let chunkOutput = {};
-		for(var [position, chunk] of this.storage.entries()){
+		for(let [position, chunk] of this.storage.entries()){
 			let output = chunk.export();
 			if(output){
 				chunkOutput[position] = output;
@@ -372,7 +373,7 @@ class Level {
 		}
 
 		let items = [];
-		for(var item of this.items){
+		for(let item of this.items){
 			items.push(item.export());
 		}
 
@@ -460,7 +461,7 @@ class Chunk {
 					}
 					if(buildingData.inv){
 						//If the building has an inventory, spawn in the items.
-						for(var itemData of buildingData.inv){
+						for(let itemData of buildingData.inv){
 							let tempItem = new Item(itemData.x, itemData.y, itemData.id, this.parent as Level);
 							tempItem.grabbedBy = tempBuilding;
 							tempBuilding.inventory.push(tempItem);
@@ -554,8 +555,8 @@ class Chunk {
 		}
 		
 		if(isWet){//Generator for wet chunks.
-			for(var row in this.layers[0]){
-				for(var tile in this.layers[0][row]){
+			for(let row in this.layers[0]){
+				for(let tile in this.layers[0][row]){
 					//Choose the tile to be placed:
 					if(row == "0" || row == "15" || tile == "0" || tile == "15"){
 						this.layers[0][row][tile] = 0x02;//If on edge, place water
@@ -586,8 +587,8 @@ class Chunk {
 			}
 
 
-			for(var row in this.layers[0]){
-				for(var tile in this.layers[0][row]){
+			for(let row in this.layers[0]){
+				for(let tile in this.layers[0][row]){
 					//Choose the tile to be placed:
 					let noiseHeight = 
 					Math.abs(noise.perlin2(
@@ -607,8 +608,8 @@ class Chunk {
 			}
 		} else {
 			//Old terrain generation. I kept it, just only close to spawn.
-			for(var row in this.layers[0]){
-				for(var tile in this.layers[0][row]){
+			for(let row in this.layers[0]){
+				for(let tile in this.layers[0][row]){
 					this.layers[0][row][tile] = 0x00;
 				}
 			}
@@ -806,7 +807,7 @@ class Chunk {
 	}
 	export(){
 		let exportDataL1 = [];
-		var hasBuildings = false;
+		let hasBuildings = false;
 		for(let row of this.layers[1]){
 			let tempRow = [];
 			for(let building of row){
@@ -881,8 +882,8 @@ class Item {
 		currentframe.ips ++;
 		ctx3.drawImage(textures.get("item_" + this.id), this.x * Globals.DISPLAY_SCALE + (Game.scroll.x * Globals.DISPLAY_SCALE) - 8*Globals.DISPLAY_SCALE, this.y * Globals.DISPLAY_SCALE + (Game.scroll.y * Globals.DISPLAY_SCALE) - 8*Globals.DISPLAY_SCALE, 16 * Globals.DISPLAY_SCALE, 16 * Globals.DISPLAY_SCALE);
 		if(keysPressed.contains("Shift")){
-			var x = (mouseX - (Game.scroll.x * Globals.DISPLAY_SCALE))/Globals.DISPLAY_SCALE;
-			var y = (mouseY - (Game.scroll.y * Globals.DISPLAY_SCALE))/Globals.DISPLAY_SCALE;
+			let x = (mouseX - (Game.scroll.x * Globals.DISPLAY_SCALE))/Globals.DISPLAY_SCALE;
+			let y = (mouseY - (Game.scroll.y * Globals.DISPLAY_SCALE))/Globals.DISPLAY_SCALE;
 			//alert(this.x + " " + this.y + "  " + x + " " + y);
 			if(
 				x > this.x - (8 * Globals.DISPLAY_SCALE) &&
@@ -937,7 +938,7 @@ class Building {
 			this.item.grabbedBy = null;
 		}
 		if(this.inventory){
-			for(var item of this.inventory){
+			for(let item of this.inventory){
 				item.grabbedBy = null;
 			}
 		}
@@ -1007,7 +1008,7 @@ class Building {
 	}
 	removeItem():Item {
 		if(this.item){
-			var temp = this.item;
+			let temp = this.item;
 			this.item = null;
 			return temp;
 		}
@@ -1054,7 +1055,7 @@ class Building {
 	grabItem(filter:(item:Item) => any, callback:(item:Item) => void, remove:boolean, grabDistance?:number){
 		grabDistance ??= 0.5;
 		filter ??= () => {return true};
-		for(var item in this.level.items){
+		for(let item in this.level.items){
 			if(
 				(Math.abs(this.level.items[item].x - ((this.x + grabDistance) * Globals.TILE_SIZE)) <= Globals.TILE_SIZE * grabDistance) &&
 				(Math.abs(this.level.items[item].y - ((this.y + grabDistance) * Globals.TILE_SIZE)) <= Globals.TILE_SIZE * grabDistance) &&
@@ -1083,9 +1084,9 @@ class Building {
 		return true;
 	}
 	export(){
-		var inv = [];
+		let inv = [];
 		if(this.inventory){
-			for(var item of this.inventory){
+			for(let item of this.inventory){
 				inv.push(item.export());
 			}
 		}
@@ -1113,9 +1114,9 @@ abstract class BuildingWithRecipe extends Building {
 		this.items = [];
 	}
 	acceptItem(item:Item):boolean {
-		for(var i = 0; i < recipes.maxInputs; i ++){
+		for(let i = 0; i < recipes.maxInputs; i ++){
 			if(!this.items[i] && !this.items.map(item => item.id).contains(item.id)){
-				for(var recipe of (this.constructor as typeof BuildingWithRecipe).recipeType.recipes){
+				for(let recipe of (this.constructor as typeof BuildingWithRecipe).recipeType.recipes){
 					if(!this.items.map(item => recipe.inputs.contains(item.id)).contains(false) && recipe.inputs.contains(item.id)){
 						this.items[i] = item;
 						if(recipe.inputs.length == i + 1){
@@ -1165,7 +1166,7 @@ class Miner extends Building {
 	constructor(tileX:number, tileY:number, id:BuildingID, level:Level){
 		super(tileX, tileY, id, level);
 		this.timer = 61;
-		for(var recipe of recipes.base_mining.recipes){
+		for(let recipe of recipes.base_mining.recipes){
 			if(recipe.tile == level.tileAtByTile(tileX, tileY)){
 				this.miningItem = recipe.outputs[0];
 			}

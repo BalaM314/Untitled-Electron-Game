@@ -258,7 +258,7 @@ let Game = {
 		multiplesteel: false
 	}
 };
-var GAME_STATE:"title" | "game" | "settings" = "title";
+let GAME_STATE:"title" | "game" | "settings" = "title";
 
 const ctx = (document.getElementById("canvas") as HTMLCanvasElement).getContext("2d");//Tiles
 const ctx1 = (document.getElementById("canvas1") as HTMLCanvasElement).getContext("2d");//Ghost buildings

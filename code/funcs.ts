@@ -139,7 +139,7 @@ function gcd(x:number, y:number):any{
 	x = Math.abs(x);
 	y = Math.abs(y);
 	while(y) {
-		var t = y;
+		let t = y;
 		y = x % y;
 		x = t;
 	}
@@ -240,7 +240,7 @@ function _alert(x:string | [string,number]){
 	alerts.push(x);
 }
 function loadTextures(){
-	for(var element of document.getElementById("textures").children){
+	for(let element of document.getElementById("textures").children){
 		textures.set(element.id, element);
 	}
 };

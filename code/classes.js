@@ -24,7 +24,7 @@ class Level {
                 throw new Error(`Error loading chunk ${position}: ${err.message}`);
             }
             if (version !== "alpha 0.0.0") {
-                for (var item of items) {
+                for (let item of items) {
                     let tempItem = new Item(item.x, item.y, item.id, this);
                     if (item.grabbedBy) {
                         tempItem.grabbedBy = this.buildingAtTile(item.grabbedBy.x, item.grabbedBy.y);
@@ -69,8 +69,8 @@ class Level {
         return false;
     }
     generateNecessaryChunks() {
-        var xOffset = -Math.floor((Game.scroll.x * Globals.DISPLAY_SCALE) / (Globals.DISPLAY_TILE_SIZE * Globals.CHUNK_SIZE));
-        var yOffset = -Math.floor((Game.scroll.y * Globals.DISPLAY_SCALE) / (Globals.DISPLAY_TILE_SIZE * Globals.CHUNK_SIZE));
+        let xOffset = -Math.floor((Game.scroll.x * Globals.DISPLAY_SCALE) / (Globals.DISPLAY_TILE_SIZE * Globals.CHUNK_SIZE));
+        let yOffset = -Math.floor((Game.scroll.y * Globals.DISPLAY_SCALE) / (Globals.DISPLAY_TILE_SIZE * Globals.CHUNK_SIZE));
         this.generateChunk(xOffset - 1, yOffset - 1);
         this.generateChunk(xOffset, yOffset - 1);
         this.generateChunk(xOffset + 1, yOffset - 1);
@@ -108,10 +108,10 @@ class Level {
         return tempitem;
     }
     update(currentframe) {
-        for (var item of this.items) {
+        for (let item of this.items) {
             item.update(currentframe);
         }
-        for (var chunk of level1.storage.values()) {
+        for (let chunk of level1.storage.values()) {
             chunk.update();
         }
     }
@@ -240,7 +240,7 @@ class Level {
         }
         canOverwriteBuilding = false;
         this.buildingAtTile(tileX, tileY)?.break();
-        var tempBuilding;
+        let tempBuilding;
         if (building == 0xFFFF) {
             this.writeExtractor(tileX, tileY, null);
             this.writeBuilding(tileX, tileY, null);
@@ -292,7 +292,7 @@ class Level {
         for (let item of this.items) {
             item.display(currentframe);
         }
-        for (var chunk of this.storage.values()) {
+        for (let chunk of this.storage.values()) {
             chunk.display(currentframe);
         }
     }
@@ -300,8 +300,8 @@ class Level {
         if (!currentframe.tooltip) {
             return;
         }
-        var x = (mousex - (Game.scroll.x * Globals.DISPLAY_SCALE)) / Globals.DISPLAY_SCALE;
-        var y = (mousey - (Game.scroll.y * Globals.DISPLAY_SCALE)) / Globals.DISPLAY_SCALE;
+        let x = (mousex - (Game.scroll.x * Globals.DISPLAY_SCALE)) / Globals.DISPLAY_SCALE;
+        let y = (mousey - (Game.scroll.y * Globals.DISPLAY_SCALE)) / Globals.DISPLAY_SCALE;
         ctx4.font = "16px monospace";
         for (let item of this.items) {
             if ((Math.abs(item.x - x) < 16) && Math.abs(item.y - y) < 16) {
@@ -335,14 +335,14 @@ class Level {
     }
     export() {
         let chunkOutput = {};
-        for (var [position, chunk] of this.storage.entries()) {
+        for (let [position, chunk] of this.storage.entries()) {
             let output = chunk.export();
             if (output) {
                 chunkOutput[position] = output;
             }
         }
         let items = [];
-        for (var item of this.items) {
+        for (let item of this.items) {
             items.push(item.export());
         }
         return {
@@ -407,7 +407,7 @@ class Chunk {
                         tempBuilding.item.grabbedBy = tempBuilding;
                     }
                     if (buildingData.inv) {
-                        for (var itemData of buildingData.inv) {
+                        for (let itemData of buildingData.inv) {
                             let tempItem = new Item(itemData.x, itemData.y, itemData.id, this.parent);
                             tempItem.grabbedBy = tempBuilding;
                             tempBuilding.inventory.push(tempItem);
@@ -491,8 +491,8 @@ class Chunk {
             isHilly = true;
         }
         if (isWet) {
-            for (var row in this.layers[0]) {
-                for (var tile in this.layers[0][row]) {
+            for (let row in this.layers[0]) {
+                for (let tile in this.layers[0][row]) {
                     if (row == "0" || row == "15" || tile == "0" || tile == "15") {
                         this.layers[0][row][tile] = 0x02;
                     }
@@ -520,8 +520,8 @@ class Chunk {
             else {
                 oreToGenerate = oreRand > 0.5 ? 0x10 : (oreRand > 0.25 ? 0x11 : 0x12);
             }
-            for (var row in this.layers[0]) {
-                for (var tile in this.layers[0][row]) {
+            for (let row in this.layers[0]) {
+                for (let tile in this.layers[0][row]) {
                     let noiseHeight = Math.abs(noise.perlin2(((this.x * Globals.CHUNK_SIZE) + +tile + this.parent.seed) / generation_consts.perlin_scale, ((this.y * Globals.CHUNK_SIZE) + +row + (this.parent.seed + generation_consts.y_offset)) / generation_consts.perlin_scale));
                     if ((noiseHeight + distanceBoost / 2) > generation_consts.hilly.ore_threshold) {
                         this.layers[0][row][tile] = oreToGenerate;
@@ -536,8 +536,8 @@ class Chunk {
             }
         }
         else {
-            for (var row in this.layers[0]) {
-                for (var tile in this.layers[0][row]) {
+            for (let row in this.layers[0]) {
+                for (let tile in this.layers[0][row]) {
                     this.layers[0][row][tile] = 0x00;
                 }
             }
@@ -756,7 +756,7 @@ class Chunk {
     }
     export() {
         let exportDataL1 = [];
-        var hasBuildings = false;
+        let hasBuildings = false;
         for (let row of this.layers[1]) {
             let tempRow = [];
             for (let building of row) {
@@ -817,8 +817,8 @@ class Item {
         currentframe.ips++;
         ctx3.drawImage(textures.get("item_" + this.id), this.x * Globals.DISPLAY_SCALE + (Game.scroll.x * Globals.DISPLAY_SCALE) - 8 * Globals.DISPLAY_SCALE, this.y * Globals.DISPLAY_SCALE + (Game.scroll.y * Globals.DISPLAY_SCALE) - 8 * Globals.DISPLAY_SCALE, 16 * Globals.DISPLAY_SCALE, 16 * Globals.DISPLAY_SCALE);
         if (keysPressed.contains("Shift")) {
-            var x = (mouseX - (Game.scroll.x * Globals.DISPLAY_SCALE)) / Globals.DISPLAY_SCALE;
-            var y = (mouseY - (Game.scroll.y * Globals.DISPLAY_SCALE)) / Globals.DISPLAY_SCALE;
+            let x = (mouseX - (Game.scroll.x * Globals.DISPLAY_SCALE)) / Globals.DISPLAY_SCALE;
+            let y = (mouseY - (Game.scroll.y * Globals.DISPLAY_SCALE)) / Globals.DISPLAY_SCALE;
             if (x > this.x - (8 * Globals.DISPLAY_SCALE) &&
                 y > this.y - (8 * Globals.DISPLAY_SCALE) &&
                 x < this.x + (8 * Globals.DISPLAY_SCALE) &&
@@ -863,7 +863,7 @@ class Building {
             this.item.grabbedBy = null;
         }
         if (this.inventory) {
-            for (var item of this.inventory) {
+            for (let item of this.inventory) {
                 item.grabbedBy = null;
             }
         }
@@ -947,7 +947,7 @@ class Building {
     }
     removeItem() {
         if (this.item) {
-            var temp = this.item;
+            let temp = this.item;
             this.item = null;
             return temp;
         }
@@ -990,7 +990,7 @@ class Building {
     grabItem(filter, callback, remove, grabDistance) {
         grabDistance ?? (grabDistance = 0.5);
         filter ?? (filter = () => { return true; });
-        for (var item in this.level.items) {
+        for (let item in this.level.items) {
             if ((Math.abs(this.level.items[item].x - ((this.x + grabDistance) * Globals.TILE_SIZE)) <= Globals.TILE_SIZE * grabDistance) &&
                 (Math.abs(this.level.items[item].y - ((this.y + grabDistance) * Globals.TILE_SIZE)) <= Globals.TILE_SIZE * grabDistance) &&
                 filter(this.level.items[item])) {
@@ -1019,9 +1019,9 @@ class Building {
         return true;
     }
     export() {
-        var inv = [];
+        let inv = [];
         if (this.inventory) {
-            for (var item of this.inventory) {
+            for (let item of this.inventory) {
                 inv.push(item.export());
             }
         }
@@ -1044,9 +1044,9 @@ class BuildingWithRecipe extends Building {
         this.items = [];
     }
     acceptItem(item) {
-        for (var i = 0; i < recipes.maxInputs; i++) {
+        for (let i = 0; i < recipes.maxInputs; i++) {
             if (!this.items[i] && !this.items.map(item => item.id).contains(item.id)) {
-                for (var recipe of this.constructor.recipeType.recipes) {
+                for (let recipe of this.constructor.recipeType.recipes) {
                     if (!this.items.map(item => recipe.inputs.contains(item.id)).contains(false) && recipe.inputs.contains(item.id)) {
                         this.items[i] = item;
                         if (recipe.inputs.length == i + 1) {
@@ -1094,7 +1094,7 @@ class Miner extends Building {
     constructor(tileX, tileY, id, level) {
         super(tileX, tileY, id, level);
         this.timer = 61;
-        for (var recipe of recipes.base_mining.recipes) {
+        for (let recipe of recipes.base_mining.recipes) {
             if (recipe.tile == level.tileAtByTile(tileX, tileY)) {
                 this.miningItem = recipe.outputs[0];
             }
