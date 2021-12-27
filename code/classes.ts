@@ -2,7 +2,8 @@
 	Main classes.
 */
 
-import { Tile, BuildingID, RawBuildingID, noise, Recipe, currentFrame } from "./types";
+import { Tile, BuildingID, RawBuildingID, Recipe, currentFrame } from "./types";
+import * as noise from "./perlin.js";
 import { names, ItemID, generation_consts, consts, recipes, mouse, keysPressed, settings, Game, ctx, ctxs, uploadButton, ShouldNotBePossibleError, AssertionFailedError, ArgumentError, InvalidStateError, textures } from "./vars.js";
 import { assert, tileToChunk, trigger, triggerType, pseudoRandom, constrain, rect, rectMode, _alert, pixelToTile} from "./funcs.js";
 

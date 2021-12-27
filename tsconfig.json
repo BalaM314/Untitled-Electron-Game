@@ -5,6 +5,7 @@
             "DOM.Iterable",
             "DOM"
         ],
+        "typeRoots": ["code"],
         "target": "ES2020",
         "alwaysStrict": true,
         "removeComments": true

@@ -1,4 +1,4 @@
-import { noise } from "./types";
+import * as noise from "./perlin.js";
 import { names, ItemID, generation_consts, consts, recipes, mouse, keysPressed, settings, Game, ctx, ShouldNotBePossibleError, InvalidStateError, textures } from "./vars.js";
 import { assert, tileToChunk, trigger, triggerType, pseudoRandom, constrain, rect, rectMode, _alert, pixelToTile } from "./funcs.js";
 export class Level {
