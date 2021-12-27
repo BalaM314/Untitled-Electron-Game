@@ -2,8 +2,10 @@
 	Main classes.
 */
 
+//import "vars.js";
 
-class Level {
+
+/*export */class Level {
 	items: Item[];
 	resources: {
 		[index: string]: number
@@ -13,7 +15,7 @@ class Level {
 	format: string;
 	constructor(data:number|any){
 		this.storage = new Map<string, Chunk>();
-		this.format = Globals.VERSION;
+		this.format = consts.VERSION;
 		this.items = [];
 		this.resources = {};
 		if(typeof data != "object"){
@@ -50,10 +52,10 @@ class Level {
 		}
 	}
 	getChunk(tileX:number, tileY:number, dontGenerateChunk?:boolean):Chunk {
-		if(this.storage.get(`${Math.floor(tileX / Globals.CHUNK_SIZE)},${Math.floor(tileY / Globals.CHUNK_SIZE)}`)){
-			return this.storage.get(`${Math.floor(tileX / Globals.CHUNK_SIZE)},${Math.floor(tileY / Globals.CHUNK_SIZE)}`);
+		if(this.storage.get(`${Math.floor(tileX / consts.CHUNK_SIZE)},${Math.floor(tileY / consts.CHUNK_SIZE)}`)){
+			return this.storage.get(`${Math.floor(tileX / consts.CHUNK_SIZE)},${Math.floor(tileY / consts.CHUNK_SIZE)}`);
 		} else if(!dontGenerateChunk){
-			return this.generateChunk(Math.floor(tileX / Globals.CHUNK_SIZE),Math.floor(tileY / Globals.CHUNK_SIZE));
+			return this.generateChunk(Math.floor(tileX / consts.CHUNK_SIZE),Math.floor(tileY / consts.CHUNK_SIZE));
 		} else {
 			return null;
 		}
@@ -70,9 +72,9 @@ class Level {
 	}
 	tileAtByPixel(pixelX:number, pixelY:number):Tile{
 		return this.getChunk(
-			Math.floor(pixelX/Globals.TILE_SIZE),
-			Math.floor(pixelY/Globals.TILE_SIZE)
-		).tileAt(tileToChunk(pixelX/Globals.TILE_SIZE), tileToChunk(pixelY/Globals.TILE_SIZE));
+			Math.floor(pixelX/consts.TILE_SIZE),
+			Math.floor(pixelY/consts.TILE_SIZE)
+		).tileAt(tileToChunk(pixelX/consts.TILE_SIZE), tileToChunk(pixelY/consts.TILE_SIZE));
 	}
 	tileAtByTile(tileX:number, tileY:number):Tile{
 		return this.getChunk(
@@ -89,8 +91,8 @@ class Level {
 		return false;
 	}
 	generateNecessaryChunks(){
-		let xOffset = - Math.floor((Game.scroll.x * Globals.DISPLAY_SCALE) / (Globals.DISPLAY_TILE_SIZE * Globals.CHUNK_SIZE));
-		let yOffset = - Math.floor((Game.scroll.y * Globals.DISPLAY_SCALE) / (Globals.DISPLAY_TILE_SIZE * Globals.CHUNK_SIZE));
+		let xOffset = - Math.floor((Game.scroll.x * consts.DISPLAY_SCALE) / (consts.DISPLAY_TILE_SIZE * consts.CHUNK_SIZE));
+		let yOffset = - Math.floor((Game.scroll.y * consts.DISPLAY_SCALE) / (consts.DISPLAY_TILE_SIZE * consts.CHUNK_SIZE));
 		this.generateChunk(xOffset - 1, yOffset - 1);
 		this.generateChunk(xOffset, yOffset - 1);
 		this.generateChunk(xOffset + 1, yOffset - 1);
@@ -110,9 +112,9 @@ class Level {
 	}
 	buildingIDAtPixel(pixelX:number, pixelY:number):BuildingID {
 		return this.getChunk(
-			Math.floor(pixelX/Globals.TILE_SIZE),
-			Math.floor(pixelY/Globals.TILE_SIZE)
-		).buildingAt(tileToChunk(pixelX/Globals.TILE_SIZE), tileToChunk(pixelY/Globals.TILE_SIZE))?.id ?? 0xFFFF;
+			Math.floor(pixelX/consts.TILE_SIZE),
+			Math.floor(pixelY/consts.TILE_SIZE)
+		).buildingAt(tileToChunk(pixelX/consts.TILE_SIZE), tileToChunk(pixelY/consts.TILE_SIZE))?.id ?? 0xFFFF;
 	}
 	buildingIDAtTile(tileX:number, tileY:number):BuildingID {
 		return this.getChunk(
@@ -128,9 +130,9 @@ class Level {
 	}
 	buildingAtPixel(pixelX:number, pixelY:number):Building {
 		return this.getChunk(
-			Math.floor(pixelX/Globals.TILE_SIZE),
-			Math.floor(pixelY/Globals.TILE_SIZE)
-		).buildingAt(tileToChunk(pixelX/Globals.TILE_SIZE), tileToChunk(pixelY/Globals.TILE_SIZE));
+			Math.floor(pixelX/consts.TILE_SIZE),
+			Math.floor(pixelY/consts.TILE_SIZE)
+		).buildingAt(tileToChunk(pixelX/consts.TILE_SIZE), tileToChunk(pixelY/consts.TILE_SIZE));
 	}
 	extractorAtTile(tileX:number, tileY:number):Extractor {
 		return this.getChunk(
@@ -327,8 +329,8 @@ class Level {
 	}
 	displayTooltip(mousex:number, mousey:number, currentframe){
 		if(!currentframe.tooltip){return;}
-		let x = (mousex - (Game.scroll.x * Globals.DISPLAY_SCALE))/Globals.DISPLAY_SCALE;
-		let y = (mousey - (Game.scroll.y * Globals.DISPLAY_SCALE))/Globals.DISPLAY_SCALE;
+		let x = (mousex - (Game.scroll.x * consts.DISPLAY_SCALE))/consts.DISPLAY_SCALE;
+		let y = (mousey - (Game.scroll.y * consts.DISPLAY_SCALE))/consts.DISPLAY_SCALE;
 		ctx4.font = "16px monospace";
 		for(let item of this.items){
 			if((Math.abs(item.x - x) < 16) && Math.abs(item.y - y) < 16){
@@ -390,7 +392,7 @@ class Level {
 
 
 
-class Chunk {
+/*export */class Chunk {
 	layers: [
 		Tile[][],
 		Building[][],
@@ -418,25 +420,25 @@ class Chunk {
 		];
 
 		this.layers[0] = [];
-		for(let x = 0; x < Globals.CHUNK_SIZE; x ++){
+		for(let x = 0; x < consts.CHUNK_SIZE; x ++){
 			this.layers[0][x] = [];
-			for(let z = 0; z < Globals.CHUNK_SIZE; z ++){
+			for(let z = 0; z < consts.CHUNK_SIZE; z ++){
 				this.layers[0][x].push(0xFF);
 			}
 		}
 
 		this.layers[1] = [];
-		for(let x = 0; x < Globals.CHUNK_SIZE; x ++){
+		for(let x = 0; x < consts.CHUNK_SIZE; x ++){
 			this.layers[1][x] = [];
-			for(let z = 0; z < Globals.CHUNK_SIZE; z ++){
+			for(let z = 0; z < consts.CHUNK_SIZE; z ++){
 				this.layers[1][x].push(null);
 			}
 		}
 
 		this.layers[2] = [];
-		for(let x = 0; x < Globals.CHUNK_SIZE; x ++){
+		for(let x = 0; x < consts.CHUNK_SIZE; x ++){
 			this.layers[2][x] = [];
-			for(let z = 0; z < Globals.CHUNK_SIZE; z ++){
+			for(let z = 0; z < consts.CHUNK_SIZE; z ++){
 				this.layers[2][x].push(null);
 			}
 		}
@@ -449,7 +451,7 @@ class Chunk {
 					if(!buildingData) continue;
 					let tempBuilding:Building;
 					try {
-						tempBuilding = new BuildingType[buildingData.id % 0x100](parseInt(x) + (Globals.CHUNK_SIZE * this.x), parseInt(y) + (Globals.CHUNK_SIZE * this.y), buildingData.id, this.parent);
+						tempBuilding = new BuildingType[buildingData.id % 0x100](parseInt(x) + (consts.CHUNK_SIZE * this.x), parseInt(y) + (consts.CHUNK_SIZE * this.y), buildingData.id, this.parent);
 					} catch(err){
 						console.warn(`Failed to import building id ${buildingData.id} at position ${x},${y} in chunk ${this.x},${this.y}`);
 						continue;
@@ -475,7 +477,7 @@ class Chunk {
 				for(let x in data[1][y]){
 					let buildingData = data[1][y][x];
 					if(!buildingData) continue;
-					let tempBuilding = new Extractor(parseInt(x) + (Globals.CHUNK_SIZE * this.x), parseInt(y) + (Globals.CHUNK_SIZE * this.y), buildingData.id, this.parent as Level);
+					let tempBuilding = new Extractor(parseInt(x) + (consts.CHUNK_SIZE * this.x), parseInt(y) + (consts.CHUNK_SIZE * this.y), buildingData.id, this.parent as Level);
 					if(buildingData.item){
 						tempBuilding.item = new Item(buildingData.item.x, buildingData.item.y, buildingData.item.id, this.parent as Level);
 						tempBuilding.item.grabbedBy = tempBuilding;
@@ -592,8 +594,8 @@ class Chunk {
 					//Choose the tile to be placed:
 					let noiseHeight = 
 					Math.abs(noise.perlin2(
-						((this.x * Globals.CHUNK_SIZE) + +tile + this.parent.seed) / generation_consts.perlin_scale,
-						((this.y * Globals.CHUNK_SIZE) + +row + (this.parent.seed + generation_consts.y_offset)) / generation_consts.perlin_scale
+						((this.x * consts.CHUNK_SIZE) + +tile + this.parent.seed) / generation_consts.perlin_scale,
+						((this.y * consts.CHUNK_SIZE) + +row + (this.parent.seed + generation_consts.y_offset)) / generation_consts.perlin_scale
 					));
 					//This formula just finds the perlin noise value at a tile, but tweaked so it's different per seed and not mirrored diagonally.
 
@@ -639,10 +641,10 @@ class Chunk {
 	}
 	display(currentframe){
 		if(
-			(Game.scroll.x * Globals.DISPLAY_SCALE) + this.x * Globals.CHUNK_SIZE * Globals.DISPLAY_TILE_SIZE > window.innerWidth + 1 ||
-			(Game.scroll.x * Globals.DISPLAY_SCALE) + this.x * Globals.CHUNK_SIZE * Globals.DISPLAY_TILE_SIZE < -1 - Globals.CHUNK_SIZE * Globals.DISPLAY_TILE_SIZE ||
-			(Game.scroll.y * Globals.DISPLAY_SCALE) + this.y * Globals.CHUNK_SIZE * Globals.DISPLAY_TILE_SIZE > window.innerHeight + 1 ||
-			(Game.scroll.y * Globals.DISPLAY_SCALE) + this.y * Globals.CHUNK_SIZE * Globals.DISPLAY_TILE_SIZE < -1 - Globals.CHUNK_SIZE * Globals.DISPLAY_TILE_SIZE
+			(Game.scroll.x * consts.DISPLAY_SCALE) + this.x * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE > window.innerWidth + 1 ||
+			(Game.scroll.x * consts.DISPLAY_SCALE) + this.x * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE < -1 - consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE ||
+			(Game.scroll.y * consts.DISPLAY_SCALE) + this.y * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE > window.innerHeight + 1 ||
+			(Game.scroll.y * consts.DISPLAY_SCALE) + this.y * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE < -1 - consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE
 		){return;}//if offscreen return immediately
 		currentframe.cps ++;
 		ctx.strokeStyle = "#000000";
@@ -672,137 +674,137 @@ class Chunk {
 		}
 		if(currentframe.debug){
 			ctx4.strokeStyle = "#0000FF";
-			ctx4.strokeRect(this.x * Globals.CHUNK_SIZE * Globals.DISPLAY_TILE_SIZE + (Game.scroll.x * Globals.DISPLAY_SCALE), this.y  * Globals.CHUNK_SIZE * Globals.DISPLAY_TILE_SIZE + (Game.scroll.y * Globals.DISPLAY_SCALE), Globals.CHUNK_SIZE * Globals.DISPLAY_TILE_SIZE, Globals.CHUNK_SIZE * Globals.DISPLAY_TILE_SIZE);
+			ctx4.strokeRect(this.x * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE + (Game.scroll.x * consts.DISPLAY_SCALE), this.y  * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE + (Game.scroll.y * consts.DISPLAY_SCALE), consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE, consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE);
 		}
 	}
 	displayTile(x:number, y:number, currentframe){
 		currentframe.tps ++;
-		let pixelX = ((this.x * Globals.CHUNK_SIZE) + x) * Globals.DISPLAY_TILE_SIZE + (Game.scroll.x * Globals.DISPLAY_SCALE);
-		let pixelY = ((this.y * Globals.CHUNK_SIZE) + y) * Globals.DISPLAY_TILE_SIZE + (Game.scroll.y * Globals.DISPLAY_SCALE);
+		let pixelX = ((this.x * consts.CHUNK_SIZE) + x) * consts.DISPLAY_TILE_SIZE + (Game.scroll.x * consts.DISPLAY_SCALE);
+		let pixelY = ((this.y * consts.CHUNK_SIZE) + y) * consts.DISPLAY_TILE_SIZE + (Game.scroll.y * consts.DISPLAY_SCALE);
 		if(settings.graphics_mode || (this.tileAt(x,y) != 0x00)){
 			if(textures.get("t" + this.tileAt(x,y).toString())){
-				ctx.drawImage(textures.get("t" + this.tileAt(x,y).toString()), pixelX, pixelY, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE);
+				ctx.drawImage(textures.get("t" + this.tileAt(x,y).toString()), pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
 			} else {
 				ctx.fillStyle = "#FF00FF";
-				rect(pixelX, pixelY, Globals.DISPLAY_TILE_SIZE / 2, Globals.DISPLAY_TILE_SIZE / 2);
-				rect(pixelX + Globals.DISPLAY_TILE_SIZE / 2, pixelY + Globals.DISPLAY_TILE_SIZE / 2, Globals.DISPLAY_TILE_SIZE / 2, Globals.DISPLAY_TILE_SIZE / 2);
+				rect(pixelX, pixelY, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2);
+				rect(pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY + consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2);
 				ctx.fillStyle = "#000000";
-				rect(pixelX + Globals.DISPLAY_TILE_SIZE / 2, pixelY, Globals.DISPLAY_TILE_SIZE / 2, Globals.DISPLAY_TILE_SIZE / 2);
-				rect(pixelX, pixelY + Globals.DISPLAY_TILE_SIZE / 2, Globals.DISPLAY_TILE_SIZE / 2, Globals.DISPLAY_TILE_SIZE / 2);
+				rect(pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2);
+				rect(pixelX, pixelY + consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2);
 				ctx.font = "15px sans-serif";
 				ctx.fillStyle = "#00FF00";
-				ctx.fillText(this.tileAt(x, y).toString(), pixelX + Globals.DISPLAY_TILE_SIZE / 2, pixelY + Globals.DISPLAY_TILE_SIZE / 2);
+				ctx.fillText(this.tileAt(x, y).toString(), pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY + consts.DISPLAY_TILE_SIZE / 2);
 			}
 		} else {
 			ctx.fillStyle = "#00CC33";
-			rect(pixelX, pixelY, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE);
+			rect(pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
 		}
-		if(currentframe.debug) ctx.strokeRect(pixelX, pixelY, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE);
+		if(currentframe.debug) ctx.strokeRect(pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
 	}
 	displayGhostBuilding(x:number, y:number, buildingID:BuildingID, isError:boolean){
 		if(buildingID == 0xFFFF){return;}
-		let pixelX = ((this.x * Globals.CHUNK_SIZE) + x) * Globals.DISPLAY_TILE_SIZE + (Game.scroll.x * Globals.DISPLAY_SCALE);
-		let pixelY = ((this.y * Globals.CHUNK_SIZE) + y) * Globals.DISPLAY_TILE_SIZE + (Game.scroll.y * Globals.DISPLAY_SCALE);
+		let pixelX = ((this.x * consts.CHUNK_SIZE) + x) * consts.DISPLAY_TILE_SIZE + (Game.scroll.x * consts.DISPLAY_SCALE);
+		let pixelY = ((this.y * consts.CHUNK_SIZE) + y) * consts.DISPLAY_TILE_SIZE + (Game.scroll.y * consts.DISPLAY_SCALE);
 		let _ctx = ctx1;
 		if(isError){
 			_ctx.globalAlpha = 0.9;
-			_ctx.drawImage(textures.get("invalidunderlay"), pixelX, pixelY, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE);
+			_ctx.drawImage(textures.get("invalidunderlay"), pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
 			_ctx.globalAlpha = buildingID % 0x100 == 0x01 ? 0.3 : 0.7;
 		} else {
 			_ctx.globalAlpha = 0.9;
 			if((buildingID & 0x00F0) == 0x10){
-				_ctx.drawImage(textures.get("ghostunderlay"), pixelX, pixelY, Globals.DISPLAY_TILE_SIZE * 2, Globals.DISPLAY_TILE_SIZE * 2);
+				_ctx.drawImage(textures.get("ghostunderlay"), pixelX, pixelY, consts.DISPLAY_TILE_SIZE * 2, consts.DISPLAY_TILE_SIZE * 2);
 			} else {
-				_ctx.drawImage(textures.get("ghostunderlay"), pixelX, pixelY, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE);
+				_ctx.drawImage(textures.get("ghostunderlay"), pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
 			}
 			_ctx.globalAlpha = buildingID % 0x100 == 0x01 ? 0.3 : 0.7;
 		}
 		if(textures.get(buildingID.toString())){
 			switch(buildingID){
 				case 0x0005:
-					_ctx.drawImage(textures.get(buildingID.toString()), pixelX, pixelY, Globals.DISPLAY_TILE_SIZE * 2, Globals.DISPLAY_TILE_SIZE); break;
+					_ctx.drawImage(textures.get(buildingID.toString()), pixelX, pixelY, consts.DISPLAY_TILE_SIZE * 2, consts.DISPLAY_TILE_SIZE); break;
 				case 0x0105:
-					_ctx.drawImage(textures.get(buildingID.toString()), pixelX, pixelY, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE * 2); break;
+					_ctx.drawImage(textures.get(buildingID.toString()), pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE * 2); break;
 				case 0x0205:
-					_ctx.drawImage(textures.get(buildingID.toString()), pixelX - Globals.DISPLAY_TILE_SIZE, pixelY, Globals.DISPLAY_TILE_SIZE * 2, Globals.DISPLAY_TILE_SIZE); break;
+					_ctx.drawImage(textures.get(buildingID.toString()), pixelX - consts.DISPLAY_TILE_SIZE, pixelY, consts.DISPLAY_TILE_SIZE * 2, consts.DISPLAY_TILE_SIZE); break;
 				case 0x0305:
-					_ctx.drawImage(textures.get(buildingID.toString()), pixelX, pixelY - Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE * 2); break;
+					_ctx.drawImage(textures.get(buildingID.toString()), pixelX, pixelY - consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE * 2); break;
 				case 0x0405:
-					_ctx.drawImage(textures.get(buildingID.toString()), pixelX, pixelY, Globals.DISPLAY_TILE_SIZE * 3, Globals.DISPLAY_TILE_SIZE); break;
+					_ctx.drawImage(textures.get(buildingID.toString()), pixelX, pixelY, consts.DISPLAY_TILE_SIZE * 3, consts.DISPLAY_TILE_SIZE); break;
 				case 0x0505:
-					_ctx.drawImage(textures.get(buildingID.toString()), pixelX, pixelY, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE * 3); break;
+					_ctx.drawImage(textures.get(buildingID.toString()), pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE * 3); break;
 				case 0x0605:
-					_ctx.drawImage(textures.get(buildingID.toString()), pixelX - Globals.DISPLAY_TILE_SIZE * 2, pixelY, Globals.DISPLAY_TILE_SIZE * 3, Globals.DISPLAY_TILE_SIZE); break;
+					_ctx.drawImage(textures.get(buildingID.toString()), pixelX - consts.DISPLAY_TILE_SIZE * 2, pixelY, consts.DISPLAY_TILE_SIZE * 3, consts.DISPLAY_TILE_SIZE); break;
 				case 0x0705:
-					_ctx.drawImage(textures.get(buildingID.toString()), pixelX, pixelY - Globals.DISPLAY_TILE_SIZE * 2, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE * 3); break;
+					_ctx.drawImage(textures.get(buildingID.toString()), pixelX, pixelY - consts.DISPLAY_TILE_SIZE * 2, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE * 3); break;
 				case 0x0805:
-					_ctx.drawImage(textures.get(buildingID.toString()), pixelX, pixelY, Globals.DISPLAY_TILE_SIZE * 4, Globals.DISPLAY_TILE_SIZE); break;
+					_ctx.drawImage(textures.get(buildingID.toString()), pixelX, pixelY, consts.DISPLAY_TILE_SIZE * 4, consts.DISPLAY_TILE_SIZE); break;
 				case 0x0905:
-					_ctx.drawImage(textures.get(buildingID.toString()), pixelX, pixelY, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE * 4); break;
+					_ctx.drawImage(textures.get(buildingID.toString()), pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE * 4); break;
 				case 0x0A05:
-					_ctx.drawImage(textures.get(buildingID.toString()), pixelX - Globals.DISPLAY_TILE_SIZE * 3, pixelY, Globals.DISPLAY_TILE_SIZE * 4, Globals.DISPLAY_TILE_SIZE); break;
+					_ctx.drawImage(textures.get(buildingID.toString()), pixelX - consts.DISPLAY_TILE_SIZE * 3, pixelY, consts.DISPLAY_TILE_SIZE * 4, consts.DISPLAY_TILE_SIZE); break;
 				case 0x0B05:
-					_ctx.drawImage(textures.get(buildingID.toString()), pixelX, pixelY - Globals.DISPLAY_TILE_SIZE * 3, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE * 4); break;
+					_ctx.drawImage(textures.get(buildingID.toString()), pixelX, pixelY - consts.DISPLAY_TILE_SIZE * 3, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE * 4); break;
 				case 0x0011:
-					_ctx.drawImage(textures.get(buildingID.toString()), pixelX, pixelY, Globals.DISPLAY_TILE_SIZE * 2, Globals.DISPLAY_TILE_SIZE * 2); break;
+					_ctx.drawImage(textures.get(buildingID.toString()), pixelX, pixelY, consts.DISPLAY_TILE_SIZE * 2, consts.DISPLAY_TILE_SIZE * 2); break;
 				default:
-					_ctx.drawImage(textures.get(buildingID.toString()), pixelX, pixelY, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE); break;
+					_ctx.drawImage(textures.get(buildingID.toString()), pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE); break;
 			}
 			_ctx.globalAlpha = 1.0;
 		} else {
 			_ctx.fillStyle = "#FF00FF";
-			rect(pixelX, pixelY, Globals.DISPLAY_TILE_SIZE / 2, Globals.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
-			rect(pixelX + Globals.DISPLAY_TILE_SIZE / 2, pixelY + Globals.DISPLAY_TILE_SIZE / 2, Globals.DISPLAY_TILE_SIZE / 2, Globals.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
+			rect(pixelX, pixelY, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
+			rect(pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY + consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
 			_ctx.fillStyle = "#000000";
-			rect(pixelX + Globals.DISPLAY_TILE_SIZE / 2, pixelY, Globals.DISPLAY_TILE_SIZE / 2, Globals.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
-			rect(pixelX, pixelY + Globals.DISPLAY_TILE_SIZE / 2, Globals.DISPLAY_TILE_SIZE / 2, Globals.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
+			rect(pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
+			rect(pixelX, pixelY + consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
 			_ctx.font = "15px sans-serif";
 			_ctx.fillStyle = "#00FF00";
-			_ctx.fillText(buildingID.toString(), pixelX + Globals.DISPLAY_TILE_SIZE / 2, pixelY + Globals.DISPLAY_TILE_SIZE / 2);
+			_ctx.fillText(buildingID.toString(), pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY + consts.DISPLAY_TILE_SIZE / 2);
 		}
 	}
 	displayL3(x:number, y:number, buildingID:BuildingID, isGhost?:number){
 		if(buildingID == 0xFFFF){return;}
-		let pixelX = ((this.x * Globals.CHUNK_SIZE) + x) * Globals.DISPLAY_TILE_SIZE + (Game.scroll.x * Globals.DISPLAY_SCALE);
-		let pixelY = ((this.y * Globals.CHUNK_SIZE) + y) * Globals.DISPLAY_TILE_SIZE + (Game.scroll.y * Globals.DISPLAY_SCALE);
+		let pixelX = ((this.x * consts.CHUNK_SIZE) + x) * consts.DISPLAY_TILE_SIZE + (Game.scroll.x * consts.DISPLAY_SCALE);
+		let pixelY = ((this.y * consts.CHUNK_SIZE) + y) * consts.DISPLAY_TILE_SIZE + (Game.scroll.y * consts.DISPLAY_SCALE);
 		let _ctx = ctx25;
 		if(textures.get(buildingID.toString())){
 			switch(buildingID){
 				case 0x0005:
-					return _ctx.drawImage(textures.get(buildingID.toString()), pixelX, pixelY, Globals.DISPLAY_TILE_SIZE * 2, Globals.DISPLAY_TILE_SIZE);
+					return _ctx.drawImage(textures.get(buildingID.toString()), pixelX, pixelY, consts.DISPLAY_TILE_SIZE * 2, consts.DISPLAY_TILE_SIZE);
 				case 0x0105:
-					return _ctx.drawImage(textures.get(buildingID.toString()), pixelX, pixelY, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE * 2);
+					return _ctx.drawImage(textures.get(buildingID.toString()), pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE * 2);
 				case 0x0205:
-					return _ctx.drawImage(textures.get(buildingID.toString()), pixelX - Globals.DISPLAY_TILE_SIZE, pixelY, Globals.DISPLAY_TILE_SIZE * 2, Globals.DISPLAY_TILE_SIZE);
+					return _ctx.drawImage(textures.get(buildingID.toString()), pixelX - consts.DISPLAY_TILE_SIZE, pixelY, consts.DISPLAY_TILE_SIZE * 2, consts.DISPLAY_TILE_SIZE);
 				case 0x0305:
-					return _ctx.drawImage(textures.get(buildingID.toString()), pixelX, pixelY - Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE * 2);
+					return _ctx.drawImage(textures.get(buildingID.toString()), pixelX, pixelY - consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE * 2);
 				case 0x0405:
-					return _ctx.drawImage(textures.get(buildingID.toString()), pixelX, pixelY, Globals.DISPLAY_TILE_SIZE * 3, Globals.DISPLAY_TILE_SIZE);
+					return _ctx.drawImage(textures.get(buildingID.toString()), pixelX, pixelY, consts.DISPLAY_TILE_SIZE * 3, consts.DISPLAY_TILE_SIZE);
 				case 0x0505:
-					return _ctx.drawImage(textures.get(buildingID.toString()), pixelX, pixelY, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE * 3);
+					return _ctx.drawImage(textures.get(buildingID.toString()), pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE * 3);
 				case 0x0605:
-					return _ctx.drawImage(textures.get(buildingID.toString()), pixelX - Globals.DISPLAY_TILE_SIZE * 2, pixelY, Globals.DISPLAY_TILE_SIZE * 3, Globals.DISPLAY_TILE_SIZE);
+					return _ctx.drawImage(textures.get(buildingID.toString()), pixelX - consts.DISPLAY_TILE_SIZE * 2, pixelY, consts.DISPLAY_TILE_SIZE * 3, consts.DISPLAY_TILE_SIZE);
 				case 0x0705:
-					return _ctx.drawImage(textures.get(buildingID.toString()), pixelX, pixelY - Globals.DISPLAY_TILE_SIZE * 2, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE * 3);
+					return _ctx.drawImage(textures.get(buildingID.toString()), pixelX, pixelY - consts.DISPLAY_TILE_SIZE * 2, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE * 3);
 				case 0x0805:
-					return _ctx.drawImage(textures.get(buildingID.toString()), pixelX, pixelY, Globals.DISPLAY_TILE_SIZE * 4, Globals.DISPLAY_TILE_SIZE);
+					return _ctx.drawImage(textures.get(buildingID.toString()), pixelX, pixelY, consts.DISPLAY_TILE_SIZE * 4, consts.DISPLAY_TILE_SIZE);
 				case 0x0905:
-					return _ctx.drawImage(textures.get(buildingID.toString()), pixelX, pixelY, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE * 4);
+					return _ctx.drawImage(textures.get(buildingID.toString()), pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE * 4);
 				case 0x0A05:
-					return _ctx.drawImage(textures.get(buildingID.toString()), pixelX - Globals.DISPLAY_TILE_SIZE * 3, pixelY, Globals.DISPLAY_TILE_SIZE * 4, Globals.DISPLAY_TILE_SIZE);
+					return _ctx.drawImage(textures.get(buildingID.toString()), pixelX - consts.DISPLAY_TILE_SIZE * 3, pixelY, consts.DISPLAY_TILE_SIZE * 4, consts.DISPLAY_TILE_SIZE);
 				case 0x0B05:
-					return _ctx.drawImage(textures.get(buildingID.toString()), pixelX, pixelY - Globals.DISPLAY_TILE_SIZE * 3, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE * 4);
+					return _ctx.drawImage(textures.get(buildingID.toString()), pixelX, pixelY - consts.DISPLAY_TILE_SIZE * 3, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE * 4);
 			}
 		} else {
 			_ctx.fillStyle = "#FF00FF";
-			rect(pixelX, pixelY, Globals.DISPLAY_TILE_SIZE / 2, Globals.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
-			rect(pixelX + Globals.DISPLAY_TILE_SIZE / 2, pixelY + Globals.DISPLAY_TILE_SIZE / 2, Globals.DISPLAY_TILE_SIZE / 2, Globals.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
+			rect(pixelX, pixelY, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
+			rect(pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY + consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
 			_ctx.fillStyle = "#000000";
-			rect(pixelX + Globals.DISPLAY_TILE_SIZE / 2, pixelY, Globals.DISPLAY_TILE_SIZE / 2, Globals.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
-			rect(pixelX, pixelY + Globals.DISPLAY_TILE_SIZE / 2, Globals.DISPLAY_TILE_SIZE / 2, Globals.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
+			rect(pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
+			rect(pixelX, pixelY + consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
 			_ctx.font = "15px sans-serif";
 			_ctx.fillStyle = "#00FF00";
-			_ctx.fillText(this.buildingAt(x, y).toString(), pixelX + Globals.DISPLAY_TILE_SIZE / 2, pixelY + Globals.DISPLAY_TILE_SIZE / 2);
+			_ctx.fillText(this.buildingAt(x, y).toString(), pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY + consts.DISPLAY_TILE_SIZE / 2);
 		}
 	}
 	export(){
@@ -842,7 +844,7 @@ class Chunk {
 	}
 }
 
-class Item {
+/*export */class Item {
 	id: ItemID;
 	x: number;
 	y: number;
@@ -864,7 +866,7 @@ class Item {
 		}
 	}
 	update(currentframe){
-		if(Game.tutorial.conveyor.beltchain && Game.persistent.tutorialenabled && ((Math.abs(this.startX - this.x) + 1 > Globals.TILE_SIZE * 2) || (Math.abs(this.startY - this.y) + 1 > Globals.TILE_SIZE * 2))){
+		if(Game.tutorial.conveyor.beltchain && Game.persistent.tutorialenabled && ((Math.abs(this.startX - this.x) + 1 > consts.TILE_SIZE * 2) || (Math.abs(this.startY - this.y) + 1 > consts.TILE_SIZE * 2))){
 			_alert("Nice!\nConveyor belts are also the way to put items in machines.\nSpeaking of which, let's try automating coal: Place a Miner(2 key).");
 			Game.tutorial.conveyor.beltchain = false;
 		}
@@ -874,22 +876,22 @@ class Item {
 	}
 	display(currentframe){
 		if(
-			Globals.DISPLAY_SCALE * (this.x + Game.scroll.x - 8) < 0 ||
-			Globals.DISPLAY_SCALE * (this.x + Game.scroll.x - 8) > window.innerWidth ||
-			Globals.DISPLAY_SCALE * (this.y + Game.scroll.y - 8) < 0 ||
-			Globals.DISPLAY_SCALE * (this.y + Game.scroll.y - 8) > window.innerHeight
+			consts.DISPLAY_SCALE * (this.x + Game.scroll.x - 8) < 0 ||
+			consts.DISPLAY_SCALE * (this.x + Game.scroll.x - 8) > window.innerWidth ||
+			consts.DISPLAY_SCALE * (this.y + Game.scroll.y - 8) < 0 ||
+			consts.DISPLAY_SCALE * (this.y + Game.scroll.y - 8) > window.innerHeight
 		){return;}//if offscreen return immediately
 		currentframe.ips ++;
-		ctx3.drawImage(textures.get("item_" + this.id), this.x * Globals.DISPLAY_SCALE + (Game.scroll.x * Globals.DISPLAY_SCALE) - 8*Globals.DISPLAY_SCALE, this.y * Globals.DISPLAY_SCALE + (Game.scroll.y * Globals.DISPLAY_SCALE) - 8*Globals.DISPLAY_SCALE, 16 * Globals.DISPLAY_SCALE, 16 * Globals.DISPLAY_SCALE);
+		ctx3.drawImage(textures.get("item_" + this.id), this.x * consts.DISPLAY_SCALE + (Game.scroll.x * consts.DISPLAY_SCALE) - 8*consts.DISPLAY_SCALE, this.y * consts.DISPLAY_SCALE + (Game.scroll.y * consts.DISPLAY_SCALE) - 8*consts.DISPLAY_SCALE, 16 * consts.DISPLAY_SCALE, 16 * consts.DISPLAY_SCALE);
 		if(keysPressed.contains("Shift")){
-			let x = (mouseX - (Game.scroll.x * Globals.DISPLAY_SCALE))/Globals.DISPLAY_SCALE;
-			let y = (mouseY - (Game.scroll.y * Globals.DISPLAY_SCALE))/Globals.DISPLAY_SCALE;
+			let x = (mouseX - (Game.scroll.x * consts.DISPLAY_SCALE))/consts.DISPLAY_SCALE;
+			let y = (mouseY - (Game.scroll.y * consts.DISPLAY_SCALE))/consts.DISPLAY_SCALE;
 			//alert(this.x + " " + this.y + "  " + x + " " + y);
 			if(
-				x > this.x - (8 * Globals.DISPLAY_SCALE) &&
-				y > this.y - (8 * Globals.DISPLAY_SCALE) &&
-				x < this.x + (8 * Globals.DISPLAY_SCALE) &&
-				y < this.y + (8 * Globals.DISPLAY_SCALE)
+				x > this.x - (8 * consts.DISPLAY_SCALE) &&
+				y > this.y - (8 * consts.DISPLAY_SCALE) &&
+				x < this.x + (8 * consts.DISPLAY_SCALE) &&
+				y < this.y + (8 * consts.DISPLAY_SCALE)
 			){
 				ctx4.font = "16px monospace";
 				ctx4.fillStyle = "#0033CC";
@@ -915,7 +917,7 @@ class Item {
 	}
 }
 
-class Building {
+/*export */class Building {
 	x: number;
 	y: number;
 	id: BuildingID;
@@ -948,57 +950,57 @@ class Building {
 		
 	}
 	display(currentFrame:currentFrame){
-		let pixelX = this.x * Globals.DISPLAY_TILE_SIZE + Game.scroll.x * Globals.DISPLAY_SCALE;
-		let pixelY = this.y * Globals.DISPLAY_TILE_SIZE + Game.scroll.y * Globals.DISPLAY_SCALE;
+		let pixelX = this.x * consts.DISPLAY_TILE_SIZE + Game.scroll.x * consts.DISPLAY_SCALE;
+		let pixelY = this.y * consts.DISPLAY_TILE_SIZE + Game.scroll.y * consts.DISPLAY_SCALE;
 		let _ctx = ctx2;
 		let texture = textures.get(this.id.toString());
 		if(texture){
 			if(this.id % 0x100 == 5){
 				switch(this.id){
 					case 0x0005:
-						_ctx.drawImage(texture, pixelX, pixelY, Globals.DISPLAY_TILE_SIZE * 2, Globals.DISPLAY_TILE_SIZE); break;
+						_ctx.drawImage(texture, pixelX, pixelY, consts.DISPLAY_TILE_SIZE * 2, consts.DISPLAY_TILE_SIZE); break;
 					case 0x0105:
-						_ctx.drawImage(texture, pixelX, pixelY, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE * 2); break;
+						_ctx.drawImage(texture, pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE * 2); break;
 					case 0x0205:
-						_ctx.drawImage(texture, pixelX - Globals.DISPLAY_TILE_SIZE, pixelY, Globals.DISPLAY_TILE_SIZE * 2, Globals.DISPLAY_TILE_SIZE); break;
+						_ctx.drawImage(texture, pixelX - consts.DISPLAY_TILE_SIZE, pixelY, consts.DISPLAY_TILE_SIZE * 2, consts.DISPLAY_TILE_SIZE); break;
 					case 0x0305:
-						_ctx.drawImage(texture, pixelX, pixelY - Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE * 2); break;
+						_ctx.drawImage(texture, pixelX, pixelY - consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE * 2); break;
 					case 0x0405:
-						_ctx.drawImage(texture, pixelX, pixelY, Globals.DISPLAY_TILE_SIZE * 3, Globals.DISPLAY_TILE_SIZE); break;
+						_ctx.drawImage(texture, pixelX, pixelY, consts.DISPLAY_TILE_SIZE * 3, consts.DISPLAY_TILE_SIZE); break;
 					case 0x0505:
-						_ctx.drawImage(texture, pixelX, pixelY, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE * 3); break;
+						_ctx.drawImage(texture, pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE * 3); break;
 					case 0x0605:
-						_ctx.drawImage(texture, pixelX - Globals.DISPLAY_TILE_SIZE * 2, pixelY, Globals.DISPLAY_TILE_SIZE * 3, Globals.DISPLAY_TILE_SIZE); break;
+						_ctx.drawImage(texture, pixelX - consts.DISPLAY_TILE_SIZE * 2, pixelY, consts.DISPLAY_TILE_SIZE * 3, consts.DISPLAY_TILE_SIZE); break;
 					case 0x0705:
-						_ctx.drawImage(texture, pixelX, pixelY - Globals.DISPLAY_TILE_SIZE * 2, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE * 3); break;
+						_ctx.drawImage(texture, pixelX, pixelY - consts.DISPLAY_TILE_SIZE * 2, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE * 3); break;
 					case 0x0805:
-						_ctx.drawImage(texture, pixelX, pixelY, Globals.DISPLAY_TILE_SIZE * 4, Globals.DISPLAY_TILE_SIZE); break;
+						_ctx.drawImage(texture, pixelX, pixelY, consts.DISPLAY_TILE_SIZE * 4, consts.DISPLAY_TILE_SIZE); break;
 					case 0x0905:
-						_ctx.drawImage(texture, pixelX, pixelY, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE * 4); break;
+						_ctx.drawImage(texture, pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE * 4); break;
 					case 0x0A05:
-						_ctx.drawImage(texture, pixelX - Globals.DISPLAY_TILE_SIZE * 3, pixelY, Globals.DISPLAY_TILE_SIZE * 4, Globals.DISPLAY_TILE_SIZE); break;
+						_ctx.drawImage(texture, pixelX - consts.DISPLAY_TILE_SIZE * 3, pixelY, consts.DISPLAY_TILE_SIZE * 4, consts.DISPLAY_TILE_SIZE); break;
 					case 0x0B05:
-						_ctx.drawImage(texture, pixelX, pixelY - Globals.DISPLAY_TILE_SIZE * 3, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE * 4); break;
+						_ctx.drawImage(texture, pixelX, pixelY - consts.DISPLAY_TILE_SIZE * 3, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE * 4); break;
 				}
 			} else if((this.id & 0x00F0) == 0x10){
 				//Multiblock
-				_ctx.drawImage(texture, pixelX, pixelY, Globals.DISPLAY_TILE_SIZE * 2, Globals.DISPLAY_TILE_SIZE * 2);
+				_ctx.drawImage(texture, pixelX, pixelY, consts.DISPLAY_TILE_SIZE * 2, consts.DISPLAY_TILE_SIZE * 2);
 			} else {
-				_ctx.drawImage(texture, pixelX, pixelY, Globals.DISPLAY_TILE_SIZE, Globals.DISPLAY_TILE_SIZE);
+				_ctx.drawImage(texture, pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
 				if((this.constructor as typeof Building).animated){
 					//do animations
 				}
 			}
 		} else {
 			_ctx.fillStyle = "#FF00FF";
-			rect(pixelX, pixelY, Globals.DISPLAY_TILE_SIZE / 2, Globals.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
-			rect(pixelX + Globals.DISPLAY_TILE_SIZE / 2, pixelY + Globals.DISPLAY_TILE_SIZE / 2, Globals.DISPLAY_TILE_SIZE / 2, Globals.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
+			rect(pixelX, pixelY, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
+			rect(pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY + consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
 			_ctx.fillStyle = "#000000";
-			rect(pixelX + Globals.DISPLAY_TILE_SIZE / 2, pixelY, Globals.DISPLAY_TILE_SIZE / 2, Globals.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
-			rect(pixelX, pixelY + Globals.DISPLAY_TILE_SIZE / 2, Globals.DISPLAY_TILE_SIZE / 2, Globals.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
+			rect(pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
+			rect(pixelX, pixelY + consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
 			_ctx.font = "15px sans-serif";
 			_ctx.fillStyle = "#00FF00";
-			_ctx.fillText(this.id.toString(), pixelX + Globals.DISPLAY_TILE_SIZE / 2, pixelY + Globals.DISPLAY_TILE_SIZE / 2);
+			_ctx.fillText(this.id.toString(), pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY + consts.DISPLAY_TILE_SIZE / 2);
 		}
 	}
 	hasItem():Item {
@@ -1025,28 +1027,28 @@ class Building {
 			this.level.buildingIDAtTile(this.x + 1, this.y) === 0x0B01) &&
 			(this.level.buildingAtTile(this.x + 1, this.y) as Conveyor).item == null
 		){
-			this.level.addItem(this.x * Globals.TILE_SIZE + Globals.TILE_SIZE * 1.1, this.y * Globals.TILE_SIZE + Globals.TILE_SIZE * 0.5, id);
+			this.level.addItem(this.x * consts.TILE_SIZE + consts.TILE_SIZE * 1.1, this.y * consts.TILE_SIZE + consts.TILE_SIZE * 0.5, id);
 		} else if(
 			(this.level.buildingIDAtTile(this.x, this.y + 1) === 0x0101 ||
 			this.level.buildingIDAtTile(this.x, this.y + 1) === 0x0501 ||
 			this.level.buildingIDAtTile(this.x, this.y + 1) === 0x0901) &&
 			(this.level.buildingAtTile(this.x, this.y + 1) as Conveyor).item == null
 		){
-			this.level.addItem(this.x * Globals.TILE_SIZE + Globals.TILE_SIZE * 0.5, this.y * Globals.TILE_SIZE + Globals.TILE_SIZE * 1.1, id);
+			this.level.addItem(this.x * consts.TILE_SIZE + consts.TILE_SIZE * 0.5, this.y * consts.TILE_SIZE + consts.TILE_SIZE * 1.1, id);
 		} else if(
 			(this.level.buildingIDAtTile(this.x - 1, this.y) === 0x0201 ||
 			this.level.buildingIDAtTile(this.x - 1, this.y) === 0x0601 ||
 			this.level.buildingIDAtTile(this.x - 1, this.y) === 0x0A01) &&
 			(this.level.buildingAtTile(this.x - 1, this.y) as Conveyor).item == null
 		){
-			this.level.addItem(this.x * Globals.TILE_SIZE - Globals.TILE_SIZE * 0.1, this.y * Globals.TILE_SIZE + Globals.TILE_SIZE * 0.5, id);
+			this.level.addItem(this.x * consts.TILE_SIZE - consts.TILE_SIZE * 0.1, this.y * consts.TILE_SIZE + consts.TILE_SIZE * 0.5, id);
 		} else if(
 			(this.level.buildingIDAtTile(this.x, this.y - 1) === 0x0301 ||
 			this.level.buildingIDAtTile(this.x, this.y - 1) === 0x0401 ||
 			this.level.buildingIDAtTile(this.x, this.y - 1) === 0x0801) &&
 			(this.level.buildingAtTile(this.x, this.y - 1) as Conveyor).item == null
 		){
-			this.level.addItem(this.x * Globals.TILE_SIZE + Globals.TILE_SIZE * 0.5, this.y * Globals.TILE_SIZE - Globals.TILE_SIZE * 0.1, id);
+			this.level.addItem(this.x * consts.TILE_SIZE + consts.TILE_SIZE * 0.5, this.y * consts.TILE_SIZE - consts.TILE_SIZE * 0.1, id);
 		} else {
 			return false;
 		}
@@ -1057,8 +1059,8 @@ class Building {
 		filter ??= () => {return true};
 		for(let item in this.level.items){
 			if(
-				(Math.abs(this.level.items[item].x - ((this.x + grabDistance) * Globals.TILE_SIZE)) <= Globals.TILE_SIZE * grabDistance) &&
-				(Math.abs(this.level.items[item].y - ((this.y + grabDistance) * Globals.TILE_SIZE)) <= Globals.TILE_SIZE * grabDistance) &&
+				(Math.abs(this.level.items[item].x - ((this.x + grabDistance) * consts.TILE_SIZE)) <= consts.TILE_SIZE * grabDistance) &&
+				(Math.abs(this.level.items[item].y - ((this.y + grabDistance) * consts.TILE_SIZE)) <= consts.TILE_SIZE * grabDistance) &&
 				filter(this.level.items[item])
 			){
 				this.level.items[item].grabbedBy = this;
@@ -1102,7 +1104,7 @@ class Building {
 
 
 
-abstract class BuildingWithRecipe extends Building {
+/*export */abstract class BuildingWithRecipe extends Building {
 	timer: number;
 	recipe: Recipe;
 	items: Item[];
@@ -1160,7 +1162,7 @@ abstract class BuildingWithRecipe extends Building {
 }
 
 
-class Miner extends Building {
+/*export */class Miner extends Building {
 	timer: number;
 	miningItem: ItemID;
 	constructor(tileX:number, tileY:number, id:BuildingID, level:Level){
@@ -1189,7 +1191,7 @@ class Miner extends Building {
 
 
 
-class TrashCan extends Building {
+/*export */class TrashCan extends Building {
 	update(){
 		this.grabItem(_ => {return true}, item => {item.deleted = true;}, true);
 	}
@@ -1199,7 +1201,7 @@ class TrashCan extends Building {
 }
 
 
-class Furnace extends BuildingWithRecipe {
+/*export */class Furnace extends BuildingWithRecipe {
 	static recipeType = recipes.base_smelting;
 	static animated = true;
 	static canBuildAt(tileX:number, tileY:number, level:Level){
@@ -1207,7 +1209,7 @@ class Furnace extends BuildingWithRecipe {
 	}
 }
 
-class Conveyor extends Building {
+/*export */class Conveyor extends Building {
 	constructor(tileX:number, tileY:number, id:BuildingID, level:Level){
 		super(tileX, tileY, id, level);
 		this.item = null;
@@ -1230,8 +1232,8 @@ class Conveyor extends Building {
 	}
 	update(currentframe, nograb?:boolean){
 		if(this.item instanceof Item){
-			if(Math.floor(this.item.x / Globals.TILE_SIZE) != this.x || Math.floor(this.item.y / Globals.TILE_SIZE) != this.y){
-				let building = this.level.buildingAtTile(Math.floor(this.item.x / Globals.TILE_SIZE), Math.floor(this.item.y / Globals.TILE_SIZE));
+			if(Math.floor(this.item.x / consts.TILE_SIZE) != this.x || Math.floor(this.item.y / consts.TILE_SIZE) != this.y){
+				let building = this.level.buildingAtTile(Math.floor(this.item.x / consts.TILE_SIZE), Math.floor(this.item.y / consts.TILE_SIZE));
 				if(!building) return;
 				if(building.acceptItem(this.item)){
 					this.item = null;
@@ -1241,115 +1243,115 @@ class Conveyor extends Building {
 			switch(this.id >> 8){//bit masks ftw, this just grabs the first byte
 				//yes I know there's no need to write the ids in hex but why the heck not
 				case 0x00:
-					this.item.y = (Math.floor(this.item.y / Globals.TILE_SIZE) * Globals.TILE_SIZE) + Globals.TILE_SIZE/2;
-					this.item.x += Globals.buildings.conveyor.SPEED;
+					this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+					this.item.x += consts.buildings.conveyor.SPEED;
 					break;
 				case 0x01:
-					this.item.x = (Math.floor(this.item.x / Globals.TILE_SIZE) * Globals.TILE_SIZE) + Globals.TILE_SIZE/2;
-					this.item.y += Globals.buildings.conveyor.SPEED;
+					this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+					this.item.y += consts.buildings.conveyor.SPEED;
 					break;
 				case 0x02:
-					this.item.x -= Globals.buildings.conveyor.SPEED;
-					this.item.y = (Math.floor(this.item.y / Globals.TILE_SIZE) * Globals.TILE_SIZE) + Globals.TILE_SIZE/2;
+					this.item.x -= consts.buildings.conveyor.SPEED;
+					this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
 					break;
 				case 0x03:
-					this.item.x = (Math.floor(this.item.x / Globals.TILE_SIZE) * Globals.TILE_SIZE) + Globals.TILE_SIZE/2;
-					this.item.y -= Globals.buildings.conveyor.SPEED;
+					this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+					this.item.y -= consts.buildings.conveyor.SPEED;
 					break;
 				case 0x04:
-					if(pixelToTile(this.item.x) >= Globals.TILE_SIZE * 0.5 && pixelToTile(this.item.y) == Globals.TILE_SIZE * 0.5){
+					if(pixelToTile(this.item.x) >= consts.TILE_SIZE * 0.5 && pixelToTile(this.item.y) == consts.TILE_SIZE * 0.5){
 						this.item.x ++;
-						this.item.y = (Math.floor(this.item.y / Globals.TILE_SIZE) * Globals.TILE_SIZE) + Globals.TILE_SIZE/2;
-					} else if(pixelToTile(this.item.x) == Globals.TILE_SIZE * 0.5 && pixelToTile(this.item.y) >= Globals.TILE_SIZE * 0.5){
-						this.item.x = (Math.floor(this.item.x / Globals.TILE_SIZE) * Globals.TILE_SIZE) + Globals.TILE_SIZE/2;
+						this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+					} else if(pixelToTile(this.item.x) == consts.TILE_SIZE * 0.5 && pixelToTile(this.item.y) >= consts.TILE_SIZE * 0.5){
+						this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
 						this.item.y --;
 					} else {
-						this.item.x = (this.x + 0.5) * Globals.TILE_SIZE;
-						this.item.y = (this.y + 0.5) * Globals.TILE_SIZE;
+						this.item.x = (this.x + 0.5) * consts.TILE_SIZE;
+						this.item.y = (this.y + 0.5) * consts.TILE_SIZE;
 					}
 					break;
 				case 0x05:
-					if(pixelToTile(this.item.x) >= Globals.TILE_SIZE * 0.5 && pixelToTile(this.item.y) == Globals.TILE_SIZE * 0.5){
+					if(pixelToTile(this.item.x) >= consts.TILE_SIZE * 0.5 && pixelToTile(this.item.y) == consts.TILE_SIZE * 0.5){
 						this.item.x ++;
-						this.item.y = (Math.floor(this.item.y / Globals.TILE_SIZE) * Globals.TILE_SIZE) + Globals.TILE_SIZE/2;
-					} else if(pixelToTile(this.item.x) == Globals.TILE_SIZE * 0.5 && pixelToTile(this.item.y) <= Globals.TILE_SIZE * 0.5){
-						this.item.x = (Math.floor(this.item.x / Globals.TILE_SIZE) * Globals.TILE_SIZE) + Globals.TILE_SIZE/2;
+						this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+					} else if(pixelToTile(this.item.x) == consts.TILE_SIZE * 0.5 && pixelToTile(this.item.y) <= consts.TILE_SIZE * 0.5){
+						this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
 						this.item.y ++;
 					} else {
-						this.item.x = (this.x + 0.5) * Globals.TILE_SIZE;
-						this.item.y = (this.y + 0.5) * Globals.TILE_SIZE;
+						this.item.x = (this.x + 0.5) * consts.TILE_SIZE;
+						this.item.y = (this.y + 0.5) * consts.TILE_SIZE;
 					}
 					break;
 				case 0x06:
-					if(pixelToTile(this.item.x) == Globals.TILE_SIZE * 0.5 && pixelToTile(this.item.y) >= Globals.TILE_SIZE * 0.5){
-						this.item.x = (Math.floor(this.item.x / Globals.TILE_SIZE) * Globals.TILE_SIZE) + Globals.TILE_SIZE/2;
+					if(pixelToTile(this.item.x) == consts.TILE_SIZE * 0.5 && pixelToTile(this.item.y) >= consts.TILE_SIZE * 0.5){
+						this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
 						this.item.y ++;
-					} else if(pixelToTile(this.item.x) > Globals.TILE_SIZE * 0.5 && pixelToTile(this.item.y) == Globals.TILE_SIZE * 0.5){
+					} else if(pixelToTile(this.item.x) > consts.TILE_SIZE * 0.5 && pixelToTile(this.item.y) == consts.TILE_SIZE * 0.5){
 						this.item.x --;
-						this.item.y = (Math.floor(this.item.y / Globals.TILE_SIZE) * Globals.TILE_SIZE) + Globals.TILE_SIZE/2;
+						this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
 					} else {
-						this.item.x = (this.x + 0.5) * Globals.TILE_SIZE;
-						this.item.y = (this.y + 0.5) * Globals.TILE_SIZE;
+						this.item.x = (this.x + 0.5) * consts.TILE_SIZE;
+						this.item.y = (this.y + 0.5) * consts.TILE_SIZE;
 					}
 					break;
 				case 0x07:
-					if(pixelToTile(this.item.x) == Globals.TILE_SIZE * 0.5 && pixelToTile(this.item.y) >= Globals.TILE_SIZE * 0.5){
-						this.item.x = (Math.floor(this.item.x / Globals.TILE_SIZE) * Globals.TILE_SIZE) + Globals.TILE_SIZE/2;
+					if(pixelToTile(this.item.x) == consts.TILE_SIZE * 0.5 && pixelToTile(this.item.y) >= consts.TILE_SIZE * 0.5){
+						this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
 						this.item.y ++;
-					} else if(pixelToTile(this.item.x) < Globals.TILE_SIZE * 0.5 && pixelToTile(this.item.y) == Globals.TILE_SIZE * 0.5){
+					} else if(pixelToTile(this.item.x) < consts.TILE_SIZE * 0.5 && pixelToTile(this.item.y) == consts.TILE_SIZE * 0.5){
 						this.item.x ++;
-						this.item.y = (Math.floor(this.item.y / Globals.TILE_SIZE) * Globals.TILE_SIZE) + Globals.TILE_SIZE/2;
+						this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
 					} else {
-						this.item.x = (this.x + 0.5) * Globals.TILE_SIZE;
-						this.item.y = (this.y + 0.5) * Globals.TILE_SIZE;
+						this.item.x = (this.x + 0.5) * consts.TILE_SIZE;
+						this.item.y = (this.y + 0.5) * consts.TILE_SIZE;
 					}
 					break;
 				case 0x08:
-					if(pixelToTile(this.item.x) <= Globals.TILE_SIZE * 0.5 && pixelToTile(this.item.y) == Globals.TILE_SIZE * 0.5){
+					if(pixelToTile(this.item.x) <= consts.TILE_SIZE * 0.5 && pixelToTile(this.item.y) == consts.TILE_SIZE * 0.5){
 						this.item.x --;
-						this.item.y = (Math.floor(this.item.y / Globals.TILE_SIZE) * Globals.TILE_SIZE) + Globals.TILE_SIZE/2;
-					} else if(pixelToTile(this.item.x) == Globals.TILE_SIZE * 0.5 && pixelToTile(this.item.y) >= Globals.TILE_SIZE * 0.5){
-						this.item.x = (Math.floor(this.item.x / Globals.TILE_SIZE) * Globals.TILE_SIZE) + Globals.TILE_SIZE/2;
+						this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+					} else if(pixelToTile(this.item.x) == consts.TILE_SIZE * 0.5 && pixelToTile(this.item.y) >= consts.TILE_SIZE * 0.5){
+						this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
 						this.item.y --;
 					} else {
-						this.item.x = (this.x + 0.5) * Globals.TILE_SIZE;
-						this.item.y = (this.y + 0.5) * Globals.TILE_SIZE;
+						this.item.x = (this.x + 0.5) * consts.TILE_SIZE;
+						this.item.y = (this.y + 0.5) * consts.TILE_SIZE;
 					}
 					break;
 				case 0x09:
-					if(pixelToTile(this.item.x) <= Globals.TILE_SIZE * 0.5 && pixelToTile(this.item.y) == Globals.TILE_SIZE * 0.5){
+					if(pixelToTile(this.item.x) <= consts.TILE_SIZE * 0.5 && pixelToTile(this.item.y) == consts.TILE_SIZE * 0.5){
 						this.item.x --;
-						this.item.y = (Math.floor(this.item.y / Globals.TILE_SIZE) * Globals.TILE_SIZE) + Globals.TILE_SIZE/2;
-					} else if(pixelToTile(this.item.x) == Globals.TILE_SIZE * 0.5 && pixelToTile(this.item.y) <= Globals.TILE_SIZE * 0.5){
-						this.item.x = (Math.floor(this.item.x / Globals.TILE_SIZE) * Globals.TILE_SIZE) + Globals.TILE_SIZE/2;
+						this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+					} else if(pixelToTile(this.item.x) == consts.TILE_SIZE * 0.5 && pixelToTile(this.item.y) <= consts.TILE_SIZE * 0.5){
+						this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
 						this.item.y ++;
 					} else {
-						this.item.x = (this.x + 0.5) * Globals.TILE_SIZE;
-						this.item.y = (this.y + 0.5) * Globals.TILE_SIZE;
+						this.item.x = (this.x + 0.5) * consts.TILE_SIZE;
+						this.item.y = (this.y + 0.5) * consts.TILE_SIZE;
 					}
 					break;
 				case 0x0A:
-					if(pixelToTile(this.item.x) == Globals.TILE_SIZE * 0.5 && pixelToTile(this.item.y) <= Globals.TILE_SIZE * 0.5){
-						this.item.x = (Math.floor(this.item.x / Globals.TILE_SIZE) * Globals.TILE_SIZE) + Globals.TILE_SIZE/2;
+					if(pixelToTile(this.item.x) == consts.TILE_SIZE * 0.5 && pixelToTile(this.item.y) <= consts.TILE_SIZE * 0.5){
+						this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
 						this.item.y --;
-					} else if(pixelToTile(this.item.x) > Globals.TILE_SIZE * 0.5 && pixelToTile(this.item.y) == Globals.TILE_SIZE * 0.5){
+					} else if(pixelToTile(this.item.x) > consts.TILE_SIZE * 0.5 && pixelToTile(this.item.y) == consts.TILE_SIZE * 0.5){
 						this.item.x --;
-						this.item.y = (Math.floor(this.item.y / Globals.TILE_SIZE) * Globals.TILE_SIZE) + Globals.TILE_SIZE/2;
+						this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
 					} else {
-						this.item.x = (this.x + 0.5) * Globals.TILE_SIZE;
-						this.item.y = (this.y + 0.5) * Globals.TILE_SIZE;
+						this.item.x = (this.x + 0.5) * consts.TILE_SIZE;
+						this.item.y = (this.y + 0.5) * consts.TILE_SIZE;
 					}
 					break;
 				case 0x0B:
-					if(pixelToTile(this.item.x) == Globals.TILE_SIZE * 0.5 && pixelToTile(this.item.y) <= Globals.TILE_SIZE * 0.5){
-						this.item.x = (Math.floor(this.item.x / Globals.TILE_SIZE) * Globals.TILE_SIZE) + Globals.TILE_SIZE/2;
+					if(pixelToTile(this.item.x) == consts.TILE_SIZE * 0.5 && pixelToTile(this.item.y) <= consts.TILE_SIZE * 0.5){
+						this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
 						this.item.y --;
-					} else if(pixelToTile(this.item.x) < Globals.TILE_SIZE * 0.5 && pixelToTile(this.item.y) == Globals.TILE_SIZE * 0.5){
+					} else if(pixelToTile(this.item.x) < consts.TILE_SIZE * 0.5 && pixelToTile(this.item.y) == consts.TILE_SIZE * 0.5){
 						this.item.x ++;
-						this.item.y = (Math.floor(this.item.y / Globals.TILE_SIZE) * Globals.TILE_SIZE) + Globals.TILE_SIZE/2;
+						this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
 					} else {
-						this.item.x = (this.x + 0.5) * Globals.TILE_SIZE;
-						this.item.y = (this.y + 0.5) * Globals.TILE_SIZE;
+						this.item.x = (this.x + 0.5) * consts.TILE_SIZE;
+						this.item.y = (this.y + 0.5) * consts.TILE_SIZE;
 					}
 					break;
 			}
@@ -1360,7 +1362,7 @@ class Conveyor extends Building {
 }
 
 
-class Extractor extends Conveyor {
+/*export */class Extractor extends Conveyor {
 	constructor(x:number, y:number, id:BuildingID, level:Level){
 		super(x, y, id, level);
 	}
@@ -1384,8 +1386,8 @@ class Extractor extends Conveyor {
 			if(!(item instanceof Item)) throw new ShouldNotBePossibleError("received invalid item");
 			if(item.deleted) throw new ShouldNotBePossibleError("received deleted item");
 			this.item = item;
-			this.item.y = (this.y + 0.5) * Globals.TILE_SIZE;
-			this.item.x = (this.x + 0.5) * Globals.TILE_SIZE;
+			this.item.y = (this.y + 0.5) * consts.TILE_SIZE;
+			this.item.x = (this.x + 0.5) * consts.TILE_SIZE;
 			item.grabbedBy = this;
 			if(this.level.items.contains(item)){
 				this.level.items.splice(this.level.items.indexOf(item), 1);
@@ -1415,62 +1417,62 @@ class Extractor extends Conveyor {
 
 			switch(this.id){
 				case 0x0005:
-					if(this.item.x > (this.x + 1.5) * Globals.TILE_SIZE){return this.dropItem();} else {
+					if(this.item.x > (this.x + 1.5) * consts.TILE_SIZE){return this.dropItem();} else {
 						this.item.x ++;
 					}
 					break;
 				case 0x0105:
-					if(this.item.y > (this.y + 1.5) * Globals.TILE_SIZE){return this.dropItem();} else {
+					if(this.item.y > (this.y + 1.5) * consts.TILE_SIZE){return this.dropItem();} else {
 						this.item.y ++;
 					}
 					break;
 				case 0x0205:
-					if(this.item.x < (this.x - 0.5) * Globals.TILE_SIZE){return this.dropItem();} else {
+					if(this.item.x < (this.x - 0.5) * consts.TILE_SIZE){return this.dropItem();} else {
 						this.item.x --;
 					}
 					break;
 				case 0x0305:
-					if(this.item.y < (this.y - 0.5) * Globals.TILE_SIZE){return this.dropItem();} else {
+					if(this.item.y < (this.y - 0.5) * consts.TILE_SIZE){return this.dropItem();} else {
 						this.item.y --;
 					}
 					break;
 				case 0x0405:
-					if(this.item.x > (this.x + 2.5) * Globals.TILE_SIZE){return this.dropItem();} else {
+					if(this.item.x > (this.x + 2.5) * consts.TILE_SIZE){return this.dropItem();} else {
 						this.item.x ++;
 					}
 					break;
 				case 0x0505:
-					if(this.item.y > (this.y + 2.5) * Globals.TILE_SIZE){return this.dropItem();} else {
+					if(this.item.y > (this.y + 2.5) * consts.TILE_SIZE){return this.dropItem();} else {
 						this.item.y ++;
 					}
 					break;
 				case 0x0605:
-					if(this.item.x < (this.x - 1.5) * Globals.TILE_SIZE){return this.dropItem();} else {
+					if(this.item.x < (this.x - 1.5) * consts.TILE_SIZE){return this.dropItem();} else {
 						this.item.x --;
 					}
 					break;
 				case 0x0705:
-					if(this.item.y < (this.y - 1.5) * Globals.TILE_SIZE){return this.dropItem();} else {
+					if(this.item.y < (this.y - 1.5) * consts.TILE_SIZE){return this.dropItem();} else {
 						this.item.y --;
 					}
 					break;
 				case 0x0805:
-				if(this.item.x > (this.x + 3.5) * Globals.TILE_SIZE){return this.dropItem();} else {
+				if(this.item.x > (this.x + 3.5) * consts.TILE_SIZE){return this.dropItem();} else {
 						this.item.x ++;
 					}
 					break;
 				case 0x0905:
-					if(this.item.y > (this.y + 3.5) * Globals.TILE_SIZE){return this.dropItem();} else {
+					if(this.item.y > (this.y + 3.5) * consts.TILE_SIZE){return this.dropItem();} else {
 						this.item.y ++;
 					}
 					break;
 				case 0x0A05:
-					if(this.item.x < (this.x - 2.5) * Globals.TILE_SIZE){return this.dropItem();} else {
+					if(this.item.x < (this.x - 2.5) * consts.TILE_SIZE){return this.dropItem();} else {
 						this.item.x --;
 					}
 					break;
 				case 0x0B05:
-					if(this.item.y < (this.y - 2.5) * Globals.TILE_SIZE){return this.dropItem();} else {
+					if(this.item.y < (this.y - 2.5) * consts.TILE_SIZE){return this.dropItem();} else {
 						this.item.y --;
 					}
 					break;
@@ -1485,7 +1487,7 @@ interface StorageInventory extends Array<Item> {
 	MAX_LENGTH: number;
 	at: Function;
 }
-class StorageBuilding extends Building {
+/*export */class StorageBuilding extends Building {
 	inventory: StorageInventory;
 	constructor(tileX:number, tileY: number, id:BuildingID, level:Level){
 		super(tileX, tileY, id, level);
@@ -1501,8 +1503,8 @@ class StorageBuilding extends Building {
 	grabItem(filter:(item:Item) => any, callback:(item:Item) => void, remove:boolean, grabDistance?:number):Item {
 		let item = super.grabItem(filter, callback, remove, grabDistance);
 		if(item){
-			item.x = (this.x + 0.5) * Globals.TILE_SIZE;
-			item.y = (this.y + 0.5) * Globals.TILE_SIZE;
+			item.x = (this.x + 0.5) * consts.TILE_SIZE;
+			item.y = (this.y + 0.5) * consts.TILE_SIZE;
 			return item;
 		}
 		return null;
@@ -1510,7 +1512,7 @@ class StorageBuilding extends Building {
 }
 
 
-class ResourceAcceptor extends Building {
+/*export */class ResourceAcceptor extends Building {
 	acceptItem(item:Item){
 		item.deleted = true;
 		item.grabbedBy = null;
@@ -1533,25 +1535,25 @@ class ResourceAcceptor extends Building {
 }
 
 //I love abstraction
-class AlloySmelter extends BuildingWithRecipe {
+/*export */class AlloySmelter extends BuildingWithRecipe {
 	static animated = true;
 	static recipeType = recipes.base_alloying;
 }
 
-class Wiremill extends BuildingWithRecipe {
+/*export */class Wiremill extends BuildingWithRecipe {
 	static recipeType = recipes.base_wiremilling;
 }
 
-class Compressor extends BuildingWithRecipe {
+/*export */class Compressor extends BuildingWithRecipe {
 	static recipeType = recipes.base_compressing;
 }
 
-class Lathe extends BuildingWithRecipe {
+/*export */class Lathe extends BuildingWithRecipe {
 	static recipeType = recipes.base_lathing;
 }
 
 
-class MultiBlockController extends BuildingWithRecipe {
+/*export */class MultiBlockController extends BuildingWithRecipe {
 	secondaries: MultiBlockSecondary[];
 	static size = [1, 1];
 	break(){
@@ -1567,7 +1569,7 @@ class MultiBlockController extends BuildingWithRecipe {
 	}
 }
 
-class MultiBlockSecondary extends Building {
+/*export */class MultiBlockSecondary extends Building {
 	controller: MultiBlockController;
 	acceptItem(item: Item):boolean {
 		return this.controller.acceptItem(item);
@@ -1589,12 +1591,12 @@ class MultiBlockSecondary extends Building {
 	}
 }
 
-class Assembler extends MultiBlockController {
+/*export */class Assembler extends MultiBlockController {
 	static recipeType = recipes.base_assembling;
 	static size = [2, 2];
 }
 
-const BuildingType: {
+/*export */const BuildingType: {
 	[index:number]: typeof Building
 } = {
 	0x01: Conveyor,

@@ -21,13 +21,14 @@
 // 
 
 
+
+
+
+
+console.log("%c Hey there! It looks like you're checking out the console.\nIf you want to view the source code, *please do it at* https://github.com/BalaM314/Untitled-Electron-Game \n Make sure to view the .ts files as the .js files are compiled and thus look weird.", "color: blue; font-size: 30px;")
+
 let textures = new Map();
 noise.seed(1);
-
-const ShouldNotBePossibleError = makeError("ShouldNotBePossibleError");
-const AssertionFailedError = makeError("AssertionFailedError");
-const ArgumentError = makeError("ArgumentError");
-const InvalidStateError = makeError("InvalidStateError");
 
 window.onmousemove = (e:MouseEvent) => {
 	mouseX = e.x;
@@ -136,7 +137,7 @@ window.onblur = () => {
 	mouseIsPressed = false;
 }
 
-console.log("%c Hey there! It looks like you're checking out the console.\nIf you want to view the source code, *please do it at* https://github.com/BalaM314/Untitled-Electron-Game \n Make sure to view the .ts files as the .js files are compiled and thus look weird.", "color: blue; font-size: 30px;")
+
 
 
 
@@ -169,7 +170,7 @@ function runLevel(level:Level, currentFrame:any){
 	level.display(currentFrame);
 
 	
-	level.displayGhostBuilding((mouseX - (Game.scroll.x * Globals.DISPLAY_SCALE)) / Globals.DISPLAY_TILE_SIZE, (mouseY - (Game.scroll.y * Globals.DISPLAY_SCALE)) / Globals.DISPLAY_TILE_SIZE, placedBuilding.ID);
+	level.displayGhostBuilding((mouseX - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE, (mouseY - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE, placedBuilding.ID);
 	if(keysPressed.indexOf("shift") != -1){
 		level.displayTooltip(mouseX, mouseY, currentFrame);
 	}
@@ -177,7 +178,7 @@ function runLevel(level:Level, currentFrame:any){
 	//display overlays
 	ctx4.font = "30px sans-serif";
 	ctx4.fillStyle = "#000000";
-	ctx4.fillText((Math.round(- (Game.scroll.x * Globals.DISPLAY_SCALE) / Globals.DISPLAY_TILE_SIZE).toString() + ", " + Math.round(- (Game.scroll.y * Globals.DISPLAY_SCALE) / Globals.DISPLAY_TILE_SIZE).toString()), 10, 100);
+	ctx4.fillText((Math.round(- (Game.scroll.x * consts.DISPLAY_SCALE) / consts.DISPLAY_TILE_SIZE).toString() + ", " + Math.round(- (Game.scroll.y * consts.DISPLAY_SCALE) / consts.DISPLAY_TILE_SIZE).toString()), 10, 100);
 	let frameMS = (new Date()).getTime() - startFrameTime.getTime();
 	fps.splice(0, 1);
 	fps.push(frameMS);
@@ -225,71 +226,60 @@ function fixSizes(){
 		}
 	}
 }
+
+
+
 let cancel = null;
-
-
-
-
-
 function main_loop(){
-	
-	try {
-		let currentFrame:currentFrame = {
-			tooltip: true,
-			debug: settings.debug,
-			cps: 0,
-			tps: 0,
-			ips: 0,
-			redraw: Game.forceRedraw
-		};
-		Game.forceRedraw = false;
-		fixSizes();
-		if(mouseIsPressed){
-			handleMouseDown(currentFrame);
-		}
-		if(keysPressed.length > 0){
-			handleKeysPressed(currentFrame);
-		}
-		if(keysPressed.indexOf("shift") !== -1){
-			Game.scroll.speed = 20;
-		} else {
-			Game.scroll.speed = 5;
-		}
-		
-		switch(GAME_STATE){
-			case "title":
-				runTitle();
-				break;
-			case "game":
-				runLevel(level1, currentFrame);
-				break;
-			case "settings":
-				runSettings();
-				break;
-			default:
-				throw new InvalidStateError(`Invalid game state "${GAME_STATE}"`);
-		}
-		if(alerts.length){
-			mouseIsPressed = false;
-			for(let __alert of alerts){
-				if(__alert instanceof Array){
-					setTimeout(() => {
-						_alert(__alert[0]);
-					}, __alert[1]);
-				} else {
-					alert(__alert);//todo replace with a less annoying custom alert box
-				}
-			}
-			alerts = [];
-		}
-		cancel = requestAnimationFrame(main_loop);
-	} catch(err){
-		alert("An error has occurred! Oopsie.\nPlease create an issue on this project's GitHub so I can fix it.\nErr: " + err.message);//todo improve
-		ctxs.forEach((ctx) => {ctx.clearRect(0,0,innerWidth,innerHeight)});
-		throw err;
+	let currentFrame:currentFrame = {
+		tooltip: true,
+		debug: settings.debug,
+		cps: 0,
+		tps: 0,
+		ips: 0,
+		redraw: Game.forceRedraw
+	};
+	Game.forceRedraw = false;
+	fixSizes();
+	if(mouseIsPressed){
+		handleMouseDown(currentFrame);
 	}
-
-
+	if(keysPressed.length > 0){
+		handleKeysPressed(currentFrame);
+	}
+	if(keysPressed.indexOf("shift") !== -1){
+		Game.scroll.speed = 20;
+	} else {
+		Game.scroll.speed = 5;
+	}
+	
+	switch(GAME_STATE){
+		case "title":
+			runTitle();
+			break;
+		case "game":
+			runLevel(level1, currentFrame);
+			break;
+		case "settings":
+			runSettings();
+			break;
+		default:
+			throw new InvalidStateError(`Invalid game state "${GAME_STATE}"`);
+	}
+	if(alerts.length){
+		mouseIsPressed = false;
+		for(let __alert of alerts){
+			if(__alert instanceof Array){
+				setTimeout(() => {
+					_alert(__alert[0]);
+				}, __alert[1]);
+			} else {
+				alert(__alert);//todo replace with a less annoying custom alert box
+			}
+		}
+		alerts = [];
+	}
+	cancel = requestAnimationFrame(main_loop);
 }
 
 function runTitle(){
@@ -420,7 +410,7 @@ function exportData(){
 		UntitledElectronGame: {
 			metadata: {
 				validationCode: "esrdtfgvczdsret56u7yhgvfcesrythgvfd!",
-				version: Globals.VERSION
+				version: consts.VERSION
 			},
 			level1: level1.export()
 		}
@@ -478,10 +468,10 @@ let handleMouseDown = (currentFrame:any, e?:MouseEvent) => {
 	switch(GAME_STATE){
 		case "game":
 			if(e.ctrlKey){
-				level1.addItem((e.x - (Game.scroll.x * Globals.DISPLAY_SCALE))/Globals.DISPLAY_SCALE, (e.y - (Game.scroll.y * Globals.DISPLAY_SCALE)) / Globals.DISPLAY_SCALE, ItemID.base_null);
+				level1.addItem((e.x - (Game.scroll.x * consts.DISPLAY_SCALE))/consts.DISPLAY_SCALE, (e.y - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_SCALE, ItemID.base_null);
 				mouseIsPressed = false;
 			} else {
-				level1.buildBuilding(Math.floor((e.x - (Game.scroll.x * Globals.DISPLAY_SCALE)) / Globals.DISPLAY_TILE_SIZE), Math.floor((e.y - (Game.scroll.y * Globals.DISPLAY_SCALE)) / Globals.DISPLAY_TILE_SIZE), placedBuilding.ID);
+				level1.buildBuilding(Math.floor((e.x - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE), Math.floor((e.y - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE), placedBuilding.ID);
 			}
 			break;
 		case "title":
@@ -522,4 +512,10 @@ try {
 	localStorage.setItem("persistentStorage", "{\"tutorialenabled\": true}");
 }
 
-main_loop();
+try {
+	main_loop();
+} catch(err){
+	alert("An error has occurred! Oopsie.\nPlease create an issue on this project's GitHub so I can fix it.\nErr: " + err.message);//todo improve
+	ctxs.forEach((ctx) => {ctx.clearRect(0,0,innerWidth,innerHeight)});
+	throw err;
+}

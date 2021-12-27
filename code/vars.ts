@@ -76,7 +76,7 @@ const generation_consts = {
 	}
 };
 
-const Globals = {
+const consts = {
 	VERSION: "alpha 1.1.0",
 	CHUNK_SIZE: 16,//Size of a chunk in tiles.
 	TILE_SIZE: 30,//Sile of a tile in pixels.
@@ -216,7 +216,7 @@ let mouseY = 0;
 let mouseIsPressed = false;
 let latestMouseEvent = null;
 let keysPressed:string[] = [];
-const uploadButton = document.getElementById('uploadButton')! as HTMLInputElement;
+const programStart = new Date();
 
 let settings = {
 	graphics_mode: 1,
@@ -267,4 +267,21 @@ const ctx25 = (document.getElementById("canvas25") as HTMLCanvasElement).getCont
 const ctx3 = (document.getElementById("canvas3") as HTMLCanvasElement).getContext("2d");//Items
 const ctx4 = (document.getElementById("canvas4") as HTMLCanvasElement).getContext("2d");//Overlays
 const ctxs = [ctx, ctx1, ctx2, ctx25, ctx3, ctx4];
+const uploadButton = document.getElementById('uploadButton')! as HTMLInputElement;
 
+function makeError(name){
+	return class extends Error {
+		constructor(message){
+			super(...arguments);
+			this.name = name;
+		}
+	};
+}
+const ShouldNotBePossibleError = makeError("ShouldNotBePossibleError");
+const AssertionFailedError = makeError("AssertionFailedError");
+const ArgumentError = makeError("ArgumentError");
+const InvalidStateError = makeError("InvalidStateError");
+
+function importIntoGlobalScope(obj:Object){
+	Object.assign(window, obj);
+}

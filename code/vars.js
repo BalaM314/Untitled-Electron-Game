@@ -74,7 +74,7 @@ const generation_consts = {
         min_copper_distance: 12
     }
 };
-const Globals = {
+const consts = {
     VERSION: "alpha 1.1.0",
     CHUNK_SIZE: 16,
     TILE_SIZE: 30,
@@ -206,7 +206,7 @@ let mouseY = 0;
 let mouseIsPressed = false;
 let latestMouseEvent = null;
 let keysPressed = [];
-const uploadButton = document.getElementById('uploadButton');
+const programStart = new Date();
 let settings = {
     graphics_mode: 1,
     debug: true
@@ -255,3 +255,19 @@ const ctx25 = document.getElementById("canvas25").getContext("2d");
 const ctx3 = document.getElementById("canvas3").getContext("2d");
 const ctx4 = document.getElementById("canvas4").getContext("2d");
 const ctxs = [ctx, ctx1, ctx2, ctx25, ctx3, ctx4];
+const uploadButton = document.getElementById('uploadButton');
+function makeError(name) {
+    return class extends Error {
+        constructor(message) {
+            super(...arguments);
+            this.name = name;
+        }
+    };
+}
+const ShouldNotBePossibleError = makeError("ShouldNotBePossibleError");
+const AssertionFailedError = makeError("AssertionFailedError");
+const ArgumentError = makeError("ArgumentError");
+const InvalidStateError = makeError("InvalidStateError");
+function importIntoGlobalScope(obj) {
+    Object.assign(window, obj);
+}

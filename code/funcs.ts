@@ -5,19 +5,10 @@ interface Array<T>{
 
 Array.prototype.contains = function(val){
 	return this.indexOf(val) != -1;
-}
+};
 Object.defineProperty(Array.prototype, "contains", {
 	enumerable: false
 });
-
-function makeError(name){
-	return class extends Error {
-		constructor(message){
-			super(...arguments);
-			this.name = name;
-		}
-	};
-}
 
 enum triggerType {
 	placeBuilding,
@@ -127,7 +118,7 @@ function trigger(type:triggerType, buildingID?:RawBuildingID, itemID?:ItemID){
 function sq(x:number):number{
 	return x * x;
 }
-const programStart = new Date();
+
 function millis():number{
 	return (new Date()).valueOf() - programStart.valueOf();
 }
@@ -248,29 +239,29 @@ function loadTextures(){
 
 function zoom(scaleFactor){
 	scaleFactor = constrain(scaleFactor, 0.9, 1.1);
-	if(Globals.DISPLAY_SCALE * scaleFactor < 1){
-		scaleFactor = 1 / Globals.DISPLAY_SCALE;
-	} else if(Globals.DISPLAY_SCALE * scaleFactor > 5){
-		scaleFactor = 5 / Globals.DISPLAY_SCALE;
+	if(consts.DISPLAY_SCALE * scaleFactor < 1){
+		scaleFactor = 1 / consts.DISPLAY_SCALE;
+	} else if(consts.DISPLAY_SCALE * scaleFactor > 5){
+		scaleFactor = 5 / consts.DISPLAY_SCALE;
 	}
-	if((Globals.DISPLAY_SCALE <= 1 && scaleFactor <= 1)||(Globals.DISPLAY_SCALE >= 5 && scaleFactor >= 1)){
+	if((consts.DISPLAY_SCALE <= 1 && scaleFactor <= 1)||(consts.DISPLAY_SCALE >= 5 && scaleFactor >= 1)){
 		return;
 	}
 	Game.forceRedraw = true;
-	Globals.DISPLAY_SCALE *= scaleFactor;
-	Game.scroll.x -= (innerWidth * 0.5 * (scaleFactor - 1))/Globals.DISPLAY_SCALE;
-	Game.scroll.y -= (innerHeight * 0.5 * (scaleFactor - 1))/Globals.DISPLAY_SCALE;
+	consts.DISPLAY_SCALE *= scaleFactor;
+	Game.scroll.x -= (innerWidth * 0.5 * (scaleFactor - 1))/consts.DISPLAY_SCALE;
+	Game.scroll.y -= (innerHeight * 0.5 * (scaleFactor - 1))/consts.DISPLAY_SCALE;
 }
 
 function tileToChunk(tileCoord:number):number {
-	tileCoord = Math.floor(tileCoord) % Globals.CHUNK_SIZE;
-	return tileCoord + (tileCoord < 0 ? Globals.CHUNK_SIZE : 0);
+	tileCoord = Math.floor(tileCoord) % consts.CHUNK_SIZE;
+	return tileCoord + (tileCoord < 0 ? consts.CHUNK_SIZE : 0);
 }
 
 function pixelToTile(pixelCoord:number):number {
-	pixelCoord = Math.floor(pixelCoord) % Globals.TILE_SIZE;
-	return pixelCoord + (pixelCoord < 0 ? Globals.TILE_SIZE : 0);
+	pixelCoord = Math.floor(pixelCoord) % consts.TILE_SIZE;
+	return pixelCoord + (pixelCoord < 0 ? consts.TILE_SIZE : 0);
 }
 function tileAtPixel(pixelCoord:number):number {
-	return Math.floor(pixelCoord / Globals.TILE_SIZE);
+	return Math.floor(pixelCoord / consts.TILE_SIZE);
 }
