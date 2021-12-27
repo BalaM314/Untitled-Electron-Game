@@ -6,8 +6,18 @@ Array.prototype.contains = function (val) {
 Object.defineProperty(Array.prototype, "contains", {
     enumerable: false
 });
-class ShouldNotBePossibleError extends Error {
+function makeError(name) {
+    return class extends Error {
+        constructor(message) {
+            super(...arguments);
+            this.name = name;
+        }
+    };
 }
+const ShouldNotBePossibleError = makeError("ShouldNotBePossibleError");
+const AssertionFailedError = makeError("AssertionFailedError");
+const ArgumentError = makeError("ArgumentError");
+const whatError = makeError("AssertionFailedError");
 let mouseX = 0;
 let mouseY = 0;
 let mouseIsPressed = false;
@@ -149,7 +159,7 @@ function gcd(x, y) {
 function random(min, max) {
     if (typeof min == "number") {
         if (arguments.length > 2) {
-            throw new Error("Too many arguments for random");
+            throw new ArgumentError("Too many arguments for random");
         }
         if (arguments.length == 1) {
             max = min;
@@ -181,7 +191,7 @@ function constrain(x, min, max) {
 }
 function assert(x) {
     if (!x) {
-        throw new Error(x);
+        throw new AssertionFailedError(x);
     }
 }
 function download(filename, text) {
@@ -258,6 +268,10 @@ function zoom(scaleFactor) {
 }
 window.onwheel = (e) => {
     zoom(Math.pow(1.001, -e.deltaY));
+};
+window.onblur = () => {
+    keysPressed = [];
+    mouseIsPressed = false;
 };
 function tileToChunk(tileCoord) {
     tileCoord = Math.floor(tileCoord) % Globals.CHUNK_SIZE;

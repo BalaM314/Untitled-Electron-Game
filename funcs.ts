@@ -33,14 +33,18 @@ Object.defineProperty(Array.prototype, "contains", {
 });
 
 function makeError(name){
-	return class TempName extends Error {
-		constructor(){
+	return class extends Error {
+		constructor(message){
 			super(...arguments);
 			this.name = name;
 		}
-	}
+	};
 }
 
+const ShouldNotBePossibleError = makeError("ShouldNotBePossibleError");
+const AssertionFailedError = makeError("AssertionFailedError");
+const ArgumentError = makeError("ArgumentError");
+const whatError = makeError("AssertionFailedError");
 
 
 let mouseX = 0;
@@ -163,7 +167,7 @@ function gcd(x:number, y:number):any{
 function random(min:number|any[],max:number):number{
 	if(typeof min == "number"){
 		if(arguments.length > 2){
-			throw new Error("Too many arguments for random");
+			throw new ArgumentError("Too many arguments for random");
 		}
 		if(arguments.length == 1){
 			max = min;
@@ -196,7 +200,7 @@ function constrain(x:number, min:number, max:number){
 
 function assert(x:any){
 	if(!x){
-		throw new Error(x);
+		throw new AssertionFailedError(x);
 	}
 }
 
@@ -289,6 +293,10 @@ function zoom(scaleFactor){
 
 window.onwheel = (e:WheelEvent) => {
 	zoom(Math.pow(1.001, -e.deltaY));
+}
+window.onblur = () => {
+	keysPressed = [];
+	mouseIsPressed = false;
 }
 
 function tileToChunk(tileCoord:number):number {
