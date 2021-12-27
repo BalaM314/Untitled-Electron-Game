@@ -17,7 +17,7 @@ function makeError(name) {
 const ShouldNotBePossibleError = makeError("ShouldNotBePossibleError");
 const AssertionFailedError = makeError("AssertionFailedError");
 const ArgumentError = makeError("ArgumentError");
-const whatError = makeError("AssertionFailedError");
+const InvalidStateError = makeError("InvalidStateError");
 let mouseX = 0;
 let mouseY = 0;
 let mouseIsPressed = false;

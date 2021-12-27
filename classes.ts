@@ -412,13 +412,16 @@ class Level {
 			let {chunks, items, resources, seed, version} = data;
 			this.seed = seed;
 			this.resources = resources
-
-			for(var [position, chunkData] of Object.entries(chunks)){//Get data for a chunk
-				this.storage.set(position, new Chunk({
-					x: parseInt(position.split(",")[0]), y: parseInt(position.split(",")[1]),
-					seed: seed, parent: this
-				}, chunkData).generate());
-				//Generate a chunk with that data
+			try {
+				for(var [position, chunkData] of Object.entries(chunks)){//Get data for a chunk
+					this.storage.set(position, new Chunk({
+						x: parseInt(position.split(",")[0]), y: parseInt(position.split(",")[1]),
+						seed: seed, parent: this
+					}, chunkData).generate());
+					//Generate a chunk with that data
+				}
+			} catch(err){
+				throw new Error(`Error loading chunk ${position}: ${err.message}`)
 			}
 
 			if(version !== "alpha 0.0.0"){//Needed because before (e4360ab) items being moved by conveyor belts were also in level.items and the below code would otherwise dupe them due to the removal of an O(n^2) check.
@@ -1494,7 +1497,7 @@ abstract class BuildingWithRecipe extends Building {
 	static recipeType: {recipes: Recipe[]};
 	constructor(tileX:number, tileY:number, id:BuildingID, level:Level){
 		super(tileX, tileY, id, level);
-		if(this.constructor === BuildingWithRecipe) throw this;
+		if(this.constructor === BuildingWithRecipe) throw new Error("Cannot initialize abstract class BuildingWithRecipe");
 		this.timer = -1;
 		this.items = [];
 	}
@@ -1766,8 +1769,8 @@ class Extractor extends Conveyor {
 			filter(this.level.buildingAtTile(this.x, this.y).hasItem())
 		){
 			let item = this.level.buildingAtTile(this.x, this.y).removeItem();
-			if(!(item instanceof Item)) throw "what even";
-			if(item.deleted) throw "wat?";
+			if(!(item instanceof Item)) throw new ShouldNotBePossibleError("received invalid item");
+			if(item.deleted) throw new ShouldNotBePossibleError("received deleted item");
 			this.item = item;
 			this.item.y = (this.y + 0.5) * Globals.TILE_SIZE;
 			this.item.x = (this.x + 0.5) * Globals.TILE_SIZE;
@@ -1786,7 +1789,7 @@ class Extractor extends Conveyor {
 			}
 		} else {
 			console.error(this);
-			throw new Error(`no item to drop; extractor at ${this.x} ${this.y}`);
+			throw new InvalidStateError(`no item to drop; extractor at ${this.x} ${this.y}`);
 		}
 	}
 
@@ -1795,7 +1798,7 @@ class Extractor extends Conveyor {
 			if(this.item.grabbedBy != this || this.item.deleted){
 				console.error(this.item);
 				console.error(this);
-				throw new RangeError("ERR Item somehow grabbed or deleted from an extractor.");
+				throw new InvalidStateError("Item somehow grabbed or deleted from an extractor.");
 			}
 
 			switch(this.id){

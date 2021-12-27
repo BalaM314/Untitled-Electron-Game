@@ -51,7 +51,13 @@ let fps = [0, 0, 0, 0, 0, 0];
 function runLevel(level, currentFrame) {
     let startFrameTime = new Date();
     level.generateNecessaryChunks();
-    level.update(currentFrame);
+    try {
+        level.update(currentFrame);
+    }
+    catch (err) {
+        console.error(err);
+        throw new Error(`Error updating world: ${err.message}`);
+    }
     if (currentFrame.redraw) {
         ctx.clearRect(0, 0, innerWidth, innerHeight);
     }
@@ -147,7 +153,7 @@ function main_loop() {
                 runSettings();
                 break;
             default:
-                throw new Error(`Invalid game state "${GAME_STATE}"`);
+                throw new InvalidStateError(`Invalid game state "${GAME_STATE}"`);
         }
         if (alerts.length) {
             mouseIsPressed = false;
