@@ -21,55 +21,124 @@
 // 
 
 
-let settings = {
-	graphics_mode: 1,
-	debug: true
-};
-let Game = {
-	scroll: {
-		x: 300,
-		y: 300,
-		speed: 5
-	},
-	forceRedraw: true,
-	persistent: {
-		tutorialenabled: true
-	},
-	tutorial: {
-		conveyor: {
-			placed: true,
-			beltchain: true,
-			placefail: true
-		},
-		miner: {
-			placefail: true,
-			placed: true,
-			coaloutput: true
-		},
-		trashcan: {
-			placed: true
-		},
-		furnace: {
-			placefail: true,
-			placed: true
-		},
-		item: {
-			coal: true,
-			iron: true,
-			steel: true
-		},
-		multiplesteel: false
-	}
-};
-var GAME_STATE:"title" | "game" | "settings" = "title";
+let textures = new Map();
+noise.seed(1);
 
-const ctx = (document.getElementById("canvas") as HTMLCanvasElement).getContext("2d");//Tiles
-const ctx1 = (document.getElementById("canvas1") as HTMLCanvasElement).getContext("2d");//Ghost buildings
-const ctx2 = (document.getElementById("canvas2") as HTMLCanvasElement).getContext("2d");//Buildings
-const ctx25 = (document.getElementById("canvas25") as HTMLCanvasElement).getContext("2d");//Extractors
-const ctx3 = (document.getElementById("canvas3") as HTMLCanvasElement).getContext("2d");//Items
-const ctx4 = (document.getElementById("canvas4") as HTMLCanvasElement).getContext("2d");//Overlays
-const ctxs = [ctx, ctx1, ctx2, ctx25, ctx3, ctx4];
+const ShouldNotBePossibleError = makeError("ShouldNotBePossibleError");
+const AssertionFailedError = makeError("AssertionFailedError");
+const ArgumentError = makeError("ArgumentError");
+const InvalidStateError = makeError("InvalidStateError");
+
+window.onmousemove = (e:MouseEvent) => {
+	mouseX = e.x;
+	mouseY = e.y;
+	latestMouseEvent = e;
+}
+
+window.onkeydown = (e:KeyboardEvent) => {
+	if(typeof parseInt(e.key) == "number"){
+		for(var x of document.getElementById("toolbar").children){
+			x.classList.remove("selected");
+		}
+		(document.getElementById("toolbar").children?.[parseInt(e.key) - 1] as HTMLElement)?.classList.add("selected");
+	}
+	if(parseInt(e.key[1])){
+		for(var x of document.getElementById("toolbar").children){
+			x.classList.remove("selected");
+		}
+		(document.getElementById("toolbar").children?.[parseInt(e.key[1]) + 8] as HTMLElement)?.classList.add("selected");
+	}
+	if(keysPressed.indexOf(e.key.toLowerCase()) == -1){
+		keysPressed.push(e.key.toLowerCase());
+	}
+	if(e.ctrlKey){
+		switch(e.key){
+			case "s":
+				exportData(); e.preventDefault(); break;
+			case "o":
+				uploadButton.click(); e.preventDefault(); break;
+		}
+	} else {
+		switch(e.key){
+			case "ArrowRight":
+				placedBuilding.direction = 0x000; break;
+			case "ArrowDown":
+				placedBuilding.direction = 0x100; break;
+			case "ArrowLeft":
+				placedBuilding.direction = 0x200; break;
+			case "ArrowUp":
+				placedBuilding.direction = 0x300; break;
+			case ",":
+				placedBuilding.modifier = 0x000; break;
+			case ".":
+				placedBuilding.modifier = 0x400; break;
+			case "/":
+				placedBuilding.modifier = 0x800; e.preventDefault(); break;
+			case "1":
+				placedBuilding.type = 0x0001; break;
+			case "2":
+				placedBuilding.type = 0x0002; break;
+			case "3":
+				placedBuilding.type = 0x0003; break;
+			case "4":
+				placedBuilding.type = 0x0004; break;
+			case "5":
+				placedBuilding.type = 0x0005; break;
+			case "6":
+				placedBuilding.type = 0x0006; break;
+			case "7":
+				placedBuilding.type = 0x0007; break;
+			case "8":
+				placedBuilding.type = 0x0009; break;
+			case "9":
+				placedBuilding.type = 0x000A; break;
+			case "F1":
+				placedBuilding.type = 0x000B; e.preventDefault(); break;
+			case "F2":
+				placedBuilding.type = 0x0011; e.preventDefault(); break;
+			case "0":
+				placedBuilding.type = 0xFF; break;
+		}
+	}
+}
+window.onkeyup = (e:KeyboardEvent) => {
+	if(keysPressed.indexOf(e.key.toLowerCase()) != -1){
+		keysPressed.splice(keysPressed.indexOf(e.key.toLowerCase()), 1);
+	}
+}
+
+document.getElementById("clickcapture").onmousedown = (e:MouseEvent) => {
+	mouseIsPressed = true;
+	latestMouseEvent = e;
+	canOverwriteBuilding = true;
+}
+document.getElementById("clickcapture").onmouseup = (e:MouseEvent) => {
+	mouseIsPressed = false;
+	latestMouseEvent = e;
+	canOverwriteBuilding = true;
+}
+
+uploadButton.onchange = function(event:any){
+  let file = event.target.files[0];
+  let reader = new FileReader();
+  reader.readAsText(file);
+  reader.onload = function(readerEvent){
+    let content = readerEvent.target.result.toString();
+    importData(content);
+  }
+}
+
+window.onwheel = (e:WheelEvent) => {
+	zoom(Math.pow(1.001, -e.deltaY));
+}
+window.onblur = () => {
+	keysPressed = [];
+	mouseIsPressed = false;
+}
+
+console.log("%c Hey there! It looks like you're checking out the console.\nIf you want to view the source code, *please do it at* https://github.com/BalaM314/Untitled-Electron-Game \n Make sure to view the .ts files as the .js files are compiled and thus look weird.", "color: blue; font-size: 30px;")
+
+
 
 
 
@@ -158,14 +227,7 @@ function fixSizes(){
 }
 var cancel = null;
 
-interface currentFrame {
-	tooltip: boolean;
-	debug: boolean;
-	cps: number;//Chunks per frame
-	tps: number;//Tiles per frame
-	ips: number;//Items per frame
-	redraw: boolean;
-}
+
 
 
 
