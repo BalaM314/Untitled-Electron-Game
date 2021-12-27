@@ -1,6 +1,8 @@
-"use strict";
+import { noise } from "./types";
+import { ItemID, consts, mouse, keysPressed, settings, Game, ctx, ctxs, uploadButton, InvalidStateError } from "./vars";
+import { alerts, assert, constrain, download, loadTextures, rect, rectMode, zoom, _alert } from "./funcs";
+import { Level } from "./classes";
 console.log("%c Hey there! It looks like you're checking out the console.\nIf you want to view the source code, *please do it at* https://github.com/BalaM314/Untitled-Electron-Game \n Make sure to view the .ts files as the .js files are compiled and thus look weird.", "color: blue; font-size: 30px;");
-let textures = new Map();
 noise.seed(1);
 window.onmousemove = (e) => {
     mouse.x = e.x;
@@ -128,7 +130,7 @@ window.onwheel = (e) => {
     zoom(Math.pow(1.001, -e.deltaY));
 };
 window.onblur = () => {
-    keysPressed = [];
+    keysPressed.splice(0);
     mouse.pressed = false;
 };
 let fps = [0, 0, 0, 0, 0, 0];
@@ -143,29 +145,29 @@ function runLevel(level, currentFrame) {
         throw new Error(`Error updating world: ${err.message}`);
     }
     if (currentFrame.redraw) {
-        ctx.clearRect(0, 0, innerWidth, innerHeight);
+        ctx.tiles.clearRect(0, 0, innerWidth, innerHeight);
     }
-    ctx1.clearRect(0, 0, innerWidth, innerHeight);
-    ctx2.clearRect(0, 0, innerWidth, innerHeight);
-    ctx25.clearRect(0, 0, innerWidth, innerHeight);
-    ctx3.clearRect(0, 0, innerWidth, innerHeight);
-    ctx4.clearRect(0, 0, innerWidth, innerHeight);
+    ctx.ghostbuildings.clearRect(0, 0, innerWidth, innerHeight);
+    ctx.buildings.clearRect(0, 0, innerWidth, innerHeight);
+    ctx.extractors.clearRect(0, 0, innerWidth, innerHeight);
+    ctx.items.clearRect(0, 0, innerWidth, innerHeight);
+    ctx.overlays.clearRect(0, 0, innerWidth, innerHeight);
     level.display(currentFrame);
     level.displayGhostBuilding((mouse.x - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE, (mouse.y - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE, placedBuilding.ID);
     if (keysPressed.indexOf("shift") != -1) {
         level.displayTooltip(mouse.x, mouse.y, currentFrame);
     }
-    ctx4.font = "30px sans-serif";
-    ctx4.fillStyle = "#000000";
-    ctx4.fillText((Math.round(-(Game.scroll.x * consts.DISPLAY_SCALE) / consts.DISPLAY_TILE_SIZE).toString() + ", " + Math.round(-(Game.scroll.y * consts.DISPLAY_SCALE) / consts.DISPLAY_TILE_SIZE).toString()), 10, 100);
+    ctx.overlays.font = "30px sans-serif";
+    ctx.overlays.fillStyle = "#000000";
+    ctx.overlays.fillText((Math.round(-(Game.scroll.x * consts.DISPLAY_SCALE) / consts.DISPLAY_TILE_SIZE).toString() + ", " + Math.round(-(Game.scroll.y * consts.DISPLAY_SCALE) / consts.DISPLAY_TILE_SIZE).toString()), 10, 100);
     let frameMS = (new Date()).getTime() - startFrameTime.getTime();
     fps.splice(0, 1);
     fps.push(frameMS);
     let avgFPS = Math.round(constrain(5000 / (fps[0] + fps[1] + fps[2] + fps[3] + fps[4]), 0, 60));
-    ctx4.fillText(avgFPS + " fps", 10, 50);
+    ctx.overlays.fillText(avgFPS + " fps", 10, 50);
     if (settings.debug) {
-        ctx4.fillText("C: " + currentFrame.cps, 10, 150);
-        ctx4.fillText("I: " + currentFrame.ips, 10, 200);
+        ctx.overlays.fillText("C: " + currentFrame.cps, 10, 150);
+        ctx.overlays.fillText("I: " + currentFrame.ips, 10, 200);
     }
     for (let item of document.getElementById("resources").children) {
         item.innerHTML = (level1.resources[item.id] ?? 0).toString();
@@ -250,55 +252,55 @@ function main_loop() {
                 alert(__alert);
             }
         }
-        alerts = [];
+        alerts.splice(0);
     }
     cancel = requestAnimationFrame(main_loop);
 }
 function runTitle() {
-    ctx.clearRect(-1, -1, 10000, 10000);
-    ctx.fillStyle = "#0033CC";
-    ctx.fillRect(0, 0, innerWidth, innerHeight);
-    ctx.font = "70px sans-serif";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillStyle = "#000000";
-    ctx.fillText("Untitled Electron Game", innerWidth / 2, innerHeight * 0.2);
-    ctx.font = "20px sans-serif";
-    ctx.fillText("Title Screen Soon™", innerWidth / 2, innerHeight * 0.35);
-    ctx.fillStyle = "#0000FF";
+    ctx.tiles.clearRect(-1, -1, 10000, 10000);
+    ctx.tiles.fillStyle = "#0033CC";
+    ctx.tiles.fillRect(0, 0, innerWidth, innerHeight);
+    ctx.tiles.font = "70px sans-serif";
+    ctx.tiles.textAlign = "center";
+    ctx.tiles.textBaseline = "middle";
+    ctx.tiles.fillStyle = "#000000";
+    ctx.tiles.fillText("Untitled Electron Game", innerWidth / 2, innerHeight * 0.2);
+    ctx.tiles.font = "20px sans-serif";
+    ctx.tiles.fillText("Title Screen Soon™", innerWidth / 2, innerHeight * 0.35);
+    ctx.tiles.fillStyle = "#0000FF";
     rect(innerWidth / 4, innerHeight * 0.5, innerWidth / 2, innerHeight * 0.2, rectMode.CORNER);
     rect(innerWidth / 4, innerHeight * 0.75, innerWidth / 2, innerHeight * 0.2, rectMode.CORNER);
-    ctx.strokeStyle = "#000000";
-    ctx.lineWidth = 2;
-    ctx.strokeRect(innerWidth / 4, innerHeight * 0.5, innerWidth / 2, innerHeight * 0.2);
-    ctx.strokeRect(innerWidth / 4, innerHeight * 0.75, innerWidth / 2, innerHeight * 0.2);
-    ctx.fillStyle = "#FFFFFF";
-    ctx.font = "40px sans-serif";
-    ctx.fillText("Play", innerWidth / 2, innerHeight * 0.6);
-    ctx.fillText("Settings", innerWidth / 2, innerHeight * 0.85);
+    ctx.tiles.strokeStyle = "#000000";
+    ctx.tiles.lineWidth = 2;
+    ctx.tiles.strokeRect(innerWidth / 4, innerHeight * 0.5, innerWidth / 2, innerHeight * 0.2);
+    ctx.tiles.strokeRect(innerWidth / 4, innerHeight * 0.75, innerWidth / 2, innerHeight * 0.2);
+    ctx.tiles.fillStyle = "#FFFFFF";
+    ctx.tiles.font = "40px sans-serif";
+    ctx.tiles.fillText("Play", innerWidth / 2, innerHeight * 0.6);
+    ctx.tiles.fillText("Settings", innerWidth / 2, innerHeight * 0.85);
 }
 function runSettings() {
-    ctx.clearRect(-1, -1, 10000, 10000);
-    ctx.fillStyle = "#0033CC";
-    ctx.fillRect(0, 0, innerWidth, innerHeight);
-    ctx.font = "70px sans-serif";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillStyle = "#000000";
-    ctx.fillText("Settings", innerWidth / 2, innerHeight * 0.2);
-    ctx.strokeStyle = "#000000";
-    ctx.strokeRect(innerWidth * 0.9, innerHeight * 0.01, innerWidth * 0.09, innerHeight * 0.09);
-    ctx.fillStyle = "#FF0000";
-    ctx.font = "50px sans-serif";
-    ctx.fillText("❌", innerWidth * 0.945, innerHeight * 0.055);
-    ctx.strokeRect(innerWidth * 0.25, innerHeight * 0.5, innerWidth * 0.25, innerHeight * 0.2);
-    ctx.strokeRect(innerWidth * 0.51, innerHeight * 0.5, innerWidth * 0.25, innerHeight * 0.2);
-    ctx.fillStyle = "#0000FF";
+    ctx.tiles.clearRect(-1, -1, 10000, 10000);
+    ctx.tiles.fillStyle = "#0033CC";
+    ctx.tiles.fillRect(0, 0, innerWidth, innerHeight);
+    ctx.tiles.font = "70px sans-serif";
+    ctx.tiles.textAlign = "center";
+    ctx.tiles.textBaseline = "middle";
+    ctx.tiles.fillStyle = "#000000";
+    ctx.tiles.fillText("Settings", innerWidth / 2, innerHeight * 0.2);
+    ctx.tiles.strokeStyle = "#000000";
+    ctx.tiles.strokeRect(innerWidth * 0.9, innerHeight * 0.01, innerWidth * 0.09, innerHeight * 0.09);
+    ctx.tiles.fillStyle = "#FF0000";
+    ctx.tiles.font = "50px sans-serif";
+    ctx.tiles.fillText("❌", innerWidth * 0.945, innerHeight * 0.055);
+    ctx.tiles.strokeRect(innerWidth * 0.25, innerHeight * 0.5, innerWidth * 0.25, innerHeight * 0.2);
+    ctx.tiles.strokeRect(innerWidth * 0.51, innerHeight * 0.5, innerWidth * 0.25, innerHeight * 0.2);
+    ctx.tiles.fillStyle = "#0000FF";
     rect(innerWidth * 0.25, innerHeight * 0.5, innerWidth * 0.25, innerHeight * 0.2, rectMode.CORNER);
     rect(innerWidth * 0.51, innerHeight * 0.5, innerWidth * 0.25, innerHeight * 0.2, rectMode.CORNER);
-    ctx.fillStyle = "#FFFFFF";
-    ctx.fillText("Tutorial: " + Game.persistent.tutorialenabled, innerWidth * 0.375, innerHeight * 0.6);
-    ctx.fillText("Debug: " + settings.debug, innerWidth * 0.625, innerHeight * 0.6);
+    ctx.tiles.fillStyle = "#FFFFFF";
+    ctx.tiles.fillText("Tutorial: " + Game.persistent.tutorialenabled, innerWidth * 0.375, innerHeight * 0.6);
+    ctx.tiles.fillText("Debug: " + settings.debug, innerWidth * 0.625, innerHeight * 0.6);
 }
 ;
 function load() {

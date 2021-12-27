@@ -1,5 +1,4 @@
-"use strict";
-const names = {
+export const names = {
     tile: {
         0x00: "Grass",
         0x01: "Stone",
@@ -42,7 +41,7 @@ const names = {
         "base_motor": "Motor"
     }
 };
-var ItemID;
+export var ItemID;
 (function (ItemID) {
     ItemID["base_null"] = "base_null";
     ItemID["base_coalOre"] = "base_coalOre";
@@ -61,7 +60,7 @@ var ItemID;
     ItemID["base_rotor"] = "base_rotor";
     ItemID["base_motor"] = "base_motor";
 })(ItemID || (ItemID = {}));
-const generation_consts = {
+export const generation_consts = {
     perlin_scale: 2 * Math.PI,
     y_offset: 2031,
     ore_scale: 3,
@@ -74,7 +73,7 @@ const generation_consts = {
         min_copper_distance: 12
     }
 };
-const consts = {
+export const consts = {
     VERSION: "alpha 1.1.0",
     CHUNK_SIZE: 16,
     TILE_SIZE: 30,
@@ -88,7 +87,7 @@ const consts = {
         }
     }
 };
-const recipes = {
+export const recipes = {
     maxInputs: 3,
     "base_mining": {
         "type": "t-1",
@@ -201,18 +200,18 @@ const recipes = {
         ]
     }
 };
-let mouse = {
+export let mouse = {
     x: 0,
     y: 0,
     pressed: false,
     latestEvent: null
 };
-let keysPressed = [];
-let settings = {
+export let keysPressed = [];
+export let settings = {
     graphics_mode: 1,
     debug: true
 };
-let Game = {
+export let Game = {
     scroll: {
         x: 300,
         y: 300,
@@ -248,16 +247,26 @@ let Game = {
         },
         multiplesteel: false
     },
-    state: "title"
+    state: "title",
+    canOverwriteBuilding: false
 };
-const ctx = document.getElementById("canvas").getContext("2d");
-const ctx1 = document.getElementById("canvas1").getContext("2d");
-const ctx2 = document.getElementById("canvas2").getContext("2d");
-const ctx25 = document.getElementById("canvas25").getContext("2d");
-const ctx3 = document.getElementById("canvas3").getContext("2d");
-const ctx4 = document.getElementById("canvas4").getContext("2d");
-const ctxs = [ctx, ctx1, ctx2, ctx25, ctx3, ctx4];
-const uploadButton = document.getElementById('uploadButton');
+const ctx_tiles = document.getElementById("canvas").getContext("2d");
+const ctx_ghostbuildings = document.getElementById("canvas1").getContext("2d");
+const ctx_buildings = document.getElementById("canvas2").getContext("2d");
+const ctx_extractors = document.getElementById("canvas25").getContext("2d");
+const ctx_items = document.getElementById("canvas3").getContext("2d");
+const ctx_overlays = document.getElementById("canvas4").getContext("2d");
+export const ctxs = [ctx_tiles, ctx_ghostbuildings, ctx_buildings, ctx_extractors, ctx_items, ctx_overlays];
+export const ctx = {
+    tiles: ctx_tiles,
+    ghostbuildings: ctx_ghostbuildings,
+    buildings: ctx_buildings,
+    extractors: ctx_extractors,
+    items: ctx_items,
+    overlays: ctx_overlays
+};
+export const uploadButton = document.getElementById('uploadButton');
+export const textures = new Map();
 function makeError(name) {
     return class extends Error {
         constructor(message) {
@@ -266,10 +275,7 @@ function makeError(name) {
         }
     };
 }
-const ShouldNotBePossibleError = makeError("ShouldNotBePossibleError");
-const AssertionFailedError = makeError("AssertionFailedError");
-const ArgumentError = makeError("ArgumentError");
-const InvalidStateError = makeError("InvalidStateError");
-function importIntoGlobalScope(obj) {
-    Object.assign(window, obj);
-}
+export const ShouldNotBePossibleError = makeError("ShouldNotBePossibleError");
+export const AssertionFailedError = makeError("AssertionFailedError");
+export const ArgumentError = makeError("ArgumentError");
+export const InvalidStateError = makeError("InvalidStateError");

@@ -1,3 +1,5 @@
+import {ItemID} from "./vars";
+
 type Tile = 
 0x00 |  //Grass
 0x01 |  //stone
@@ -72,3 +74,4 @@ interface currentFrame {
 	ips: number;//Items per frame
 	redraw: boolean;
 }
+

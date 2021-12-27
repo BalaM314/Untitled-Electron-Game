@@ -1,4 +1,6 @@
-const names = {
+import { Recipe, RecipeType } from "./types";
+
+export const names = {
 	tile: {
 		0x00: "Grass",
 		0x01: "Stone",
@@ -42,7 +44,7 @@ const names = {
 	}
 };
 
-enum ItemID {
+export enum ItemID {
 	base_null = "base_null",
 	base_coalOre = "base_coalOre",
 	base_coal = "base_coal",
@@ -61,7 +63,7 @@ enum ItemID {
 	base_motor = "base_motor"
 }
 
-const generation_consts = {
+export const generation_consts = {
 	//All distance values are in chunks.
 	perlin_scale: 2 * Math.PI,//An irrational number used to scale the perlin noise. The larger the number, the larger the terrain formations.
 	y_offset: 2031,//To make the terrain not mirrored diagonally.
@@ -76,7 +78,7 @@ const generation_consts = {
 	}
 };
 
-const consts = {
+export const consts = {
 	VERSION: "alpha 1.1.0",
 	CHUNK_SIZE: 16,//Size of a chunk in tiles.
 	TILE_SIZE: 30,//Sile of a tile in pixels.
@@ -91,7 +93,7 @@ const consts = {
 	}
 };
 
-const recipes: {//List of all recipes.
+export const recipes: {//List of all recipes.
 	maxInputs: number;
 	[index: `${string}_${string}`]: {
 		type: RecipeType;
@@ -211,19 +213,19 @@ const recipes: {//List of all recipes.
 	}
 };
 
-let mouse = {
+export let mouse = {
 	x: 0,
 	y: 0,
 	pressed: false,
 	latestEvent: null
 };
-let keysPressed:string[] = [];
+export let keysPressed:string[] = [];
 
-let settings = {
+export let settings = {
 	graphics_mode: 1,
 	debug: true
 };
-let Game = {
+export let Game = {
 	scroll: {
 		x: 300,
 		y: 300,
@@ -259,18 +261,26 @@ let Game = {
 		},
 		multiplesteel: false
 	},
-	state: "title"
+	state: "title",
+	canOverwriteBuilding: false
 };
-
-const ctx = (document.getElementById("canvas") as HTMLCanvasElement).getContext("2d");//Tiles
-const ctx1 = (document.getElementById("canvas1") as HTMLCanvasElement).getContext("2d");//Ghost buildings
-const ctx2 = (document.getElementById("canvas2") as HTMLCanvasElement).getContext("2d");//Buildings
-const ctx25 = (document.getElementById("canvas25") as HTMLCanvasElement).getContext("2d");//Extractors
-const ctx3 = (document.getElementById("canvas3") as HTMLCanvasElement).getContext("2d");//Items
-const ctx4 = (document.getElementById("canvas4") as HTMLCanvasElement).getContext("2d");//Overlays
-const ctxs = [ctx, ctx1, ctx2, ctx25, ctx3, ctx4];
-const uploadButton = document.getElementById('uploadButton')! as HTMLInputElement;
-
+const ctx_tiles = (document.getElementById("canvas") as HTMLCanvasElement).getContext("2d");//Tiles
+const ctx_ghostbuildings = (document.getElementById("canvas1") as HTMLCanvasElement).getContext("2d");//Ghost buildings
+const ctx_buildings = (document.getElementById("canvas2") as HTMLCanvasElement).getContext("2d");//Buildings
+const ctx_extractors = (document.getElementById("canvas25") as HTMLCanvasElement).getContext("2d");//Extractors
+const ctx_items = (document.getElementById("canvas3") as HTMLCanvasElement).getContext("2d");//Items
+const ctx_overlays = (document.getElementById("canvas4") as HTMLCanvasElement).getContext("2d");//Overlays
+export const ctxs = [ctx_tiles, ctx_ghostbuildings, ctx_buildings, ctx_extractors, ctx_items, ctx_overlays];
+export const ctx = {
+	tiles: ctx_tiles,
+	ghostbuildings: ctx_ghostbuildings,
+	buildings: ctx_buildings,
+	extractors: ctx_extractors,
+	items: ctx_items,
+	overlays: ctx_overlays
+};
+export const uploadButton = document.getElementById('uploadButton')! as HTMLInputElement;
+export const textures = new Map();
 function makeError(name){
 	return class extends Error {
 		constructor(message){
@@ -279,11 +289,7 @@ function makeError(name){
 		}
 	};
 }
-const ShouldNotBePossibleError = makeError("ShouldNotBePossibleError");
-const AssertionFailedError = makeError("AssertionFailedError");
-const ArgumentError = makeError("ArgumentError");
-const InvalidStateError = makeError("InvalidStateError");
-
-function importIntoGlobalScope(obj:Object){
-	Object.assign(window, obj);
-}
+export const ShouldNotBePossibleError = makeError("ShouldNotBePossibleError");
+export const AssertionFailedError = makeError("AssertionFailedError");
+export const ArgumentError = makeError("ArgumentError");
+export const InvalidStateError = makeError("InvalidStateError");

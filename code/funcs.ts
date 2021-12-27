@@ -1,23 +1,25 @@
 
-interface Array<T>{
-	contains: (val:T) => boolean
-}
+import { ItemID, consts, Game, ctx, ShouldNotBePossibleError, AssertionFailedError, ArgumentError, InvalidStateError, textures }
+from "./vars";
+import { RawBuildingID } from "./types";
 
-Array.prototype.contains = function(val){
+
+
+(Array.prototype as any).contains = function(val){
 	return this.indexOf(val) != -1;
 };
 Object.defineProperty(Array.prototype, "contains", {
 	enumerable: false
 });
 
-enum triggerType {
+export enum triggerType {
 	placeBuilding,
 	placeBuildingFail,
 	spawnItem,
 	buildingRun
 }
 
-function trigger(type:triggerType, buildingID?:RawBuildingID, itemID?:ItemID){
+export function trigger(type:triggerType, buildingID?:RawBuildingID, itemID?:ItemID){
 	//Used to handle tutorial, and maybe achievements.
 	switch(type){
 		case triggerType.placeBuilding:
@@ -115,15 +117,15 @@ function trigger(type:triggerType, buildingID?:RawBuildingID, itemID?:ItemID){
 }
 
 //general functions
-function sq(x:number):number{
+export function sq(x:number):number{
 	return x * x;
 }
 
-function millis():number{
+export function millis():number{
 	return (new Date()).valueOf() - Game.startTime.valueOf();
 }
 
-function gcd(x:number, y:number):any{
+export function gcd(x:number, y:number):any{
 	if((typeof x !== 'number') || (typeof y !== 'number')){
 		return false;
 	}
@@ -136,7 +138,7 @@ function gcd(x:number, y:number):any{
 	}
 	return x;
 }
-function random(min:number|any[],max:number):number{
+export function random(min:number|any[],max:number):number{
 	if(typeof min == "number"){
 		if(arguments.length > 2){
 			throw new ArgumentError("Too many arguments for random");
@@ -155,7 +157,7 @@ function random(min:number|any[],max:number):number{
 	}
 }
 
-function range(start:number, end:number){
+export function range(start:number, end:number){
 	let temp = [];
 	for(let i = start; i <= end; i ++){
 		temp.push(i);
@@ -163,20 +165,20 @@ function range(start:number, end:number){
 	return temp;
 }
 
-function constrain(x:number, min:number, max:number){
+export function constrain(x:number, min:number, max:number){
 	if(x > max) return max;
 	if(x < min) return min;
 	return x;
 }
 
 
-function assert(x:any){
+export function assert(x:any){
 	if(!x){
 		throw new AssertionFailedError(x);
 	}
 }
 
-function download(filename, text){
+export function download(filename, text){
   //Self explanatory.
   let temp2 = document.createElement('a');
   temp2.setAttribute('href', 'data:text/json;charset=utf-8,' + encodeURIComponent(text));
@@ -193,13 +195,13 @@ function download(filename, text){
  * 
  */
 
-enum rectMode {
+export enum rectMode {
 	CENTER,
 	CORNER
 }
 
-function rect(x:number, y:number, w:number, h:number, mode?:rectMode, _ctx?:CanvasRenderingContext2D){
-	if(!_ctx) _ctx = ctx;
+export function rect(x:number, y:number, w:number, h:number, mode?:rectMode, _ctx?:CanvasRenderingContext2D){
+	if(!_ctx) _ctx = ctx.tiles;
 	if(mode == rectMode.CENTER){
 		_ctx.fillRect(x - w/2, y - w/2, w, h);
 	} else {
@@ -207,13 +209,13 @@ function rect(x:number, y:number, w:number, h:number, mode?:rectMode, _ctx?:Canv
 	}
 }
 
-function ellipse(x, y, w, h){
-	ctx.beginPath();
-	ctx.ellipse(x, y, w, h, 0, 0, Math.PI * 2);
-	ctx.fill();
+export function ellipse(x, y, w, h){
+	ctx.tiles.beginPath();
+	ctx.tiles.ellipse(x, y, w, h, 0, 0, Math.PI * 2);
+	ctx.tiles.fill();
 }
 
-function* pseudoRandom(seed){
+export function* pseudoRandom(seed){
 	let value = seed + 11111111111111;
 	while(true){
 		value = value * 16807 % 16777216;
@@ -226,18 +228,18 @@ function* pseudoRandom(seed){
 /**
  * Game-related functions
  */
-let alerts = [];
-function _alert(x:string | [string,number]){
+export let alerts = [];
+export function _alert(x:string | [string,number]){
 	alerts.push(x);
 }
-function loadTextures(){
+export function loadTextures(){
 	for(let element of document.getElementById("textures").children){
 		textures.set(element.id, element);
 	}
 };
 
 
-function zoom(scaleFactor){
+export function zoom(scaleFactor){
 	scaleFactor = constrain(scaleFactor, 0.9, 1.1);
 	if(consts.DISPLAY_SCALE * scaleFactor < 1){
 		scaleFactor = 1 / consts.DISPLAY_SCALE;
@@ -253,15 +255,15 @@ function zoom(scaleFactor){
 	Game.scroll.y -= (innerHeight * 0.5 * (scaleFactor - 1))/consts.DISPLAY_SCALE;
 }
 
-function tileToChunk(tileCoord:number):number {
+export function tileToChunk(tileCoord:number):number {
 	tileCoord = Math.floor(tileCoord) % consts.CHUNK_SIZE;
 	return tileCoord + (tileCoord < 0 ? consts.CHUNK_SIZE : 0);
 }
 
-function pixelToTile(pixelCoord:number):number {
+export function pixelToTile(pixelCoord:number):number {
 	pixelCoord = Math.floor(pixelCoord) % consts.TILE_SIZE;
 	return pixelCoord + (pixelCoord < 0 ? consts.TILE_SIZE : 0);
 }
-function tileAtPixel(pixelCoord:number):number {
+export function tileAtPixel(pixelCoord:number):number {
 	return Math.floor(pixelCoord / consts.TILE_SIZE);
 }

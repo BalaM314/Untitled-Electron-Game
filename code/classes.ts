@@ -2,10 +2,17 @@
 	Main classes.
 */
 
-//import "vars.js";
+import { assert, tileToChunk, trigger, triggerType, pseudoRandom, constrain, rect, rectMode, _alert, pixelToTile} from "./funcs";
+import { Tile, BuildingID, RawBuildingID, noise, Recipe, currentFrame } from "./types";
+import { names, ItemID, generation_consts, consts, recipes, mouse, keysPressed, settings, Game, ctx, ctxs, uploadButton, ShouldNotBePossibleError, AssertionFailedError, ArgumentError, InvalidStateError, textures } from "./vars";
 
+declare global {
+	interface Array<T> {
+		contains(value:T): boolean
+	}
+}
 
-/*export */class Level {
+export class Level {
 	items: Item[];
 	resources: {
 		[index: string]: number
@@ -149,7 +156,7 @@
 		for(let item of this.items){
 			item.update(currentframe);
 		}
-		for(let chunk of level1.storage.values()){
+		for(let chunk of this.storage.values()){
 			chunk.update();
 		}
 	}
@@ -259,12 +266,12 @@
 	}
 	buildBuilding(tileX:number, tileY:number, building:BuildingID):boolean {
 		if((building % 0x100 != 5 ? this.buildingIDAtTile(tileX, tileY) : this.extractorAtTile(tileX, tileY)?.id) === building){
-			if(!canOverwriteBuilding){
+			if(!Game.canOverwriteBuilding){
 				return false;
 			}
 		}//Only overwrite the same building once per build attempt.
 		//Otherwise, you could constantly overwrite a building on every frame you tried to build, which is not good.
-		canOverwriteBuilding = false;
+		Game.canOverwriteBuilding = false;
 		this.buildingAtTile(tileX, tileY)?.break();
 		let tempBuilding:Building;
 		
@@ -289,10 +296,10 @@
 					let secondary3 = new MultiBlockSecondary(tileX+1, tileY+1, 0x0010, this);
 					controller.secondaries = [secondary1, secondary2, secondary3];
 					[secondary1, secondary2, secondary3].forEach(secondary => secondary.controller = controller);
-					level1.writeBuilding(tileX, tileY, controller);
-					level1.writeBuilding(tileX + 1, tileY, secondary1);
-					level1.writeBuilding(tileX, tileY + 1, secondary2);
-					level1.writeBuilding(tileX+1, tileY+1, secondary3);
+					this.writeBuilding(tileX, tileY, controller);
+					this.writeBuilding(tileX + 1, tileY, secondary1);
+					this.writeBuilding(tileX, tileY + 1, secondary2);
+					this.writeBuilding(tileX+1, tileY+1, secondary3);
 				break;
 				default:
 					return false;
@@ -331,35 +338,35 @@
 		if(!currentframe.tooltip){return;}
 		let x = (mousex - (Game.scroll.x * consts.DISPLAY_SCALE))/consts.DISPLAY_SCALE;
 		let y = (mousey - (Game.scroll.y * consts.DISPLAY_SCALE))/consts.DISPLAY_SCALE;
-		ctx4.font = "16px monospace";
+		ctx.overlays.font = "16px monospace";
 		for(let item of this.items){
 			if((Math.abs(item.x - x) < 16) && Math.abs(item.y - y) < 16){
-				ctx4.fillStyle = "#0033CC";
-				ctx4.fillRect(mousex, mousey, (names.item[item.id] ?? item.id).length * 10, 16);
-				ctx4.strokeStyle = "#000000";
-				ctx4.strokeRect(mousex, mousey, (names.item[item.id] ?? item.id).length * 10, 16);
-				ctx4.fillStyle = "#FFFFFF";
-				ctx4.fillText((names.item[item.id] ?? item.id), mousex + 2, mousey + 10);
+				ctx.overlays.fillStyle = "#0033CC";
+				ctx.overlays.fillRect(mousex, mousey, (names.item[item.id] ?? item.id).length * 10, 16);
+				ctx.overlays.strokeStyle = "#000000";
+				ctx.overlays.strokeRect(mousex, mousey, (names.item[item.id] ?? item.id).length * 10, 16);
+				ctx.overlays.fillStyle = "#FFFFFF";
+				ctx.overlays.fillText((names.item[item.id] ?? item.id), mousex + 2, mousey + 10);
 				return;
 			}
 		}
 		if(this.buildingAtPixel(x, y) instanceof Building){
 			let buildingID = this.buildingAtPixel(x, y).id % 0x100;
-			ctx4.fillStyle = "#0033CC";
-			ctx4.fillRect(mousex, mousey, (names.building[buildingID] ?? buildingID).length * 10, 16);
-			ctx4.strokeStyle = "#000000";
-			ctx4.strokeRect(mousex, mousey, (names.building[buildingID] ?? buildingID).length * 10, 16);
-			ctx4.fillStyle = "#FFFFFF";
-			ctx4.fillText((names.building[buildingID] ?? buildingID), mousex + 2, mousey + 10);
+			ctx.overlays.fillStyle = "#0033CC";
+			ctx.overlays.fillRect(mousex, mousey, (names.building[buildingID] ?? buildingID).length * 10, 16);
+			ctx.overlays.strokeStyle = "#000000";
+			ctx.overlays.strokeRect(mousex, mousey, (names.building[buildingID] ?? buildingID).length * 10, 16);
+			ctx.overlays.fillStyle = "#FFFFFF";
+			ctx.overlays.fillText((names.building[buildingID] ?? buildingID), mousex + 2, mousey + 10);
 			return;
 		}
 		let tileID = this.tileAtByPixel(x, y);
-		ctx4.fillStyle = "#0033CC";
-		ctx4.fillRect(mousex, mousey, (names.tile[tileID] ?? tileID).length * 10, 16);
-		ctx4.strokeStyle = "#000000";
-		ctx4.strokeRect(mousex, mousey, (names.tile[tileID] ?? tileID).length * 10, 16);
-		ctx4.fillStyle = "#FFFFFF";
-		ctx4.fillText((names.tile[tileID] ?? tileID), mousex + 2, mousey + 10);
+		ctx.overlays.fillStyle = "#0033CC";
+		ctx.overlays.fillRect(mousex, mousey, (names.tile[tileID] ?? tileID).length * 10, 16);
+		ctx.overlays.strokeStyle = "#000000";
+		ctx.overlays.strokeRect(mousex, mousey, (names.tile[tileID] ?? tileID).length * 10, 16);
+		ctx.overlays.fillStyle = "#FFFFFF";
+		ctx.overlays.fillText((names.tile[tileID] ?? tileID), mousex + 2, mousey + 10);
 		return;
 	}
 
@@ -392,7 +399,7 @@
 
 
 
-/*export */class Chunk {
+export class Chunk {
 	layers: [
 		Tile[][],
 		Building[][],
@@ -647,8 +654,8 @@
 			(Game.scroll.y * consts.DISPLAY_SCALE) + this.y * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE < -1 - consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE
 		){return;}//if offscreen return immediately
 		currentframe.cps ++;
-		ctx.strokeStyle = "#000000";
-		ctx.lineWidth = 1;
+		ctx.tiles.strokeStyle = "#000000";
+		ctx.tiles.lineWidth = 1;
 		
 		if(currentframe.redraw){
 			for(let y = 0; y < this.layers[0].length; y ++){
@@ -673,8 +680,8 @@
 			}
 		}
 		if(currentframe.debug){
-			ctx4.strokeStyle = "#0000FF";
-			ctx4.strokeRect(this.x * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE + (Game.scroll.x * consts.DISPLAY_SCALE), this.y  * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE + (Game.scroll.y * consts.DISPLAY_SCALE), consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE, consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE);
+			ctx.overlays.strokeStyle = "#0000FF";
+			ctx.overlays.strokeRect(this.x * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE + (Game.scroll.x * consts.DISPLAY_SCALE), this.y  * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE + (Game.scroll.y * consts.DISPLAY_SCALE), consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE, consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE);
 		}
 	}
 	displayTile(x:number, y:number, currentframe){
@@ -683,29 +690,29 @@
 		let pixelY = ((this.y * consts.CHUNK_SIZE) + y) * consts.DISPLAY_TILE_SIZE + (Game.scroll.y * consts.DISPLAY_SCALE);
 		if(settings.graphics_mode || (this.tileAt(x,y) != 0x00)){
 			if(textures.get("t" + this.tileAt(x,y).toString())){
-				ctx.drawImage(textures.get("t" + this.tileAt(x,y).toString()), pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
+				ctx.tiles.drawImage(textures.get("t" + this.tileAt(x,y).toString()), pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
 			} else {
-				ctx.fillStyle = "#FF00FF";
+				ctx.tiles.fillStyle = "#FF00FF";
 				rect(pixelX, pixelY, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2);
 				rect(pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY + consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2);
-				ctx.fillStyle = "#000000";
+				ctx.tiles.fillStyle = "#000000";
 				rect(pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2);
 				rect(pixelX, pixelY + consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2);
-				ctx.font = "15px sans-serif";
-				ctx.fillStyle = "#00FF00";
-				ctx.fillText(this.tileAt(x, y).toString(), pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY + consts.DISPLAY_TILE_SIZE / 2);
+				ctx.tiles.font = "15px sans-serif";
+				ctx.tiles.fillStyle = "#00FF00";
+				ctx.tiles.fillText(this.tileAt(x, y).toString(), pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY + consts.DISPLAY_TILE_SIZE / 2);
 			}
 		} else {
-			ctx.fillStyle = "#00CC33";
+			ctx.tiles.fillStyle = "#00CC33";
 			rect(pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
 		}
-		if(currentframe.debug) ctx.strokeRect(pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
+		if(currentframe.debug) ctx.tiles.strokeRect(pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
 	}
 	displayGhostBuilding(x:number, y:number, buildingID:BuildingID, isError:boolean){
 		if(buildingID == 0xFFFF){return;}
 		let pixelX = ((this.x * consts.CHUNK_SIZE) + x) * consts.DISPLAY_TILE_SIZE + (Game.scroll.x * consts.DISPLAY_SCALE);
 		let pixelY = ((this.y * consts.CHUNK_SIZE) + y) * consts.DISPLAY_TILE_SIZE + (Game.scroll.y * consts.DISPLAY_SCALE);
-		let _ctx = ctx1;
+		let _ctx = ctx.ghostbuildings;
 		if(isError){
 			_ctx.globalAlpha = 0.9;
 			_ctx.drawImage(textures.get("invalidunderlay"), pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
@@ -767,7 +774,7 @@
 		if(buildingID == 0xFFFF){return;}
 		let pixelX = ((this.x * consts.CHUNK_SIZE) + x) * consts.DISPLAY_TILE_SIZE + (Game.scroll.x * consts.DISPLAY_SCALE);
 		let pixelY = ((this.y * consts.CHUNK_SIZE) + y) * consts.DISPLAY_TILE_SIZE + (Game.scroll.y * consts.DISPLAY_SCALE);
-		let _ctx = ctx25;
+		let _ctx = ctx.extractors;
 		if(textures.get(buildingID.toString())){
 			switch(buildingID){
 				case 0x0005:
@@ -844,7 +851,7 @@
 	}
 }
 
-/*export */class Item {
+export class Item {
 	id: ItemID;
 	x: number;
 	y: number;
@@ -882,7 +889,7 @@
 			consts.DISPLAY_SCALE * (this.y + Game.scroll.y - 8) > window.innerHeight
 		){return;}//if offscreen return immediately
 		currentframe.ips ++;
-		ctx3.drawImage(textures.get("item_" + this.id), this.x * consts.DISPLAY_SCALE + (Game.scroll.x * consts.DISPLAY_SCALE) - 8*consts.DISPLAY_SCALE, this.y * consts.DISPLAY_SCALE + (Game.scroll.y * consts.DISPLAY_SCALE) - 8*consts.DISPLAY_SCALE, 16 * consts.DISPLAY_SCALE, 16 * consts.DISPLAY_SCALE);
+		ctx.items.drawImage(textures.get("item_" + this.id), this.x * consts.DISPLAY_SCALE + (Game.scroll.x * consts.DISPLAY_SCALE) - 8*consts.DISPLAY_SCALE, this.y * consts.DISPLAY_SCALE + (Game.scroll.y * consts.DISPLAY_SCALE) - 8*consts.DISPLAY_SCALE, 16 * consts.DISPLAY_SCALE, 16 * consts.DISPLAY_SCALE);
 		if(keysPressed.contains("Shift")){
 			let x = (mouse.x - (Game.scroll.x * consts.DISPLAY_SCALE))/consts.DISPLAY_SCALE;
 			let y = (mouse.y - (Game.scroll.y * consts.DISPLAY_SCALE))/consts.DISPLAY_SCALE;
@@ -893,13 +900,13 @@
 				x < this.x + (8 * consts.DISPLAY_SCALE) &&
 				y < this.y + (8 * consts.DISPLAY_SCALE)
 			){
-				ctx4.font = "16px monospace";
-				ctx4.fillStyle = "#0033CC";
-				ctx4.fillRect(mouse.x, mouse.y, (names.item[this.id] ?? this.id).length * 10, 16);
-				ctx4.strokeStyle = "#000000";
-				ctx4.strokeRect(mouse.x, mouse.y, (names.item[this.id] ?? this.id).length * 10, 16);
-				ctx4.fillStyle = "#FFFFFF";
-				ctx4.fillText((names.item[this.id] ?? this.id), mouse.x + 2, mouse.y + 10);
+				ctx.overlays.font = "16px monospace";
+				ctx.overlays.fillStyle = "#0033CC";
+				ctx.overlays.fillRect(mouse.x, mouse.y, (names.item[this.id] ?? this.id).length * 10, 16);
+				ctx.overlays.strokeStyle = "#000000";
+				ctx.overlays.strokeRect(mouse.x, mouse.y, (names.item[this.id] ?? this.id).length * 10, 16);
+				ctx.overlays.fillStyle = "#FFFFFF";
+				ctx.overlays.fillText((names.item[this.id] ?? this.id), mouse.x + 2, mouse.y + 10);
 				if(currentframe?.tooltip){
 					currentframe.tooltip = false;
 				}
@@ -917,7 +924,7 @@
 	}
 }
 
-/*export */class Building {
+export class Building {
 	x: number;
 	y: number;
 	id: BuildingID;
@@ -952,7 +959,7 @@
 	display(currentFrame:currentFrame){
 		let pixelX = this.x * consts.DISPLAY_TILE_SIZE + Game.scroll.x * consts.DISPLAY_SCALE;
 		let pixelY = this.y * consts.DISPLAY_TILE_SIZE + Game.scroll.y * consts.DISPLAY_SCALE;
-		let _ctx = ctx2;
+		let _ctx = ctx.buildings;
 		let texture = textures.get(this.id.toString());
 		if(texture){
 			if(this.id % 0x100 == 5){
@@ -1104,7 +1111,7 @@
 
 
 
-/*export */abstract class BuildingWithRecipe extends Building {
+export abstract class BuildingWithRecipe extends Building {
 	timer: number;
 	recipe: Recipe;
 	items: Item[];
@@ -1162,7 +1169,7 @@
 }
 
 
-/*export */class Miner extends Building {
+export class Miner extends Building {
 	timer: number;
 	miningItem: ItemID;
 	constructor(tileX:number, tileY:number, id:BuildingID, level:Level){
@@ -1191,7 +1198,7 @@
 
 
 
-/*export */class TrashCan extends Building {
+export class TrashCan extends Building {
 	update(){
 		this.grabItem(_ => {return true}, item => {item.deleted = true;}, true);
 	}
@@ -1201,7 +1208,7 @@
 }
 
 
-/*export */class Furnace extends BuildingWithRecipe {
+export class Furnace extends BuildingWithRecipe {
 	static recipeType = recipes.base_smelting;
 	static animated = true;
 	static canBuildAt(tileX:number, tileY:number, level:Level){
@@ -1209,7 +1216,7 @@
 	}
 }
 
-/*export */class Conveyor extends Building {
+export class Conveyor extends Building {
 	constructor(tileX:number, tileY:number, id:BuildingID, level:Level){
 		super(tileX, tileY, id, level);
 		this.item = null;
@@ -1362,7 +1369,7 @@
 }
 
 
-/*export */class Extractor extends Conveyor {
+export class Extractor extends Conveyor {
 	constructor(x:number, y:number, id:BuildingID, level:Level){
 		super(x, y, id, level);
 	}
@@ -1487,7 +1494,7 @@ interface StorageInventory extends Array<Item> {
 	MAX_LENGTH: number;
 	at: Function;
 }
-/*export */class StorageBuilding extends Building {
+export class StorageBuilding extends Building {
 	inventory: StorageInventory;
 	constructor(tileX:number, tileY: number, id:BuildingID, level:Level){
 		super(tileX, tileY, id, level);
@@ -1512,7 +1519,7 @@ interface StorageInventory extends Array<Item> {
 }
 
 
-/*export */class ResourceAcceptor extends Building {
+export class ResourceAcceptor extends Building {
 	acceptItem(item:Item){
 		item.deleted = true;
 		item.grabbedBy = null;
@@ -1535,25 +1542,25 @@ interface StorageInventory extends Array<Item> {
 }
 
 //I love abstraction
-/*export */class AlloySmelter extends BuildingWithRecipe {
+export class AlloySmelter extends BuildingWithRecipe {
 	static animated = true;
 	static recipeType = recipes.base_alloying;
 }
 
-/*export */class Wiremill extends BuildingWithRecipe {
+export class Wiremill extends BuildingWithRecipe {
 	static recipeType = recipes.base_wiremilling;
 }
 
-/*export */class Compressor extends BuildingWithRecipe {
+export class Compressor extends BuildingWithRecipe {
 	static recipeType = recipes.base_compressing;
 }
 
-/*export */class Lathe extends BuildingWithRecipe {
+export class Lathe extends BuildingWithRecipe {
 	static recipeType = recipes.base_lathing;
 }
 
 
-/*export */class MultiBlockController extends BuildingWithRecipe {
+export class MultiBlockController extends BuildingWithRecipe {
 	secondaries: MultiBlockSecondary[];
 	static size = [1, 1];
 	break(){
@@ -1569,7 +1576,7 @@ interface StorageInventory extends Array<Item> {
 	}
 }
 
-/*export */class MultiBlockSecondary extends Building {
+export class MultiBlockSecondary extends Building {
 	controller: MultiBlockController;
 	acceptItem(item: Item):boolean {
 		return this.controller.acceptItem(item);
@@ -1591,12 +1598,12 @@ interface StorageInventory extends Array<Item> {
 	}
 }
 
-/*export */class Assembler extends MultiBlockController {
+export class Assembler extends MultiBlockController {
 	static recipeType = recipes.base_assembling;
 	static size = [2, 2];
 }
 
-/*export */const BuildingType: {
+export const BuildingType: {
 	[index:number]: typeof Building
 } = {
 	0x01: Conveyor,
