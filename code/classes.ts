@@ -884,8 +884,8 @@
 		currentframe.ips ++;
 		ctx3.drawImage(textures.get("item_" + this.id), this.x * consts.DISPLAY_SCALE + (Game.scroll.x * consts.DISPLAY_SCALE) - 8*consts.DISPLAY_SCALE, this.y * consts.DISPLAY_SCALE + (Game.scroll.y * consts.DISPLAY_SCALE) - 8*consts.DISPLAY_SCALE, 16 * consts.DISPLAY_SCALE, 16 * consts.DISPLAY_SCALE);
 		if(keysPressed.contains("Shift")){
-			let x = (mouseX - (Game.scroll.x * consts.DISPLAY_SCALE))/consts.DISPLAY_SCALE;
-			let y = (mouseY - (Game.scroll.y * consts.DISPLAY_SCALE))/consts.DISPLAY_SCALE;
+			let x = (mouse.x - (Game.scroll.x * consts.DISPLAY_SCALE))/consts.DISPLAY_SCALE;
+			let y = (mouse.y - (Game.scroll.y * consts.DISPLAY_SCALE))/consts.DISPLAY_SCALE;
 			//alert(this.x + " " + this.y + "  " + x + " " + y);
 			if(
 				x > this.x - (8 * consts.DISPLAY_SCALE) &&
@@ -895,11 +895,11 @@
 			){
 				ctx4.font = "16px monospace";
 				ctx4.fillStyle = "#0033CC";
-				ctx4.fillRect(mouseX, mouseY, (names.item[this.id] ?? this.id).length * 10, 16);
+				ctx4.fillRect(mouse.x, mouse.y, (names.item[this.id] ?? this.id).length * 10, 16);
 				ctx4.strokeStyle = "#000000";
-				ctx4.strokeRect(mouseX, mouseY, (names.item[this.id] ?? this.id).length * 10, 16);
+				ctx4.strokeRect(mouse.x, mouse.y, (names.item[this.id] ?? this.id).length * 10, 16);
 				ctx4.fillStyle = "#FFFFFF";
-				ctx4.fillText((names.item[this.id] ?? this.id), mouseX + 2, mouseY + 10);
+				ctx4.fillText((names.item[this.id] ?? this.id), mouse.x + 2, mouse.y + 10);
 				if(currentframe?.tooltip){
 					currentframe.tooltip = false;
 				}

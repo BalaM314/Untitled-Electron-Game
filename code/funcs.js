@@ -102,7 +102,7 @@ function sq(x) {
     return x * x;
 }
 function millis() {
-    return (new Date()).valueOf() - programStart.valueOf();
+    return (new Date()).valueOf() - Game.startTime.valueOf();
 }
 function gcd(x, y) {
     if ((typeof x !== 'number') || (typeof y !== 'number')) {

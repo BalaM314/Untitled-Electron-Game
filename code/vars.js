@@ -201,12 +201,13 @@ const recipes = {
         ]
     }
 };
-let mouseX = 0;
-let mouseY = 0;
-let mouseIsPressed = false;
-let latestMouseEvent = null;
+let mouse = {
+    x: 0,
+    y: 0,
+    pressed: false,
+    latestEvent: null
+};
 let keysPressed = [];
-const programStart = new Date();
 let settings = {
     graphics_mode: 1,
     debug: true
@@ -217,6 +218,7 @@ let Game = {
         y: 300,
         speed: 5
     },
+    startTime: new Date(),
     forceRedraw: true,
     persistent: {
         tutorialenabled: true
@@ -245,9 +247,9 @@ let Game = {
             steel: true
         },
         multiplesteel: false
-    }
+    },
+    state: "title"
 };
-let GAME_STATE = "title";
 const ctx = document.getElementById("canvas").getContext("2d");
 const ctx1 = document.getElementById("canvas1").getContext("2d");
 const ctx2 = document.getElementById("canvas2").getContext("2d");

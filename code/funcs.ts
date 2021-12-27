@@ -120,7 +120,7 @@ function sq(x:number):number{
 }
 
 function millis():number{
-	return (new Date()).valueOf() - programStart.valueOf();
+	return (new Date()).valueOf() - Game.startTime.valueOf();
 }
 
 function gcd(x:number, y:number):any{

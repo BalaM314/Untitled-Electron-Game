@@ -3,9 +3,9 @@ console.log("%c Hey there! It looks like you're checking out the console.\nIf yo
 let textures = new Map();
 noise.seed(1);
 window.onmousemove = (e) => {
-    mouseX = e.x;
-    mouseY = e.y;
-    latestMouseEvent = e;
+    mouse.x = e.x;
+    mouse.y = e.y;
+    mouse.latestEvent = e;
 };
 window.onkeydown = (e) => {
     if (typeof parseInt(e.key) == "number") {
@@ -106,13 +106,13 @@ window.onkeyup = (e) => {
     }
 };
 document.getElementById("clickcapture").onmousedown = (e) => {
-    mouseIsPressed = true;
-    latestMouseEvent = e;
+    mouse.pressed = true;
+    mouse.latestEvent = e;
     canOverwriteBuilding = true;
 };
 document.getElementById("clickcapture").onmouseup = (e) => {
-    mouseIsPressed = false;
-    latestMouseEvent = e;
+    mouse.pressed = false;
+    mouse.latestEvent = e;
     canOverwriteBuilding = true;
 };
 uploadButton.onchange = function (event) {
@@ -129,7 +129,7 @@ window.onwheel = (e) => {
 };
 window.onblur = () => {
     keysPressed = [];
-    mouseIsPressed = false;
+    mouse.pressed = false;
 };
 let fps = [0, 0, 0, 0, 0, 0];
 function runLevel(level, currentFrame) {
@@ -151,9 +151,9 @@ function runLevel(level, currentFrame) {
     ctx3.clearRect(0, 0, innerWidth, innerHeight);
     ctx4.clearRect(0, 0, innerWidth, innerHeight);
     level.display(currentFrame);
-    level.displayGhostBuilding((mouseX - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE, (mouseY - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE, placedBuilding.ID);
+    level.displayGhostBuilding((mouse.x - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE, (mouse.y - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE, placedBuilding.ID);
     if (keysPressed.indexOf("shift") != -1) {
-        level.displayTooltip(mouseX, mouseY, currentFrame);
+        level.displayTooltip(mouse.x, mouse.y, currentFrame);
     }
     ctx4.font = "30px sans-serif";
     ctx4.fillStyle = "#000000";
@@ -213,7 +213,7 @@ function main_loop() {
     };
     Game.forceRedraw = false;
     fixSizes();
-    if (mouseIsPressed) {
+    if (mouse.pressed) {
         handleMouseDown(currentFrame);
     }
     if (keysPressed.length > 0) {
@@ -225,7 +225,7 @@ function main_loop() {
     else {
         Game.scroll.speed = 5;
     }
-    switch (GAME_STATE) {
+    switch (Game.state) {
         case "title":
             runTitle();
             break;
@@ -236,10 +236,10 @@ function main_loop() {
             runSettings();
             break;
         default:
-            throw new InvalidStateError(`Invalid game state "${GAME_STATE}"`);
+            throw new InvalidStateError(`Invalid game state "${Game.state}"`);
     }
     if (alerts.length) {
-        mouseIsPressed = false;
+        mouse.pressed = false;
         for (let __alert of alerts) {
             if (__alert instanceof Array) {
                 setTimeout(() => {
@@ -340,7 +340,7 @@ for (let element of document.getElementById("toolbar").children) {
         }
         event.target.classList.add("selected");
         placedBuilding.type = parseInt(event.target.id);
-        mouseIsPressed = false;
+        mouse.pressed = false;
     });
 }
 function checkload() {
@@ -351,7 +351,7 @@ function checkload() {
         level1.buildBuilding(0, -1, 0x0008);
         level1.buildBuilding(-1, 0, 0x0008);
         level1.buildBuilding(-1, -1, 0x0008);
-        GAME_STATE = "game";
+        Game.state = "game";
         Game.forceRedraw = true;
         document.getElementById("toolbar").classList.remove("hidden");
         document.getElementById("resources").classList.remove("hidden");
@@ -413,12 +413,12 @@ let placedBuilding = {
 };
 let canOverwriteBuilding = true;
 let handleMouseDown = (currentFrame, e) => {
-    e = e ?? latestMouseEvent;
-    switch (GAME_STATE) {
+    e = e ?? mouse.latestEvent;
+    switch (Game.state) {
         case "game":
             if (e.ctrlKey) {
                 level1.addItem((e.x - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_SCALE, (e.y - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_SCALE, ItemID.base_null);
-                mouseIsPressed = false;
+                mouse.pressed = false;
             }
             else {
                 level1.buildBuilding(Math.floor((e.x - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE), Math.floor((e.y - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE), placedBuilding.ID);
@@ -427,26 +427,26 @@ let handleMouseDown = (currentFrame, e) => {
         case "title":
             if (e.x > innerWidth / 4 && e.x < innerWidth * 0.75) {
                 if (e.y > innerHeight / 2 && e.y < innerHeight * 0.7) {
-                    mouseIsPressed = false;
+                    mouse.pressed = false;
                     load();
                 }
                 if (e.y > innerHeight * 0.75 && e.y < innerHeight * 0.95) {
-                    GAME_STATE = "settings";
+                    Game.state = "settings";
                 }
             }
             break;
         case "settings":
             if (e.y < innerHeight * 0.1 && e.y > innerHeight * 0.01 && e.x > innerWidth * 0.9 && e.x < innerWidth * 0.99) {
                 localStorage.setItem("persistentStorage", JSON.stringify(Game.persistent));
-                GAME_STATE = "title";
+                Game.state = "title";
             }
             if (e.y > innerHeight * 0.5 && e.y < innerHeight * 0.7 && e.x > innerWidth * 0.25 && e.x < innerWidth * 0.51) {
                 Game.persistent.tutorialenabled = !Game.persistent.tutorialenabled;
-                mouseIsPressed = false;
+                mouse.pressed = false;
             }
             if (e.y > innerHeight * 0.5 && e.y < innerHeight * 0.7 && e.x > innerWidth * 0.51 && e.x < innerWidth * 0.76) {
                 settings.debug = !settings.debug;
-                mouseIsPressed = false;
+                mouse.pressed = false;
             }
             break;
     }

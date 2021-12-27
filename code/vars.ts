@@ -211,12 +211,13 @@ const recipes: {//List of all recipes.
 	}
 };
 
-let mouseX = 0;
-let mouseY = 0;
-let mouseIsPressed = false;
-let latestMouseEvent = null;
+let mouse = {
+	x: 0,
+	y: 0,
+	pressed: false,
+	latestEvent: null
+};
 let keysPressed:string[] = [];
-const programStart = new Date();
 
 let settings = {
 	graphics_mode: 1,
@@ -228,6 +229,7 @@ let Game = {
 		y: 300,
 		speed: 5
 	},
+	startTime: new Date(),
 	forceRedraw: true,
 	persistent: {
 		tutorialenabled: true
@@ -256,9 +258,9 @@ let Game = {
 			steel: true
 		},
 		multiplesteel: false
-	}
+	},
+	state: "title"
 };
-let GAME_STATE:"title" | "game" | "settings" = "title";
 
 const ctx = (document.getElementById("canvas") as HTMLCanvasElement).getContext("2d");//Tiles
 const ctx1 = (document.getElementById("canvas1") as HTMLCanvasElement).getContext("2d");//Ghost buildings
