@@ -2,9 +2,9 @@
 	Main classes.
 */
 
-import { assert, tileToChunk, trigger, triggerType, pseudoRandom, constrain, rect, rectMode, _alert, pixelToTile} from "./funcs";
 import { Tile, BuildingID, RawBuildingID, noise, Recipe, currentFrame } from "./types";
-import { names, ItemID, generation_consts, consts, recipes, mouse, keysPressed, settings, Game, ctx, ctxs, uploadButton, ShouldNotBePossibleError, AssertionFailedError, ArgumentError, InvalidStateError, textures } from "./vars";
+import { names, ItemID, generation_consts, consts, recipes, mouse, keysPressed, settings, Game, ctx, ctxs, uploadButton, ShouldNotBePossibleError, AssertionFailedError, ArgumentError, InvalidStateError, textures } from "./vars.js";
+import { assert, tileToChunk, trigger, triggerType, pseudoRandom, constrain, rect, rectMode, _alert, pixelToTile} from "./funcs.js";
 
 declare global {
 	interface Array<T> {

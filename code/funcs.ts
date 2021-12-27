@@ -1,6 +1,5 @@
 
-import { ItemID, consts, Game, ctx, ShouldNotBePossibleError, AssertionFailedError, ArgumentError, InvalidStateError, textures }
-from "./vars";
+import { ItemID, consts, Game, ctx, ShouldNotBePossibleError, AssertionFailedError, ArgumentError, InvalidStateError, textures } from "./vars.js";
 import { RawBuildingID } from "./types";
 
 

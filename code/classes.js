@@ -1,6 +1,6 @@
-import { assert, tileToChunk, trigger, triggerType, pseudoRandom, constrain, rect, rectMode, _alert, pixelToTile } from "./funcs";
 import { noise } from "./types";
-import { names, ItemID, generation_consts, consts, recipes, mouse, keysPressed, settings, Game, ctx, ShouldNotBePossibleError, InvalidStateError, textures } from "./vars";
+import { names, ItemID, generation_consts, consts, recipes, mouse, keysPressed, settings, Game, ctx, ShouldNotBePossibleError, InvalidStateError, textures } from "./vars.js";
+import { assert, tileToChunk, trigger, triggerType, pseudoRandom, constrain, rect, rectMode, _alert, pixelToTile } from "./funcs.js";
 export class Level {
     constructor(data) {
         this.storage = new Map();

@@ -21,9 +21,9 @@
 // 
 
 import { BuildingID, noise, RawBuildingID, currentFrame } from "./types";
-import { ItemID, consts, mouse, keysPressed, settings, Game, ctx, ctxs, uploadButton, ShouldNotBePossibleError, AssertionFailedError, ArgumentError, InvalidStateError } from "./vars";
-import { alerts, assert, constrain, download, loadTextures, rect, rectMode, zoom, _alert } from "./funcs";
-import { Level } from "./classes";
+import { ItemID, consts, mouse, keysPressed, settings, Game, ctx, ctxs, uploadButton, ShouldNotBePossibleError, AssertionFailedError, ArgumentError, InvalidStateError } from "./vars.js";
+import { alerts, assert, constrain, download, loadTextures, rect, rectMode, zoom, _alert } from "./funcs.js";
+import { Level } from "./classes.js";
 
 
 

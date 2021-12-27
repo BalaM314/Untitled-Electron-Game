@@ -1,4 +1,4 @@
-import { ItemID, consts, Game, ctx, AssertionFailedError, ArgumentError, textures } from "./vars";
+import { ItemID, consts, Game, ctx, AssertionFailedError, ArgumentError, textures } from "./vars.js";
 Array.prototype.contains = function (val) {
     return this.indexOf(val) != -1;
 };
