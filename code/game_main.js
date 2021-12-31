@@ -2,135 +2,137 @@
 console.log("%c Hey there! It looks like you're checking out the console.\nIf you want to view the source code, *please do it at* https://github.com/BalaM314/Untitled-Electron-Game \n Make sure to view the .ts files as the .js files are compiled and thus look weird.", "color: blue; font-size: 30px;");
 let textures = new Map();
 noise.seed(1);
-window.onmousemove = (e) => {
-    mouse.x = e.x;
-    mouse.y = e.y;
-    mouse.latestEvent = e;
-};
-window.onkeydown = (e) => {
-    if (typeof parseInt(e.key) == "number") {
-        for (let x of document.getElementById("toolbar").children) {
-            x.classList.remove("selected");
-        }
-        document.getElementById("toolbar").children?.[parseInt(e.key) - 1]?.classList.add("selected");
-    }
-    if (parseInt(e.key[1])) {
-        for (let x of document.getElementById("toolbar").children) {
-            x.classList.remove("selected");
-        }
-        document.getElementById("toolbar").children?.[parseInt(e.key[1]) + 8]?.classList.add("selected");
-    }
-    if (keysPressed.indexOf(e.key.toLowerCase()) == -1) {
-        keysPressed.push(e.key.toLowerCase());
-    }
-    if (e.ctrlKey) {
-        switch (e.key) {
-            case "s":
-                exportData();
-                e.preventDefault();
-                break;
-            case "o":
-                uploadButton.click();
-                e.preventDefault();
-                break;
-        }
-    }
-    else {
-        switch (e.key) {
-            case "ArrowRight":
-                placedBuilding.direction = 0x000;
-                break;
-            case "ArrowDown":
-                placedBuilding.direction = 0x100;
-                break;
-            case "ArrowLeft":
-                placedBuilding.direction = 0x200;
-                break;
-            case "ArrowUp":
-                placedBuilding.direction = 0x300;
-                break;
-            case ",":
-                placedBuilding.modifier = 0x000;
-                break;
-            case ".":
-                placedBuilding.modifier = 0x400;
-                break;
-            case "/":
-                placedBuilding.modifier = 0x800;
-                e.preventDefault();
-                break;
-            case "1":
-                placedBuilding.type = 0x0001;
-                break;
-            case "2":
-                placedBuilding.type = 0x0002;
-                break;
-            case "3":
-                placedBuilding.type = 0x0003;
-                break;
-            case "4":
-                placedBuilding.type = 0x0004;
-                break;
-            case "5":
-                placedBuilding.type = 0x0005;
-                break;
-            case "6":
-                placedBuilding.type = 0x0006;
-                break;
-            case "7":
-                placedBuilding.type = 0x0007;
-                break;
-            case "8":
-                placedBuilding.type = 0x0009;
-                break;
-            case "9":
-                placedBuilding.type = 0x000A;
-                break;
-            case "F1":
-                placedBuilding.type = 0x000B;
-                e.preventDefault();
-                break;
-            case "F2":
-                placedBuilding.type = 0x0011;
-                e.preventDefault();
-                break;
-            case "0":
-                placedBuilding.type = 0xFF;
-                break;
-        }
-    }
-};
-window.onkeyup = (e) => {
-    if (keysPressed.indexOf(e.key.toLowerCase()) != -1) {
-        keysPressed.splice(keysPressed.indexOf(e.key.toLowerCase()), 1);
-    }
-};
-document.getElementById("clickcapture").onmousedown = (e) => {
-    mouse.pressed = true;
-    mouse.latestEvent = e;
-    canOverwriteBuilding = true;
-};
-document.getElementById("clickcapture").onmouseup = (e) => {
-    mouse.pressed = false;
-    mouse.latestEvent = e;
-    canOverwriteBuilding = true;
-};
-uploadButton.onchange = function (event) {
-    let file = event.target.files[0];
-    let reader = new FileReader();
-    reader.readAsText(file);
-    reader.onload = function (readerEvent) {
-        let content = readerEvent.target.result.toString();
-        importData(content);
+function registerEventHandlers() {
+    window.onmousemove = (e) => {
+        mouse.x = e.x;
+        mouse.y = e.y;
+        mouse.latestEvent = e;
     };
-};
-window.onwheel = (e) => {
-    zoom(Math.pow(1.001, -e.deltaY));
-};
-window.onblur = () => {
-    keysPressed = [];
-    mouse.pressed = false;
-};
+    window.onkeydown = (e) => {
+        if (typeof parseInt(e.key) == "number") {
+            for (let x of document.getElementById("toolbar").children) {
+                x.classList.remove("selected");
+            }
+            document.getElementById("toolbar").children?.[parseInt(e.key) - 1]?.classList.add("selected");
+        }
+        if (parseInt(e.key[1])) {
+            for (let x of document.getElementById("toolbar").children) {
+                x.classList.remove("selected");
+            }
+            document.getElementById("toolbar").children?.[parseInt(e.key[1]) + 8]?.classList.add("selected");
+        }
+        if (keysPressed.indexOf(e.key.toLowerCase()) == -1) {
+            keysPressed.push(e.key.toLowerCase());
+        }
+        if (e.ctrlKey) {
+            switch (e.key) {
+                case "s":
+                    exportData();
+                    e.preventDefault();
+                    break;
+                case "o":
+                    uploadButton.click();
+                    e.preventDefault();
+                    break;
+            }
+        }
+        else {
+            switch (e.key) {
+                case "ArrowRight":
+                    placedBuilding.direction = 0x000;
+                    break;
+                case "ArrowDown":
+                    placedBuilding.direction = 0x100;
+                    break;
+                case "ArrowLeft":
+                    placedBuilding.direction = 0x200;
+                    break;
+                case "ArrowUp":
+                    placedBuilding.direction = 0x300;
+                    break;
+                case ",":
+                    placedBuilding.modifier = 0x000;
+                    break;
+                case ".":
+                    placedBuilding.modifier = 0x400;
+                    break;
+                case "/":
+                    placedBuilding.modifier = 0x800;
+                    e.preventDefault();
+                    break;
+                case "1":
+                    placedBuilding.type = 0x0001;
+                    break;
+                case "2":
+                    placedBuilding.type = 0x0002;
+                    break;
+                case "3":
+                    placedBuilding.type = 0x0003;
+                    break;
+                case "4":
+                    placedBuilding.type = 0x0004;
+                    break;
+                case "5":
+                    placedBuilding.type = 0x0005;
+                    break;
+                case "6":
+                    placedBuilding.type = 0x0006;
+                    break;
+                case "7":
+                    placedBuilding.type = 0x0007;
+                    break;
+                case "8":
+                    placedBuilding.type = 0x0009;
+                    break;
+                case "9":
+                    placedBuilding.type = 0x000A;
+                    break;
+                case "F1":
+                    placedBuilding.type = 0x000B;
+                    e.preventDefault();
+                    break;
+                case "F2":
+                    placedBuilding.type = 0x0011;
+                    e.preventDefault();
+                    break;
+                case "0":
+                    placedBuilding.type = 0xFF;
+                    break;
+            }
+        }
+    };
+    window.onkeyup = (e) => {
+        if (keysPressed.indexOf(e.key.toLowerCase()) != -1) {
+            keysPressed.splice(keysPressed.indexOf(e.key.toLowerCase()), 1);
+        }
+    };
+    document.getElementById("clickcapture").onmousedown = (e) => {
+        mouse.pressed = true;
+        mouse.latestEvent = e;
+        canOverwriteBuilding = true;
+    };
+    document.getElementById("clickcapture").onmouseup = (e) => {
+        mouse.pressed = false;
+        mouse.latestEvent = e;
+        canOverwriteBuilding = true;
+    };
+    uploadButton.onchange = function (event) {
+        let file = event.target.files[0];
+        let reader = new FileReader();
+        reader.readAsText(file);
+        reader.onload = function (readerEvent) {
+            let content = readerEvent.target.result.toString();
+            importData(content);
+        };
+    };
+    window.onwheel = (e) => {
+        zoom(Math.pow(1.001, -e.deltaY));
+    };
+    window.onblur = () => {
+        keysPressed = [];
+        mouse.pressed = false;
+    };
+}
 let fps = [0, 0, 0, 0, 0, 0];
 function runLevel(level, currentFrame) {
     let startFrameTime = new Date();
