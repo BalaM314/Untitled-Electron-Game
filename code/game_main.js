@@ -461,6 +461,7 @@ catch (err) {
     console.warn("Invalid persistent settings!\nIf this is your first time visiting this site, nothing to worry about.");
     localStorage.setItem("persistentStorage", "{\"tutorialenabled\": true}");
 }
+registerEventHandlers();
 try {
     main_loop();
 }
