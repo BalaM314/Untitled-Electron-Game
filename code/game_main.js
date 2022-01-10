@@ -173,89 +173,6 @@ function runLevel(level, currentFrame) {
         item.innerHTML = (level1.resources[item.id] ?? 0).toString();
     }
 }
-function handleKeysPressed(currentframe) {
-    if (keysPressed.indexOf("w") != -1) {
-        Game.scroll.y += Game.scroll.speed;
-        currentframe.redraw = true;
-    }
-    if (keysPressed.indexOf("a") != -1) {
-        Game.scroll.x += Game.scroll.speed;
-        currentframe.redraw = true;
-    }
-    if (keysPressed.indexOf("s") != -1) {
-        Game.scroll.y -= Game.scroll.speed;
-        currentframe.redraw = true;
-    }
-    if (keysPressed.indexOf("d") != -1) {
-        Game.scroll.x -= Game.scroll.speed;
-        currentframe.redraw = true;
-    }
-}
-function fixSizes() {
-    for (let x of ctxs) {
-        if (x.canvas.width != window.innerWidth) {
-            x.canvas.width = window.innerWidth;
-            Game.forceRedraw = true;
-        }
-        if (x.canvas.height != window.innerHeight) {
-            x.canvas.height = window.innerHeight;
-            Game.forceRedraw = true;
-        }
-    }
-}
-let cancel = null;
-function main_loop() {
-    let currentFrame = {
-        tooltip: true,
-        debug: settings.debug,
-        cps: 0,
-        tps: 0,
-        ips: 0,
-        redraw: Game.forceRedraw
-    };
-    Game.forceRedraw = false;
-    fixSizes();
-    if (mouse.pressed) {
-        handleMouseDown(currentFrame);
-    }
-    if (keysPressed.length > 0) {
-        handleKeysPressed(currentFrame);
-    }
-    if (keysPressed.indexOf("shift") !== -1) {
-        Game.scroll.speed = 20;
-    }
-    else {
-        Game.scroll.speed = 5;
-    }
-    switch (Game.state) {
-        case "title":
-            runTitle();
-            break;
-        case "game":
-            runLevel(level1, currentFrame);
-            break;
-        case "settings":
-            runSettings();
-            break;
-        default:
-            throw new InvalidStateError(`Invalid game state "${Game.state}"`);
-    }
-    if (alerts.length) {
-        mouse.pressed = false;
-        for (let __alert of alerts) {
-            if (__alert instanceof Array) {
-                setTimeout(() => {
-                    _alert(__alert[0]);
-                }, __alert[1]);
-            }
-            else {
-                alert(__alert);
-            }
-        }
-        alerts = [];
-    }
-    cancel = requestAnimationFrame(main_loop);
-}
 function runTitle() {
     ctx.clearRect(-1, -1, 10000, 10000);
     ctx.fillStyle = "#0033CC";
@@ -303,8 +220,124 @@ function runSettings() {
     ctx.fillText("Debug: " + settings.debug, innerWidth * 0.625, innerHeight * 0.6);
 }
 ;
+function handleKeysPressed(currentframe) {
+    if (keysPressed.indexOf("w") != -1) {
+        Game.scroll.y += Game.scroll.speed;
+        currentframe.redraw = true;
+    }
+    if (keysPressed.indexOf("a") != -1) {
+        Game.scroll.x += Game.scroll.speed;
+        currentframe.redraw = true;
+    }
+    if (keysPressed.indexOf("s") != -1) {
+        Game.scroll.y -= Game.scroll.speed;
+        currentframe.redraw = true;
+    }
+    if (keysPressed.indexOf("d") != -1) {
+        Game.scroll.x -= Game.scroll.speed;
+        currentframe.redraw = true;
+    }
+}
+function fixSizes() {
+    for (let x of ctxs) {
+        if (x.canvas.width != window.innerWidth) {
+            x.canvas.width = window.innerWidth;
+            Game.forceRedraw = true;
+        }
+        if (x.canvas.height != window.innerHeight) {
+            x.canvas.height = window.innerHeight;
+            Game.forceRedraw = true;
+        }
+    }
+}
+function handleAlerts() {
+    if (alerts.length) {
+        mouse.pressed = false;
+        for (let __alert of alerts) {
+            if (__alert instanceof Array) {
+                setTimeout(() => {
+                    _alert(__alert[0]);
+                }, __alert[1]);
+            }
+            else {
+                alert(__alert);
+            }
+        }
+        alerts = [];
+    }
+}
+let cancel = null;
+function main_loop() {
+    try {
+        let currentFrame = {
+            tooltip: true,
+            debug: settings.debug,
+            cps: 0,
+            tps: 0,
+            ips: 0,
+            redraw: Game.forceRedraw
+        };
+        Game.forceRedraw = false;
+        fixSizes();
+        if (mouse.pressed) {
+            handleMouseDown(currentFrame);
+        }
+        if (keysPressed.length > 0) {
+            handleKeysPressed(currentFrame);
+        }
+        if (keysPressed.indexOf("shift") !== -1) {
+            Game.scroll.speed = 20;
+        }
+        else {
+            Game.scroll.speed = 5;
+        }
+        switch (Game.state) {
+            case "title":
+                runTitle();
+                break;
+            case "game":
+                runLevel(level1, currentFrame);
+                break;
+            case "settings":
+                runSettings();
+                break;
+            default:
+                throw new InvalidStateError(`Invalid game state "${Game.state}"`);
+        }
+        handleAlerts();
+    }
+    catch (err) {
+        alert("An error has occurred! Oopsie.\nPlease create an issue on this project's GitHub so I can fix it.\nErr: " + err.message);
+        ctxs.forEach((ctx) => { ctx.clearRect(0, 0, innerWidth, innerHeight); });
+        throw err;
+    }
+    cancel = requestAnimationFrame(main_loop);
+}
+function preload() {
+    if (loadedtextures == document.getElementById("textures").children.length) {
+        loadTextures();
+        load();
+    }
+    else if (loadedtextures > document.getElementById("textures").children.length) {
+        throw new ShouldNotBePossibleError("somehow loaded more textures than exist, what the fffffff");
+    }
+    else {
+        alert("Not all textures have loaded!\nYou may have a slow internet connection, or the game may just be broken.\nClick OK to try again.");
+        setTimeout(preload, 1);
+        return;
+    }
+}
 function load() {
-    loadTextures();
+    level1 = new Level(314);
+    level1.generateNecessaryChunks();
+    level1.buildBuilding(0, 0, 0x0008);
+    level1.buildBuilding(0, -1, 0x0008);
+    level1.buildBuilding(-1, 0, 0x0008);
+    level1.buildBuilding(-1, -1, 0x0008);
+    Game.state = "game";
+    Game.forceRedraw = true;
+    document.getElementById("toolbar").classList.remove("hidden");
+    document.getElementById("resources").classList.remove("hidden");
     if (Game.persistent.tutorialenabled) {
         setTimeout(() => {
             alert(`
@@ -322,7 +355,6 @@ Use WASD to move around the map and mouse wheel to zoom.
 Press Shift to move faster and for tooltips.`);
         }, 500);
     }
-    checkload();
 }
 let loadedtextures = 0;
 let level1;
@@ -344,27 +376,6 @@ for (let element of document.getElementById("toolbar").children) {
         placedBuilding.type = parseInt(event.target.id);
         mouse.pressed = false;
     });
-}
-function checkload() {
-    if (loadedtextures == document.getElementById("textures").children.length) {
-        level1 = new Level(314);
-        level1.generateNecessaryChunks();
-        level1.buildBuilding(0, 0, 0x0008);
-        level1.buildBuilding(0, -1, 0x0008);
-        level1.buildBuilding(-1, 0, 0x0008);
-        level1.buildBuilding(-1, -1, 0x0008);
-        Game.state = "game";
-        Game.forceRedraw = true;
-        document.getElementById("toolbar").classList.remove("hidden");
-        document.getElementById("resources").classList.remove("hidden");
-    }
-    else if (loadedtextures > document.getElementById("textures").children.length) {
-        throw new Error("somehow loaded more textures than exist, what the fffffff");
-    }
-    else {
-        setTimeout(checkload, 100);
-        alert("Not all textures have loaded!\nYou may have a slow internet connection, or the game may just be broken.\nClick OK to try again.");
-    }
 }
 function exportData() {
     let output = {
@@ -414,7 +425,7 @@ let placedBuilding = {
     }
 };
 let canOverwriteBuilding = true;
-let handleMouseDown = (currentFrame, e) => {
+function handleMouseDown(currentFrame, e) {
     e = e ?? mouse.latestEvent;
     switch (Game.state) {
         case "game":
@@ -430,7 +441,7 @@ let handleMouseDown = (currentFrame, e) => {
             if (e.x > innerWidth / 4 && e.x < innerWidth * 0.75) {
                 if (e.y > innerHeight / 2 && e.y < innerHeight * 0.7) {
                     mouse.pressed = false;
-                    load();
+                    preload();
                 }
                 if (e.y > innerHeight * 0.75 && e.y < innerHeight * 0.95) {
                     Game.state = "settings";
@@ -452,7 +463,7 @@ let handleMouseDown = (currentFrame, e) => {
             }
             break;
     }
-};
+}
 try {
     assert(localStorage.getItem("persistentStorage"));
     Game.persistent = JSON.parse(localStorage.getItem("persistentStorage"));
@@ -462,11 +473,4 @@ catch (err) {
     localStorage.setItem("persistentStorage", "{\"tutorialenabled\": true}");
 }
 registerEventHandlers();
-try {
-    main_loop();
-}
-catch (err) {
-    alert("An error has occurred! Oopsie.\nPlease create an issue on this project's GitHub so I can fix it.\nErr: " + err.message);
-    ctxs.forEach((ctx) => { ctx.clearRect(0, 0, innerWidth, innerHeight); });
-    throw err;
-}
+main_loop();
