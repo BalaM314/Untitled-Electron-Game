@@ -2,10 +2,9 @@
 	Main classes.
 */
 
-//import "vars.js";
 
 
-/*export */class Level {
+class Level {
 	items: Item[];
 	resources: {
 		[index: string]: number
@@ -392,7 +391,7 @@
 
 
 
-/*export */class Chunk {
+class Chunk {
 	layers: [
 		Tile[][],
 		Building[][],
@@ -844,7 +843,7 @@
 	}
 }
 
-/*export */class Item {
+class Item {
 	id: ItemID;
 	x: number;
 	y: number;
@@ -917,7 +916,7 @@
 	}
 }
 
-/*export */class Building {
+class Building {
 	x: number;
 	y: number;
 	id: BuildingID;
@@ -1104,7 +1103,7 @@
 
 
 
-/*export */abstract class BuildingWithRecipe extends Building {
+abstract class BuildingWithRecipe extends Building {
 	timer: number;
 	recipe: Recipe;
 	items: Item[];
@@ -1162,7 +1161,7 @@
 }
 
 
-/*export */class Miner extends Building {
+class Miner extends Building {
 	timer: number;
 	miningItem: ItemID;
 	constructor(tileX:number, tileY:number, id:BuildingID, level:Level){
@@ -1191,7 +1190,7 @@
 
 
 
-/*export */class TrashCan extends Building {
+class TrashCan extends Building {
 	update(){
 		this.grabItem(_ => {return true}, item => {item.deleted = true;}, true);
 	}
@@ -1201,7 +1200,7 @@
 }
 
 
-/*export */class Furnace extends BuildingWithRecipe {
+class Furnace extends BuildingWithRecipe {
 	static recipeType = recipes.base_smelting;
 	static animated = true;
 	static canBuildAt(tileX:number, tileY:number, level:Level){
@@ -1209,7 +1208,7 @@
 	}
 }
 
-/*export */class Conveyor extends Building {
+class Conveyor extends Building {
 	constructor(tileX:number, tileY:number, id:BuildingID, level:Level){
 		super(tileX, tileY, id, level);
 		this.item = null;
@@ -1362,7 +1361,7 @@
 }
 
 
-/*export */class Extractor extends Conveyor {
+class Extractor extends Conveyor {
 	constructor(x:number, y:number, id:BuildingID, level:Level){
 		super(x, y, id, level);
 	}
@@ -1487,7 +1486,7 @@ interface StorageInventory extends Array<Item> {
 	MAX_LENGTH: number;
 	at: Function;
 }
-/*export */class StorageBuilding extends Building {
+class StorageBuilding extends Building {
 	inventory: StorageInventory;
 	constructor(tileX:number, tileY: number, id:BuildingID, level:Level){
 		super(tileX, tileY, id, level);
@@ -1512,7 +1511,7 @@ interface StorageInventory extends Array<Item> {
 }
 
 
-/*export */class ResourceAcceptor extends Building {
+class ResourceAcceptor extends Building {
 	acceptItem(item:Item){
 		item.deleted = true;
 		item.grabbedBy = null;
@@ -1535,25 +1534,25 @@ interface StorageInventory extends Array<Item> {
 }
 
 //I love abstraction
-/*export */class AlloySmelter extends BuildingWithRecipe {
+class AlloySmelter extends BuildingWithRecipe {
 	static animated = true;
 	static recipeType = recipes.base_alloying;
 }
 
-/*export */class Wiremill extends BuildingWithRecipe {
+class Wiremill extends BuildingWithRecipe {
 	static recipeType = recipes.base_wiremilling;
 }
 
-/*export */class Compressor extends BuildingWithRecipe {
+class Compressor extends BuildingWithRecipe {
 	static recipeType = recipes.base_compressing;
 }
 
-/*export */class Lathe extends BuildingWithRecipe {
+class Lathe extends BuildingWithRecipe {
 	static recipeType = recipes.base_lathing;
 }
 
 
-/*export */class MultiBlockController extends BuildingWithRecipe {
+class MultiBlockController extends BuildingWithRecipe {
 	secondaries: MultiBlockSecondary[];
 	static size = [1, 1];
 	break(){
@@ -1569,7 +1568,7 @@ interface StorageInventory extends Array<Item> {
 	}
 }
 
-/*export */class MultiBlockSecondary extends Building {
+class MultiBlockSecondary extends Building {
 	controller: MultiBlockController;
 	acceptItem(item: Item):boolean {
 		return this.controller.acceptItem(item);
@@ -1591,12 +1590,12 @@ interface StorageInventory extends Array<Item> {
 	}
 }
 
-/*export */class Assembler extends MultiBlockController {
+class Assembler extends MultiBlockController {
 	static recipeType = recipes.base_assembling;
 	static size = [2, 2];
 }
 
-/*export */const BuildingType: {
+const BuildingType: {
 	[index:number]: typeof Building
 } = {
 	0x01: Conveyor,

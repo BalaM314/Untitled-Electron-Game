@@ -5,7 +5,7 @@
 // Fix item tooltips on conveyors no longer working
 // Fix duplicated displayBuilding code
 // Add comments
-// Refactor codebase into different files
+// 
 // 
 // 
 // 
@@ -477,8 +477,8 @@ let placedBuilding: {
 	}
 };
 let canOverwriteBuilding = true;
-function handleMouseDown (currentFrame:any, e?:MouseEvent){
-	e = e ?? mouse.latestEvent;
+function handleMouseDown(currentFrame:any, e?:MouseEvent){
+	e ??= mouse.latestEvent;
 	switch(Game.state){
 		case "game":
 			if(e.ctrlKey){

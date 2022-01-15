@@ -426,7 +426,7 @@ let placedBuilding = {
 };
 let canOverwriteBuilding = true;
 function handleMouseDown(currentFrame, e) {
-    e = e ?? mouse.latestEvent;
+    e ?? (e = mouse.latestEvent);
     switch (Game.state) {
         case "game":
             if (e.ctrlKey) {
