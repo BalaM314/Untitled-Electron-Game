@@ -170,7 +170,10 @@ class Level {
 			break;
 		}
 	}
-	getTurnedConveyor(tileX:number, tileY:number, conveyorType:number){
+	getTurnedConveyor(tileX:number, tileY:number, conveyorType:number):BuildingID {
+		if(keysPressed.includes("shift")){
+			return ((conveyorType * 0x100) + 1) as BuildingID;
+		}
 		//Returns how a conveyor should be turned based on nearby buildings.
 		tileX = Math.floor(tileX);
 		tileY = Math.floor(tileY);

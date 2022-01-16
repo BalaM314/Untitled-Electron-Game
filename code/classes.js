@@ -133,6 +133,9 @@ class Level {
         }
     }
     getTurnedConveyor(tileX, tileY, conveyorType) {
+        if (keysPressed.includes("shift")) {
+            return ((conveyorType * 0x100) + 1);
+        }
         tileX = Math.floor(tileX);
         tileY = Math.floor(tileY);
         let topConveyor = this.buildingIDAtTile(tileX, tileY - 1);
