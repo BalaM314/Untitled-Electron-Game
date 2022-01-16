@@ -1519,6 +1519,17 @@ class MultiBlockController extends BuildingWithRecipe {
         }
         super.update();
     }
+    spawnItem(id) {
+        if (super.spawnItem(id)) {
+            return true;
+        }
+        for (let secondary of this.secondaries) {
+            if (secondary.spawnItem(id)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
 MultiBlockController.size = [1, 1];
 class MultiBlockSecondary extends Building {
@@ -1531,7 +1542,6 @@ class MultiBlockSecondary extends Building {
         }
         else {
             this.controller = null;
-            console.log("aight imma head out");
             super.break();
         }
     }

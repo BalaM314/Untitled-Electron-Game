@@ -1022,6 +1022,7 @@ class Building {
 	}
 	spawnItem(id:string){
 		id ??= "base_null";
+		//TODO: try to convert this to .acceptItem()
 		if(
 			(this.level.buildingIDAtTile(this.x + 1, this.y) === 0x0001 ||
 			this.level.buildingIDAtTile(this.x + 1, this.y) === 0x0701 ||
@@ -1568,6 +1569,17 @@ class MultiBlockController extends BuildingWithRecipe {
 		}
 		super.update();
 	}
+	spawnItem(id: string):boolean {
+		if(super.spawnItem(id)){
+			return true;
+		}
+		for(let secondary of this.secondaries){
+			if(secondary.spawnItem(id)){
+				return true;
+			}
+		}
+		return false;
+	}
 }
 
 class MultiBlockSecondary extends Building {
@@ -1580,7 +1592,6 @@ class MultiBlockSecondary extends Building {
 			this.controller?.break();
 		} else {
 			this.controller = null;
-			console.log("aight imma head out");
 			super.break();
 		}
 	}
