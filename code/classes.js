@@ -239,7 +239,9 @@ class Level {
             }
         }
         canOverwriteBuilding = false;
-        this.buildingAtTile(tileX, tileY)?.break();
+        if (building % 0x100 != 5) {
+            this.buildingAtTile(tileX, tileY)?.break();
+        }
         let tempBuilding;
         if (building == 0xFFFF) {
             this.writeExtractor(tileX, tileY, null);

@@ -264,7 +264,9 @@ class Level {
 		}//Only overwrite the same building once per build attempt.
 		//Otherwise, you could constantly overwrite a building on every frame you tried to build, which is not good.
 		canOverwriteBuilding = false;
-		this.buildingAtTile(tileX, tileY)?.break();
+		if(building % 0x100 != 5){
+			this.buildingAtTile(tileX, tileY)?.break();
+		}
 		let tempBuilding:Building;
 		
 		if(building == 0xFFFF){
