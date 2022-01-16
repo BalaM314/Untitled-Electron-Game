@@ -155,7 +155,7 @@ const recipes: {//List of all recipes.
 			{
 				"inputs": [ItemID.base_copperIngot],
 				"outputs": [ItemID.base_copperWire],
-				"duration": 60
+				"duration": 120
 			}
 		]
 	},
@@ -205,7 +205,7 @@ const recipes: {//List of all recipes.
 			{
 				"inputs": [ItemID.base_stator, ItemID.base_rotor],
 				"outputs": [ItemID.base_motor],
-				duration: 120
+				duration: 30
 			}
 		]
 	}
