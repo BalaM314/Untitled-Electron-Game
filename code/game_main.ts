@@ -109,17 +109,39 @@ function registerEventHandlers(){
 			keysPressed.splice(keysPressed.indexOf(e.key.toLowerCase()), 1);
 		}
 	}
-
-	document.getElementById("clickcapture").onmousedown = (e:MouseEvent) => {
+	let clickcapture = document.getElementById("clickcapture");
+	clickcapture.onmousedown = (e:MouseEvent) => {
+		if(e.button) return e.preventDefault();
 		mouse.pressed = true;
 		mouse.latestEvent = e;
 		canOverwriteBuilding = true;
 	}
-	document.getElementById("clickcapture").onmouseup = (e:MouseEvent) => {
+	clickcapture.onmouseup = (e:MouseEvent) => {
 		mouse.pressed = false;
 		mouse.latestEvent = e;
 		canOverwriteBuilding = true;
 	}
+
+	clickcapture.addEventListener("touchstart", (e:any) => {
+		e.x = e.touches[0].clientX;
+		e.y = e.touches[0].clientY;
+		clickcapture.onmousedown(e);
+	});
+	clickcapture.addEventListener("touchend", (e:any) => {
+		setTimeout(() => {
+			mouse.pressed = false;
+		}, 500);
+	});
+	clickcapture.addEventListener("touchmove", (e:any) => {
+		e.x = e.touches[0].clientX;
+		e.y = e.touches[0].clientY;
+		window.onmousemove(e);
+	});
+
+	clickcapture.oncontextmenu = (e) => {
+		e.preventDefault();
+	}
+
 
 	uploadButton.onchange = function(event:any){
 		let file = event.target.files[0];
