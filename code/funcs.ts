@@ -17,102 +17,7 @@ enum triggerType {
 	buildingRun
 }
 
-function trigger(type:triggerType, buildingID?:RawBuildingID, itemID?:ItemID){
-	//Used to handle tutorial, and maybe achievements.
-	switch(type){
-		case triggerType.placeBuilding:
-			switch(buildingID){
-				case 0x04:
-					if(Game.tutorial.furnace.placed && Game.persistent.tutorialenabled){
-						_alert("The Furnace converts raw ores into their smelted forms. Simply point a conveyor belt carrying ores at it and provide another belt for it to output onto.");
-						Game.tutorial.furnace.placed = false;
-					}
-				break;
-				case 0x03:
-					if(Game.tutorial.trashcan.placed && Game.persistent.tutorialenabled){
-						_alert("The Trash Can is pretty simple: it deletes all items it receives.");
-						Game.tutorial.trashcan.placed = false;
-					}
-				break;
-				case 0x02:
-					if(Game.tutorial.miner.placed && Game.persistent.tutorialenabled){
-						_alert("The Miner mines ore nodes, producing one ore per second. \nIt auto-outputs to adjacent conveyor belts.\nAlso, ore nodes are infinite.");
-						Game.tutorial.miner.placed = false;
-					}
-				break;
-				case 0x01:
-					if(Game.tutorial.conveyor.placed && Game.persistent.tutorialenabled){
-						_alert("Conveyors are the way to move items around. \nYou can use the arrow keys to change the direction of placed belts. \nTry making a belt chain, then putting a debug item on it with Ctrl+click.\nYou can drag-click to build multiple of the same building.");
-						Game.tutorial.conveyor.placed = false;
-					}
-				break;
-			}
-			break;
 
-
-		case triggerType.placeBuildingFail:
-			switch(buildingID){
-				case 0x04:
-					if(Game.tutorial.furnace.placefail && Game.persistent.tutorialenabled){
-						_alert("The Furnace generates a lot of heat and is pretty heavy, so you can only place it on stone.");
-						Game.tutorial.furnace.placefail = false;
-					}
-				break;
-				case 0x03:
-
-				break;
-				case 0x02:
-					if(Game.tutorial.miner.placefail && Game.persistent.tutorialenabled){
-						_alert("The Miner can only be placed on a resource node(the colored circles).");
-						Game.tutorial.miner.placefail = false;
-					}
-				break;
-				case 0x01:
-					if(Game.tutorial.conveyor.placefail && Game.persistent.tutorialenabled){
-						_alert("Conveyors don't float!\nYes, I know, then water chunks are useless... I'll add pontoons in a future update.");
-						Game.tutorial.conveyor.placefail = false;
-					}
-				break;
-			}
-			break;
-
-
-		case triggerType.spawnItem:
-			switch(itemID){
-				case ItemID.base_coal:
-					if(Game.tutorial.item.coal){
-						_alert("Congratulations! You just automated coal!");
-						_alert(["Try doing the same thing for iron: Iron nodes are whiteish and are a bit further from the center of the map.\nUse WASD to scroll.", 3000]);
-						Game.tutorial.item.coal = false;
-					}
-					break;
-				case ItemID.base_ironIngot:
-					if(Game.tutorial.item.iron){
-						_alert("Nice job!");
-						_alert(["The next automateable resource is steel.\nYou'll need to use the alloy smelter(slot 7), which needs two inputs(coal and iron).", 3000]);
-						Game.tutorial.item.iron = false;
-					}
-					break;
-			}
-			break;
-
-
-		case triggerType.buildingRun:
-			switch(buildingID){
-				case 0x02:
-					if(Game.tutorial.miner.coaloutput && Game.persistent.tutorialenabled && itemID == ItemID.base_coalOre){
-						_alert("Nice!\nThis is just coal ore though, not coal. Try placing a furnace(4 key).\nOh also, remember you can scroll to zoom in on that beautiful coal ore texture.");
-						Game.tutorial.miner.coaloutput = false;
-					}
-					break;
-				case 0x07:
-
-					break;
-			}
-			break;
-	}
-
-}
 
 //general functions
 function sq(x:number):number{
@@ -226,6 +131,104 @@ function* pseudoRandom(seed){
 /**
  * Game-related functions
  */
+
+ function trigger(type:triggerType, buildingID?:RawBuildingID, itemID?:ItemID){
+	//Used to handle tutorial, and maybe achievements.
+	switch(type){
+		case triggerType.placeBuilding:
+			switch(buildingID){
+				case 0x04:
+					if(Game.tutorial.furnace.placed && Game.persistent.tutorialenabled){
+						_alert("The Furnace converts raw ores into their smelted forms. Simply point a conveyor belt carrying ores at it and provide another belt for it to output onto.");
+						Game.tutorial.furnace.placed = false;
+					}
+				break;
+				case 0x03:
+					if(Game.tutorial.trashcan.placed && Game.persistent.tutorialenabled){
+						_alert("The Trash Can is pretty simple: it deletes all items it receives.");
+						Game.tutorial.trashcan.placed = false;
+					}
+				break;
+				case 0x02:
+					if(Game.tutorial.miner.placed && Game.persistent.tutorialenabled){
+						_alert("The Miner mines ore nodes, producing one ore per second. \nIt auto-outputs to adjacent conveyor belts.\nAlso, ore nodes are infinite.");
+						Game.tutorial.miner.placed = false;
+					}
+				break;
+				case 0x01:
+					if(Game.tutorial.conveyor.placed && Game.persistent.tutorialenabled){
+						_alert("Conveyors are the way to move items around. \nYou can use the arrow keys to change the direction of placed belts. \nTry making a belt chain, then putting a debug item on it with Ctrl+click.\nYou can drag-click to build multiple of the same building.");
+						Game.tutorial.conveyor.placed = false;
+					}
+				break;
+			}
+			break;
+
+
+		case triggerType.placeBuildingFail:
+			switch(buildingID){
+				case 0x04:
+					if(Game.tutorial.furnace.placefail && Game.persistent.tutorialenabled){
+						_alert("The Furnace generates a lot of heat and is pretty heavy, so you can only place it on stone.");
+						Game.tutorial.furnace.placefail = false;
+					}
+				break;
+				case 0x03:
+
+				break;
+				case 0x02:
+					if(Game.tutorial.miner.placefail && Game.persistent.tutorialenabled){
+						_alert("The Miner can only be placed on a resource node(the colored circles).");
+						Game.tutorial.miner.placefail = false;
+					}
+				break;
+				case 0x01:
+					if(Game.tutorial.conveyor.placefail && Game.persistent.tutorialenabled){
+						_alert("Conveyors don't float!\nYes, I know, then water chunks are useless... I'll add pontoons in a future update.");
+						Game.tutorial.conveyor.placefail = false;
+					}
+				break;
+			}
+			break;
+
+
+		case triggerType.spawnItem:
+			switch(itemID){
+				case ItemID.base_coal:
+					if(Game.tutorial.item.coal){
+						_alert("Congratulations! You just automated coal!");
+						_alert(["Try doing the same thing for iron: Iron nodes are whiteish and are a bit further from the center of the map.\nUse WASD to scroll.", 3000]);
+						Game.tutorial.item.coal = false;
+					}
+					break;
+				case ItemID.base_ironIngot:
+					if(Game.tutorial.item.iron){
+						_alert("Nice job!");
+						_alert(["The next automateable resource is steel.\nYou'll need to use the alloy smelter(slot 7), which needs two inputs(coal and iron).", 3000]);
+						Game.tutorial.item.iron = false;
+					}
+					break;
+			}
+			break;
+
+
+		case triggerType.buildingRun:
+			switch(buildingID){
+				case 0x02:
+					if(Game.tutorial.miner.coaloutput && Game.persistent.tutorialenabled && itemID == ItemID.base_coalOre){
+						_alert("Nice!\nThis is just coal ore though, not coal. Try placing a furnace(4 key).\nOh also, remember you can scroll to zoom in on that beautiful coal ore texture.");
+						Game.tutorial.miner.coaloutput = false;
+					}
+					break;
+				case 0x07:
+
+					break;
+			}
+			break;
+	}
+
+}
+
 let alerts = [];
 function _alert(x:string | [string,number]){
 	alerts.push(x);

@@ -204,10 +204,10 @@ const recipes = {
 let mouse = {
     x: 0,
     y: 0,
-    pressed: false,
+    held: false,
     latestEvent: null
 };
-let keysPressed = [];
+let keysHeld = [];
 let settings = {
     graphics_mode: 1,
     debug: true

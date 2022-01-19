@@ -171,7 +171,7 @@ class Level {
 		}
 	}
 	getTurnedConveyor(tileX:number, tileY:number, conveyorType:number):BuildingID {
-		if(keysPressed.includes("shift")){
+		if(keysHeld.includes("shift")){
 			return ((conveyorType * 0x100) + 1) as BuildingID;
 		}
 		//Returns how a conveyor should be turned based on nearby buildings.
@@ -887,7 +887,7 @@ class Item {
 		){return;}//if offscreen return immediately
 		currentframe.ips ++;
 		ctx3.drawImage(textures.get("item_" + this.id), this.x * consts.DISPLAY_SCALE + (Game.scroll.x * consts.DISPLAY_SCALE) - 8*consts.DISPLAY_SCALE, this.y * consts.DISPLAY_SCALE + (Game.scroll.y * consts.DISPLAY_SCALE) - 8*consts.DISPLAY_SCALE, 16 * consts.DISPLAY_SCALE, 16 * consts.DISPLAY_SCALE);
-		if(keysPressed.contains("Shift")){
+		if(keysHeld.contains("Shift")){
 			let x = (mouse.x - (Game.scroll.x * consts.DISPLAY_SCALE))/consts.DISPLAY_SCALE;
 			let y = (mouse.y - (Game.scroll.y * consts.DISPLAY_SCALE))/consts.DISPLAY_SCALE;
 			//alert(this.x + " " + this.y + "  " + x + " " + y);

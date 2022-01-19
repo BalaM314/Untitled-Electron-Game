@@ -8,6 +8,41 @@ function registerEventHandlers() {
         mouse.y = e.y;
         mouse.latestEvent = e;
     };
+    let clickcapture = document.getElementById("clickcapture");
+    clickcapture.onmousedown = (e) => {
+        if (e.button)
+            return e.preventDefault();
+        mouse.held = true;
+        mouse.latestEvent = e;
+        canOverwriteBuilding = true;
+        if (state[Game.state]) {
+            state[Game.state]?.onclick?.(e);
+        }
+    };
+    clickcapture.onmouseup = (e) => {
+        mouse.held = false;
+        mouse.latestEvent = e;
+        canOverwriteBuilding = true;
+    };
+    clickcapture.addEventListener("touchstart", (e) => {
+        e.x = e.touches[0].clientX;
+        e.y = e.touches[0].clientY;
+        clickcapture.onmousedown(e);
+    });
+    clickcapture.addEventListener("touchend", (e) => {
+        setTimeout(() => {
+            mouse.held = false;
+            canOverwriteBuilding = true;
+        }, 500);
+    });
+    clickcapture.addEventListener("touchmove", (e) => {
+        e.x = e.touches[0].clientX;
+        e.y = e.touches[0].clientY;
+        window.onmousemove(e);
+    });
+    clickcapture.oncontextmenu = (e) => {
+        e.preventDefault();
+    };
     window.onkeydown = (e) => {
         if (typeof parseInt(e.key) == "number") {
             for (let x of document.getElementById("toolbar").children) {
@@ -21,8 +56,8 @@ function registerEventHandlers() {
             }
             document.getElementById("toolbar").children?.[parseInt(e.key[1]) + 8]?.classList.add("selected");
         }
-        if (keysPressed.indexOf(e.key.toLowerCase()) == -1) {
-            keysPressed.push(e.key.toLowerCase());
+        if (keysHeld.indexOf(e.key.toLowerCase()) == -1) {
+            keysHeld.push(e.key.toLowerCase());
         }
         if (e.ctrlKey) {
             switch (e.key) {
@@ -102,40 +137,9 @@ function registerEventHandlers() {
         }
     };
     window.onkeyup = (e) => {
-        if (keysPressed.indexOf(e.key.toLowerCase()) != -1) {
-            keysPressed.splice(keysPressed.indexOf(e.key.toLowerCase()), 1);
+        if (keysHeld.contains(e.key.toLowerCase())) {
+            keysHeld.splice(keysHeld.indexOf(e.key.toLowerCase()), 1);
         }
-    };
-    let clickcapture = document.getElementById("clickcapture");
-    clickcapture.onmousedown = (e) => {
-        if (e.button)
-            return e.preventDefault();
-        mouse.pressed = true;
-        mouse.latestEvent = e;
-        canOverwriteBuilding = true;
-    };
-    clickcapture.onmouseup = (e) => {
-        mouse.pressed = false;
-        mouse.latestEvent = e;
-        canOverwriteBuilding = true;
-    };
-    clickcapture.addEventListener("touchstart", (e) => {
-        e.x = e.touches[0].clientX;
-        e.y = e.touches[0].clientY;
-        clickcapture.onmousedown(e);
-    });
-    clickcapture.addEventListener("touchend", (e) => {
-        setTimeout(() => {
-            mouse.pressed = false;
-        }, 500);
-    });
-    clickcapture.addEventListener("touchmove", (e) => {
-        e.x = e.touches[0].clientX;
-        e.y = e.touches[0].clientY;
-        window.onmousemove(e);
-    });
-    clickcapture.oncontextmenu = (e) => {
-        e.preventDefault();
     };
     uploadButton.onchange = function (event) {
         let file = event.target.files[0];
@@ -150,115 +154,158 @@ function registerEventHandlers() {
         zoom(Math.pow(1.001, -e.deltaY));
     };
     window.onblur = () => {
-        keysPressed = [];
-        mouse.pressed = false;
+        keysHeld = [];
+        mouse.held = false;
     };
 }
 let fps = [0, 0, 0, 0, 0, 0];
-function runLevel(level, currentFrame) {
-    let startFrameTime = new Date();
-    level.generateNecessaryChunks();
-    try {
-        level.update(currentFrame);
+let state = {
+    title: {
+        update: function () { },
+        display: function (currentFrame) {
+            ctx.clearRect(-1, -1, 10000, 10000);
+            ctx.fillStyle = "#0033CC";
+            ctx.fillRect(0, 0, innerWidth, innerHeight);
+            ctx.font = "70px sans-serif";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillStyle = "#000000";
+            ctx.fillText("Untitled Electron Game", innerWidth / 2, innerHeight * 0.2);
+            ctx.font = "20px sans-serif";
+            ctx.fillText("Title Screen Soon™", innerWidth / 2, innerHeight * 0.35);
+            ctx.fillStyle = "#0000FF";
+            rect(innerWidth / 4, innerHeight * 0.5, innerWidth / 2, innerHeight * 0.2, rectMode.CORNER);
+            rect(innerWidth / 4, innerHeight * 0.75, innerWidth / 2, innerHeight * 0.2, rectMode.CORNER);
+            ctx.strokeStyle = "#000000";
+            ctx.lineWidth = 2;
+            ctx.strokeRect(innerWidth / 4, innerHeight * 0.5, innerWidth / 2, innerHeight * 0.2);
+            ctx.strokeRect(innerWidth / 4, innerHeight * 0.75, innerWidth / 2, innerHeight * 0.2);
+            ctx.fillStyle = "#FFFFFF";
+            ctx.font = "40px sans-serif";
+            ctx.fillText("Play", innerWidth / 2, innerHeight * 0.6);
+            ctx.fillText("Settings", innerWidth / 2, innerHeight * 0.85);
+        },
+        onclick: function (e) {
+            if (e.x > innerWidth / 4 && e.x < innerWidth * 0.75) {
+                if (e.y > innerHeight / 2 && e.y < innerHeight * 0.7) {
+                    mouse.held = false;
+                    preload();
+                }
+                if (e.y > innerHeight * 0.75 && e.y < innerHeight * 0.95) {
+                    Game.state = "settings";
+                }
+            }
+        }
+    },
+    settings: {
+        update: function () { },
+        display: function (currentFrame) {
+            ctx.clearRect(-1, -1, 10000, 10000);
+            ctx.fillStyle = "#0033CC";
+            ctx.fillRect(0, 0, innerWidth, innerHeight);
+            ctx.font = "70px sans-serif";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillStyle = "#000000";
+            ctx.fillText("Settings", innerWidth / 2, innerHeight * 0.2);
+            ctx.strokeStyle = "#000000";
+            ctx.strokeRect(innerWidth * 0.9, innerHeight * 0.01, innerWidth * 0.09, innerHeight * 0.09);
+            ctx.fillStyle = "#FF0000";
+            ctx.font = "50px sans-serif";
+            ctx.fillText("❌", innerWidth * 0.945, innerHeight * 0.055);
+            ctx.strokeRect(innerWidth * 0.25, innerHeight * 0.5, innerWidth * 0.25, innerHeight * 0.2);
+            ctx.strokeRect(innerWidth * 0.51, innerHeight * 0.5, innerWidth * 0.25, innerHeight * 0.2);
+            ctx.fillStyle = "#0000FF";
+            rect(innerWidth * 0.25, innerHeight * 0.5, innerWidth * 0.25, innerHeight * 0.2, rectMode.CORNER);
+            rect(innerWidth * 0.51, innerHeight * 0.5, innerWidth * 0.25, innerHeight * 0.2, rectMode.CORNER);
+            ctx.fillStyle = "#FFFFFF";
+            ctx.fillText("Tutorial: " + Game.persistent.tutorialenabled, innerWidth * 0.375, innerHeight * 0.6);
+            ctx.fillText("Debug: " + settings.debug, innerWidth * 0.625, innerHeight * 0.6);
+        },
+        onclick: function (e) {
+            if (e.y < innerHeight * 0.1 && e.y > innerHeight * 0.01 && e.x > innerWidth * 0.9 && e.x < innerWidth * 0.99) {
+                localStorage.setItem("persistentStorage", JSON.stringify(Game.persistent));
+                Game.state = "title";
+            }
+            if (e.y > innerHeight * 0.5 && e.y < innerHeight * 0.7 && e.x > innerWidth * 0.25 && e.x < innerWidth * 0.51) {
+                Game.persistent.tutorialenabled = !Game.persistent.tutorialenabled;
+                mouse.held = false;
+            }
+            if (e.y > innerHeight * 0.5 && e.y < innerHeight * 0.7 && e.x > innerWidth * 0.51 && e.x < innerWidth * 0.76) {
+                settings.debug = !settings.debug;
+                mouse.held = false;
+            }
+        }
+    },
+    game: {
+        update: function (currentFrame, level) {
+            level ?? (level = level1);
+            level.generateNecessaryChunks();
+            try {
+                level.update(currentFrame);
+            }
+            catch (err) {
+                console.error(err);
+                throw new Error(`Error updating world: ${err.message}`);
+            }
+        },
+        display: function (currentFrame, level) {
+            level ?? (level = level1);
+            if (currentFrame.redraw) {
+                ctx.clearRect(0, 0, innerWidth, innerHeight);
+            }
+            ctx1.clearRect(0, 0, innerWidth, innerHeight);
+            ctx2.clearRect(0, 0, innerWidth, innerHeight);
+            ctx25.clearRect(0, 0, innerWidth, innerHeight);
+            ctx3.clearRect(0, 0, innerWidth, innerHeight);
+            ctx4.clearRect(0, 0, innerWidth, innerHeight);
+            level.display(currentFrame);
+            level.displayGhostBuilding((mouse.x - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE, (mouse.y - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE, placedBuilding.ID);
+            if (keysHeld.indexOf("shift") != -1) {
+                level.displayTooltip(mouse.x, mouse.y, currentFrame);
+            }
+            ctx4.font = "30px sans-serif";
+            ctx4.fillStyle = "#000000";
+            ctx4.fillText((Math.round(-(Game.scroll.x * consts.DISPLAY_SCALE) / consts.DISPLAY_TILE_SIZE).toString() + ", " + Math.round(-(Game.scroll.y * consts.DISPLAY_SCALE) / consts.DISPLAY_TILE_SIZE).toString()), 10, 100);
+            if (settings.debug) {
+                ctx4.fillText("C: " + currentFrame.cps, 10, 150);
+                ctx4.fillText("I: " + currentFrame.ips, 10, 200);
+            }
+            for (let item of document.getElementById("resources").children) {
+                item.innerHTML = (level1.resources[item.id] ?? 0).toString();
+            }
+        },
+        onclick: function (e) {
+            if (e.ctrlKey) {
+                level1.addItem((e.x - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_SCALE, (e.y - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_SCALE, ItemID.base_null);
+            }
+        },
+        onmouseheld: function () {
+            let e = mouse.latestEvent;
+            if (!keysHeld.includes("control")) {
+                level1.buildBuilding(Math.floor((e.x - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE), Math.floor((e.y - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE), placedBuilding.ID);
+            }
+        },
+        onkeyheld: function (currentframe) {
+            if (keysHeld.indexOf("w") != -1) {
+                Game.scroll.y += Game.scroll.speed;
+                currentframe.redraw = true;
+            }
+            if (keysHeld.indexOf("a") != -1) {
+                Game.scroll.x += Game.scroll.speed;
+                currentframe.redraw = true;
+            }
+            if (keysHeld.indexOf("s") != -1) {
+                Game.scroll.y -= Game.scroll.speed;
+                currentframe.redraw = true;
+            }
+            if (keysHeld.indexOf("d") != -1) {
+                Game.scroll.x -= Game.scroll.speed;
+                currentframe.redraw = true;
+            }
+        }
     }
-    catch (err) {
-        console.error(err);
-        throw new Error(`Error updating world: ${err.message}`);
-    }
-    if (currentFrame.redraw) {
-        ctx.clearRect(0, 0, innerWidth, innerHeight);
-    }
-    ctx1.clearRect(0, 0, innerWidth, innerHeight);
-    ctx2.clearRect(0, 0, innerWidth, innerHeight);
-    ctx25.clearRect(0, 0, innerWidth, innerHeight);
-    ctx3.clearRect(0, 0, innerWidth, innerHeight);
-    ctx4.clearRect(0, 0, innerWidth, innerHeight);
-    level.display(currentFrame);
-    level.displayGhostBuilding((mouse.x - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE, (mouse.y - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE, placedBuilding.ID);
-    if (keysPressed.indexOf("shift") != -1) {
-        level.displayTooltip(mouse.x, mouse.y, currentFrame);
-    }
-    ctx4.font = "30px sans-serif";
-    ctx4.fillStyle = "#000000";
-    ctx4.fillText((Math.round(-(Game.scroll.x * consts.DISPLAY_SCALE) / consts.DISPLAY_TILE_SIZE).toString() + ", " + Math.round(-(Game.scroll.y * consts.DISPLAY_SCALE) / consts.DISPLAY_TILE_SIZE).toString()), 10, 100);
-    let frameMS = (new Date()).getTime() - startFrameTime.getTime();
-    fps.splice(0, 1);
-    fps.push(frameMS);
-    let avgFPS = Math.round(constrain(5000 / (fps[0] + fps[1] + fps[2] + fps[3] + fps[4]), 0, 60));
-    ctx4.fillText(avgFPS + " fps", 10, 50);
-    if (settings.debug) {
-        ctx4.fillText("C: " + currentFrame.cps, 10, 150);
-        ctx4.fillText("I: " + currentFrame.ips, 10, 200);
-    }
-    for (let item of document.getElementById("resources").children) {
-        item.innerHTML = (level1.resources[item.id] ?? 0).toString();
-    }
-}
-function runTitle() {
-    ctx.clearRect(-1, -1, 10000, 10000);
-    ctx.fillStyle = "#0033CC";
-    ctx.fillRect(0, 0, innerWidth, innerHeight);
-    ctx.font = "70px sans-serif";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillStyle = "#000000";
-    ctx.fillText("Untitled Electron Game", innerWidth / 2, innerHeight * 0.2);
-    ctx.font = "20px sans-serif";
-    ctx.fillText("Title Screen Soon™", innerWidth / 2, innerHeight * 0.35);
-    ctx.fillStyle = "#0000FF";
-    rect(innerWidth / 4, innerHeight * 0.5, innerWidth / 2, innerHeight * 0.2, rectMode.CORNER);
-    rect(innerWidth / 4, innerHeight * 0.75, innerWidth / 2, innerHeight * 0.2, rectMode.CORNER);
-    ctx.strokeStyle = "#000000";
-    ctx.lineWidth = 2;
-    ctx.strokeRect(innerWidth / 4, innerHeight * 0.5, innerWidth / 2, innerHeight * 0.2);
-    ctx.strokeRect(innerWidth / 4, innerHeight * 0.75, innerWidth / 2, innerHeight * 0.2);
-    ctx.fillStyle = "#FFFFFF";
-    ctx.font = "40px sans-serif";
-    ctx.fillText("Play", innerWidth / 2, innerHeight * 0.6);
-    ctx.fillText("Settings", innerWidth / 2, innerHeight * 0.85);
-}
-function runSettings() {
-    ctx.clearRect(-1, -1, 10000, 10000);
-    ctx.fillStyle = "#0033CC";
-    ctx.fillRect(0, 0, innerWidth, innerHeight);
-    ctx.font = "70px sans-serif";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillStyle = "#000000";
-    ctx.fillText("Settings", innerWidth / 2, innerHeight * 0.2);
-    ctx.strokeStyle = "#000000";
-    ctx.strokeRect(innerWidth * 0.9, innerHeight * 0.01, innerWidth * 0.09, innerHeight * 0.09);
-    ctx.fillStyle = "#FF0000";
-    ctx.font = "50px sans-serif";
-    ctx.fillText("❌", innerWidth * 0.945, innerHeight * 0.055);
-    ctx.strokeRect(innerWidth * 0.25, innerHeight * 0.5, innerWidth * 0.25, innerHeight * 0.2);
-    ctx.strokeRect(innerWidth * 0.51, innerHeight * 0.5, innerWidth * 0.25, innerHeight * 0.2);
-    ctx.fillStyle = "#0000FF";
-    rect(innerWidth * 0.25, innerHeight * 0.5, innerWidth * 0.25, innerHeight * 0.2, rectMode.CORNER);
-    rect(innerWidth * 0.51, innerHeight * 0.5, innerWidth * 0.25, innerHeight * 0.2, rectMode.CORNER);
-    ctx.fillStyle = "#FFFFFF";
-    ctx.fillText("Tutorial: " + Game.persistent.tutorialenabled, innerWidth * 0.375, innerHeight * 0.6);
-    ctx.fillText("Debug: " + settings.debug, innerWidth * 0.625, innerHeight * 0.6);
-}
-;
-function handleKeysPressed(currentframe) {
-    if (keysPressed.indexOf("w") != -1) {
-        Game.scroll.y += Game.scroll.speed;
-        currentframe.redraw = true;
-    }
-    if (keysPressed.indexOf("a") != -1) {
-        Game.scroll.x += Game.scroll.speed;
-        currentframe.redraw = true;
-    }
-    if (keysPressed.indexOf("s") != -1) {
-        Game.scroll.y -= Game.scroll.speed;
-        currentframe.redraw = true;
-    }
-    if (keysPressed.indexOf("d") != -1) {
-        Game.scroll.x -= Game.scroll.speed;
-        currentframe.redraw = true;
-    }
-}
+};
 function fixSizes() {
     for (let x of ctxs) {
         if (x.canvas.width != window.innerWidth) {
@@ -273,7 +320,7 @@ function fixSizes() {
 }
 function handleAlerts() {
     if (alerts.length) {
-        mouse.pressed = false;
+        mouse.held = false;
         for (let __alert of alerts) {
             if (__alert instanceof Array) {
                 setTimeout(() => {
@@ -300,31 +347,24 @@ function main_loop() {
         };
         Game.forceRedraw = false;
         fixSizes();
-        if (mouse.pressed) {
-            handleMouseDown(currentFrame);
-        }
-        if (keysPressed.length > 0) {
-            handleKeysPressed(currentFrame);
-        }
-        if (keysPressed.indexOf("shift") !== -1) {
+        if (keysHeld.indexOf("shift") !== -1) {
             Game.scroll.speed = 20;
         }
         else {
             Game.scroll.speed = 5;
         }
-        switch (Game.state) {
-            case "title":
-                runTitle();
-                break;
-            case "game":
-                runLevel(level1, currentFrame);
-                break;
-            case "settings":
-                runSettings();
-                break;
-            default:
-                throw new InvalidStateError(`Invalid game state "${Game.state}"`);
+        let currentState = state[Game.state];
+        if (!currentState) {
+            throw new InvalidStateError(`Invalid game state "${Game.state}"`);
         }
+        if (mouse.held) {
+            currentState.onmouseheld?.(currentFrame);
+        }
+        if (keysHeld.length != 0) {
+            currentState.onkeyheld?.(currentFrame);
+        }
+        currentState.update(currentFrame);
+        currentState.display(currentFrame);
         handleAlerts();
     }
     catch (err) {
@@ -395,7 +435,7 @@ for (let element of document.getElementById("toolbar").children) {
         }
         event.target.classList.add("selected");
         placedBuilding.type = parseInt(event.target.id);
-        mouse.pressed = false;
+        mouse.held = false;
     });
 }
 function exportData() {
@@ -424,6 +464,7 @@ function importData(rawData) {
     }
     catch (err) {
         console.error("Import failed.", err);
+        alert("Import failed! " + err.message);
     }
 }
 let placedBuilding = {
@@ -446,45 +487,6 @@ let placedBuilding = {
     }
 };
 let canOverwriteBuilding = true;
-function handleMouseDown(currentFrame, e) {
-    e ?? (e = mouse.latestEvent);
-    switch (Game.state) {
-        case "game":
-            if (e.ctrlKey) {
-                level1.addItem((e.x - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_SCALE, (e.y - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_SCALE, ItemID.base_null);
-                mouse.pressed = false;
-            }
-            else {
-                level1.buildBuilding(Math.floor((e.x - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE), Math.floor((e.y - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE), placedBuilding.ID);
-            }
-            break;
-        case "title":
-            if (e.x > innerWidth / 4 && e.x < innerWidth * 0.75) {
-                if (e.y > innerHeight / 2 && e.y < innerHeight * 0.7) {
-                    mouse.pressed = false;
-                    preload();
-                }
-                if (e.y > innerHeight * 0.75 && e.y < innerHeight * 0.95) {
-                    Game.state = "settings";
-                }
-            }
-            break;
-        case "settings":
-            if (e.y < innerHeight * 0.1 && e.y > innerHeight * 0.01 && e.x > innerWidth * 0.9 && e.x < innerWidth * 0.99) {
-                localStorage.setItem("persistentStorage", JSON.stringify(Game.persistent));
-                Game.state = "title";
-            }
-            if (e.y > innerHeight * 0.5 && e.y < innerHeight * 0.7 && e.x > innerWidth * 0.25 && e.x < innerWidth * 0.51) {
-                Game.persistent.tutorialenabled = !Game.persistent.tutorialenabled;
-                mouse.pressed = false;
-            }
-            if (e.y > innerHeight * 0.5 && e.y < innerHeight * 0.7 && e.x > innerWidth * 0.51 && e.x < innerWidth * 0.76) {
-                settings.debug = !settings.debug;
-                mouse.pressed = false;
-            }
-            break;
-    }
-}
 try {
     assert(localStorage.getItem("persistentStorage"));
     Game.persistent = JSON.parse(localStorage.getItem("persistentStorage"));

@@ -133,7 +133,7 @@ class Level {
         }
     }
     getTurnedConveyor(tileX, tileY, conveyorType) {
-        if (keysPressed.includes("shift")) {
+        if (keysHeld.includes("shift")) {
             return ((conveyorType * 0x100) + 1);
         }
         tileX = Math.floor(tileX);
@@ -821,7 +821,7 @@ class Item {
         }
         currentframe.ips++;
         ctx3.drawImage(textures.get("item_" + this.id), this.x * consts.DISPLAY_SCALE + (Game.scroll.x * consts.DISPLAY_SCALE) - 8 * consts.DISPLAY_SCALE, this.y * consts.DISPLAY_SCALE + (Game.scroll.y * consts.DISPLAY_SCALE) - 8 * consts.DISPLAY_SCALE, 16 * consts.DISPLAY_SCALE, 16 * consts.DISPLAY_SCALE);
-        if (keysPressed.contains("Shift")) {
+        if (keysHeld.contains("Shift")) {
             let x = (mouse.x - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_SCALE;
             let y = (mouse.y - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_SCALE;
             if (x > this.x - (8 * consts.DISPLAY_SCALE) &&

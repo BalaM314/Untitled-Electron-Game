@@ -214,10 +214,10 @@ const recipes: {//List of all recipes.
 let mouse = {
 	x: 0,
 	y: 0,
-	pressed: false,
+	held: false,
 	latestEvent: null
 };
-let keysPressed:string[] = [];
+let keysHeld:string[] = [];
 
 let settings = {
 	graphics_mode: 1,
