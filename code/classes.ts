@@ -1561,6 +1561,10 @@ class Lathe extends BuildingWithRecipe {
 class MultiBlockController extends BuildingWithRecipe {
 	secondaries: MultiBlockSecondary[];
 	static size = [1, 1];
+	constructor(tileX:number, tileY:number, id:BuildingID, level:Level){
+		super(tileX, tileY, id, level);
+		this.secondaries = [];
+	}
 	break(){
 		this.secondaries.forEach(secondary => secondary.break(true));
 		this.secondaries = [];
@@ -1568,7 +1572,23 @@ class MultiBlockController extends BuildingWithRecipe {
 	}
 	update(): void {
 		if(this.secondaries.length != (this.constructor as typeof MultiBlockController).size[0] * (this.constructor as typeof MultiBlockController).size[1] - 1){
-			this.break();
+			//try to reconnect to secondaries
+			//would most likely happen on loading a save
+			let possibleSecondaries = [
+				this.level.buildingAtTile(this.x + 1, this.y),
+				this.level.buildingAtTile(this.x, this.y + 1),
+				this.level.buildingAtTile(this.x + 1, this.y + 1)
+			];
+			for(let possibleSecondary of possibleSecondaries){
+				if(possibleSecondary instanceof MultiBlockSecondary && (possibleSecondary.controller == this || possibleSecondary.controller == undefined)){
+					possibleSecondary.controller = this;
+					this.secondaries.push(possibleSecondary);
+				} else {
+					//cannot reconnect to secondary, break
+					return this.break();
+				}
+			}
+			console.warn("Multiblock disconnected from secondaries. If you just loaded a save, this is fine.");
 		}
 		super.update();
 	}
