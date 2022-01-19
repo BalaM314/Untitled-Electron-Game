@@ -232,7 +232,7 @@ let Game = {
 	startTime: new Date(),
 	forceRedraw: true,
 	persistent: {
-		tutorialenabled: true
+		tutorialenabled: false
 	},
 	tutorial: {
 		conveyor: {

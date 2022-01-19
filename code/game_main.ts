@@ -545,7 +545,7 @@ try {
 	Game.persistent = JSON.parse(localStorage.getItem("persistentStorage"));
 } catch(err){
 	console.warn("Invalid persistent settings!\nIf this is your first time visiting this site, nothing to worry about.");
-	localStorage.setItem("persistentStorage", "{\"tutorialenabled\": true}");
+	localStorage.setItem("persistentStorage", "{\"tutorialenabled\": false}");
 }
 
 registerEventHandlers();
