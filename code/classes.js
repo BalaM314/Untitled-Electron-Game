@@ -6,12 +6,14 @@ class Level {
         this.items = [];
         this.resources = {};
         if (typeof data != "object") {
-            this.seed = data ? data : 0;
+            this.seed = data ?? 0;
+            this.uuid = Math.random().toString().substring(2);
         }
         else {
-            let { chunks, items, resources, seed, version } = data;
+            let { chunks, items, resources, seed, version, uuid } = data;
             this.seed = seed;
             this.resources = resources;
+            this.uuid = uuid;
             try {
                 for (var [position, chunkData] of Object.entries(chunks)) {
                     this.storage.set(position, new Chunk({

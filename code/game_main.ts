@@ -94,7 +94,8 @@ function registerEventHandlers(){
 				switch(e.key){
 					//save/load from localstorage
 					case "s":
-						if(!localStorage.getItem("save1") || confirm("Do you want to save? This will overwrite your current saved world!")){
+						let savedUuid = JSON.parse(localStorage.getItem("save1"))?.metadata?.uuid;
+						if((!localStorage.getItem("save1") || savedUuid == level1.uuid) || confirm("Are you want to save? This will overwrite your current saved world which seems to be different!")){
 							try {
 								localStorage.setItem("save1", JSON.stringify(exportData()));
 								alert("Saved successfully!");
@@ -476,7 +477,7 @@ function load(){
 	document.getElementById("toolbar").classList.remove("hidden");
 	document.getElementById("resources").classList.remove("hidden");
 
-	if(localStorage.getItem("save1") && confirm("Would you like to load your save?")){
+	if((!localStorage.getItem("save1")) || confirm("Would you like to load your save?")){
 		importData(localStorage.getItem("save1"));
 	}
 
@@ -533,7 +534,9 @@ function exportData(){
 		UntitledElectronGame: {
 			metadata: {
 				validationCode: "esrdtfgvczdsret56u7yhgvfcesrythgvfd!",
-				version: consts.VERSION
+				id: level1.uuid ?? Math.random().toString().substring(2),
+				version: consts.VERSION,
+				timeCreated: new Date().getTime().toString()
 			},
 			level1: level1.export()
 		}

@@ -12,18 +12,21 @@ class Level {
 	storage: Map<string, Chunk>;
 	seed: number;
 	format: string;
+	uuid: string;
 	constructor(data:number|any){
 		this.storage = new Map<string, Chunk>();
 		this.format = consts.VERSION;
 		this.items = [];
 		this.resources = {};
 		if(typeof data != "object"){
-			this.seed = data ? data : 0;
+			this.seed = data ?? 0;
+			this.uuid = Math.random().toString().substring(2);
 		} else {
 			// Generate a level from JSON
-			let {chunks, items, resources, seed, version} = data;
+			let {chunks, items, resources, seed, version, uuid} = data;
 			this.seed = seed;
-			this.resources = resources
+			this.resources = resources;
+			this.uuid = uuid;
 			try {
 				for(var [position, chunkData] of Object.entries(chunks)){//Use of var here is intentional.
 					
