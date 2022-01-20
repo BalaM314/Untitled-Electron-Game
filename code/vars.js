@@ -218,7 +218,8 @@ let Game = {
         y: 300,
         speed: 5
     },
-    startTime: new Date(),
+    startTime: new Date().getTime(),
+    lastSaved: null,
     forceRedraw: true,
     persistent: {
         tutorialenabled: false

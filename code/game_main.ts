@@ -78,11 +78,36 @@ function registerEventHandlers(){
 
 		//Switch case for all key events that need to be handled.
 		if(e.ctrlKey){
-			switch(e.key){
-				case "s":
-					exportData(); e.preventDefault(); break;
-				case "o":
-					uploadButton.click(); e.preventDefault(); break;
+			if(e.altKey){
+				switch(e.key){
+					//save/load from file
+					case "s":
+						e.preventDefault();
+						download("Untitled-Electron-Game-save.json", JSON.stringify(exportData()));
+						break;
+					case "o":
+						e.preventDefault();
+						uploadButton.click();
+						break;
+				}
+			} else {
+				switch(e.key){
+					//save/load from localstorage
+					case "s":
+						if(!localStorage.getItem("save1") || confirm("Do you want to save? This will overwrite your current saved world!")){
+							try {
+								localStorage.setItem("save1", JSON.stringify(exportData()));
+								alert("Saved successfully!");
+							} catch(err){
+								alert("Failed to save! " + err.message);
+							}
+						}
+						break;
+					case "o":
+						e.preventDefault();
+						uploadButton.click();
+						break;
+				}
 			}
 		} else {
 			switch(e.key){
@@ -157,6 +182,10 @@ function registerEventHandlers(){
 		keysHeld = [];
 		mouse.held = false;
 		//call pause here once I add it
+	}
+
+	window.onbeforeunload = () => {
+		//
 	}
 
 }
@@ -289,11 +318,7 @@ let state: {
 			ctx4.font = "30px sans-serif";
 			ctx4.fillStyle = "#000000";
 			ctx4.fillText((Math.round(- (Game.scroll.x * consts.DISPLAY_SCALE) / consts.DISPLAY_TILE_SIZE).toString() + ", " + Math.round(- (Game.scroll.y * consts.DISPLAY_SCALE) / consts.DISPLAY_TILE_SIZE).toString()), 10, 100);
-			// let frameMS = (new Date()).getTime() - startFrameTime.getTime();
-			// fps.splice(0, 1);
-			// fps.push(frameMS);
-			// let avgFPS = Math.round(constrain(5000/(fps[0] + fps[1] + fps[2] + fps[3] + fps[4]), 0, 60));
-			// ctx4.fillText(avgFPS + " fps", 10, 50); TODO RE ENABLE
+			
 			if(settings.debug){
 				ctx4.fillText("C: " + currentFrame.cps, 10, 150);
 				ctx4.fillText("I: " + currentFrame.ips, 10, 200);
@@ -372,6 +397,8 @@ function handleAlerts(){
 let cancel = null;
 function main_loop(){
 	try {
+		let startFrameTime = new Date();
+
 		let currentFrame:currentFrame = {
 			tooltip: true,
 			debug: settings.debug,
@@ -403,6 +430,14 @@ function main_loop(){
 		currentState.update(currentFrame);
 		currentState.display(currentFrame);
 		
+		if(Game.state == "game"){
+			let frameMS = (new Date()).getTime() - startFrameTime.getTime();
+			fps.splice(0, 1);
+			fps.push(frameMS);
+			let avgFPS = Math.round(constrain(5000/(fps[0] + fps[1] + fps[2] + fps[3] + fps[4]), 0, 60));
+			ctx4.fillText(avgFPS + " fps", 10, 50);
+		}
+
 		handleAlerts();
 
 	} catch(err){
@@ -440,6 +475,10 @@ function load(){
 	Game.forceRedraw = true;
 	document.getElementById("toolbar").classList.remove("hidden");
 	document.getElementById("resources").classList.remove("hidden");
+
+	if(localStorage.getItem("save1") && confirm("Would you like to load your save?")){
+		importData(localStorage.getItem("save1"));
+	}
 
 	if(Game.persistent.tutorialenabled){
 		setTimeout(() => {
@@ -490,7 +529,7 @@ for(let element of document.getElementById("toolbar").children){
 
 
 function exportData(){
-	let output = {
+	return {
 		UntitledElectronGame: {
 			metadata: {
 				validationCode: "esrdtfgvczdsret56u7yhgvfcesrythgvfd!",
@@ -499,8 +538,6 @@ function exportData(){
 			level1: level1.export()
 		}
 	};
-
-	download("Untitled-Electron-Game-save.json", JSON.stringify(output));
 }
 
 function importData(rawData:string){
@@ -558,6 +595,7 @@ try {
 	console.warn("Invalid persistent settings!\nIf this is your first time visiting this site, nothing to worry about.");
 	localStorage.setItem("persistentStorage", "{\"tutorialenabled\": false}");
 }
+
 
 registerEventHandlers();
 

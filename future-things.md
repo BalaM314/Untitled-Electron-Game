@@ -1,6 +1,10 @@
 # A list of things I will or will not add in the future.
 
 
+### GET RID OF ALERT
+
+Spamming alert boxes is awful and needs to be phased out quickly so the player doesnt get so annoyed they leave.
+
 ### A tutorial
 
 The game does have a tutorial, but it should be thrown in a BuildingID(0x0003).
