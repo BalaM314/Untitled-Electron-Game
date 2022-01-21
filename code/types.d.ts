@@ -20,6 +20,18 @@ type BuildingID =
 0x0901 |	//Conveyor Belt Facing Up->Left
 0x0A01 |	//Conveyor Belt Facing Right->Up
 0x0B01 |	//Conveyor Belt Facing Left->Up
+0x0C01 |	//Conveyor Belt Facing Left+Down->Right
+0x0D01 |	//Conveyor Belt Facing Left+Up->Right
+0x0E01 |	//Conveyor Belt Facing Up+Right->Down
+0x0F01 |	//Conveyor Belt Facing Up+Left->Down
+0x1001 |	//Conveyor Belt Facing Right+Down->Left
+0x1101 |	//Conveyor Belt Facing Right+Up->Left
+0x1201 |	//Conveyor Belt Facing Down+Right->Up
+0x1301 |	//Conveyor Belt Facing Down+Left->Up
+0x1401 |	//Conveyor Belt Facing Up+Left+Down->Right
+0x1501 |	//Conveyor Belt Facing Left+Up+Right->Down
+0x1601 |	//Conveyor Belt Facing Down+Right+Up->Left
+0x1701 |	//Conveyor Belt Facing Right+Down+Left->Up
 0x0002 |	//Miner
 0x0003 |	//Trash Can
 0x0004 |	//Furnace
