@@ -214,6 +214,7 @@
     </div>
     <script>
       //Inline script for time sensitive event handlers(onload).
+      let loadedtextures = 0;
 
       for(let element of document.getElementById("textures").children){
       element.addEventListener("load", () => {

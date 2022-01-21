@@ -584,8 +584,6 @@ Press Shift to move faster and for tooltips.`
 	}
 }
 
-let loadedtextures = 0;
-
 let level1:Level;
 
 

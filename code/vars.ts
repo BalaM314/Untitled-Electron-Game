@@ -272,6 +272,8 @@ const ctx4 = (document.getElementById("canvas4") as HTMLCanvasElement).getContex
 const ctxs = [ctx, ctx1, ctx2, ctx25, ctx3, ctx4];
 const uploadButton = document.getElementById('uploadButton')! as HTMLInputElement;
 
+declare let loadedtextures:number;
+
 function makeError(name){
 	return class extends Error {
 		constructor(message){
