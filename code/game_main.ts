@@ -270,7 +270,7 @@ let state: {
 				height: () => innerHeight * 0.2,
 				label: () => "Tutorial: " + settings.tutorial,
 				color: "#0000FF",
-				font: "40px sans-serif",
+				font: "35px sans-serif",
 				onClick: () => {settings.tutorial = !settings.tutorial;}
 			}),
 			new Button({
@@ -280,27 +280,27 @@ let state: {
 				height: () => innerHeight * 0.2,
 				label: () => "Debug: " + settings.debug,
 				color: "#0000FF",
-				font: "40px sans-serif",
+				font: "35px sans-serif",
 				onClick: () => {settings.debug = !settings.debug;}
 			}),
 			new Button({
 				x: () => innerWidth * 0.25,
-				y: () => innerHeight * 0.5,
+				y: () => innerHeight * 0.71,
 				width: () => innerWidth * 0.25,
 				height: () => innerHeight * 0.2,
 				label: () => "Always load save: " + settings.alwaysLoadSave,
 				color: "#0000FF",
-				font: "40px sans-serif",
+				font: "35px sans-serif",
 				onClick: () => {settings.alwaysLoadSave = !settings.alwaysLoadSave;}
 			}),
 			new Button({
 				x: () => innerWidth * 0.51,
-				y: () => innerHeight * 0.5,
+				y: () => innerHeight * 0.71,
 				width: () => innerWidth * 0.25,
 				height: () => innerHeight * 0.2,
 				label: () => "Autosave: " + settings.autoSave,
 				color: "#0000FF",
-				font: "40px sans-serif",
+				font: "35px sans-serif",
 				onClick: () => {settings.autoSave = !settings.autoSave;}
 			}),
 			new Button({
@@ -311,7 +311,7 @@ let state: {
 				label: "❌",
 				color: "#0000FF",
 				font: "40px sans-serif",
-				onClick: () => {Game.state = "title"; localStorage.settings = settings; localStorage.setItem("settings", JSON.stringify(settings));}
+				onClick: () => {Game.state = "title"; localStorage.setItem("settings", JSON.stringify(settings));}
 			}),
 		],
 		update: function(){},
@@ -340,7 +340,7 @@ let state: {
 			state.settings.buttons.forEach(button => button.display(ctx));
 		},
 		onclick: function(e:MouseEvent){
-			state.title.buttons.forEach(button => button.handleMouseClick(e));
+			state.settings.buttons.forEach(button => button.handleMouseClick(e));
 		}
 	},
 	game: {
