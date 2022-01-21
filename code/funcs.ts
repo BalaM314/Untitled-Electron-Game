@@ -218,25 +218,25 @@ function* pseudoRandom(seed){
 		case triggerType.placeBuilding:
 			switch(buildingID){
 				case 0x04:
-					if(Game.tutorial.furnace.placed && Game.persistent.tutorialenabled){
+					if(Game.tutorial.furnace.placed && settings.tutorial){
 						_alert("The Furnace converts raw ores into their smelted forms. Simply point a conveyor belt carrying ores at it and provide another belt for it to output onto.");
 						Game.tutorial.furnace.placed = false;
 					}
 				break;
 				case 0x03:
-					if(Game.tutorial.trashcan.placed && Game.persistent.tutorialenabled){
+					if(Game.tutorial.trashcan.placed && settings.tutorial){
 						_alert("The Trash Can is pretty simple: it deletes all items it receives.");
 						Game.tutorial.trashcan.placed = false;
 					}
 				break;
 				case 0x02:
-					if(Game.tutorial.miner.placed && Game.persistent.tutorialenabled){
+					if(Game.tutorial.miner.placed && settings.tutorial){
 						_alert("The Miner mines ore nodes, producing one ore per second. \nIt auto-outputs to adjacent conveyor belts.\nAlso, ore nodes are infinite.");
 						Game.tutorial.miner.placed = false;
 					}
 				break;
 				case 0x01:
-					if(Game.tutorial.conveyor.placed && Game.persistent.tutorialenabled){
+					if(Game.tutorial.conveyor.placed && settings.tutorial){
 						_alert("Conveyors are the way to move items around. \nYou can use the arrow keys to change the direction of placed belts. \nTry making a belt chain, then putting a debug item on it with Ctrl+click.\nYou can drag-click to build multiple of the same building.");
 						Game.tutorial.conveyor.placed = false;
 					}
@@ -248,7 +248,7 @@ function* pseudoRandom(seed){
 		case triggerType.placeBuildingFail:
 			switch(buildingID){
 				case 0x04:
-					if(Game.tutorial.furnace.placefail && Game.persistent.tutorialenabled){
+					if(Game.tutorial.furnace.placefail && settings.tutorial){
 						_alert("The Furnace generates a lot of heat and is pretty heavy, so you can only place it on stone.");
 						Game.tutorial.furnace.placefail = false;
 					}
@@ -257,13 +257,13 @@ function* pseudoRandom(seed){
 
 				break;
 				case 0x02:
-					if(Game.tutorial.miner.placefail && Game.persistent.tutorialenabled){
+					if(Game.tutorial.miner.placefail && settings.tutorial){
 						_alert("The Miner can only be placed on a resource node(the colored circles).");
 						Game.tutorial.miner.placefail = false;
 					}
 				break;
 				case 0x01:
-					if(Game.tutorial.conveyor.placefail && Game.persistent.tutorialenabled){
+					if(Game.tutorial.conveyor.placefail && settings.tutorial){
 						_alert("Conveyors don't float!\nYes, I know, then water chunks are useless... I'll add pontoons in a future update.");
 						Game.tutorial.conveyor.placefail = false;
 					}
@@ -295,7 +295,7 @@ function* pseudoRandom(seed){
 		case triggerType.buildingRun:
 			switch(buildingID){
 				case 0x02:
-					if(Game.tutorial.miner.coaloutput && Game.persistent.tutorialenabled && itemID == ItemID.base_coalOre){
+					if(Game.tutorial.miner.coaloutput && settings.tutorial && itemID == ItemID.base_coalOre){
 						_alert("Nice!\nThis is just coal ore though, not coal. Try placing a furnace(4 key).\nOh also, remember you can scroll to zoom in on that beautiful coal ore texture.");
 						Game.tutorial.miner.coaloutput = false;
 					}

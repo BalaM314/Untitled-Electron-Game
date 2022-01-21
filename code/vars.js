@@ -213,6 +213,7 @@ let settings = {
     debug: true,
     alwaysLoadSave: true,
     autoSave: true,
+    tutorial: false,
 };
 let Game = {
     scroll: {
@@ -223,9 +224,6 @@ let Game = {
     startTime: new Date().getTime(),
     lastSaved: null,
     forceRedraw: true,
-    persistent: {
-        tutorialenabled: false
-    },
     tutorial: {
         conveyor: {
             placed: true,

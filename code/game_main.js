@@ -246,10 +246,10 @@ let state = {
                 y: () => innerHeight * 0.5,
                 width: () => innerWidth * 0.25,
                 height: () => innerHeight * 0.2,
-                label: () => "Tutorial: " + Game.persistent.tutorialenabled,
+                label: () => "Tutorial: " + settings.tutorial,
                 color: "#0000FF",
                 font: "40px sans-serif",
-                onClick: () => { Game.persistent.tutorialenabled = !Game.persistent.tutorialenabled; }
+                onClick: () => { settings.tutorial = !settings.tutorial; }
             }),
             new Button({
                 x: () => innerWidth * 0.51,
@@ -259,7 +259,27 @@ let state = {
                 label: () => "Debug: " + settings.debug,
                 color: "#0000FF",
                 font: "40px sans-serif",
-                onClick: () => { Game.persistent.tutorialenabled = !Game.persistent.tutorialenabled; }
+                onClick: () => { settings.debug = !settings.debug; }
+            }),
+            new Button({
+                x: () => innerWidth * 0.25,
+                y: () => innerHeight * 0.5,
+                width: () => innerWidth * 0.25,
+                height: () => innerHeight * 0.2,
+                label: () => "Always load save: " + settings.alwaysLoadSave,
+                color: "#0000FF",
+                font: "40px sans-serif",
+                onClick: () => { settings.alwaysLoadSave = !settings.alwaysLoadSave; }
+            }),
+            new Button({
+                x: () => innerWidth * 0.51,
+                y: () => innerHeight * 0.5,
+                width: () => innerWidth * 0.25,
+                height: () => innerHeight * 0.2,
+                label: () => "Autosave: " + settings.autoSave,
+                color: "#0000FF",
+                font: "40px sans-serif",
+                onClick: () => { settings.autoSave = !settings.autoSave; }
             }),
             new Button({
                 x: () => innerWidth * 0.9,
@@ -269,7 +289,7 @@ let state = {
                 label: "❌",
                 color: "#0000FF",
                 font: "40px sans-serif",
-                onClick: () => { Game.persistent.tutorialenabled = !Game.persistent.tutorialenabled; }
+                onClick: () => { Game.state = "title"; localStorage.settings = settings; localStorage.setItem("settings", JSON.stringify(settings)); }
             }),
         ],
         update: function () { },
@@ -293,16 +313,12 @@ let state = {
             rect(innerWidth * 0.25, innerHeight * 0.5, innerWidth * 0.25, innerHeight * 0.2, rectMode.CORNER);
             rect(innerWidth * 0.51, innerHeight * 0.5, innerWidth * 0.25, innerHeight * 0.2, rectMode.CORNER);
             ctx.fillStyle = "#FFFFFF";
-            ctx.fillText("Tutorial: " + Game.persistent.tutorialenabled, innerWidth * 0.375, innerHeight * 0.6);
+            ctx.fillText("Tutorial: " + settings.tutorial, innerWidth * 0.375, innerHeight * 0.6);
             ctx.fillText("Debug: " + settings.debug, innerWidth * 0.625, innerHeight * 0.6);
             state.settings.buttons.forEach(button => button.display(ctx));
         },
         onclick: function (e) {
             state.title.buttons.forEach(button => button.handleMouseClick(e));
-            if (e.y < innerHeight * 0.1 && e.y > innerHeight * 0.01 && e.x > innerWidth * 0.9 && e.x < innerWidth * 0.99) {
-                localStorage.setItem("persistentStorage", JSON.stringify(Game.persistent));
-                Game.state = "title";
-            }
         }
     },
     game: {
@@ -479,7 +495,7 @@ function load() {
     Game.forceRedraw = true;
     document.getElementById("toolbar").classList.remove("hidden");
     document.getElementById("resources").classList.remove("hidden");
-    if (Game.persistent.tutorialenabled) {
+    if (settings.tutorial) {
         setTimeout(() => {
             alert(`
 Welcome to Untitled Electron Game!
@@ -581,12 +597,12 @@ let placedBuilding = {
 };
 let canOverwriteBuilding = true;
 try {
-    assert(localStorage.getItem("persistentStorage"));
-    Game.persistent = JSON.parse(localStorage.getItem("persistentStorage"));
+    assert(localStorage.getItem("settings"));
+    settings = JSON.parse(localStorage.getItem("settings"));
 }
 catch (err) {
     console.warn("Invalid persistent settings!\nIf this is your first time visiting this site, nothing to worry about.");
-    localStorage.setItem("persistentStorage", "{\"tutorialenabled\": false}");
+    localStorage.setItem("settings", JSON.stringify(settings));
 }
 registerEventHandlers();
 main_loop();
