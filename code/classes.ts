@@ -76,17 +76,17 @@ class Level {
 		return this.getChunk(
 			Math.floor(pixelX/consts.TILE_SIZE),
 			Math.floor(pixelY/consts.TILE_SIZE)
-		).tileAt(tileToChunk(pixelX/consts.TILE_SIZE), tileToChunk(pixelY/consts.TILE_SIZE));
+		).tileAt(tileOffsetInChunk(pixelX/consts.TILE_SIZE), tileOffsetInChunk(pixelY/consts.TILE_SIZE));
 	}
 	tileAtByTile(tileX:number, tileY:number):Tile{
 		return this.getChunk(
 			Math.floor(tileX),
 			Math.floor(tileY)
-		).tileAt(tileToChunk(tileX), tileToChunk(tileY));
+		).tileAt(tileOffsetInChunk(tileX), tileOffsetInChunk(tileY));
 	}
 	setTileByTile(tileX:number, tileY:number, tile:Tile):boolean {
 		if(this.getChunk(tileX,tileY)){
-			this.getChunk(tileX,tileY).setTile(tileToChunk(tileX), tileToChunk(tileY), tile);
+			this.getChunk(tileX,tileY).setTile(tileOffsetInChunk(tileX), tileOffsetInChunk(tileY), tile);
 			Game.forceRedraw = true;
 			return true;
 		}
@@ -116,31 +116,31 @@ class Level {
 		return this.getChunk(
 			Math.floor(pixelX/consts.TILE_SIZE),
 			Math.floor(pixelY/consts.TILE_SIZE)
-		).buildingAt(tileToChunk(pixelX/consts.TILE_SIZE), tileToChunk(pixelY/consts.TILE_SIZE))?.id ?? 0xFFFF;
+		).buildingAt(tileOffsetInChunk(pixelX/consts.TILE_SIZE), tileOffsetInChunk(pixelY/consts.TILE_SIZE))?.id ?? 0xFFFF;
 	}
 	buildingIDAtTile(tileX:number, tileY:number):BuildingID {
 		return this.getChunk(
 			Math.floor(tileX),
 			Math.floor(tileY)
-		).buildingAt(tileToChunk(tileX), tileToChunk(tileY))?.id ?? 0xFFFF;
+		).buildingAt(tileOffsetInChunk(tileX), tileOffsetInChunk(tileY))?.id ?? 0xFFFF;
 	}
 	buildingAtTile(tileX:number, tileY:number):Building {
 		return this.getChunk(
 			Math.floor(tileX),
 			Math.floor(tileY)
-		).buildingAt(tileToChunk(tileX), tileToChunk(tileY));
+		).buildingAt(tileOffsetInChunk(tileX), tileOffsetInChunk(tileY));
 	}
 	buildingAtPixel(pixelX:number, pixelY:number):Building {
 		return this.getChunk(
 			Math.floor(pixelX/consts.TILE_SIZE),
 			Math.floor(pixelY/consts.TILE_SIZE)
-		).buildingAt(tileToChunk(pixelX/consts.TILE_SIZE), tileToChunk(pixelY/consts.TILE_SIZE));
+		).buildingAt(tileOffsetInChunk(pixelX/consts.TILE_SIZE), tileOffsetInChunk(pixelY/consts.TILE_SIZE));
 	}
 	extractorAtTile(tileX:number, tileY:number):Extractor {
 		return this.getChunk(
 			Math.floor(tileX),
 			Math.floor(tileY)
-		).extractorAt(tileToChunk(tileX), tileToChunk(tileY));
+		).extractorAt(tileOffsetInChunk(tileX), tileOffsetInChunk(tileY));
 	}
 	addItem(x:number, y:number, id:string){
 		let tempitem = new Item(x, y, id as ItemID, this);
@@ -164,12 +164,12 @@ class Level {
 		}
 		switch(buildingID % 0x100){
 			case 0x01:
-				this.getChunk(tileX, tileY).displayGhostBuilding(tileToChunk(tileX), tileToChunk(tileY), this.getTurnedConveyor(tileX, tileY, buildingID >> 8), !Conveyor.canBuildAt(tileX, tileY, this));
+				this.getChunk(tileX, tileY).displayGhostBuilding(tileOffsetInChunk(tileX), tileOffsetInChunk(tileY), this.getTurnedConveyor(tileX, tileY, buildingID >> 8), !Conveyor.canBuildAt(tileX, tileY, this));
 				break;
 			case 0xFF:
 				break;
 			default:
-				this.getChunk(tileX, tileY).displayGhostBuilding(tileToChunk(tileX), tileToChunk(tileY), buildingID, !BuildingType[buildingID % 0x100]?.canBuildAt(tileX, tileY, this));
+				this.getChunk(tileX, tileY).displayGhostBuilding(tileOffsetInChunk(tileX), tileOffsetInChunk(tileY), buildingID, !BuildingType[buildingID % 0x100]?.canBuildAt(tileX, tileY, this));
 			break;
 		}
 	}
@@ -248,7 +248,7 @@ class Level {
 	}
 	writeBuilding(tileX:number, tileY:number, building:Building):boolean {
 		if(this.getChunk(tileX,tileY)){
-			this.getChunk(tileX,tileY).setBuilding(tileToChunk(tileX), tileToChunk(tileY), building);
+			this.getChunk(tileX,tileY).setBuilding(tileOffsetInChunk(tileX), tileOffsetInChunk(tileY), building);
 			Game.forceRedraw = true;
 			return true;
 		}
@@ -256,7 +256,7 @@ class Level {
 	}
 	writeExtractor(tileX:number, tileY:number, building:Extractor):boolean {
 		if(this.getChunk(tileX,tileY)){
-			this.getChunk(tileX,tileY).setExtractor(tileToChunk(tileX), tileToChunk(tileY), building);
+			this.getChunk(tileX,tileY).setExtractor(tileOffsetInChunk(tileX), tileOffsetInChunk(tileY), building);
 			Game.forceRedraw = true;
 			return true;
 		}
@@ -1025,41 +1025,40 @@ class Building {
 		}
 		return null;
 	}
-	spawnItem(id:string){
-		id ??= "base_null";
+	spawnItem(id:ItemID){
+		id ??= "base_null" as ItemID;
 		//TODO: try to convert this to .acceptItem()
 		if(
 			(this.level.buildingIDAtTile(this.x + 1, this.y) === 0x0001 ||
 			this.level.buildingIDAtTile(this.x + 1, this.y) === 0x0701 ||
 			this.level.buildingIDAtTile(this.x + 1, this.y) === 0x0B01) &&
-			(this.level.buildingAtTile(this.x + 1, this.y) as Conveyor).item == null
+			(this.level.buildingAtTile(this.x + 1, this.y).acceptItem(new Item((this.x + 1.1) * consts.TILE_SIZE, (this.y + 0.5) * consts.TILE_SIZE, id, this.level)))
 		){
-			this.level.addItem(this.x * consts.TILE_SIZE + consts.TILE_SIZE * 1.1, this.y * consts.TILE_SIZE + consts.TILE_SIZE * 0.5, id);
+			return true;
 		} else if(
 			(this.level.buildingIDAtTile(this.x, this.y + 1) === 0x0101 ||
 			this.level.buildingIDAtTile(this.x, this.y + 1) === 0x0501 ||
 			this.level.buildingIDAtTile(this.x, this.y + 1) === 0x0901) &&
-			(this.level.buildingAtTile(this.x, this.y + 1) as Conveyor).item == null
+			(this.level.buildingAtTile(this.x, this.y + 1).acceptItem(new Item((this.x + 0.5) * consts.TILE_SIZE, (this.y + 1.1) * consts.TILE_SIZE, id, this.level)))
 		){
-			this.level.addItem(this.x * consts.TILE_SIZE + consts.TILE_SIZE * 0.5, this.y * consts.TILE_SIZE + consts.TILE_SIZE * 1.1, id);
+			return true;
 		} else if(
 			(this.level.buildingIDAtTile(this.x - 1, this.y) === 0x0201 ||
 			this.level.buildingIDAtTile(this.x - 1, this.y) === 0x0601 ||
 			this.level.buildingIDAtTile(this.x - 1, this.y) === 0x0A01) &&
-			(this.level.buildingAtTile(this.x - 1, this.y) as Conveyor).item == null
+			(this.level.buildingAtTile(this.x - 1, this.y).acceptItem(new Item((this.x - 0.1) * consts.TILE_SIZE, (this.y + 0.5) * consts.TILE_SIZE, id, this.level)))
 		){
-			this.level.addItem(this.x * consts.TILE_SIZE - consts.TILE_SIZE * 0.1, this.y * consts.TILE_SIZE + consts.TILE_SIZE * 0.5, id);
+			return true;
 		} else if(
 			(this.level.buildingIDAtTile(this.x, this.y - 1) === 0x0301 ||
 			this.level.buildingIDAtTile(this.x, this.y - 1) === 0x0401 ||
 			this.level.buildingIDAtTile(this.x, this.y - 1) === 0x0801) &&
-			(this.level.buildingAtTile(this.x, this.y - 1) as Conveyor).item == null
+			(this.level.buildingAtTile(this.x, this.y - 1).acceptItem(new Item((this.x + 0.5) * consts.TILE_SIZE, (this.y - 0.1) * consts.TILE_SIZE, id, this.level)))
 		){
-			this.level.addItem(this.x * consts.TILE_SIZE + consts.TILE_SIZE * 0.5, this.y * consts.TILE_SIZE - consts.TILE_SIZE * 0.1, id);
+			return true;
 		} else {
 			return false;
 		}
-		return true;
 	}
 	grabItem(filter:(item:Item) => any, callback:(item:Item) => void, remove:boolean, grabDistance?:number){
 		grabDistance ??= 0.5;
@@ -1084,13 +1083,13 @@ class Building {
 	acceptItem(item:Item):boolean{
 		if(this.item === null){
 			this.item = item;
+			item.grabbedBy = this;
+			return true;
 		} else if(this.inventory?.length < this.inventory?.MAX_LENGTH){
 			this.inventory.push(item);
 		} else {
 			return false;
 		}
-		item.grabbedBy = this;
-		return true;
 	}
 	export(){
 		let inv = [];
@@ -1266,10 +1265,10 @@ class Conveyor extends Building {
 					this.item.y -= consts.buildings.conveyor.SPEED;
 					break;
 				case 0x04:
-					if(pixelToTile(this.item.x) >= consts.TILE_SIZE * 0.5 && pixelToTile(this.item.y) == consts.TILE_SIZE * 0.5){
+					if(pixelOffsetInTile(this.item.x) >= consts.TILE_SIZE * 0.5 && pixelOffsetInTile(this.item.y) == consts.TILE_SIZE * 0.5){
 						this.item.x ++;
 						this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
-					} else if(pixelToTile(this.item.x) == consts.TILE_SIZE * 0.5 && pixelToTile(this.item.y) >= consts.TILE_SIZE * 0.5){
+					} else if(pixelOffsetInTile(this.item.x) == consts.TILE_SIZE * 0.5 && pixelOffsetInTile(this.item.y) >= consts.TILE_SIZE * 0.5){
 						this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
 						this.item.y --;
 					} else {
@@ -1278,10 +1277,10 @@ class Conveyor extends Building {
 					}
 					break;
 				case 0x05:
-					if(pixelToTile(this.item.x) >= consts.TILE_SIZE * 0.5 && pixelToTile(this.item.y) == consts.TILE_SIZE * 0.5){
+					if(pixelOffsetInTile(this.item.x) >= consts.TILE_SIZE * 0.5 && pixelOffsetInTile(this.item.y) == consts.TILE_SIZE * 0.5){
 						this.item.x ++;
 						this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
-					} else if(pixelToTile(this.item.x) == consts.TILE_SIZE * 0.5 && pixelToTile(this.item.y) <= consts.TILE_SIZE * 0.5){
+					} else if(pixelOffsetInTile(this.item.x) == consts.TILE_SIZE * 0.5 && pixelOffsetInTile(this.item.y) <= consts.TILE_SIZE * 0.5){
 						this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
 						this.item.y ++;
 					} else {
@@ -1290,10 +1289,10 @@ class Conveyor extends Building {
 					}
 					break;
 				case 0x06:
-					if(pixelToTile(this.item.x) == consts.TILE_SIZE * 0.5 && pixelToTile(this.item.y) >= consts.TILE_SIZE * 0.5){
+					if(pixelOffsetInTile(this.item.x) == consts.TILE_SIZE * 0.5 && pixelOffsetInTile(this.item.y) >= consts.TILE_SIZE * 0.5){
 						this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
 						this.item.y ++;
-					} else if(pixelToTile(this.item.x) > consts.TILE_SIZE * 0.5 && pixelToTile(this.item.y) == consts.TILE_SIZE * 0.5){
+					} else if(pixelOffsetInTile(this.item.x) > consts.TILE_SIZE * 0.5 && pixelOffsetInTile(this.item.y) == consts.TILE_SIZE * 0.5){
 						this.item.x --;
 						this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
 					} else {
@@ -1302,10 +1301,10 @@ class Conveyor extends Building {
 					}
 					break;
 				case 0x07:
-					if(pixelToTile(this.item.x) == consts.TILE_SIZE * 0.5 && pixelToTile(this.item.y) >= consts.TILE_SIZE * 0.5){
+					if(pixelOffsetInTile(this.item.x) == consts.TILE_SIZE * 0.5 && pixelOffsetInTile(this.item.y) >= consts.TILE_SIZE * 0.5){
 						this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
 						this.item.y ++;
-					} else if(pixelToTile(this.item.x) < consts.TILE_SIZE * 0.5 && pixelToTile(this.item.y) == consts.TILE_SIZE * 0.5){
+					} else if(pixelOffsetInTile(this.item.x) < consts.TILE_SIZE * 0.5 && pixelOffsetInTile(this.item.y) == consts.TILE_SIZE * 0.5){
 						this.item.x ++;
 						this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
 					} else {
@@ -1314,10 +1313,10 @@ class Conveyor extends Building {
 					}
 					break;
 				case 0x08:
-					if(pixelToTile(this.item.x) <= consts.TILE_SIZE * 0.5 && pixelToTile(this.item.y) == consts.TILE_SIZE * 0.5){
+					if(pixelOffsetInTile(this.item.x) <= consts.TILE_SIZE * 0.5 && pixelOffsetInTile(this.item.y) == consts.TILE_SIZE * 0.5){
 						this.item.x --;
 						this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
-					} else if(pixelToTile(this.item.x) == consts.TILE_SIZE * 0.5 && pixelToTile(this.item.y) >= consts.TILE_SIZE * 0.5){
+					} else if(pixelOffsetInTile(this.item.x) == consts.TILE_SIZE * 0.5 && pixelOffsetInTile(this.item.y) >= consts.TILE_SIZE * 0.5){
 						this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
 						this.item.y --;
 					} else {
@@ -1326,10 +1325,10 @@ class Conveyor extends Building {
 					}
 					break;
 				case 0x09:
-					if(pixelToTile(this.item.x) <= consts.TILE_SIZE * 0.5 && pixelToTile(this.item.y) == consts.TILE_SIZE * 0.5){
+					if(pixelOffsetInTile(this.item.x) <= consts.TILE_SIZE * 0.5 && pixelOffsetInTile(this.item.y) == consts.TILE_SIZE * 0.5){
 						this.item.x --;
 						this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
-					} else if(pixelToTile(this.item.x) == consts.TILE_SIZE * 0.5 && pixelToTile(this.item.y) <= consts.TILE_SIZE * 0.5){
+					} else if(pixelOffsetInTile(this.item.x) == consts.TILE_SIZE * 0.5 && pixelOffsetInTile(this.item.y) <= consts.TILE_SIZE * 0.5){
 						this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
 						this.item.y ++;
 					} else {
@@ -1338,10 +1337,10 @@ class Conveyor extends Building {
 					}
 					break;
 				case 0x0A:
-					if(pixelToTile(this.item.x) == consts.TILE_SIZE * 0.5 && pixelToTile(this.item.y) <= consts.TILE_SIZE * 0.5){
+					if(pixelOffsetInTile(this.item.x) == consts.TILE_SIZE * 0.5 && pixelOffsetInTile(this.item.y) <= consts.TILE_SIZE * 0.5){
 						this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
 						this.item.y --;
-					} else if(pixelToTile(this.item.x) > consts.TILE_SIZE * 0.5 && pixelToTile(this.item.y) == consts.TILE_SIZE * 0.5){
+					} else if(pixelOffsetInTile(this.item.x) > consts.TILE_SIZE * 0.5 && pixelOffsetInTile(this.item.y) == consts.TILE_SIZE * 0.5){
 						this.item.x --;
 						this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
 					} else {
@@ -1350,10 +1349,10 @@ class Conveyor extends Building {
 					}
 					break;
 				case 0x0B:
-					if(pixelToTile(this.item.x) == consts.TILE_SIZE * 0.5 && pixelToTile(this.item.y) <= consts.TILE_SIZE * 0.5){
+					if(pixelOffsetInTile(this.item.x) == consts.TILE_SIZE * 0.5 && pixelOffsetInTile(this.item.y) <= consts.TILE_SIZE * 0.5){
 						this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
 						this.item.y --;
-					} else if(pixelToTile(this.item.x) < consts.TILE_SIZE * 0.5 && pixelToTile(this.item.y) == consts.TILE_SIZE * 0.5){
+					} else if(pixelOffsetInTile(this.item.x) < consts.TILE_SIZE * 0.5 && pixelOffsetInTile(this.item.y) == consts.TILE_SIZE * 0.5){
 						this.item.x ++;
 						this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
 					} else {
@@ -1594,7 +1593,7 @@ class MultiBlockController extends BuildingWithRecipe {
 		}
 		super.update();
 	}
-	spawnItem(id: string):boolean {
+	spawnItem(id: ItemID):boolean {
 		if(super.spawnItem(id)){
 			return true;
 		}

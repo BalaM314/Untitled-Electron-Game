@@ -286,11 +286,11 @@ function zoom(scaleFactor) {
     Game.scroll.x -= (innerWidth * 0.5 * (scaleFactor - 1)) / consts.DISPLAY_SCALE;
     Game.scroll.y -= (innerHeight * 0.5 * (scaleFactor - 1)) / consts.DISPLAY_SCALE;
 }
-function tileToChunk(tileCoord) {
+function tileOffsetInChunk(tileCoord) {
     tileCoord = Math.floor(tileCoord) % consts.CHUNK_SIZE;
     return tileCoord + (tileCoord < 0 ? consts.CHUNK_SIZE : 0);
 }
-function pixelToTile(pixelCoord) {
+function pixelOffsetInTile(pixelCoord) {
     pixelCoord = Math.floor(pixelCoord) % consts.TILE_SIZE;
     return pixelCoord + (pixelCoord < 0 ? consts.TILE_SIZE : 0);
 }

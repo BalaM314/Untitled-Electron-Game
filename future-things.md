@@ -33,10 +33,6 @@ Will be made more useful
 
 yes
 
-### saving to localstorage
-
-yes
-
 ### more settings
 
 including ability to rebind keys
