@@ -78,14 +78,83 @@ function download(filename, text) {
     temp2.click();
     document.body.removeChild(temp2);
 }
+class Button {
+    constructor(config) {
+        if (config.x instanceof Function)
+            Object.defineProperty(this, "x", { get: config.x });
+        else
+            this.x = config.x ?? 300;
+        if (config.y instanceof Function)
+            Object.defineProperty(this, "y", { get: config.y });
+        else
+            this.y = config.y ?? 300;
+        if (config.width instanceof Function)
+            Object.defineProperty(this, "width", { get: config.width });
+        else
+            this.width = config.width ?? 300;
+        if (config.height instanceof Function)
+            Object.defineProperty(this, "height", { get: config.height });
+        else
+            this.height = config.height ?? 300;
+        if (config.label instanceof Function)
+            Object.defineProperty(this, "label", { get: config.label });
+        else
+            this.label = config.label ?? "Button";
+        this.color = config.color || "#0000FF";
+        this.font = config.font || "20px sans-serif";
+        this.onClick = config.onClick || (() => { });
+    }
+    ;
+    display(_ctx) {
+        _ctx.fillStyle = this.color;
+        _ctx.strokeStyle = "#000000";
+        _ctx.lineWidth = 2;
+        _ctx.globalAlpha = 1.0;
+        _ctx.fillRect(this.x, this.y, this.width, this.height);
+        _ctx.strokeRect(this.x, this.y, this.width, this.height);
+        if (this.isMouseInside()) {
+            _ctx.fillStyle = "#FFFFFF";
+            if (mouse.held) {
+                _ctx.globalAlpha = 0.4;
+            }
+            else {
+                _ctx.globalAlpha = 0.2;
+            }
+            _ctx.lineWidth = 0;
+            _ctx.fillRect(this.x, this.y, this.width, this.height);
+        }
+        _ctx.lineWidth = 1;
+        _ctx.globalAlpha = 1.0;
+        ctx.font = this.font;
+        ctx.textAlign = "center";
+        var tempBaseline = ctx.textBaseline;
+        ctx.textBaseline = "middle";
+        ctx.fillStyle = "#FFFFFF";
+        ctx.fillText(this.label, this.x + this.width / 2, this.y + this.height / 2);
+        ctx.textBaseline = tempBaseline;
+    }
+    ;
+    isMouseInside() {
+        return mouse.x > this.x &&
+            mouse.x < this.x + this.width &&
+            mouse.y > this.y &&
+            mouse.y < this.y + this.height;
+    }
+    ;
+    handleMouseClick(e) {
+        if (this.isMouseInside()) {
+            this.onClick(e);
+        }
+    }
+    ;
+}
 var rectMode;
 (function (rectMode) {
     rectMode[rectMode["CENTER"] = 0] = "CENTER";
     rectMode[rectMode["CORNER"] = 1] = "CORNER";
 })(rectMode || (rectMode = {}));
 function rect(x, y, w, h, mode, _ctx) {
-    if (!_ctx)
-        _ctx = ctx;
+    _ctx ?? (_ctx = ctx);
     if (mode == rectMode.CENTER) {
         _ctx.fillRect(x - w / 2, y - w / 2, w, h);
     }

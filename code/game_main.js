@@ -75,11 +75,11 @@ function registerEventHandlers() {
             else {
                 switch (e.key) {
                     case "s":
-                        let savedUuid = JSON.parse(localStorage.getItem("save1"))?.metadata?.uuid;
-                        if ((!localStorage.getItem("save1") || savedUuid == level1.uuid) || confirm("Are you want to save? This will overwrite your current saved world which seems to be different!")) {
+                        if ((!localStorage.getItem("save1") || JSON.parse(localStorage.getItem("save1"))?.metadata?.uuid == level1.uuid) || confirm("Are you want to save? This will overwrite your current saved world which seems to be different!")) {
                             try {
                                 localStorage.setItem("save1", JSON.stringify(exportData()));
                                 alert("Saved successfully!");
+                                Game.lastSaved = millis();
                             }
                             catch (err) {
                                 alert("Failed to save! " + err.message);
@@ -179,12 +179,48 @@ function registerEventHandlers() {
         keysHeld = [];
         mouse.held = false;
     };
-    window.onbeforeunload = () => {
+    window.onbeforeunload = (e) => {
+        if ((!localStorage.getItem("save1") || JSON.parse(localStorage.getItem("save1"))?.metadata?.uuid == level1.uuid)) {
+            localStorage.setItem("save1", JSON.stringify(exportData()));
+        }
+        else {
+            e.preventDefault();
+            e.returnValue = "";
+            localStorage.setItem("save-recovered", JSON.stringify(exportData()));
+            setTimeout(() => {
+                if (confirm("Could not save automatically on page exit because your current world is unrelated to your saved world.\nWould you like to save anyway? This will overwrite your current save!")) {
+                    localStorage.setItem('save1', JSON.stringify(exportData()));
+                    localStorage.removeItem("save-recovered");
+                }
+            }, 1);
+        }
     };
 }
 let fps = [0, 0, 0, 0, 0, 0];
 let state = {
     title: {
+        buttons: [
+            new Button({
+                x: () => innerWidth / 4,
+                y: () => innerHeight / 2,
+                width: () => innerWidth / 2,
+                height: () => innerHeight / 5,
+                label: "Play",
+                color: "#0000FF",
+                font: "40px sans-serif",
+                onClick: () => { mouse.held = false; preload(); }
+            }),
+            new Button({
+                x: () => innerWidth / 4,
+                y: () => innerHeight * 0.75,
+                width: () => innerWidth / 2,
+                height: () => innerHeight / 5,
+                label: "Settings",
+                color: "#0000FF",
+                font: "40px sans-serif",
+                onClick: () => { Game.state = "settings"; }
+            }),
+        ],
         update: function () { },
         display: function (currentFrame) {
             ctx.clearRect(-1, -1, 10000, 10000);
@@ -195,33 +231,47 @@ let state = {
             ctx.textBaseline = "middle";
             ctx.fillStyle = "#000000";
             ctx.fillText("Untitled Electron Game", innerWidth / 2, innerHeight * 0.2);
-            ctx.font = "20px sans-serif";
+            ctx.font = `${20 + 5 * Math.sin(millis() / 400)}px sans-serif`;
             ctx.fillText("Title Screen Soon™", innerWidth / 2, innerHeight * 0.35);
-            ctx.fillStyle = "#0000FF";
-            rect(innerWidth / 4, innerHeight * 0.5, innerWidth / 2, innerHeight * 0.2, rectMode.CORNER);
-            rect(innerWidth / 4, innerHeight * 0.75, innerWidth / 2, innerHeight * 0.2, rectMode.CORNER);
-            ctx.strokeStyle = "#000000";
-            ctx.lineWidth = 2;
-            ctx.strokeRect(innerWidth / 4, innerHeight * 0.5, innerWidth / 2, innerHeight * 0.2);
-            ctx.strokeRect(innerWidth / 4, innerHeight * 0.75, innerWidth / 2, innerHeight * 0.2);
-            ctx.fillStyle = "#FFFFFF";
-            ctx.font = "40px sans-serif";
-            ctx.fillText("Play", innerWidth / 2, innerHeight * 0.6);
-            ctx.fillText("Settings", innerWidth / 2, innerHeight * 0.85);
+            state.title.buttons.forEach(button => button.display(ctx));
         },
-        onclick: function (e) {
-            if (e.x > innerWidth / 4 && e.x < innerWidth * 0.75) {
-                if (e.y > innerHeight / 2 && e.y < innerHeight * 0.7) {
-                    mouse.held = false;
-                    preload();
-                }
-                if (e.y > innerHeight * 0.75 && e.y < innerHeight * 0.95) {
-                    Game.state = "settings";
-                }
-            }
+        onclick(e) {
+            state.title.buttons.forEach(button => button.handleMouseClick(e));
         }
     },
     settings: {
+        buttons: [
+            new Button({
+                x: () => innerWidth * 0.25,
+                y: () => innerHeight * 0.5,
+                width: () => innerWidth * 0.25,
+                height: () => innerHeight * 0.2,
+                label: () => "Tutorial: " + Game.persistent.tutorialenabled,
+                color: "#0000FF",
+                font: "40px sans-serif",
+                onClick: () => { Game.persistent.tutorialenabled = !Game.persistent.tutorialenabled; }
+            }),
+            new Button({
+                x: () => innerWidth * 0.51,
+                y: () => innerHeight * 0.5,
+                width: () => innerWidth * 0.25,
+                height: () => innerHeight * 0.2,
+                label: () => "Debug: " + settings.debug,
+                color: "#0000FF",
+                font: "40px sans-serif",
+                onClick: () => { Game.persistent.tutorialenabled = !Game.persistent.tutorialenabled; }
+            }),
+            new Button({
+                x: () => innerWidth * 0.9,
+                y: () => innerHeight * 0.01,
+                width: () => innerWidth * 0.09,
+                height: () => innerHeight * 0.09,
+                label: "❌",
+                color: "#0000FF",
+                font: "40px sans-serif",
+                onClick: () => { Game.persistent.tutorialenabled = !Game.persistent.tutorialenabled; }
+            }),
+        ],
         update: function () { },
         display: function (currentFrame) {
             ctx.clearRect(-1, -1, 10000, 10000);
@@ -245,23 +295,18 @@ let state = {
             ctx.fillStyle = "#FFFFFF";
             ctx.fillText("Tutorial: " + Game.persistent.tutorialenabled, innerWidth * 0.375, innerHeight * 0.6);
             ctx.fillText("Debug: " + settings.debug, innerWidth * 0.625, innerHeight * 0.6);
+            state.settings.buttons.forEach(button => button.display(ctx));
         },
         onclick: function (e) {
+            state.title.buttons.forEach(button => button.handleMouseClick(e));
             if (e.y < innerHeight * 0.1 && e.y > innerHeight * 0.01 && e.x > innerWidth * 0.9 && e.x < innerWidth * 0.99) {
                 localStorage.setItem("persistentStorage", JSON.stringify(Game.persistent));
                 Game.state = "title";
             }
-            if (e.y > innerHeight * 0.5 && e.y < innerHeight * 0.7 && e.x > innerWidth * 0.25 && e.x < innerWidth * 0.51) {
-                Game.persistent.tutorialenabled = !Game.persistent.tutorialenabled;
-                mouse.held = false;
-            }
-            if (e.y > innerHeight * 0.5 && e.y < innerHeight * 0.7 && e.x > innerWidth * 0.51 && e.x < innerWidth * 0.76) {
-                settings.debug = !settings.debug;
-                mouse.held = false;
-            }
         }
     },
     game: {
+        buttons: [],
         update: function (currentFrame, level) {
             level ?? (level = level1);
             level.generateNecessaryChunks();
@@ -427,13 +472,13 @@ function load() {
     level1.buildBuilding(0, -1, 0x0008);
     level1.buildBuilding(-1, 0, 0x0008);
     level1.buildBuilding(-1, -1, 0x0008);
+    if (localStorage.getItem("save1") && (settings.alwaysLoadSave || confirm("Would you like to load your save?"))) {
+        importData(localStorage.getItem("save1"));
+    }
     Game.state = "game";
     Game.forceRedraw = true;
     document.getElementById("toolbar").classList.remove("hidden");
     document.getElementById("resources").classList.remove("hidden");
-    if ((!localStorage.getItem("save1")) || confirm("Would you like to load your save?")) {
-        importData(localStorage.getItem("save1"));
-    }
     if (Game.persistent.tutorialenabled) {
         setTimeout(() => {
             alert(`
@@ -450,6 +495,18 @@ Press 0 to "place air"(delete buildings).
 Use WASD to move around the map and mouse wheel to zoom.
 Press Shift to move faster and for tooltips.`);
         }, 500);
+    }
+    if (settings.autoSave) {
+        if (!localStorage.getItem("save1") || JSON.parse(localStorage.getItem("save1"))?.metadata?.uuid == level1.uuid) {
+            setInterval(() => {
+                localStorage.setItem("save1", JSON.stringify(exportData()));
+                console.log("Autosaved.");
+                Game.lastSaved = millis();
+            }, 30000);
+        }
+        else {
+            alert("It looks like your current world isn't the same world as your save. Autosaving has been disabled to avoid overwriting it.");
+        }
     }
 }
 let loadedtextures = 0;

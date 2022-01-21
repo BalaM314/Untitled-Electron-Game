@@ -210,7 +210,9 @@ let mouse = {
 let keysHeld = [];
 let settings = {
     graphics_mode: 1,
-    debug: true
+    debug: true,
+    alwaysLoadSave: true,
+    autoSave: true,
 };
 let Game = {
     scroll: {

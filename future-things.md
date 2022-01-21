@@ -37,3 +37,6 @@ yes
 
 yes
 
+### more settings
+
+including ability to rebind keys
