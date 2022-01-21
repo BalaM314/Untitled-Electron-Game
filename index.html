@@ -212,5 +212,30 @@
       <img src="assets/textures/building/0x000B.png" id="11">
       <img src="assets/textures/building/0x0011.png" id="17">
     </div>
+    <script>
+      //Inline script for time sensitive event handlers(onload).
+
+      for(let element of document.getElementById("textures").children){
+      element.addEventListener("load", () => {
+        loadedtextures ++;
+      });
+      element.addEventListener("error", (err) => {
+        alert("Failed to load texture " + (err.target).src.split("assets/textures/")[1]);
+        throw err;
+      });
+    }
+
+    for(let element of document.getElementById("toolbar").children){
+      element.addEventListener("click", (event) => {
+        for(let x of document.getElementById("toolbar").children){
+          x.classList.remove("selected");
+        }
+        event.target.classList.add("selected");
+        placedBuilding.type = parseInt(event.target.id);
+        mouse.held = false;
+      });
+    }
+
+    </script>
   </body>
 </html>

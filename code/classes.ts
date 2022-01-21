@@ -893,7 +893,6 @@ class Item {
 		if(keysHeld.contains("Shift")){
 			let x = (mouse.x - (Game.scroll.x * consts.DISPLAY_SCALE))/consts.DISPLAY_SCALE;
 			let y = (mouse.y - (Game.scroll.y * consts.DISPLAY_SCALE))/consts.DISPLAY_SCALE;
-			//alert(this.x + " " + this.y + "  " + x + " " + y);
 			if(
 				x > this.x - (8 * consts.DISPLAY_SCALE) &&
 				y > this.y - (8 * consts.DISPLAY_SCALE) &&

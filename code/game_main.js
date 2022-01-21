@@ -198,6 +198,30 @@ function registerEventHandlers() {
 }
 let fps = [0, 0, 0, 0, 0, 0];
 let state = {
+    loading: {
+        buttons: [],
+        update: function () {
+            if (loadedtextures == document.getElementById("textures").children.length) {
+                Game.state = "title";
+            }
+            else if (loadedtextures > document.getElementById("textures").children.length) {
+                throw new ShouldNotBePossibleError("Somehow loaded more textures than exist.");
+            }
+        },
+        display: function (currentFrame) {
+            ctx.clearRect(-1, -1, 10000, 10000);
+            ctx.fillStyle = "#0033CC";
+            ctx.fillRect(0, 0, innerWidth, innerHeight);
+            ctx.font = "70px sans-serif";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillStyle = "#000000";
+            ctx.fillText("Untitled Electron Game", innerWidth / 2, innerHeight * 0.2);
+            ctx.fillStyle = "#000000";
+            ctx.font = `40px sans-serif`;
+            ctx.fillText(`Loading... ${loadedtextures}/${document.getElementById("textures").childElementCount}`, innerWidth / 2, innerHeight * 0.35);
+        }
+    },
     title: {
         buttons: [
             new Button({
@@ -208,7 +232,7 @@ let state = {
                 label: "Play",
                 color: "#0000FF",
                 font: "40px sans-serif",
-                onClick: () => { mouse.held = false; preload(); }
+                onClick: () => { mouse.held = false; load(); }
             }),
             new Button({
                 x: () => innerWidth / 4,
@@ -231,8 +255,9 @@ let state = {
             ctx.textBaseline = "middle";
             ctx.fillStyle = "#000000";
             ctx.fillText("Untitled Electron Game", innerWidth / 2, innerHeight * 0.2);
+            ctx.fillStyle = "#000000";
             ctx.font = `${20 + 5 * Math.sin(millis() / 400)}px sans-serif`;
-            ctx.fillText("Title Screen Soon™", innerWidth / 2, innerHeight * 0.35);
+            ctx.fillText("Splash Text Soon™", innerWidth / 2, innerHeight * 0.35);
             state.title.buttons.forEach(button => button.display(ctx));
         },
         onclick(e) {
@@ -467,21 +492,8 @@ function main_loop() {
     }
     cancel = requestAnimationFrame(main_loop);
 }
-function preload() {
-    if (loadedtextures == document.getElementById("textures").children.length) {
-        loadTextures();
-        load();
-    }
-    else if (loadedtextures > document.getElementById("textures").children.length) {
-        throw new ShouldNotBePossibleError("somehow loaded more textures than exist, what the fffffff");
-    }
-    else {
-        alert("Not all textures have loaded!\nYou may have a slow internet connection, or the game may just be broken.\nClick OK to try again.");
-        setTimeout(preload, 1);
-        return;
-    }
-}
 function load() {
+    loadTextures();
     level1 = new Level(314);
     level1.generateNecessaryChunks();
     level1.buildBuilding(0, 0, 0x0008);
@@ -527,25 +539,6 @@ Press Shift to move faster and for tooltips.`);
 }
 let loadedtextures = 0;
 let level1;
-for (let element of document.getElementById("textures").children) {
-    element.addEventListener("load", () => {
-        loadedtextures++;
-    });
-    element.addEventListener("error", (err) => {
-        alert("Failed to load texture " + err.target.src.split("assets/textures/")[1]);
-        throw err;
-    });
-}
-for (let element of document.getElementById("toolbar").children) {
-    element.addEventListener("click", (event) => {
-        for (let x of document.getElementById("toolbar").children) {
-            x.classList.remove("selected");
-        }
-        event.target.classList.add("selected");
-        placedBuilding.type = parseInt(event.target.id);
-        mouse.held = false;
-    });
-}
 function exportData() {
     return {
         UntitledElectronGame: {

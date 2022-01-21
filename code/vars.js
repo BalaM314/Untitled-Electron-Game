@@ -249,7 +249,7 @@ let Game = {
         },
         multiplesteel: false
     },
-    state: "title"
+    state: "loading"
 };
 const ctx = document.getElementById("canvas").getContext("2d");
 const ctx1 = document.getElementById("canvas1").getContext("2d");

@@ -260,7 +260,7 @@ let Game = {
 		},
 		multiplesteel: false
 	},
-	state: "title"
+	state: "loading"
 };
 
 const ctx = (document.getElementById("canvas") as HTMLCanvasElement).getContext("2d");//Tiles
