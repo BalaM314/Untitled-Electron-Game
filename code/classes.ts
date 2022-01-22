@@ -181,66 +181,107 @@ class Level {
 		tileX = Math.floor(tileX);
 		tileY = Math.floor(tileY);
 		//🍝👨‍💻 is delicious
-		let topConveyor:BuildingID | boolean = this.buildingIDAtTile(tileX, tileY - 1);
-		topConveyor = topConveyor == 0x0101 || topConveyor == 0x0601 || topConveyor == 0x0701 || topConveyor == 0x0002 || topConveyor == 0x0004  || topConveyor == 0x0007 || topConveyor == 0x0009 || topConveyor == 0x000A || topConveyor == 0x000B || topConveyor == 0x0011;
-		let rightConveyor:BuildingID | boolean = this.buildingIDAtTile(tileX + 1, tileY);
-		rightConveyor = rightConveyor == 0x0201 || rightConveyor == 0x0801 || rightConveyor == 0x0901 || rightConveyor == 0x0002 || rightConveyor == 0x0004  || rightConveyor == 0x0007 || rightConveyor == 0x0009 || rightConveyor == 0x000A || rightConveyor == 0x000B || rightConveyor == 0x0011;
-		let leftConveyor:BuildingID | boolean = this.buildingIDAtTile(tileX - 1, tileY);
-		leftConveyor = leftConveyor == 0x0001 || leftConveyor == 0x0401 || leftConveyor == 0x0501 || leftConveyor == 0x0002 || leftConveyor == 0x0004  || leftConveyor == 0x0007 || leftConveyor == 0x0009 || leftConveyor == 0x000A || leftConveyor == 0x000B || leftConveyor == 0x0011;
-		let bottomConveyor:BuildingID | boolean = this.buildingIDAtTile(tileX, tileY + 1);
-		bottomConveyor = bottomConveyor == 0x0301 || bottomConveyor == 0x0A01 || bottomConveyor == 0x0B01 || bottomConveyor == 0x0002 || bottomConveyor == 0x0004  || bottomConveyor == 0x0007 || bottomConveyor == 0x0009 || bottomConveyor == 0x000A || bottomConveyor == 0x000B || bottomConveyor == 0x0011;
+		function isOutputBuilding(val:number):boolean {return val == 0x0002 || val == 0x0004  || val == 0x0007 || val == 0x0009 || val == 0x000A || val == 0x000B || val == 0x0011;}
+		let hasLeftBuilding:BuildingID | boolean = this.buildingIDAtTile(tileX - 1, tileY);
+		hasLeftBuilding = hasLeftBuilding == 0x0001 || hasLeftBuilding == 0x0401 || hasLeftBuilding == 0x0501 || hasLeftBuilding == 0x0C01 || hasLeftBuilding == 0x0D01 || isOutputBuilding(hasLeftBuilding);
+		let hasTopBuilding:BuildingID | boolean = this.buildingIDAtTile(tileX, tileY - 1);
+		hasTopBuilding = hasTopBuilding == 0x0101 || hasTopBuilding == 0x0601 || hasTopBuilding == 0x0701 || hasTopBuilding == 0x0E01 || hasTopBuilding == 0x0F01 || isOutputBuilding(hasTopBuilding);
+		let hasRightBuilding:BuildingID | boolean = this.buildingIDAtTile(tileX + 1, tileY);
+		hasRightBuilding = hasRightBuilding == 0x0201 || hasRightBuilding == 0x0801 || hasRightBuilding == 0x0901 || hasRightBuilding == 0x1001 || hasRightBuilding == 0x1101 || isOutputBuilding(hasRightBuilding);
+		let hasBottomBuilding:BuildingID | boolean = this.buildingIDAtTile(tileX, tileY + 1);
+		hasBottomBuilding = hasBottomBuilding == 0x0301 || hasBottomBuilding == 0x0A01 || hasBottomBuilding == 0x0B01 || hasBottomBuilding == 0x1201 || hasBottomBuilding == 0x1301 || isOutputBuilding(hasBottomBuilding);
 		let buildingID:BuildingID = 0xFFFF;
 		switch(conveyorType){
 			case 0:
-				if(leftConveyor){
-					buildingID = 0x0001;
-				} else if(topConveyor && bottomConveyor){
-					buildingID = 0x0001;
-				} else if(topConveyor){
-					buildingID = 0x0501;
-				} else if(bottomConveyor){
-					buildingID = 0x0401;
+				if(hasLeftBuilding){
+					if(hasTopBuilding && hasBottomBuilding){
+						return 0x1801;
+					} else if(hasTopBuilding){
+						return 0x0D01;
+					} else if(hasBottomBuilding){
+						return 0x0C01;
+					} else {
+						return 0x0001;
+					}
 				} else {
-					buildingID = 0x0001;
+					if(hasTopBuilding && hasBottomBuilding){
+						return 0x1401;
+					} else if(hasTopBuilding){
+						return 0x0501;
+					} else if(hasBottomBuilding){
+						return 0x0401;
+					} else {
+						return 0x0001;
+					}
 				}
 				break;
 			case 1:
-				if(topConveyor){
-					buildingID = 0x0101;
-				} else if(leftConveyor && rightConveyor){
-					buildingID = 0x0101;
-				} else if(leftConveyor){
-					buildingID = 0x0701;
-				} else if(rightConveyor){
-					buildingID = 0x0601;
+				if(hasTopBuilding){
+					if(hasLeftBuilding && hasRightBuilding){
+						buildingID = 0x1901;
+					} else if(hasLeftBuilding){
+						buildingID = 0x0F01;
+					} else if(hasRightBuilding){
+						buildingID = 0x0E01;
+					} else {
+						buildingID = 0x0101;
+					}
 				} else {
-					buildingID = 0x0101;
+					if(hasLeftBuilding && hasRightBuilding){
+						buildingID = 0x1501;
+					} else if(hasLeftBuilding){
+						buildingID = 0x0701;
+					} else if(hasRightBuilding){
+						buildingID = 0x0601;
+					} else {
+						buildingID = 0x0101;
+					}
 				}
 				break;
 			case 2:
-				if(rightConveyor){
-					buildingID = 0x0201;
-				} else if(topConveyor && bottomConveyor){
-					buildingID = 0x0201;
-				} else if(topConveyor){
-					buildingID = 0x0901;
-				} else if(bottomConveyor){
-					buildingID = 0x0801;
+				if(hasRightBuilding){
+					if(hasTopBuilding && hasBottomBuilding){
+						buildingID = 0x1A01;
+					} else if(hasTopBuilding){
+						buildingID = 0x1101;
+					} else if(hasBottomBuilding){
+						buildingID = 0x1001;
+					} else {
+						buildingID = 0x0201;
+					}
 				} else {
-					buildingID = 0x0201;
+					if(hasTopBuilding && hasBottomBuilding){
+						buildingID = 0x1601;
+					} else if(hasTopBuilding){
+						buildingID = 0x0901;
+					} else if(hasBottomBuilding){
+						buildingID = 0x0801;
+					} else {
+						buildingID = 0x0201;
+					}
 				}
 				break;
 			case 3:
-				if(bottomConveyor){
-					buildingID = 0x0301;
-				} else if(leftConveyor && rightConveyor){
-					buildingID = 0x0301;
-				} else if(leftConveyor){
-					buildingID = 0x0B01;
-				} else if(rightConveyor){
-					buildingID = 0x0A01;
+				if(hasBottomBuilding){
+					if(hasLeftBuilding && hasRightBuilding){
+						buildingID = 0x1B01;
+					} else if(hasLeftBuilding){
+						buildingID = 0x1301;
+					} else if(hasRightBuilding){
+						buildingID = 0x1201;
+					} else {
+						buildingID = 0x0301;
+					}
 				} else {
-					buildingID = 0x0301;
+					if(hasLeftBuilding && hasRightBuilding){
+						buildingID = 0x1701;
+					} else if(hasLeftBuilding){
+						buildingID = 0x0B01;
+					} else if(hasRightBuilding){
+						buildingID = 0x0A01;
+					} else {
+						buildingID = 0x0301;
+					}
 				}
 				break;
 		}
@@ -1248,21 +1289,26 @@ class Conveyor extends Building {
 			}
 			switch(this.id >> 8){//bit masks ftw, this just grabs the first byte
 				//yes I know there's no need to write the ids in hex but why the heck not
+				//what do you mean I'm repeating myself??
 				case 0x00:
-					this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
-					this.item.x += consts.buildings.conveyor.SPEED;
+					if(pixelOffsetInTile(this.item.x) == 0.5){
+						this.item.x += consts.buildings.conveyor.SPEED;
+					}
 					break;
 				case 0x01:
-					this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
-					this.item.y += consts.buildings.conveyor.SPEED;
+					if(pixelOffsetInTile(this.item.y) == 0.5){
+						this.item.y += consts.buildings.conveyor.SPEED;
+					}
 					break;
 				case 0x02:
-					this.item.x -= consts.buildings.conveyor.SPEED;
-					this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+					if(pixelOffsetInTile(this.item.x) == 0.5){
+						this.item.x -= consts.buildings.conveyor.SPEED;
+					}
 					break;
 				case 0x03:
-					this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
-					this.item.y -= consts.buildings.conveyor.SPEED;
+					if(pixelOffsetInTile(this.item.y) == 0.5){
+						this.item.y -= consts.buildings.conveyor.SPEED;
+					}
 					break;
 				case 0x04:
 					if(pixelOffsetInTile(this.item.x) >= consts.TILE_SIZE * 0.5 && pixelOffsetInTile(this.item.y) == consts.TILE_SIZE * 0.5){
@@ -1271,9 +1317,6 @@ class Conveyor extends Building {
 					} else if(pixelOffsetInTile(this.item.x) == consts.TILE_SIZE * 0.5 && pixelOffsetInTile(this.item.y) >= consts.TILE_SIZE * 0.5){
 						this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
 						this.item.y --;
-					} else {
-						this.item.x = (this.x + 0.5) * consts.TILE_SIZE;
-						this.item.y = (this.y + 0.5) * consts.TILE_SIZE;
 					}
 					break;
 				case 0x05:
@@ -1283,9 +1326,6 @@ class Conveyor extends Building {
 					} else if(pixelOffsetInTile(this.item.x) == consts.TILE_SIZE * 0.5 && pixelOffsetInTile(this.item.y) <= consts.TILE_SIZE * 0.5){
 						this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
 						this.item.y ++;
-					} else {
-						this.item.x = (this.x + 0.5) * consts.TILE_SIZE;
-						this.item.y = (this.y + 0.5) * consts.TILE_SIZE;
 					}
 					break;
 				case 0x06:
@@ -1295,9 +1335,6 @@ class Conveyor extends Building {
 					} else if(pixelOffsetInTile(this.item.x) > consts.TILE_SIZE * 0.5 && pixelOffsetInTile(this.item.y) == consts.TILE_SIZE * 0.5){
 						this.item.x --;
 						this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
-					} else {
-						this.item.x = (this.x + 0.5) * consts.TILE_SIZE;
-						this.item.y = (this.y + 0.5) * consts.TILE_SIZE;
 					}
 					break;
 				case 0x07:
@@ -1307,9 +1344,6 @@ class Conveyor extends Building {
 					} else if(pixelOffsetInTile(this.item.x) < consts.TILE_SIZE * 0.5 && pixelOffsetInTile(this.item.y) == consts.TILE_SIZE * 0.5){
 						this.item.x ++;
 						this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
-					} else {
-						this.item.x = (this.x + 0.5) * consts.TILE_SIZE;
-						this.item.y = (this.y + 0.5) * consts.TILE_SIZE;
 					}
 					break;
 				case 0x08:
@@ -1319,9 +1353,6 @@ class Conveyor extends Building {
 					} else if(pixelOffsetInTile(this.item.x) == consts.TILE_SIZE * 0.5 && pixelOffsetInTile(this.item.y) >= consts.TILE_SIZE * 0.5){
 						this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
 						this.item.y --;
-					} else {
-						this.item.x = (this.x + 0.5) * consts.TILE_SIZE;
-						this.item.y = (this.y + 0.5) * consts.TILE_SIZE;
 					}
 					break;
 				case 0x09:
@@ -1331,9 +1362,6 @@ class Conveyor extends Building {
 					} else if(pixelOffsetInTile(this.item.x) == consts.TILE_SIZE * 0.5 && pixelOffsetInTile(this.item.y) <= consts.TILE_SIZE * 0.5){
 						this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
 						this.item.y ++;
-					} else {
-						this.item.x = (this.x + 0.5) * consts.TILE_SIZE;
-						this.item.y = (this.y + 0.5) * consts.TILE_SIZE;
 					}
 					break;
 				case 0x0A:
@@ -1343,9 +1371,6 @@ class Conveyor extends Building {
 					} else if(pixelOffsetInTile(this.item.x) > consts.TILE_SIZE * 0.5 && pixelOffsetInTile(this.item.y) == consts.TILE_SIZE * 0.5){
 						this.item.x --;
 						this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
-					} else {
-						this.item.x = (this.x + 0.5) * consts.TILE_SIZE;
-						this.item.y = (this.y + 0.5) * consts.TILE_SIZE;
 					}
 					break;
 				case 0x0B:
@@ -1355,9 +1380,156 @@ class Conveyor extends Building {
 					} else if(pixelOffsetInTile(this.item.x) < consts.TILE_SIZE * 0.5 && pixelOffsetInTile(this.item.y) == consts.TILE_SIZE * 0.5){
 						this.item.x ++;
 						this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
-					} else {
-						this.item.x = (this.x + 0.5) * consts.TILE_SIZE;
-						this.item.y = (this.y + 0.5) * consts.TILE_SIZE;
+					}
+					break;
+
+
+
+				case 0x0C:
+					if(pixelOffsetInTile(this.item.y) == consts.TILE_SIZE * 0.5){
+						this.item.x ++;
+						this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+					} else if(pixelOffsetInTile(this.item.x) == consts.TILE_SIZE * 0.5 && pixelOffsetInTile(this.item.y) >= consts.TILE_SIZE * 0.5){
+						this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+						this.item.y --;
+					}
+					break;
+				case 0x0D:
+					if(pixelOffsetInTile(this.item.y) == consts.TILE_SIZE * 0.5){
+						this.item.x ++;
+						this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+					} else if(pixelOffsetInTile(this.item.x) == consts.TILE_SIZE * 0.5 && pixelOffsetInTile(this.item.y) <= consts.TILE_SIZE * 0.5){
+						this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+						this.item.y ++;
+					}
+					break;
+				case 0x0E:
+					if(pixelOffsetInTile(this.item.x) == consts.TILE_SIZE * 0.5){
+						this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+						this.item.y ++;
+					} else if(pixelOffsetInTile(this.item.x) > consts.TILE_SIZE * 0.5 && pixelOffsetInTile(this.item.y) == consts.TILE_SIZE * 0.5){
+						this.item.x --;
+						this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+					}
+					break;
+				case 0x0F:
+					if(pixelOffsetInTile(this.item.x) == consts.TILE_SIZE * 0.5){
+						this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+						this.item.y ++;
+					} else if(pixelOffsetInTile(this.item.x) < consts.TILE_SIZE * 0.5 && pixelOffsetInTile(this.item.y) == consts.TILE_SIZE * 0.5){
+						this.item.x ++;
+						this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+					}
+					break;
+				case 0x10:
+					if(pixelOffsetInTile(this.item.y) == consts.TILE_SIZE * 0.5){
+						this.item.x --;
+						this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+					} else if(pixelOffsetInTile(this.item.x) == consts.TILE_SIZE * 0.5 && pixelOffsetInTile(this.item.y) >= consts.TILE_SIZE * 0.5){
+						this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+						this.item.y --;
+					}
+					break;
+				case 0x11:
+					if(pixelOffsetInTile(this.item.y) == consts.TILE_SIZE * 0.5){
+						this.item.x --;
+						this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+					} else if(pixelOffsetInTile(this.item.x) == consts.TILE_SIZE * 0.5 && pixelOffsetInTile(this.item.y) <= consts.TILE_SIZE * 0.5){
+						this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+						this.item.y ++;
+					}
+					break;
+				case 0x12:
+					if(pixelOffsetInTile(this.item.x) == consts.TILE_SIZE * 0.5){
+						this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+						this.item.y --;
+					} else if(pixelOffsetInTile(this.item.x) > consts.TILE_SIZE * 0.5 && pixelOffsetInTile(this.item.y) == consts.TILE_SIZE * 0.5){
+						this.item.x --;
+						this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+					}
+					break;
+				case 0x13:
+					if(pixelOffsetInTile(this.item.x) == consts.TILE_SIZE * 0.5){
+						this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+						this.item.y --;
+					} else if(pixelOffsetInTile(this.item.x) < consts.TILE_SIZE * 0.5 && pixelOffsetInTile(this.item.y) == consts.TILE_SIZE * 0.5){
+						this.item.x ++;
+						this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+					}
+					break;
+				
+				
+				
+				case 0x14:
+					if(pixelOffsetInTile(this.item.x) >= consts.TILE_SIZE * 0.5 && pixelOffsetInTile(this.item.y) == consts.TILE_SIZE * 0.5){
+						this.item.x ++;
+						this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+					} else if(pixelOffsetInTile(this.item.x) == consts.TILE_SIZE * 0.5){
+						this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+						this.item.y += pixelOffsetInTile(this.item.y) > consts.TILE_SIZE / 2 ? -1 : 1;
+					}
+					break;
+				case 0x15:
+					if(pixelOffsetInTile(this.item.x) == consts.TILE_SIZE * 0.5 && pixelOffsetInTile(this.item.y) >= consts.TILE_SIZE * 0.5){
+						this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+						this.item.y ++;
+					} else if(pixelOffsetInTile(this.item.y) == consts.TILE_SIZE * 0.5){
+						this.item.x += pixelOffsetInTile(this.item.x) > consts.TILE_SIZE / 2 ? -1 : 1;
+						this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+					}
+					break;
+				case 0x16:
+					if(pixelOffsetInTile(this.item.x) <= consts.TILE_SIZE * 0.5 && pixelOffsetInTile(this.item.y) == consts.TILE_SIZE * 0.5){
+						this.item.x --;
+						this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+					} else if(pixelOffsetInTile(this.item.x) == consts.TILE_SIZE * 0.5){
+						this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+						this.item.y -= pixelOffsetInTile(this.item.y) > consts.TILE_SIZE / 2 ? -1 : 1;
+					}
+					break;
+				case 0x17:
+					if(pixelOffsetInTile(this.item.x) == consts.TILE_SIZE * 0.5 && pixelOffsetInTile(this.item.y) <= consts.TILE_SIZE * 0.5){
+						this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+						this.item.y --;
+					} else if(pixelOffsetInTile(this.item.y) == consts.TILE_SIZE * 0.5){
+						this.item.x -= pixelOffsetInTile(this.item.x) > consts.TILE_SIZE / 2 ? -1 : 1;
+						this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+					}
+					break;
+				case 0x18:
+					if(pixelOffsetInTile(this.item.y) == consts.TILE_SIZE * 0.5){
+						this.item.x ++;
+						this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+					} else if(pixelOffsetInTile(this.item.x) == consts.TILE_SIZE * 0.5){
+						this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+						this.item.y += pixelOffsetInTile(this.item.y) > consts.TILE_SIZE / 2 ? -1 : 1;
+					}
+					break;
+				case 0x19:
+					if(pixelOffsetInTile(this.item.y) >= consts.TILE_SIZE * 0.5){
+						this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+						this.item.y ++;
+					} else if(pixelOffsetInTile(this.item.y) == consts.TILE_SIZE * 0.5){
+						this.item.x += pixelOffsetInTile(this.item.x) > consts.TILE_SIZE / 2 ? -1 : 1;
+						this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+					}
+					break;
+				case 0x1A:
+					if(pixelOffsetInTile(this.item.y) == consts.TILE_SIZE * 0.5){
+						this.item.x --;
+						this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+					} else if(pixelOffsetInTile(this.item.x) == consts.TILE_SIZE * 0.5){
+						this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+						this.item.y -= pixelOffsetInTile(this.item.y) > consts.TILE_SIZE / 2 ? -1 : 1;
+					}
+					break;
+				case 0x1B:
+					if(pixelOffsetInTile(this.item.y) <= consts.TILE_SIZE * 0.5){
+						this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
+						this.item.y --;
+					} else if(pixelOffsetInTile(this.item.y) == consts.TILE_SIZE * 0.5){
+						this.item.x -= pixelOffsetInTile(this.item.x) > consts.TILE_SIZE / 2 ? -1 : 1;
+						this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE/2;
 					}
 					break;
 			}

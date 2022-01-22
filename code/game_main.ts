@@ -410,7 +410,7 @@ let state: {
 			}
 		
 			for(let item of (<HTMLDivElement>document.getElementById("resources")!).children){
-				item.innerHTML = (level1.resources[item.id] ?? 0).toString();
+				(item as HTMLSpanElement).innerText = (level1.resources[item.id] ?? 0).toString();
 			}
 		},
 		onclick: function(e:MouseEvent){
@@ -544,6 +544,13 @@ function load(){
 	level1.buildBuilding(-1,-1,0x0008);
 
 	
+	if(localStorage.firstload){
+		localStorage.firstload = false;
+		_alert(`Welcome to Untitled Electron Game!
+This is a game about building a factory. It's still in early alpha, so there's not much content.
+There's no good in game tutorial, so to get started check the wiki page: https://github.com/BalaM314/Untitled-Electron-Game/wiki/Quickstart-Guide`);
+	}
+
 	if(localStorage.getItem("save1") && (settings.alwaysLoadSave || confirm("Would you like to load your save?"))){
 		importData(localStorage.getItem("save1"));
 	}
