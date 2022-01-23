@@ -381,7 +381,7 @@ class Level {
 		let y = (mousey - (Game.scroll.y * consts.DISPLAY_SCALE))/consts.DISPLAY_SCALE;
 		ctx4.font = "16px monospace";
 		for(let item of this.items){
-			if((Math.abs(item.x - x) < 16) && Math.abs(item.y - y) < 16){
+			if((Math.abs(item.x - x) < 8) && Math.abs(item.y - y) < 8){
 				ctx4.fillStyle = "#0033CC";
 				ctx4.fillRect(mousex, mousey, (names.item[item.id] ?? item.id).length * 10, 16);
 				ctx4.strokeStyle = "#000000";

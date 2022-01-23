@@ -415,7 +415,19 @@ let state: {
 		},
 		onclick: function(e:MouseEvent){
 			if(e.ctrlKey){
-				level1.addItem((e.x - (Game.scroll.x * consts.DISPLAY_SCALE))/consts.DISPLAY_SCALE, (e.y - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_SCALE, ItemID.base_null);
+				if(e.shiftKey){
+					level1.addItem(
+						(e.x  / consts.DISPLAY_SCALE - Game.scroll.x),
+						(e.y  / consts.DISPLAY_SCALE - Game.scroll.y),
+						ItemID.base_null
+					);
+				} else {
+					level1.addItem(
+						(Math.floor((e.x  / consts.DISPLAY_SCALE - Game.scroll.x) / consts.TILE_SIZE) + 0.5) * consts.TILE_SIZE,
+						(Math.floor((e.y  / consts.DISPLAY_SCALE - Game.scroll.y) / consts.TILE_SIZE) + 0.5) * consts.TILE_SIZE,
+						ItemID.base_null
+					);
+				}
 			}
 		},
 		onmouseheld: function(){
