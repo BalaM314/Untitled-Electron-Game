@@ -1254,7 +1254,7 @@ class Conveyor extends Building {
 	}
 	break(){
 		if(this.item instanceof Item){
-			this.level.items.push(this.item);
+			//this.level.items.push(this.item);
 			if(this.item.grabbedBy === this){
 				this.item.grabbedBy = null;
 			}
