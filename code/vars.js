@@ -75,7 +75,7 @@ const generation_consts = {
     }
 };
 const consts = {
-    VERSION: "alpha 1.2.1",
+    VERSION: "alpha 1.3.0",
     CHUNK_SIZE: 16,
     TILE_SIZE: 30,
     DISPLAY_SCALE: 1,

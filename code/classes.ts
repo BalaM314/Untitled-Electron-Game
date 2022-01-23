@@ -29,7 +29,7 @@ class Level {
 			this.uuid = uuid;
 			try {
 				for(var [position, chunkData] of Object.entries(chunks)){//Use of var here is intentional.
-					
+					(chunkData as any).version = version;
 					this.storage.set(position, new Chunk({
 						x: parseInt(position.split(",")[0]), y: parseInt(position.split(",")[1]),
 						seed: seed, parent: this
@@ -526,7 +526,7 @@ class Chunk {
 					let buildingData = data[1][y][x];
 					if(!buildingData) continue;
 					let tempBuilding = new Extractor(parseInt(x) + (consts.CHUNK_SIZE * this.x), parseInt(y) + (consts.CHUNK_SIZE * this.y), buildingData.id, this.parent as Level);
-					if(buildingData.item){
+					if(buildingData.item && parseInt(data.version.split(" ")[1].replaceAll(".", "")) >= 130){
 						tempBuilding.item = new Item(buildingData.item.x, buildingData.item.y, buildingData.item.id, this.parent as Level);
 						tempBuilding.item.grabbedBy = tempBuilding;
 					}
@@ -1068,32 +1068,23 @@ class Building {
 	}
 	spawnItem(id:ItemID){
 		id ??= "base_null" as ItemID;
-		//TODO: try to convert this to .acceptItem()
 		if(
-			(this.level.buildingIDAtTile(this.x + 1, this.y) === 0x0001 ||
-			this.level.buildingIDAtTile(this.x + 1, this.y) === 0x0701 ||
-			this.level.buildingIDAtTile(this.x + 1, this.y) === 0x0B01) &&
+			([0x0001, 0x0701, 0x0B01, 0x0C01, 0x0D01, 0x0F01, 0x1301, 0x1501, 0x1701, 0x1801, 0x1901, 0x1B01].contains(this.level.buildingIDAtTile(this.x + 1, this.y))) &&
 			(this.level.buildingAtTile(this.x + 1, this.y).acceptItem(new Item((this.x + 1.1) * consts.TILE_SIZE, (this.y + 0.5) * consts.TILE_SIZE, id, this.level)))
 		){
 			return true;
 		} else if(
-			(this.level.buildingIDAtTile(this.x, this.y + 1) === 0x0101 ||
-			this.level.buildingIDAtTile(this.x, this.y + 1) === 0x0501 ||
-			this.level.buildingIDAtTile(this.x, this.y + 1) === 0x0901) &&
+			([0x0101, 0x0501, 0x0901, 0x0D01, 0x0E01, 0x0F01, 0x1101, 0x1401, 0x1601, 0x1801, 0x1901, 0x1A01].contains(this.level.buildingIDAtTile(this.x, this.y + 1))) &&
 			(this.level.buildingAtTile(this.x, this.y + 1).acceptItem(new Item((this.x + 0.5) * consts.TILE_SIZE, (this.y + 1.1) * consts.TILE_SIZE, id, this.level)))
 		){
 			return true;
 		} else if(
-			(this.level.buildingIDAtTile(this.x - 1, this.y) === 0x0201 ||
-			this.level.buildingIDAtTile(this.x - 1, this.y) === 0x0601 ||
-			this.level.buildingIDAtTile(this.x - 1, this.y) === 0x0A01) &&
+			([0x0201, 0x0601, 0x0A01, 0x0E01, 0x1001, 0x1101, 0x1201, 0x1601, 0x1701, 0x1901, 0x1A01, 0x1B01].contains(this.level.buildingIDAtTile(this.x - 1, this.y))) &&
 			(this.level.buildingAtTile(this.x - 1, this.y).acceptItem(new Item((this.x - 0.1) * consts.TILE_SIZE, (this.y + 0.5) * consts.TILE_SIZE, id, this.level)))
 		){
 			return true;
 		} else if(
-			(this.level.buildingIDAtTile(this.x, this.y - 1) === 0x0301 ||
-			this.level.buildingIDAtTile(this.x, this.y - 1) === 0x0401 ||
-			this.level.buildingIDAtTile(this.x, this.y - 1) === 0x0801) &&
+			([0x0301, 0x0801, 0x0401, 0x0C01, 0x1001, 0x1201, 0x1301, 0x1401, 0x1501, 0x1801, 0x1A01, 0x1B01].contains(this.level.buildingIDAtTile(this.x, this.y - 1))) &&
 			(this.level.buildingAtTile(this.x, this.y - 1).acceptItem(new Item((this.x + 0.5) * consts.TILE_SIZE, (this.y - 0.1) * consts.TILE_SIZE, id, this.level)))
 		){
 			return true;
@@ -1291,22 +1282,22 @@ class Conveyor extends Building {
 				//yes I know there's no need to write the ids in hex but why the heck not
 				//what do you mean I'm repeating myself??
 				case 0x00:
-					if(pixelOffsetInTile(this.item.x) == 0.5){
+					if(pixelOffsetInTile(this.item.y) == consts.TILE_SIZE * 0.5){
 						this.item.x += consts.buildings.conveyor.SPEED;
 					}
 					break;
 				case 0x01:
-					if(pixelOffsetInTile(this.item.y) == 0.5){
+					if(pixelOffsetInTile(this.item.x) == consts.TILE_SIZE * 0.5){
 						this.item.y += consts.buildings.conveyor.SPEED;
 					}
 					break;
 				case 0x02:
-					if(pixelOffsetInTile(this.item.x) == 0.5){
+					if(pixelOffsetInTile(this.item.y) == consts.TILE_SIZE * 0.5){
 						this.item.x -= consts.buildings.conveyor.SPEED;
 					}
 					break;
 				case 0x03:
-					if(pixelOffsetInTile(this.item.y) == 0.5){
+					if(pixelOffsetInTile(this.item.x) == consts.TILE_SIZE * 0.5){
 						this.item.y -= consts.buildings.conveyor.SPEED;
 					}
 					break;
@@ -1537,6 +1528,38 @@ class Conveyor extends Building {
 			this.grabItem(null, (item) => {this.item = item;}, true);
 		}
 	}
+	acceptItem(item: Item):boolean {
+		if(item.x - this.x * consts.TILE_SIZE <= consts.TILE_SIZE * 0.1 &&
+			[0x00, 0x07, 0x0B, 0x0C, 0x0D, 0x0F, 0x13, 0x15, 0x17, 0x18, 0x19, 0x1B].contains(this.id >> 8)){
+			//item on left
+			return super.acceptItem(item);
+		}
+		if(item.y - this.y * consts.TILE_SIZE <= consts.TILE_SIZE * 0.1 &&
+			[0x01, 0x05, 0x09, 0x0D, 0x0E, 0x0F, 0x11, 0x14, 0x16, 0x18, 0x19, 0x1A].contains(this.id >> 8)){
+			//item on top
+			return super.acceptItem(item);
+		}
+		if(item.x - this.x * consts.TILE_SIZE >= consts.TILE_SIZE * 0.9 &&
+			[0x02, 0x06, 0x0A, 0x0E, 0x10, 0x11, 0x12, 0x16, 0x17, 0x19, 0x1A, 0x1B].contains(this.id >> 8)){
+			//item on right
+			return super.acceptItem(item);
+		}
+		if(item.y - this.y * consts.TILE_SIZE >= consts.TILE_SIZE * 0.9 &&
+			[0x03, 0x08, 0x04, 0x0C, 0x10, 0x12, 0x13, 0x14, 0x15, 0x18, 0x1A, 0x1B].contains(this.id >> 8)){
+			//item on bottom
+			return super.acceptItem(item);
+		}
+		if(
+			pixelOffsetInTile(item.x) == consts.TILE_SIZE / 2 &&
+			pixelOffsetInTile(item.y) == consts.TILE_SIZE / 2 &&
+			super.acceptItem(item)
+		){
+			item.x = (this.x + 0.5) * consts.TILE_SIZE;
+			item.y = (this.y + 0.5) * consts.TILE_SIZE;
+			return true;
+		}
+		return false;
+	}
 }
 
 
@@ -1595,62 +1618,62 @@ class Extractor extends Conveyor {
 
 			switch(this.id){
 				case 0x0005:
-					if(this.item.x > (this.x + 1.5) * consts.TILE_SIZE){return this.dropItem();} else {
+					if(this.item.x >= (this.x + 1.5) * consts.TILE_SIZE){return this.dropItem();} else {
 						this.item.x ++;
 					}
 					break;
 				case 0x0105:
-					if(this.item.y > (this.y + 1.5) * consts.TILE_SIZE){return this.dropItem();} else {
+					if(this.item.y >= (this.y + 1.5) * consts.TILE_SIZE){return this.dropItem();} else {
 						this.item.y ++;
 					}
 					break;
 				case 0x0205:
-					if(this.item.x < (this.x - 0.5) * consts.TILE_SIZE){return this.dropItem();} else {
+					if(this.item.x <= (this.x - 0.5) * consts.TILE_SIZE){return this.dropItem();} else {
 						this.item.x --;
 					}
 					break;
 				case 0x0305:
-					if(this.item.y < (this.y - 0.5) * consts.TILE_SIZE){return this.dropItem();} else {
+					if(this.item.y <= (this.y - 0.5) * consts.TILE_SIZE){return this.dropItem();} else {
 						this.item.y --;
 					}
 					break;
 				case 0x0405:
-					if(this.item.x > (this.x + 2.5) * consts.TILE_SIZE){return this.dropItem();} else {
+					if(this.item.x >= (this.x + 2.5) * consts.TILE_SIZE){return this.dropItem();} else {
 						this.item.x ++;
 					}
 					break;
 				case 0x0505:
-					if(this.item.y > (this.y + 2.5) * consts.TILE_SIZE){return this.dropItem();} else {
+					if(this.item.y >= (this.y + 2.5) * consts.TILE_SIZE){return this.dropItem();} else {
 						this.item.y ++;
 					}
 					break;
 				case 0x0605:
-					if(this.item.x < (this.x - 1.5) * consts.TILE_SIZE){return this.dropItem();} else {
+					if(this.item.x <= (this.x - 1.5) * consts.TILE_SIZE){return this.dropItem();} else {
 						this.item.x --;
 					}
 					break;
 				case 0x0705:
-					if(this.item.y < (this.y - 1.5) * consts.TILE_SIZE){return this.dropItem();} else {
+					if(this.item.y <= (this.y - 1.5) * consts.TILE_SIZE){return this.dropItem();} else {
 						this.item.y --;
 					}
 					break;
 				case 0x0805:
-				if(this.item.x > (this.x + 3.5) * consts.TILE_SIZE){return this.dropItem();} else {
+					if(this.item.x >= (this.x + 3.5) * consts.TILE_SIZE){return this.dropItem();} else {
 						this.item.x ++;
 					}
 					break;
 				case 0x0905:
-					if(this.item.y > (this.y + 3.5) * consts.TILE_SIZE){return this.dropItem();} else {
+					if(this.item.y >= (this.y + 3.5) * consts.TILE_SIZE){return this.dropItem();} else {
 						this.item.y ++;
 					}
 					break;
 				case 0x0A05:
-					if(this.item.x < (this.x - 2.5) * consts.TILE_SIZE){return this.dropItem();} else {
+					if(this.item.x <= (this.x - 2.5) * consts.TILE_SIZE){return this.dropItem();} else {
 						this.item.x --;
 					}
 					break;
 				case 0x0B05:
-					if(this.item.y < (this.y - 2.5) * consts.TILE_SIZE){return this.dropItem();} else {
+					if(this.item.y <= (this.y - 2.5) * consts.TILE_SIZE){return this.dropItem();} else {
 						this.item.y --;
 					}
 					break;
