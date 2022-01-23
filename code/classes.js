@@ -377,6 +377,18 @@ class Level {
         }
         if (this.buildingAtPixel(x, y) instanceof Building) {
             let buildingID = this.buildingAtPixel(x, y).id % 0x100;
+            if (buildingID == 0x01 && this.buildingAtPixel(x, y).item) {
+                let item = this.buildingAtPixel(x, y).item;
+                if ((Math.abs(item.x - x) < 8) && Math.abs(item.y - y) < 8) {
+                    ctx4.fillStyle = "#0033CC";
+                    ctx4.fillRect(mousex, mousey, (names.item[item.id] ?? item.id).length * 10, 16);
+                    ctx4.strokeStyle = "#000000";
+                    ctx4.strokeRect(mousex, mousey, (names.item[item.id] ?? item.id).length * 10, 16);
+                    ctx4.fillStyle = "#FFFFFF";
+                    ctx4.fillText((names.item[item.id] ?? item.id), mousex + 2, mousey + 10);
+                    return;
+                }
+            }
             ctx4.fillStyle = "#0033CC";
             ctx4.fillRect(mousex, mousey, (names.building[buildingID] ?? buildingID).length * 10, 16);
             ctx4.strokeStyle = "#000000";
