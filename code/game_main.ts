@@ -667,6 +667,7 @@ let placedBuilding: {
 		}
 	}
 };
+
 let canOverwriteBuilding = true;
 
 
