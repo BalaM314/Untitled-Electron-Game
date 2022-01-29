@@ -1131,6 +1131,7 @@ class Building {
 			return true;
 		} else if(this.inventory?.length < this.inventory?.MAX_LENGTH){
 			this.inventory.push(item);
+			return true;
 		} else {
 			return false;
 		}
