@@ -463,6 +463,7 @@ function main_loop() {
         };
         Game.forceRedraw = false;
         fixSizes();
+        window.getSelection().empty();
         if (keysHeld.indexOf("shift") !== -1) {
             Game.scroll.speed = 20;
         }

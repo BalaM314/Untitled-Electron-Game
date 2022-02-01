@@ -233,14 +233,12 @@ function trigger(type, buildingID, itemID) {
                 case ItemID.base_coal:
                     if (Game.tutorial.item.coal) {
                         _alert("Congratulations! You just automated coal!");
-                        _alert(["Try doing the same thing for iron: Iron nodes are whiteish and are a bit further from the center of the map.\nUse WASD to scroll.", 3000]);
                         Game.tutorial.item.coal = false;
                     }
                     break;
                 case ItemID.base_ironIngot:
                     if (Game.tutorial.item.iron) {
                         _alert("Nice job!");
-                        _alert(["The next automateable resource is steel.\nYou'll need to use the alloy smelter(slot 7), which needs two inputs(coal and iron).", 3000]);
                         Game.tutorial.item.iron = false;
                     }
                     break;

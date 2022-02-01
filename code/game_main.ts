@@ -495,7 +495,6 @@ let cancel = null;
 function main_loop(){
 	try {
 		let startFrameTime = new Date();
-
 		let currentFrame:currentFrame = {
 			tooltip: true,
 			debug: settings.debug,
@@ -506,6 +505,7 @@ function main_loop(){
 		};
 		Game.forceRedraw = false;
 		fixSizes();
+		window.getSelection().empty();
 		if(keysHeld.indexOf("shift") !== -1){
 			Game.scroll.speed = 20;
 		} else {

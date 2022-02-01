@@ -1,258 +1,307 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="UTF-8">
-    <meta property="og:title" content="Untitled Electron Game" />
+	<head>
+		<meta charset="UTF-8">
+		<meta property="og:title" content="Untitled Electron Game" />
 		<meta property="og:type" content="website" />
 		<meta property="og:url" content="https://balam314.github.io/Untitled-Electron-Game" />
 		<meta property="og:image" content="https://balam314.github.io/Untitled-Electron-Game/assets/textures/building/0x0011.png" />
-    <meta name="description" content="Untitled Electron Game: a factory building game that's in early alpha. Play it now!">
+		<meta name="description" content="Untitled Electron Game: a factory building game that's in early alpha. Play it now!">
 		<meta property="og:description" content="Untitled Electron Game: a factory building game that's in early alpha. Play it now!" />
-    <meta name="theme-color" content="#3141FF">
-    <title>Untitled Electron Game</title>
-    
-    <script src='code/perlin.js'></script> <!--Above script by Stefan Gustavson, in public domain.-->
-    <script src="code/vars.js" defer></script>
-    <script src="code/funcs.js" defer></script>
-    <script src="code/classes.js" defer></script>
-    <script src="code/game_main.js" defer></script>
-    <style>
-      html,body {
-        width: 100%;
-        height: 100%;
-        margin: 0px;
-        overflow: hidden;
-      }
-      canvas {
-        border-right: 2px dashed green;
-        border-bottom: 2px dashed green;
-        position: absolute;
-      }
-      #canvas {
-        z-index: 1;
-      }
-      #canvas1 {
-        z-index: 2;
-      }
-      #canvas2 {
-        z-index: 3;
-      }
-      #canvas25 {
-        z-index: 4;
-      }
-      #canvas3 {
-        z-index: 5;
-      }
-      #canvas4 {
-        z-index: 6;
-      }
+		<meta name="theme-color" content="#3141FF">
+		<title>Untitled Electron Game</title>
+		
+		<script src='code/perlin.js'></script> <!--Above script by Stefan Gustavson, in public domain.-->
+		<script src="code/vars.js" defer></script>
+		<script src="code/funcs.js" defer></script>
+		<script src="code/classes.js" defer></script>
+		<script src="code/game_main.js" defer></script>
+		<style>
+			html,body {
+				width: 100%;
+				height: 100%;
+				margin: 0px;
+				overflow: hidden;
+			}
+			canvas {
+				border-right: 2px dashed green;
+				border-bottom: 2px dashed green;
+				position: absolute;
+			}
+			#canvas {
+				z-index: 1;
+			}
+			#canvas1 {
+				z-index: 2;
+			}
+			#canvas2 {
+				z-index: 3;
+			}
+			#canvas25 {
+				z-index: 4;
+			}
+			#canvas3 {
+				z-index: 5;
+			}
+			#canvas4 {
+				z-index: 6;
+			}
 
-      #error_background {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        background-color: red;
-        text-align: center;
-        font-size: 200%;
-        z-index: 0;
-      }
-      #toolbar {
-        position: absolute;
-        display: flex;
-        bottom: 20px;
-        width: 60%;
-        left: 20%;
-        right: 20%;
-        top: 90%;
-        --cell-size: calc(10% - 20px - 1%);
-        background-color: rgba(0, 0, 255, 0.2);
-        border-radius: 5%;
-        z-index: 10;
-      }
-      .hidden {
-        margin-top: 10000%;
-        position: absolute;
-        display: none;
-        visibility: hidden;
-      }
-      .selected {
-        border: 5px ridge green;
-      }
-      #clickcapture {
-        z-index: 7;
-        position: absolute;
-        width: 100%;
-        height: 100%;
-      }
-      #resources {
-        position: absolute;
-        z-index: 9;
-        margin-left: 40%;
-        margin-right: 40%;
-        width: 20%;
-        text-align: center;
-        font-size: 32px;
-        font-family: sans-serif;
-        border: 2px solid gray;
-        background-color: rgba(0, 0, 255, 0.2);
-      }
-      #resources span {
-        margin-left: 4px;
-        margin-right: 4px;
-      }
-      #resources span::before {
-        width: 32px;
-        height: 32px;
-        margin-right: 4px;
-        background-size: 32px;
-        content: "";
-        display: inline-block !important;
-      }
-      #base_coal::before {
-        background-image: url("assets/textures/item/base_coal.png");
-      }
-      #base_ironIngot::before {
-        background-image: url("assets/textures/item/base_ironIngot.png");
-      }
-      #base_steelIngot::before {
-        background-image: url("assets/textures/item/base_steelIngot.png");
-      }
-      #base_copperIngot::before {
-        background-image: url("assets/textures/item/base_copperIngot.png");
-      }
-    </style>
-  </head>
-  <body>
-    <div id="textures" hidden>
-      <img src="assets/textures/building/0x0001.png" id="1">
-      <img src="assets/textures/building/0x0101.png" id="257">
-      <img src="assets/textures/building/0x0201.png" id="513">
-      <img src="assets/textures/building/0x0301.png" id="769">
-      <img src="assets/textures/building/0x0401.png" id="1025">
-      <img src="assets/textures/building/0x0501.png" id="1281">
-      <img src="assets/textures/building/0x0601.png" id="1537">
-      <img src="assets/textures/building/0x0701.png" id="1793">
-      <img src="assets/textures/building/0x0801.png" id="2049">
-      <img src="assets/textures/building/0x0901.png" id="2305">
-      <img src="assets/textures/building/0x0A01.png" id="2561">
-      <img src="assets/textures/building/0x0B01.png" id="2817">
-      <img src="assets/textures/building/0x0C01.png" id="3073">
-      <img src="assets/textures/building/0x0D01.png" id="3329">
-      <img src="assets/textures/building/0x0E01.png" id="3585">
-      <img src="assets/textures/building/0x0F01.png" id="3841">
-      <img src="assets/textures/building/0x1001.png" id="4097">
-      <img src="assets/textures/building/0x1101.png" id="4353">
-      <img src="assets/textures/building/0x1201.png" id="4609">
-      <img src="assets/textures/building/0x1301.png" id="4865">
-      <img src="assets/textures/building/0x1401.png" id="5121">
-      <img src="assets/textures/building/0x1501.png" id="5377">
-      <img src="assets/textures/building/0x1601.png" id="5633">
-      <img src="assets/textures/building/0x1701.png" id="5889">
-      <img src="assets/textures/building/0x1801.png" id="6145">
-      <img src="assets/textures/building/0x1901.png" id="6401">
-      <img src="assets/textures/building/0x1A01.png" id="6657">
-      <img src="assets/textures/building/0x1B01.png" id="6913">
-      <img src="assets/textures/building/0x0002.png" id="2">
-      <img src="assets/textures/building/0x0003.png" id="3">
-      <img src="assets/textures/building/0x0004.png" id="4">
-      <img src="assets/textures/building/0x0005.png" id="5">
-      <img src="assets/textures/building/0x0105.png" id="261">
-      <img src="assets/textures/building/0x0205.png" id="517">
-      <img src="assets/textures/building/0x0305.png" id="773">
-      <img src="assets/textures/building/0x0405.png" id="1029">
-      <img src="assets/textures/building/0x0505.png" id="1285">
-      <img src="assets/textures/building/0x0605.png" id="1541">
-      <img src="assets/textures/building/0x0705.png" id="1797">
-      <img src="assets/textures/building/0x0805.png" id="2053">
-      <img src="assets/textures/building/0x0905.png" id="2309">
-      <img src="assets/textures/building/0x0A05.png" id="2565">
-      <img src="assets/textures/building/0x0B05.png" id="2821">
-      <img src="assets/textures/building/0x0006.png" id="6">
-      <img src="assets/textures/building/0x0007.png" id="7">
-      <img src="assets/textures/building/0x0008.png" id="8">
-      <img src="assets/textures/building/0x0009.png" id="9">
-      <img src="assets/textures/building/0x000A.png" id="10">
-      <img src="assets/textures/building/0x000B.png" id="11">
-      <img src="assets/textures/building/0x0011.png" id="17">
-      <img src="assets/textures/building/GhostUnderlay.png" id="ghostunderlay">
-      <img src="assets/textures/building/InvalidUnderlay.png" id="invalidunderlay">
-      <img src="assets/textures/tile/0x00.png" id="t0">
-      <img src="assets/textures/tile/0x01.png" id="t1">
-      <img src="assets/textures/tile/0x02.png" id="t2">
-      <img src="assets/textures/tile/0x10.png" id="t16">
-      <img src="assets/textures/tile/0x11.png" id="t17">
-      <img src="assets/textures/tile/0x12.png" id="t18">
-      <img src="assets/textures/item/base_null.png" id="item_base_null">
-      <img src="assets/textures/item/base_coalOre.png" id="item_base_coalOre">
-      <img src="assets/textures/item/base_coal.png" id="item_base_coal">
-      <img src="assets/textures/item/base_ironOre.png" id="item_base_ironOre">
-      <img src="assets/textures/item/base_ironIngot.png" id="item_base_ironIngot">
-      <img src="assets/textures/item/base_ironPlate.png" id="item_base_ironPlate">
-      <img src="assets/textures/item/base_ironRod.png" id="item_base_ironRod">
-      <img src="assets/textures/item/base_copperOre.png" id="item_base_copperOre">
-      <img src="assets/textures/item/base_copperIngot.png" id="item_base_copperIngot">
-      <img src="assets/textures/item/base_copperWire.png" id="item_base_copperWire">
-      <img src="assets/textures/item/base_steelIngot.png" id="item_base_steelIngot">
-      <img src="assets/textures/item/base_steelPlate.png" id="item_base_steelPlate">
-      <img src="assets/textures/item/base_steelRod.png" id="item_base_steelRod">
-      <img src="assets/textures/item/base_stator.png" id="item_base_stator">
-      <img src="assets/textures/item/base_rotor.png" id="item_base_rotor">
-      <img src="assets/textures/item/base_motor.png" id="item_base_motor">
-    </div>
-    <input id="uploadButton" type="file" accept="application/json" class="hidden"/>
-    <canvas id="canvas" width=1200 height=1200></canvas>
-    <canvas id="canvas1" width=1200 height=1200></canvas>
-    <canvas id="canvas2" width=1200 height=1200></canvas>
-    <canvas id="canvas25" width=1200 height=1200></canvas>
-    <canvas id="canvas3" width=1200 height=1200></canvas>
-    <canvas id="canvas4" width=1200 height=1200></canvas>
-    <div id="clickcapture"></div>
-    <div id="resources" class="hidden">
-      <span id="base_coal">0</span>
-      <span id="base_ironIngot">0</span>
-      <span id="base_copperIngot">0</span>
-      <span id="base_steelIngot">0</span>
-    </div>
-    <div class="hidden" onload="this.innerText = 'Why are you able to read this?\nThis div contains a boilerplate description for search engines.';">Untitled Electron Game is a factory building game that's in early alpha. Play it now!</div>
-    <div id="error_background">Oops! If you're seeing this(for more than a second), something went wrong. Please check the dev console(F12 then console) for any red boxes, take a screenshot, and report it to the <a href="https://github.com/BalaM314/Untitled-Electron-Game/issues">issue tracker.</a></div>
-    <div id="toolbar" class="hidden">
-      <img src="assets/textures/building/0x0001.png" id="1" title="Conveyor">
-      <img src="assets/textures/building/0x0002.png" id="2" title="Miner">
-      <img src="assets/textures/building/0x0003.png" id="3" title="Trash can">
-      <img src="assets/textures/building/0x0004.png" id="4" title="Furnace">
-      <img src="assets/textures/building/0x0005.png" id="5" title="Extractor">
-      <img src="assets/textures/building/0x0006.png" id="6" title="Chest">
-      <img src="assets/textures/building/0x0007.png" id="7" title="Alloy smelter">
-      <img src="assets/textures/building/0x0009.png" id="9" title="Wiremill">
-      <img src="assets/textures/building/0x000A.png" id="10" title="Compressor">
-      <img src="assets/textures/building/0x000B.png" id="11" title="Lathe">
-      <img src="assets/textures/building/0x0011.png" id="17" title="Assembler">
-    </div>
-    <script>
-      //Inline script for time sensitive event handlers(onload).
-      let loadedtextures = 0;
+			#error_background {
+				position: absolute;
+				width: 100%;
+				height: 100%;
+				background-color: red;
+				text-align: center;
+				font-size: 200%;
+				z-index: 0;
+			}
+			#toolbar {
+				position: absolute;
+				display: flex;
+				bottom: 20px;
+				width: 60%;
+				left: 20%;
+				right: 20%;
+				top: 90%;
+				--cell-size: calc(10% - 20px - 1%);
+				background-color: rgba(0, 0, 255, 0.2);
+				border-radius: 5%;
+				z-index: 10;
+			}
+			.hidden {
+				margin-top: 10000%;
+				position: absolute;
+				display: none;
+				visibility: hidden;
+			}
+			.selected {
+				border: 5px ridge green;
+			}
+			#clickcapture {
+				z-index: 7;
+				position: absolute;
+				width: 100%;
+				height: 100%;
+			}
+			#resources {
+				position: absolute;
+				z-index: 9;
+				margin-left: 40%;
+				margin-right: 40%;
+				width: 20%;
+				text-align: center;
+				font-size: 32px;
+				font-family: sans-serif;
+				border: 2px solid gray;
+				background-color: rgba(0, 0, 255, 0.2);
+			}
+			#resources span {
+				margin-left: 4px;
+				margin-right: 4px;
+			}
+			#resources span::before {
+				width: 32px;
+				height: 32px;
+				margin-right: 4px;
+				background-size: 32px;
+				content: "";
+				display: inline-block !important;
+			}
+			#base_coal::before {
+				background-image: url("assets/textures/item/base_coal.png");
+			}
+			#base_ironIngot::before {
+				background-image: url("assets/textures/item/base_ironIngot.png");
+			}
+			#base_steelIngot::before {
+				background-image: url("assets/textures/item/base_steelIngot.png");
+			}
+			#base_copperIngot::before {
+				background-image: url("assets/textures/item/base_copperIngot.png");
+			}
+			@keyframes alertfade {
+				from {
+					background-color: rgba(0, 0, 255, 0.0);
+					border-color: rgba(0, 0, 0, 0.0);
+					color: rgba(255, 255, 255, 0.1);
+				}
+				to {
+					background-color: rgba(0, 255, 255, 0.4);
+					border-color: rgba(0, 0, 0, 0.8);
+					color: rgba(255, 255, 255, 1.0);
+				}
+			}
+			#alertbox {
+				position: absolute;
+				top: 35%;
+				left: 35%;
+				width: 30%;
+				height: 30%;
+				border-color: black;
+				border-radius: 2px;
+				border-width: 5px;
+				font-size: 200%;
+			}
+			#alertbox.active {
+				border-style: solid;
+				animation-name: alertfade;
+				animation-duration: 500ms;
+				animation-fill-mode: both;
+				z-index: 15;
+			}
+			#alertmessage {
+				text-align: center;
+			}
+			#alertexit {
+				position: absolute;
+				right: 5%;
+				bottom: 5%;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="textures" hidden>
+			<img src="assets/textures/building/0x0001.png" id="1">
+			<img src="assets/textures/building/0x0101.png" id="257">
+			<img src="assets/textures/building/0x0201.png" id="513">
+			<img src="assets/textures/building/0x0301.png" id="769">
+			<img src="assets/textures/building/0x0401.png" id="1025">
+			<img src="assets/textures/building/0x0501.png" id="1281">
+			<img src="assets/textures/building/0x0601.png" id="1537">
+			<img src="assets/textures/building/0x0701.png" id="1793">
+			<img src="assets/textures/building/0x0801.png" id="2049">
+			<img src="assets/textures/building/0x0901.png" id="2305">
+			<img src="assets/textures/building/0x0A01.png" id="2561">
+			<img src="assets/textures/building/0x0B01.png" id="2817">
+			<img src="assets/textures/building/0x0C01.png" id="3073">
+			<img src="assets/textures/building/0x0D01.png" id="3329">
+			<img src="assets/textures/building/0x0E01.png" id="3585">
+			<img src="assets/textures/building/0x0F01.png" id="3841">
+			<img src="assets/textures/building/0x1001.png" id="4097">
+			<img src="assets/textures/building/0x1101.png" id="4353">
+			<img src="assets/textures/building/0x1201.png" id="4609">
+			<img src="assets/textures/building/0x1301.png" id="4865">
+			<img src="assets/textures/building/0x1401.png" id="5121">
+			<img src="assets/textures/building/0x1501.png" id="5377">
+			<img src="assets/textures/building/0x1601.png" id="5633">
+			<img src="assets/textures/building/0x1701.png" id="5889">
+			<img src="assets/textures/building/0x1801.png" id="6145">
+			<img src="assets/textures/building/0x1901.png" id="6401">
+			<img src="assets/textures/building/0x1A01.png" id="6657">
+			<img src="assets/textures/building/0x1B01.png" id="6913">
+			<img src="assets/textures/building/0x0002.png" id="2">
+			<img src="assets/textures/building/0x0003.png" id="3">
+			<img src="assets/textures/building/0x0004.png" id="4">
+			<img src="assets/textures/building/0x0005.png" id="5">
+			<img src="assets/textures/building/0x0105.png" id="261">
+			<img src="assets/textures/building/0x0205.png" id="517">
+			<img src="assets/textures/building/0x0305.png" id="773">
+			<img src="assets/textures/building/0x0405.png" id="1029">
+			<img src="assets/textures/building/0x0505.png" id="1285">
+			<img src="assets/textures/building/0x0605.png" id="1541">
+			<img src="assets/textures/building/0x0705.png" id="1797">
+			<img src="assets/textures/building/0x0805.png" id="2053">
+			<img src="assets/textures/building/0x0905.png" id="2309">
+			<img src="assets/textures/building/0x0A05.png" id="2565">
+			<img src="assets/textures/building/0x0B05.png" id="2821">
+			<img src="assets/textures/building/0x0006.png" id="6">
+			<img src="assets/textures/building/0x0007.png" id="7">
+			<img src="assets/textures/building/0x0008.png" id="8">
+			<img src="assets/textures/building/0x0009.png" id="9">
+			<img src="assets/textures/building/0x000A.png" id="10">
+			<img src="assets/textures/building/0x000B.png" id="11">
+			<img src="assets/textures/building/0x0011.png" id="17">
+			<img src="assets/textures/building/GhostUnderlay.png" id="ghostunderlay">
+			<img src="assets/textures/building/InvalidUnderlay.png" id="invalidunderlay">
+			<img src="assets/textures/tile/0x00.png" id="t0">
+			<img src="assets/textures/tile/0x01.png" id="t1">
+			<img src="assets/textures/tile/0x02.png" id="t2">
+			<img src="assets/textures/tile/0x10.png" id="t16">
+			<img src="assets/textures/tile/0x11.png" id="t17">
+			<img src="assets/textures/tile/0x12.png" id="t18">
+			<img src="assets/textures/item/base_null.png" id="item_base_null">
+			<img src="assets/textures/item/base_coalOre.png" id="item_base_coalOre">
+			<img src="assets/textures/item/base_coal.png" id="item_base_coal">
+			<img src="assets/textures/item/base_ironOre.png" id="item_base_ironOre">
+			<img src="assets/textures/item/base_ironIngot.png" id="item_base_ironIngot">
+			<img src="assets/textures/item/base_ironPlate.png" id="item_base_ironPlate">
+			<img src="assets/textures/item/base_ironRod.png" id="item_base_ironRod">
+			<img src="assets/textures/item/base_copperOre.png" id="item_base_copperOre">
+			<img src="assets/textures/item/base_copperIngot.png" id="item_base_copperIngot">
+			<img src="assets/textures/item/base_copperWire.png" id="item_base_copperWire">
+			<img src="assets/textures/item/base_steelIngot.png" id="item_base_steelIngot">
+			<img src="assets/textures/item/base_steelPlate.png" id="item_base_steelPlate">
+			<img src="assets/textures/item/base_steelRod.png" id="item_base_steelRod">
+			<img src="assets/textures/item/base_stator.png" id="item_base_stator">
+			<img src="assets/textures/item/base_rotor.png" id="item_base_rotor">
+			<img src="assets/textures/item/base_motor.png" id="item_base_motor">
+		</div>
+		<input id="uploadButton" type="file" accept="application/json" class="hidden"/>
+		<canvas id="canvas" width=1200 height=1200></canvas>
+		<canvas id="canvas1" width=1200 height=1200></canvas>
+		<canvas id="canvas2" width=1200 height=1200></canvas>
+		<canvas id="canvas25" width=1200 height=1200></canvas>
+		<canvas id="canvas3" width=1200 height=1200></canvas>
+		<canvas id="canvas4" width=1200 height=1200></canvas>
+		<div id="clickcapture"></div>
+		<div id="resources" class="hidden">
+			<span id="base_coal">0</span>
+			<span id="base_ironIngot">0</span>
+			<span id="base_copperIngot">0</span>
+			<span id="base_steelIngot">0</span>
+		</div>
+		<div class="hidden" onload="this.innerText = 'Why are you able to read this?\nThis div contains a boilerplate description for search engines.';">Untitled Electron Game is a factory building game that's in early alpha. Play it now!</div>
+		<div id="error_background">Oops! If you're seeing this(for more than a second), something went wrong. Please check the dev console(F12 then console) for any red boxes, take a screenshot, and report it to the <a href="https://github.com/BalaM314/Untitled-Electron-Game/issues">issue tracker.</a></div>
+		<div id="toolbar" class="hidden">
+			<img src="assets/textures/building/0x0001.png" id="1" title="Conveyor">
+			<img src="assets/textures/building/0x0002.png" id="2" title="Miner">
+			<img src="assets/textures/building/0x0003.png" id="3" title="Trash can">
+			<img src="assets/textures/building/0x0004.png" id="4" title="Furnace">
+			<img src="assets/textures/building/0x0005.png" id="5" title="Extractor">
+			<img src="assets/textures/building/0x0006.png" id="6" title="Chest">
+			<img src="assets/textures/building/0x0007.png" id="7" title="Alloy smelter">
+			<img src="assets/textures/building/0x0009.png" id="9" title="Wiremill">
+			<img src="assets/textures/building/0x000A.png" id="10" title="Compressor">
+			<img src="assets/textures/building/0x000B.png" id="11" title="Lathe">
+			<img src="assets/textures/building/0x0011.png" id="17" title="Assembler">
+		</div>
+		<div id="alertbox">
+			<div id="alertmessage">Alert! Something!</div>
+			<div id="alertexit">Ok</div>
+		</div>
+		<script>
+			//Inline script for time sensitive event handlers(onload).
+			let loadedtextures = 0;
 
-      for(let element of document.getElementById("textures").children){
-      element.addEventListener("load", () => {
-        loadedtextures ++;
-      });
-      element.addEventListener("error", (err) => {
-        alert("Failed to load texture " + (err.target).src.split("assets/textures/")[1]);
-        throw err;
-      });
-    }
+			for(let element of document.getElementById("textures").children){
+			element.addEventListener("load", () => {
+				loadedtextures ++;
+			});
+			element.addEventListener("error", (err) => {
+				alert("Failed to load texture " + (err.target).src.split("assets/textures/")[1]);
+				throw err;
+			});
+		}
 
-    for(let element of document.getElementById("toolbar").children){
-      element.addEventListener("click", (event) => {
-        for(let x of document.getElementById("toolbar").children){
-          x.classList.remove("selected");
-        }
-        event.target.classList.add("selected");
-        placedBuilding.type = parseInt(event.target.id);
-        mouse.held = false;
-      });
-    }
+		for(let element of document.getElementById("toolbar").children){
+			element.addEventListener("click", (event) => {
+				for(let x of document.getElementById("toolbar").children){
+					x.classList.remove("selected");
+				}
+				event.target.classList.add("selected");
+				placedBuilding.type = parseInt(event.target.id);
+				mouse.held = false;
+			});
+		}
 
-    </script>
-  </body>
+		let alertmessage = document.getElementById("alertmessage");
+		let alertexit = document.getElementById("alertexit");
+		let alertbox = document.getElementById("alertbox");		
+		alertexit.onclick = (e) => {
+			alertbox.classList.remove("active")
+		}
+
+		</script>
+	</body>
 </html>
