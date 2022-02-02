@@ -434,19 +434,11 @@ function fixSizes() {
     }
 }
 function handleAlerts() {
-    if (alerts.length) {
+    if (alerts.list.length && alerts.active == false) {
         mouse.held = false;
-        for (let __alert of alerts) {
-            if (__alert instanceof Array) {
-                setTimeout(() => {
-                    _alert(__alert[0]);
-                }, __alert[1]);
-            }
-            else {
-                alert(__alert);
-            }
-        }
-        alerts = [];
+        alertmessage.innerText = alerts.list.splice(0, 1);
+        alertbox.classList.add("active");
+        alerts.active = true;
     }
 }
 let cancel = null;

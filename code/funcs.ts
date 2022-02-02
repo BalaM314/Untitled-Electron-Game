@@ -309,9 +309,12 @@ function* pseudoRandom(seed){
 
 }
 
-let alerts = [];
+let alerts = {
+	list: [],
+	active: false
+};
 function _alert(x:string){
-	alerts.push(x);
+	alerts.list.push(x);
 }
 function loadTextures(){
 	for(let element of document.getElementById("textures").children){

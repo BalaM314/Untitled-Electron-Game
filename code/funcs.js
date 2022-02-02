@@ -258,9 +258,12 @@ function trigger(type, buildingID, itemID) {
             break;
     }
 }
-let alerts = [];
+let alerts = {
+    list: [],
+    active: false
+};
 function _alert(x) {
-    alerts.push(x);
+    alerts.list.push(x);
 }
 function loadTextures() {
     for (let element of document.getElementById("textures").children) {
