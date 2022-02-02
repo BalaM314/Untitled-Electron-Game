@@ -44,13 +44,13 @@ function registerEventHandlers() {
         e.preventDefault();
     };
     window.onkeydown = (e) => {
-        if (typeof parseInt(e.key) == "number") {
+        if (!isNaN(parseInt(e.key))) {
             for (let x of document.getElementById("toolbar").children) {
                 x.classList.remove("selected");
             }
             document.getElementById("toolbar").children?.[parseInt(e.key) - 1]?.classList.add("selected");
         }
-        if (parseInt(e.key[1])) {
+        if (!isNaN(parseInt(e.key[1]))) {
             for (let x of document.getElementById("toolbar").children) {
                 x.classList.remove("selected");
             }
@@ -484,7 +484,9 @@ function main_loop() {
         handleAlerts();
     }
     catch (err) {
-        alert("An error has occurred! Oopsie.\nPlease create an issue on this project's GitHub so I can fix it.\nErr: " + err.message);
+        alert("An error has occurred! Oopsie.\nPlease create an issue on this project's GitHub so I can fix it.\nError message: " + err.message);
+        if (err.message.startsWith("Error updating world:")) {
+        }
         ctxs.forEach((ctx) => { ctx.clearRect(0, 0, innerWidth, innerHeight); });
         throw err;
     }

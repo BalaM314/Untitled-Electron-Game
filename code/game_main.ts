@@ -58,20 +58,20 @@ function registerEventHandlers(){
 	window.onkeydown = (e:KeyboardEvent) => {
 
 		//If you pressed a number or function key, draw a box around the building you selected.
-		if(typeof parseInt(e.key) == "number"){
+		if(!isNaN(parseInt(e.key))){
 			for(let x of document.getElementById("toolbar").children){
 				x.classList.remove("selected");
 			}
 			(document.getElementById("toolbar").children?.[parseInt(e.key) - 1] as HTMLElement)?.classList.add("selected");
 		}
-		if(parseInt(e.key[1])){
+		if(!isNaN(parseInt(e.key[1]))){
 			for(let x of document.getElementById("toolbar").children){
 				x.classList.remove("selected");
 			}
 			(document.getElementById("toolbar").children?.[parseInt(e.key[1]) + 8] as HTMLElement)?.classList.add("selected");
 		}
 
-		//Push key to keysPressed
+		//Push key to keysHeld
 		if(keysHeld.indexOf(e.key.toLowerCase()) == -1){
 			keysHeld.push(e.key.toLowerCase());
 		}
@@ -531,7 +531,10 @@ function main_loop(){
 		handleAlerts();
 
 	} catch(err){
-		alert("An error has occurred! Oopsie.\nPlease create an issue on this project's GitHub so I can fix it.\nErr: " + err.message);//todo improve
+		alert("An error has occurred! Oopsie.\nPlease create an issue on this project's GitHub so I can fix it.\nError message: " + err.message);
+		if(err.message.startsWith("Error updating world:")){
+
+		}
 		ctxs.forEach((ctx) => {ctx.clearRect(0,0,innerWidth,innerHeight)});
 		throw err;
 	}
