@@ -267,13 +267,13 @@ let Game = {
 
 let loadedtextures = 0;
 
-function makeError(name){
+function makeError(name):(typeof Error){
 	return class extends Error {
-		constructor(message){
+		constructor(message?: string){
 			super(...arguments);
 			this.name = name;
 		}
-	};
+	} as typeof Error;
 }
 
 const ShouldNotBePossibleError = makeError("ShouldNotBePossibleError");
