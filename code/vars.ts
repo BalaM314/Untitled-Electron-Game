@@ -263,16 +263,9 @@ let Game = {
 	state: "loading"
 };
 
-const ctx = (document.getElementById("canvas") as HTMLCanvasElement).getContext("2d");//Tiles
-const ctx1 = (document.getElementById("canvas1") as HTMLCanvasElement).getContext("2d");//Ghost buildings
-const ctx2 = (document.getElementById("canvas2") as HTMLCanvasElement).getContext("2d");//Buildings
-const ctx25 = (document.getElementById("canvas25") as HTMLCanvasElement).getContext("2d");//Extractors
-const ctx3 = (document.getElementById("canvas3") as HTMLCanvasElement).getContext("2d");//Items
-const ctx4 = (document.getElementById("canvas4") as HTMLCanvasElement).getContext("2d");//Overlays
-const ctxs = [ctx, ctx1, ctx2, ctx25, ctx3, ctx4];
-const uploadButton = document.getElementById('uploadButton')! as HTMLInputElement;
 
-declare let loadedtextures:number;
+
+let loadedtextures = 0;
 
 function makeError(name){
 	return class extends Error {
@@ -282,6 +275,7 @@ function makeError(name){
 		}
 	};
 }
+
 const ShouldNotBePossibleError = makeError("ShouldNotBePossibleError");
 const AssertionFailedError = makeError("AssertionFailedError");
 const ArgumentError = makeError("ArgumentError");

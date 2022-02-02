@@ -251,14 +251,7 @@ let Game = {
     },
     state: "loading"
 };
-const ctx = document.getElementById("canvas").getContext("2d");
-const ctx1 = document.getElementById("canvas1").getContext("2d");
-const ctx2 = document.getElementById("canvas2").getContext("2d");
-const ctx25 = document.getElementById("canvas25").getContext("2d");
-const ctx3 = document.getElementById("canvas3").getContext("2d");
-const ctx4 = document.getElementById("canvas4").getContext("2d");
-const ctxs = [ctx, ctx1, ctx2, ctx25, ctx3, ctx4];
-const uploadButton = document.getElementById('uploadButton');
+let loadedtextures = 0;
 function makeError(name) {
     return class extends Error {
         constructor(message) {

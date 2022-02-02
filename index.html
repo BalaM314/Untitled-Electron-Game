@@ -12,7 +12,7 @@
 		<title>Untitled Electron Game</title>
 		
 		<script src='code/perlin.js'></script> <!--Above script by Stefan Gustavson, in public domain.-->
-		<script src="code/vars.js" defer></script>
+		<script src="code/vars.js"></script>
 		<script src="code/funcs.js" defer></script>
 		<script src="code/classes.js" defer></script>
 		<script src="code/game_main.js" defer></script>
@@ -270,39 +270,6 @@
 			<div id="alertmessage">Alert! Something!</div>
 			<div id="alertexit">Ok</div>
 		</div>
-		<script>
-			//Inline script for time sensitive event handlers(onload).
-			let loadedtextures = 0;
-
-			for(let element of document.getElementById("textures").children){
-			element.addEventListener("load", () => {
-				loadedtextures ++;
-			});
-			element.addEventListener("error", (err) => {
-				alert("Failed to load texture " + (err.target).src.split("assets/textures/")[1]);
-				throw err;
-			});
-		}
-
-		for(let element of document.getElementById("toolbar").children){
-			element.addEventListener("click", (event) => {
-				for(let x of document.getElementById("toolbar").children){
-					x.classList.remove("selected");
-				}
-				event.target.classList.add("selected");
-				placedBuilding.type = parseInt(event.target.id);
-				mouse.held = false;
-			});
-		}
-
-		let alertmessage = document.getElementById("alertmessage");
-		let alertexit = document.getElementById("alertexit");
-		let alertbox = document.getElementById("alertbox");		
-		alertexit.onclick = (e) => {
-			alertbox.classList.remove("active");
-			alerts.active = false;
-		}
-
-		</script>
+		<script src="code/elements.js"></script>
 	</body>
 </html>

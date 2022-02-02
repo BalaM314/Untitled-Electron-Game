@@ -476,7 +476,7 @@ function fixSizes(){
 function handleAlerts(){
 	if(alerts.list.length && alerts.active == false){
 		mouse.held = false;
-		alertmessage.innerText = alerts.list.splice(0,1);
+		alertmessage.innerText = alerts.list.shift();
 		alertbox.classList.add("active");
 		alerts.active = true;
 	}
