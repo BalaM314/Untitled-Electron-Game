@@ -141,7 +141,6 @@
 				border-color: black;
 				border-radius: 2px;
 				border-width: 5px;
-				font-size: auto;
 			}
 			#alertbox.active {
 				border-style: solid;
@@ -151,12 +150,13 @@
 				z-index: 15;
 			}
 			#alertmessage {
-				font-size: 200%;
+				font-size: min(200%, calc(50000% / var(--text-length)));
 				text-align: center;
 				overflow-wrap: break-word;
 			}
 			#alertexit {
 				position: absolute;
+				font-size: 200%;
 				right: 5%;
 				bottom: 5%;
 			}

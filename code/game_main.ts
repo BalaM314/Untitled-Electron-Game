@@ -94,7 +94,7 @@ function registerEventHandlers(){
 				switch(e.key){
 					//save/load from localstorage
 					case "s":
-						if((!localStorage.getItem("save1") || JSON.parse(localStorage.getItem("save1"))?.metadata?.uuid == level1.uuid) || confirm("Are you want to save? This will overwrite your current saved world which seems to be different!")){
+						if((!localStorage.getItem("save1") || JSON.parse(localStorage.getItem("save1"))?.metadata?.uuid == level1?.uuid) || confirm("Are you want to save? This will overwrite your current saved world which seems to be different!")){
 							try {
 								localStorage.setItem("save1", JSON.stringify(exportData()));
 								alert("Saved successfully!");
@@ -477,6 +477,7 @@ function handleAlerts(){
 	if(alerts.list.length && alerts.active == false){
 		mouse.held = false;
 		alertmessage.innerText = alerts.list.shift();
+		alertmessage.style.setProperty("--text-length", alertmessage.innerText.length.toString());
 		alertbox.classList.add("active");
 		alerts.active = true;
 	}
@@ -610,7 +611,7 @@ function exportData(){
 		UntitledElectronGame: {
 			metadata: {
 				validationCode: "esrdtfgvczdsret56u7yhgvfcesrythgvfd!",
-				id: level1.uuid ?? Math.random().toString().substring(2),
+				id: level1?.uuid ?? Math.random().toString().substring(2),
 				version: consts.VERSION,
 				timeCreated: new Date().getTime().toString()
 			},
