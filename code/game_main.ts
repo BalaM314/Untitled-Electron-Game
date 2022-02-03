@@ -186,7 +186,7 @@ function registerEventHandlers(){
 	}
 
 	window.onbeforeunload = (e:BeforeUnloadEvent) => {
-		if((!localStorage.getItem("save1") || JSON.parse(localStorage.getItem("save1"))?.metadata?.uuid == level1?.uuid)){
+		if(Game.state !== "title" || (!localStorage.getItem("save1") || JSON.parse(localStorage.getItem("save1"))?.metadata?.uuid == level1?.uuid)){
 			localStorage.setItem("save1", JSON.stringify(exportData()));
 		} else {
 			e.preventDefault();

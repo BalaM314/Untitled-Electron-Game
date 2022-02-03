@@ -226,7 +226,20 @@ let settings = {
 	autoSave: true,
 	tutorial: false,
 };
-let Game = {
+let Game: {
+	scroll: {
+		x: number;
+		y: number;
+		speed: number;
+	}
+	startTime: number;
+	lastSaved: number;
+	forceRedraw: boolean;
+	tutorial: {
+		[index: string]: any
+	};
+	state: "loading" | "title" | "settings" | "game";
+} = {
 	scroll: {
 		x: 300,
 		y: 300,
