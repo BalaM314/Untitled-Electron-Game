@@ -600,3 +600,6 @@ catch (err) {
 }
 registerEventHandlers();
 main_loop();
+if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+    alert("It looks like you're trying to play on a phone. Unfortunately, mobile devices are not currently supported.");
+}
