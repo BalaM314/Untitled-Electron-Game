@@ -496,11 +496,6 @@ function main_loop() {
 function load() {
     loadTextures();
     level1 = new Level(314);
-    level1.generateNecessaryChunks();
-    level1.buildBuilding(0, 0, 0x0008);
-    level1.buildBuilding(0, -1, 0x0008);
-    level1.buildBuilding(-1, 0, 0x0008);
-    level1.buildBuilding(-1, -1, 0x0008);
     if (localStorage.firstload) {
         localStorage.firstload = false;
         _alert(`Welcome to Untitled Electron Game!

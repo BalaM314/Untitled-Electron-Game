@@ -369,7 +369,7 @@ let state: {
 	},
 	game: {
 		buttons: [],
-		update: function(currentFrame:any, level:Level){
+		update: function(currentFrame:currentFrame, level:Level){
 			level ??= level1;
 			level.generateNecessaryChunks();
 			try {
@@ -379,7 +379,7 @@ let state: {
 				throw new Error(`Error updating world: ${err.message}`);
 			}			
 		},
-		display: function(currentFrame:any, level:Level){
+		display: function(currentFrame:currentFrame, level:Level){
 			level ??= level1;
 			//display
 			if(currentFrame.redraw){
@@ -546,11 +546,6 @@ function main_loop(){
 function load(){
 	loadTextures();
 	level1 = new Level(314);
-	level1.generateNecessaryChunks();
-	level1.buildBuilding(0,0,0x0008);
-	level1.buildBuilding(0,-1,0x0008);
-	level1.buildBuilding(-1,0,0x0008);
-	level1.buildBuilding(-1,-1,0x0008);
 
 	
 	if(localStorage.firstload){

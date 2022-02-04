@@ -21,6 +21,11 @@ class Level {
 		if(typeof data != "object"){
 			this.seed = data ?? 0;
 			this.uuid = Math.random().toString().substring(2);
+			this.generateNecessaryChunks();
+			this.buildBuilding(0,0,0x0008);
+			this.buildBuilding(0,-1,0x0008);
+			this.buildBuilding(-1,0,0x0008);
+			this.buildBuilding(-1,-1,0x0008);
 		} else {
 			// Generate a level from JSON
 			let {chunks, items, resources, seed, version, uuid} = data;
@@ -151,7 +156,7 @@ class Level {
 		for(let item of this.items){
 			item.update(currentframe);
 		}
-		for(let chunk of level1.storage.values()){
+		for(let chunk of this.storage.values()){
 			chunk.update();
 		}
 	}
@@ -304,6 +309,7 @@ class Level {
 		return false;
 	}
 	buildBuilding(tileX:number, tileY:number, building:BuildingID):boolean {
+		if(this.buildingIDAtTile(tileX, tileY) == 0x08) return false;
 		if((building % 0x100 != 5 ? this.buildingIDAtTile(tileX, tileY) : this.extractorAtTile(tileX, tileY)?.id) === building){
 			if(!canOverwriteBuilding){
 				return false;
@@ -337,10 +343,10 @@ class Level {
 					let secondary3 = new MultiBlockSecondary(tileX+1, tileY+1, 0x0010, this);
 					controller.secondaries = [secondary1, secondary2, secondary3];
 					[secondary1, secondary2, secondary3].forEach(secondary => secondary.controller = controller);
-					level1.writeBuilding(tileX, tileY, controller);
-					level1.writeBuilding(tileX + 1, tileY, secondary1);
-					level1.writeBuilding(tileX, tileY + 1, secondary2);
-					level1.writeBuilding(tileX+1, tileY+1, secondary3);
+					this.writeBuilding(tileX, tileY, controller);
+					this.writeBuilding(tileX + 1, tileY, secondary1);
+					this.writeBuilding(tileX, tileY + 1, secondary2);
+					this.writeBuilding(tileX+1, tileY+1, secondary3);
 				break;
 				default:
 					return false;
