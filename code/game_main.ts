@@ -276,9 +276,9 @@ let state: {
 			ctx.textBaseline = "middle";
 			ctx.fillStyle = "#000000";
 			ctx.fillText("Untitled Electron Game", innerWidth / 2, innerHeight * 0.2);
-			ctx.fillStyle = "#000000";
-			ctx.font = `${20 + 5*Math.sin(millis() / 400)}px sans-serif`;
-			ctx.fillText("Splash Text Soon™", innerWidth / 2, innerHeight * 0.35);
+			ctx.fillStyle = "#cccc00";
+			ctx.font = `${20 + 5*Math[Game.title.splashbehavior](millis() / 400)}px sans-serif`;
+			ctx.fillText(Game.title.splashtext ?? "splash not found! this is actually an error pls report", innerWidth / 2, innerHeight * 0.35);
 			state.title.buttons.forEach(button => button.display(ctx));
 		},
 		onclick(e:MouseEvent){
@@ -675,8 +675,12 @@ try {
 
 registerEventHandlers();
 
-main_loop();
-
 if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){
   alert("It looks like you're trying to play on a phone. Unfortunately, mobile devices are not currently supported.");
 }
+
+Game.title.splashtext = Math.random() < 0.9 ? splashes[Math.ceil(Math.random() * (splashes.length - 1))] : raresplashes[Math.ceil(Math.random() * (raresplashes.length - 1))];
+Game.title.splashbehavior = Math.random() < 0.9 ? "sin" : "tan";
+
+main_loop();
+

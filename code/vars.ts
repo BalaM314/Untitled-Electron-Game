@@ -239,6 +239,10 @@ let Game: {
 		[index: string]: any
 	};
 	state: "loading" | "title" | "settings" | "game";
+	title: {
+		splashtext: string;
+		splashbehavior: string;
+	}
 } = {
 	scroll: {
 		x: 300,
@@ -273,10 +277,108 @@ let Game: {
 		},
 		multiplesteel: false
 	},
-	state: "loading"
+	state: "loading",
+	title: {
+		splashtext: "",
+		splashbehavior: "sin"
+	}
 };
-
-
+let splashes:string[] = [
+	"§kGet out of my files! It tickles!",
+	"Remember everyone, the secret to a good game in 2020 is s p l a s h t e x t",
+	"Got any grapes?",
+	"e",
+	"Hello fellow untitled electron game enthusiast, I have made this splash text ridiculously long to the point where it is only actually readable by accessing the game files. wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww Hello fellow untitled electron game enthusiast, I have made this splash text ridiculously long to the point where it is only actually readable by accessing the game files.",
+	"/execute order 66",
+	"Now a noodle.",
+	"${splash}",
+	"Goes brrrrrrr!",
+	"Looking kinda sus!",
+	"Who parked their car on my sandwich?",
+	"Also try Factorio!",
+	"Also try Satisfactory!",
+	"Also try Mindustry!",
+	"not related to minecraft",
+	"Aww man!",
+	"uiwcoufhuwrwytyur g fhk",
+	"Oi",
+	"what am i even doing",
+	"Do distribute!",
+	"Do not sell!",
+	"wanna see me speed bridge",
+	"doot doot",
+	"/kill",
+	"Reddit, here we come!",
+	"c148 is still the best lol",
+	"I wonder what this button does!",
+	"Ctrl+W for 420 free diamonds!",
+	"One day, somewhere in the future, my work will be quoted!",
+	"For the last time guys, the Earth is *round*.",
+	".party()!",
+	".play()!",
+	".code()!",
+	"We are number one!",
+	"haha splash text goes brrrrrrr",
+	"Diamonds aren't hot, carbon dioxide is!",
+	"Forge!",
+	"Blue is my favorite colour",
+	"pog",
+	"kthxbai",
+	"No swords!",
+	"1337 is my middle name",
+	"Records on my fingers!",
+	"BURN IT WITH FIRE!!!!!",
+	"Getting ready to show!",
+	"Getting ready to know!",
+	"Getting ready to drop!",
+	"Getting ready to shock!",
+	"Getting ready to freak!",
+	"Getting ready to speak!",
+	"Never gonna give you up!",
+	"§b§o[Enchanted Renamed Item!]§r",
+	"A Very Fancy Door!",
+	"Ghostpinged!",
+	"████ ████ ██████e██ ████m ████ne ██",
+	"Op!",
+	"when the imposter is sus 😳",
+	"3.141592653589793238462643383279502884197169399375105820974944592307816406286208998628034825342117067982148086513282306647093844609550582231725359408128481",
+	"Noted.",
+	"let splashes: string[] = ",
+	"I just simultaneously whipped and nae nae'd!",
+	"TypeScript powered!",
+	"Server friendly!",
+	"Environmentally friendly!",
+	"More stone than you'll ever need!",
+	"amogus",
+	"amomogus",
+	"amoamogus",
+	"amoamomogus",
+	"amogusgus",
+	"amomogusgus",
+	"amoamogusgus",
+	"amoamomogusgus",
+	"abominatiogus",
+	"u r sussy",
+	"Brought to you by BalaM314!",
+	"Brought to you by the letter π"
+];
+let raresplashes: string[] = [
+	"This is the rarest splash of all. It's so rare it never displays!",
+	"HAIL SUN CORP",
+	"notched apple",
+	"Diamonds never were actually forever",
+	"\"Now you can eat sunlight!\" - bill wurtz",
+	"WAAAAAAAARRR!!",
+	"undefined!",
+	"null!",
+	"Uncaught TypeError: undefined!",
+	"Uncaught ball!",
+	"Unhandled exception in thread main!",
+	"RARE SPLASH?!?! 🤣😂😉😗🙃😁😛🤔😲🤯🙀‼",
+	"pee pee poo poo",
+	"🔴🟢\\n🔵🟡",
+	"§6§kMM§r§2lBalaM314 is awesome!§r§6§kMM",
+];
 
 let loadedtextures = 0;
 
