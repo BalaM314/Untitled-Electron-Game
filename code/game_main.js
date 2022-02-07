@@ -159,7 +159,7 @@ function registerEventHandlers() {
         }
     };
     window.onkeyup = (e) => {
-        if (keysHeld.contains(e.key.toLowerCase())) {
+        if (keysHeld.includes(e.key.toLowerCase())) {
             keysHeld.splice(keysHeld.indexOf(e.key.toLowerCase()), 1);
         }
     };

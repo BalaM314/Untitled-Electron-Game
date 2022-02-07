@@ -156,7 +156,7 @@ function registerEventHandlers(){
 	}
 	window.onkeyup = (e:KeyboardEvent) => {
 		//Remove key from list of held keys
-		if(keysHeld.contains(e.key.toLowerCase())){
+		if(keysHeld.includes(e.key.toLowerCase())){
 			keysHeld.splice(keysHeld.indexOf(e.key.toLowerCase()), 1);
 		}
 	}

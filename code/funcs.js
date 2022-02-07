@@ -1,10 +1,4 @@
 "use strict";
-Array.prototype.contains = function (val) {
-    return this.indexOf(val) != -1;
-};
-Object.defineProperty(Array.prototype, "contains", {
-    enumerable: false
-});
 var triggerType;
 (function (triggerType) {
     triggerType[triggerType["placeBuilding"] = 0] = "placeBuilding";

@@ -1,14 +1,4 @@
 
-interface Array<T>{
-	contains: (val:T) => boolean
-}
-
-Array.prototype.contains = function(val){
-	return this.indexOf(val) != -1;
-};
-Object.defineProperty(Array.prototype, "contains", {
-	enumerable: false
-});
 
 enum triggerType {
 	placeBuilding,

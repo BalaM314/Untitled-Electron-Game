@@ -949,7 +949,7 @@ class Item {
 		){return;}//if offscreen return immediately
 		currentframe.ips ++;
 		ctx3.drawImage(textures.get("item_" + this.id), this.x * consts.DISPLAY_SCALE + (Game.scroll.x * consts.DISPLAY_SCALE) - 8*consts.DISPLAY_SCALE, this.y * consts.DISPLAY_SCALE + (Game.scroll.y * consts.DISPLAY_SCALE) - 8*consts.DISPLAY_SCALE, 16 * consts.DISPLAY_SCALE, 16 * consts.DISPLAY_SCALE);
-		if(keysHeld.contains("Shift")){
+		if(keysHeld.includes("Shift")){
 			let x = (mouse.x - (Game.scroll.x * consts.DISPLAY_SCALE))/consts.DISPLAY_SCALE;
 			let y = (mouse.y - (Game.scroll.y * consts.DISPLAY_SCALE))/consts.DISPLAY_SCALE;
 			if(
@@ -1087,22 +1087,22 @@ class Building {
 	spawnItem(id:ItemID){
 		id ??= "base_null" as ItemID;
 		if(
-			([0x0001, 0x0701, 0x0B01, 0x0C01, 0x0D01, 0x0F01, 0x1301, 0x1501, 0x1701, 0x1801, 0x1901, 0x1B01].contains(this.level.buildingIDAtTile(this.x + 1, this.y))) &&
+			([0x0001, 0x0701, 0x0B01, 0x0C01, 0x0D01, 0x0F01, 0x1301, 0x1501, 0x1701, 0x1801, 0x1901, 0x1B01].includes(this.level.buildingIDAtTile(this.x + 1, this.y))) &&
 			(this.level.buildingAtTile(this.x + 1, this.y).acceptItem(new Item((this.x + 1.1) * consts.TILE_SIZE, (this.y + 0.5) * consts.TILE_SIZE, id, this.level)))
 		){
 			return true;
 		} else if(
-			([0x0101, 0x0501, 0x0901, 0x0D01, 0x0E01, 0x0F01, 0x1101, 0x1401, 0x1601, 0x1801, 0x1901, 0x1A01].contains(this.level.buildingIDAtTile(this.x, this.y + 1))) &&
+			([0x0101, 0x0501, 0x0901, 0x0D01, 0x0E01, 0x0F01, 0x1101, 0x1401, 0x1601, 0x1801, 0x1901, 0x1A01].includes(this.level.buildingIDAtTile(this.x, this.y + 1))) &&
 			(this.level.buildingAtTile(this.x, this.y + 1).acceptItem(new Item((this.x + 0.5) * consts.TILE_SIZE, (this.y + 1.1) * consts.TILE_SIZE, id, this.level)))
 		){
 			return true;
 		} else if(
-			([0x0201, 0x0601, 0x0A01, 0x0E01, 0x1001, 0x1101, 0x1201, 0x1601, 0x1701, 0x1901, 0x1A01, 0x1B01].contains(this.level.buildingIDAtTile(this.x - 1, this.y))) &&
+			([0x0201, 0x0601, 0x0A01, 0x0E01, 0x1001, 0x1101, 0x1201, 0x1601, 0x1701, 0x1901, 0x1A01, 0x1B01].includes(this.level.buildingIDAtTile(this.x - 1, this.y))) &&
 			(this.level.buildingAtTile(this.x - 1, this.y).acceptItem(new Item((this.x - 0.1) * consts.TILE_SIZE, (this.y + 0.5) * consts.TILE_SIZE, id, this.level)))
 		){
 			return true;
 		} else if(
-			([0x0301, 0x0801, 0x0401, 0x0C01, 0x1001, 0x1201, 0x1301, 0x1401, 0x1501, 0x1801, 0x1A01, 0x1B01].contains(this.level.buildingIDAtTile(this.x, this.y - 1))) &&
+			([0x0301, 0x0801, 0x0401, 0x0C01, 0x1001, 0x1201, 0x1301, 0x1401, 0x1501, 0x1801, 0x1A01, 0x1B01].includes(this.level.buildingIDAtTile(this.x, this.y - 1))) &&
 			(this.level.buildingAtTile(this.x, this.y - 1).acceptItem(new Item((this.x + 0.5) * consts.TILE_SIZE, (this.y - 0.1) * consts.TILE_SIZE, id, this.level)))
 		){
 			return true;
@@ -1174,9 +1174,10 @@ abstract class BuildingWithRecipe extends Building {
 	}
 	acceptItem(item:Item):boolean {
 		for(let i = 0; i < recipes.maxInputs; i ++){
-			if(!this.items[i] && !this.items.map(item => item.id).contains(item.id)){
+			if(!this.items[i] && !this.items.map(item => item.id).includes(item.id)){
 				for(let recipe of (this.constructor as typeof BuildingWithRecipe).recipeType.recipes){
-					if(!this.items.map(item => recipe.inputs.contains(item.id)).contains(false) && recipe.inputs.contains(item.id)){
+					if(!this.items.map(item => recipe.inputs.includes(item.id)).includes(false) && recipe.inputs.includes(item.id)){
+						//unreadable code goes brrr
 						this.items[i] = item;
 						if(recipe.inputs.length == i + 1){
 							this.setRecipe(recipe);
@@ -1549,22 +1550,22 @@ class Conveyor extends Building {
 	}
 	acceptItem(item: Item):boolean {
 		if(item.x - this.x * consts.TILE_SIZE <= consts.TILE_SIZE * 0.1 &&
-			[0x00, 0x07, 0x0B, 0x0C, 0x0D, 0x0F, 0x13, 0x15, 0x17, 0x18, 0x19, 0x1B].contains(this.id >> 8)){
+			[0x00, 0x07, 0x0B, 0x0C, 0x0D, 0x0F, 0x13, 0x15, 0x17, 0x18, 0x19, 0x1B].includes(this.id >> 8)){
 			//item on left
 			return super.acceptItem(item);
 		}
 		if(item.y - this.y * consts.TILE_SIZE <= consts.TILE_SIZE * 0.1 &&
-			[0x01, 0x05, 0x09, 0x0D, 0x0E, 0x0F, 0x11, 0x14, 0x16, 0x18, 0x19, 0x1A].contains(this.id >> 8)){
+			[0x01, 0x05, 0x09, 0x0D, 0x0E, 0x0F, 0x11, 0x14, 0x16, 0x18, 0x19, 0x1A].includes(this.id >> 8)){
 			//item on top
 			return super.acceptItem(item);
 		}
 		if(item.x - this.x * consts.TILE_SIZE >= consts.TILE_SIZE * 0.9 &&
-			[0x02, 0x06, 0x0A, 0x0E, 0x10, 0x11, 0x12, 0x16, 0x17, 0x19, 0x1A, 0x1B].contains(this.id >> 8)){
+			[0x02, 0x06, 0x0A, 0x0E, 0x10, 0x11, 0x12, 0x16, 0x17, 0x19, 0x1A, 0x1B].includes(this.id >> 8)){
 			//item on right
 			return super.acceptItem(item);
 		}
 		if(item.y - this.y * consts.TILE_SIZE >= consts.TILE_SIZE * 0.9 &&
-			[0x03, 0x08, 0x04, 0x0C, 0x10, 0x12, 0x13, 0x14, 0x15, 0x18, 0x1A, 0x1B].contains(this.id >> 8)){
+			[0x03, 0x08, 0x04, 0x0C, 0x10, 0x12, 0x13, 0x14, 0x15, 0x18, 0x1A, 0x1B].includes(this.id >> 8)){
 			//item on bottom
 			return super.acceptItem(item);
 		}
@@ -1609,7 +1610,7 @@ class Extractor extends Conveyor {
 			this.item.y = (this.y + 0.5) * consts.TILE_SIZE;
 			this.item.x = (this.x + 0.5) * consts.TILE_SIZE;
 			item.grabbedBy = this;
-			if(this.level.items.contains(item)){
+			if(this.level.items.includes(item)){
 				this.level.items.splice(this.level.items.indexOf(item), 1);
 			}
 		}
