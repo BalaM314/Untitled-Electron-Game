@@ -208,6 +208,7 @@ let mouse = {
     latestEvent: null
 };
 let keysHeld = [];
+let lastKeysPressed = ["", "", "", "", "", "", "", "", "", ""];
 let settings = {
     graphics_mode: 1,
     debug: true,
@@ -350,6 +351,8 @@ let raresplashes = [
     "pee pee poo poo",
     "🔴🟢\\n🔵🟡",
     "§6§kMM§r§2lBalaM314 is awesome!§r§6§kMM",
+    "Never gonna give you up!",
+    "Never gonna let you down!",
 ];
 let loadedtextures = 0;
 let textures = new Map();
