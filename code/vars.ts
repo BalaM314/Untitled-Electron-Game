@@ -378,6 +378,8 @@ let raresplashes: string[] = [
 	"pee pee poo poo",
 	"🔴🟢\\n🔵🟡",
 	"§6§kMM§r§2lBalaM314 is awesome!§r§6§kMM",
+	"Never gonna give you up!",
+	"Never gonna let you down!",
 ];
 
 let loadedtextures = 0;
