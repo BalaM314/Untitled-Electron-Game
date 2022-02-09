@@ -24,3 +24,5 @@ yes
 ### more settings
 
 including ability to rebind keys
+
+registry system

@@ -381,6 +381,7 @@ let raresplashes: string[] = [
 ];
 
 let loadedtextures = 0;
+let textures = new Map();
 
 function makeError(name):(typeof Error){
 	return class extends Error {

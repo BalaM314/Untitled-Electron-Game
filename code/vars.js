@@ -352,6 +352,7 @@ let raresplashes = [
     "§6§kMM§r§2lBalaM314 is awesome!§r§6§kMM",
 ];
 let loadedtextures = 0;
+let textures = new Map();
 function makeError(name) {
     return class extends Error {
         constructor(message) {

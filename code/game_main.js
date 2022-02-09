@@ -1,6 +1,5 @@
 "use strict";
 console.log("%c Hey there! It looks like you're checking out the console.\nIf you want to view the source code, *please do it at* https://github.com/BalaM314/Untitled-Electron-Game \n Make sure to view the .ts files as the .js files are compiled and thus look weird.", "color: blue; font-size: 30px;");
-let textures = new Map();
 noise.seed(1);
 function registerEventHandlers() {
     window.onmousemove = (e) => {
