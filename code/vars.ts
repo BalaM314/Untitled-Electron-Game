@@ -218,6 +218,7 @@ let mouse = {
 	latestEvent: null
 };
 let keysHeld:string[] = [];
+let lastKeysPressed:string[] = ["", "", "", "", "", "", "", "", "", ""];
 
 let settings = {
 	graphics_mode: 1,
