@@ -161,6 +161,8 @@ function registerEventHandlers(){
 					placedBuilding.type = 0x0011; e.preventDefault(); break;
 				case "0":
 					placedBuilding.type = 0xFF; break;
+				case "Backspace":
+					placedBuilding.type = 0xFF; e.preventDefault(); break;
 			}
 		}
 
@@ -443,26 +445,30 @@ let state: {
 		},
 		onmouseheld: function(){
 			let e = mouse.latestEvent;
-			if(!keysHeld.includes("control")){
+			if(!(keysHeld.includes("control") || keysHeld.includes("backspace")) && placedBuilding.ID != 0xFFFF){
 				level1.buildBuilding(Math.floor((e.x - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE), Math.floor((e.y - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE), placedBuilding.ID);
 			}
 		},
 		onkeyheld: function(currentframe:currentFrame){
-			if(keysHeld.indexOf("w") != -1){
+			if(keysHeld.includes("w")){
 				Game.scroll.y += Game.scroll.speed;
 				currentframe.redraw = true;
 			}
-			if(keysHeld.indexOf("a") != -1){
+			if(keysHeld.includes("a")){
 				Game.scroll.x += Game.scroll.speed;
 				currentframe.redraw = true;
 			}
-			if(keysHeld.indexOf("s") != -1){
+			if(keysHeld.includes("s")){
 				Game.scroll.y -= Game.scroll.speed;
 				currentframe.redraw = true;
 			}
-			if(keysHeld.indexOf("d") != -1){
+			if(keysHeld.includes("d")){
 				Game.scroll.x -= Game.scroll.speed;
 				currentframe.redraw = true;
+			}
+			if(keysHeld.includes("backspace")){
+				currentframe.redraw = true;
+				level1.buildBuilding(Math.floor((mouse.x - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE), Math.floor((mouse.y - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE), 0xFFFF);
 			}
 		}
 	}

@@ -171,11 +171,9 @@ class Level {
 			case 0x01:
 				this.getChunk(tileX, tileY).displayGhostBuilding(tileOffsetInChunk(tileX), tileOffsetInChunk(tileY), this.getTurnedConveyor(tileX, tileY, buildingID >> 8), !Conveyor.canBuildAt(tileX, tileY, this));
 				break;
-			case 0xFF:
-				break;
 			default:
 				this.getChunk(tileX, tileY).displayGhostBuilding(tileOffsetInChunk(tileX), tileOffsetInChunk(tileY), buildingID, !BuildingType[buildingID % 0x100]?.canBuildAt(tileX, tileY, this));
-			break;
+				break;
 		}
 	}
 	getTurnedConveyor(tileX:number, tileY:number, conveyorType:number):BuildingID {
@@ -768,10 +766,18 @@ class Chunk {
 		if(currentframe.debug) ctx.strokeRect(pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
 	}
 	displayGhostBuilding(x:number, y:number, buildingID:BuildingID, isError:boolean){
-		if(buildingID == 0xFFFF){return;}
 		let pixelX = ((this.x * consts.CHUNK_SIZE) + x) * consts.DISPLAY_TILE_SIZE + (Game.scroll.x * consts.DISPLAY_SCALE);
 		let pixelY = ((this.y * consts.CHUNK_SIZE) + y) * consts.DISPLAY_TILE_SIZE + (Game.scroll.y * consts.DISPLAY_SCALE);
 		let _ctx = ctx1;
+		if(placedBuilding.ID == 0xFFFF){
+			if(keysHeld.includes("backspace")){
+				_ctx.globalAlpha = 0.9;
+				_ctx.drawImage(textures.get("invalidunderlay"), pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
+				_ctx.globalAlpha = buildingID % 0x100 == 0x01 ? 0.3 : 0.7;
+			}
+			return;
+		}
+
 		if(isError){
 			_ctx.globalAlpha = 0.9;
 			_ctx.drawImage(textures.get("invalidunderlay"), pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
