@@ -121,7 +121,7 @@ class Button {
         _ctx.globalAlpha = 1.0;
         ctx.font = this.font;
         ctx.textAlign = "center";
-        var tempBaseline = ctx.textBaseline;
+        let tempBaseline = ctx.textBaseline;
         ctx.textBaseline = "middle";
         ctx.fillStyle = "#FFFFFF";
         ctx.fillText(this.label, this.x + this.width / 2, this.y + this.height / 2);
@@ -172,25 +172,25 @@ function trigger(type, buildingID, itemID) {
     switch (type) {
         case triggerType.placeBuilding:
             switch (buildingID) {
-                case 0x04:
+                case "0x04":
                     if (Game.tutorial.furnace.placed && settings.tutorial) {
                         _alert("The Furnace converts raw ores into their smelted forms. Simply point a conveyor belt carrying ores at it and provide another belt for it to output onto.");
                         Game.tutorial.furnace.placed = false;
                     }
                     break;
-                case 0x03:
+                case "0x03":
                     if (Game.tutorial.trashcan.placed && settings.tutorial) {
                         _alert("The Trash Can is pretty simple: it deletes all items it receives.");
                         Game.tutorial.trashcan.placed = false;
                     }
                     break;
-                case 0x02:
+                case "0x02":
                     if (Game.tutorial.miner.placed && settings.tutorial) {
                         _alert("The Miner mines ore nodes, producing one ore per second. \nIt auto-outputs to adjacent conveyor belts.\nAlso, ore nodes are infinite.");
                         Game.tutorial.miner.placed = false;
                     }
                     break;
-                case 0x01:
+                case "0x01":
                     if (Game.tutorial.conveyor.placed && settings.tutorial) {
                         _alert("Conveyors are the way to move items around. \nYou can use the arrow keys to change the direction of placed belts. \nTry making a belt chain, then putting a debug item on it with Ctrl+click.\nYou can drag-click to build multiple of the same building.");
                         Game.tutorial.conveyor.placed = false;
@@ -200,21 +200,21 @@ function trigger(type, buildingID, itemID) {
             break;
         case triggerType.placeBuildingFail:
             switch (buildingID) {
-                case 0x04:
+                case "0x04":
                     if (Game.tutorial.furnace.placefail && settings.tutorial) {
                         _alert("The Furnace generates a lot of heat and is pretty heavy, so you can only place it on stone.");
                         Game.tutorial.furnace.placefail = false;
                     }
                     break;
-                case 0x03:
+                case "0x03":
                     break;
-                case 0x02:
+                case "0x02":
                     if (Game.tutorial.miner.placefail && settings.tutorial) {
                         _alert("The Miner can only be placed on a resource node(the colored circles).");
                         Game.tutorial.miner.placefail = false;
                     }
                     break;
-                case 0x01:
+                case "0x01":
                     if (Game.tutorial.conveyor.placefail && settings.tutorial) {
                         _alert("Conveyors don't float!\nYes, I know, then water chunks are useless... I'll add pontoons in a future update.");
                         Game.tutorial.conveyor.placefail = false;
@@ -240,13 +240,13 @@ function trigger(type, buildingID, itemID) {
             break;
         case triggerType.buildingRun:
             switch (buildingID) {
-                case 0x02:
+                case "0x02":
                     if (Game.tutorial.miner.coaloutput && settings.tutorial && itemID == ItemID.base_coalOre) {
                         _alert("Nice!\nThis is just coal ore though, not coal. Try placing a furnace(4 key).\nOh also, remember you can scroll to zoom in on that beautiful coal ore texture.");
                         Game.tutorial.miner.coaloutput = false;
                     }
                     break;
-                case 0x07:
+                case "0x07":
                     break;
             }
             break;
@@ -259,12 +259,88 @@ let alerts = {
 function _alert(x) {
     alerts.list.push(x);
 }
-function loadTextures() {
-    for (let element of document.getElementById("textures").children) {
-        textures.set(element.id, element);
+function loadTexturesIntoMemory() {
+    for (let imageElement of document.getElementById("item").children) {
+        if (!imageElement.complete) {
+            return false;
+        }
+        registry.textures.item[imageElement.src.match(/(?<=assets\/textures\/item\/).*(?=\.png)/)[0]] = imageElement;
+    }
+    for (let imageElement of document.getElementById("building").children) {
+        if (!imageElement.complete) {
+            return false;
+        }
+        registry.textures.building[imageElement.src.match(/(?<=assets\/textures\/building\/).*(?=\.png)/)[0]] = imageElement;
+    }
+    for (let imageElement of document.getElementById("tile").children) {
+        if (!imageElement.complete) {
+            return false;
+        }
+        registry.textures.tile[imageElement.src.match(/(?<=assets\/textures\/tile\/).*(?=\.png)/)[0]] = imageElement;
+    }
+    for (let imageElement of document.getElementById("misc").children) {
+        if (!imageElement.complete) {
+            return false;
+        }
+        registry.textures.misc[imageElement.src.match(/(?<=assets\/textures\/misc\/).*(?=\.png)/)[0]] = imageElement;
     }
 }
-;
+function loadedTexturesIntoPage() {
+    for (let buildingID of registry.buildingIDs) {
+        let img = document.createElement("img");
+        img.setAttribute("src", `assets/textures/building/${buildingID}.png`);
+        img.addEventListener("load", () => {
+            Game.loadedTextures++;
+        });
+        img.addEventListener("error", (err) => {
+            alert("Failed to load texture " + err.target.src.split("assets/textures/")[1]);
+            throw err;
+        });
+        document.getElementById("building").appendChild(img);
+    }
+    for (let itemID of Object.values(registry.itemIDs)) {
+        let img = document.createElement("img");
+        img.setAttribute("src", `assets/textures/item/${itemID}.png`);
+        img.addEventListener("load", () => {
+            Game.loadedTextures++;
+        });
+        img.addEventListener("error", (err) => {
+            alert("Failed to load texture " + err.target.src.split("assets/textures/")[1]);
+            throw err;
+        });
+        document.getElementById("item").appendChild(img);
+    }
+    for (let tileID of registry.tileIDs) {
+        let img = document.createElement("img");
+        img.setAttribute("src", `assets/textures/tile/${tileID}.png`);
+        img.addEventListener("load", () => {
+            Game.loadedTextures++;
+        });
+        img.addEventListener("error", (err) => {
+            alert("Failed to load texture " + err.target.src.split("assets/textures/")[1]);
+            throw err;
+        });
+        document.getElementById("tile").appendChild(img);
+    }
+    for (let textureID of registry.miscTextures) {
+        let img = document.createElement("img");
+        img.setAttribute("src", `assets/textures/misc/${textureID}.png`);
+        img.addEventListener("load", () => {
+            Game.loadedTextures++;
+        });
+        img.addEventListener("error", (err) => {
+            alert("Failed to load texture " + err.target.src.split("assets/textures/")[1]);
+            throw err;
+        });
+        document.getElementById("misc").appendChild(img);
+    }
+}
+function getTotalTextures() {
+    return registry.buildingIDs.length + Object.values(registry.itemIDs).length + registry.tileIDs.length + registry.miscTextures.length;
+}
+function hex(num, length) {
+    return `0x${(Array(length).fill("0").join("") + num.toString(16)).toUpperCase().slice(-length)}`;
+}
 function zoom(scaleFactor) {
     scaleFactor = constrain(scaleFactor, 0.9, 1.1);
     if (consts.DISPLAY_SCALE * scaleFactor < 1) {

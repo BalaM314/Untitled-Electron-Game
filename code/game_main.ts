@@ -1,8 +1,4 @@
 
-console.log("%c Hey there! It looks like you're checking out the console.\nIf you want to view the source code, *please do it at* https://github.com/BalaM314/Untitled-Electron-Game \n Make sure to view the .ts files as the .js files are compiled and thus look weird.", "color: blue; font-size: 30px;")
-
-noise.seed(1);
-
 function registerEventHandlers(){
 
 	//Update mouse position
@@ -138,31 +134,31 @@ function registerEventHandlers(){
 				case "/":
 					placedBuilding.modifier = 0x800; e.preventDefault(); break;
 				case "1":
-					placedBuilding.type = 0x0001; break;
+					placedBuilding.type = "0x01"; break;
 				case "2":
-					placedBuilding.type = 0x0002; break;
+					placedBuilding.type = "0x02"; break;
 				case "3":
-					placedBuilding.type = 0x0003; break;
+					placedBuilding.type = "0x03"; break;
 				case "4":
-					placedBuilding.type = 0x0004; break;
+					placedBuilding.type = "0x04"; break;
 				case "5":
-					placedBuilding.type = 0x0005; break;
+					placedBuilding.type = "0x05"; break;
 				case "6":
-					placedBuilding.type = 0x0006; break;
+					placedBuilding.type = "0x06"; break;
 				case "7":
-					placedBuilding.type = 0x0007; break;
+					placedBuilding.type = "0x07"; break;
 				case "8":
-					placedBuilding.type = 0x0009; break;
+					placedBuilding.type = "0x09"; break;
 				case "9":
-					placedBuilding.type = 0x000A; break;
+					placedBuilding.type = "0x0A"; break;
 				case "F1":
-					placedBuilding.type = 0x000B; e.preventDefault(); break;
+					placedBuilding.type = "0x0B"; e.preventDefault(); break;
 				case "F2":
-					placedBuilding.type = 0x0011; e.preventDefault(); break;
+					placedBuilding.type = "0x11"; e.preventDefault(); break;
 				case "0":
-					placedBuilding.type = 0xFF; break;
+					placedBuilding.type = "0xFF"; break;
 				case "Backspace":
-					placedBuilding.type = 0xFF; e.preventDefault(); break;
+					placedBuilding.type = "0xFF"; e.preventDefault(); break;
 			}
 		}
 
@@ -199,7 +195,10 @@ function registerEventHandlers(){
 	}
 
 	window.onbeforeunload = (e:BeforeUnloadEvent) => {
-		if(Game.state !== "title" || (!localStorage.getItem("save1") || JSON.parse(localStorage.getItem("save1"))?.metadata?.uuid == level1?.uuid)){
+		if(Game.state == "title" || Game.state == "loading"){
+			return;
+		}
+		if(!localStorage.getItem("save1") || JSON.parse(localStorage.getItem("save1"))?.metadata?.uuid == level1?.uuid){
 			localStorage.setItem("save1", JSON.stringify(exportData()));
 		} else {
 			e.preventDefault();
@@ -236,13 +235,13 @@ let state: {
 	loading: {
 		buttons: [],
 		update: function(){
-			if(loadedtextures == document.getElementById("textures").children.length){
+			if(Game.loadedTextures == getTotalTextures()){
 				Game.state = "title";
-			} else if(loadedtextures > document.getElementById("textures").children.length){
+			} else if(Game.loadedTextures > getTotalTextures()){
 				throw new ShouldNotBePossibleError("Somehow loaded more textures than exist.");
 			}
 		},
-		display: function(currentFrame:currentFrame){
+		display: function(currentFrame:CurrentFrame){
 			ctx.clearRect(-1, -1, 10000, 10000);
 			ctx.fillStyle = "#0033CC";
 			ctx.fillRect(0, 0, innerWidth, innerHeight);
@@ -253,7 +252,7 @@ let state: {
 			ctx.fillText("Untitled Electron Game", innerWidth / 2, innerHeight * 0.2);
 			ctx.fillStyle = "#000000";
 			ctx.font = `40px sans-serif`;
-			ctx.fillText(`Loading... ${loadedtextures}/${document.getElementById("textures").childElementCount}`, innerWidth / 2, innerHeight * 0.35);
+			ctx.fillText(`Loading... ${Game.loadedTextures}/${getTotalTextures()}`, innerWidth / 2, innerHeight * 0.35);
 		}
 	},
 	title: {
@@ -280,7 +279,7 @@ let state: {
 			}),
 		],
 		update: function(){},
-		display: function(currentFrame:currentFrame){
+		display: function(currentFrame:CurrentFrame){
 			ctx.clearRect(-1, -1, 10000, 10000);
 			ctx.fillStyle = "#0033CC";
 			ctx.fillRect(0, 0, innerWidth, innerHeight);
@@ -352,7 +351,7 @@ let state: {
 			}),
 		],
 		update: function(){},
-		display: function(currentFrame:currentFrame){
+		display: function(currentFrame:CurrentFrame){
 			ctx.clearRect(-1, -1, 10000, 10000);
 			ctx.fillStyle = "#0033CC";
 			ctx.fillRect(0, 0, innerWidth, innerHeight);
@@ -382,7 +381,7 @@ let state: {
 	},
 	game: {
 		buttons: [],
-		update: function(currentFrame:currentFrame, level:Level){
+		update: function(currentFrame:CurrentFrame, level:Level){
 			level ??= level1;
 			level.generateNecessaryChunks();
 			try {
@@ -392,7 +391,7 @@ let state: {
 				throw new Error(`Error updating world: ${err.message}`);
 			}			
 		},
-		display: function(currentFrame:currentFrame, level:Level){
+		display: function(currentFrame:CurrentFrame, level:Level){
 			level ??= level1;
 			//display
 			if(currentFrame.redraw){
@@ -445,11 +444,11 @@ let state: {
 		},
 		onmouseheld: function(){
 			let e = mouse.latestEvent;
-			if(!(keysHeld.includes("control") || keysHeld.includes("backspace")) && placedBuilding.ID != 0xFFFF){
+			if(!(keysHeld.includes("control") || keysHeld.includes("backspace")) && placedBuilding.ID != "0xFFFF"){
 				level1.buildBuilding(Math.floor((e.x - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE), Math.floor((e.y - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE), placedBuilding.ID);
 			}
 		},
-		onkeyheld: function(currentframe:currentFrame){
+		onkeyheld: function(currentframe:CurrentFrame){
 			if(keysHeld.includes("w")){
 				Game.scroll.y += Game.scroll.speed;
 				currentframe.redraw = true;
@@ -468,7 +467,7 @@ let state: {
 			}
 			if(keysHeld.includes("backspace")){
 				currentframe.redraw = true;
-				level1.buildBuilding(Math.floor((mouse.x - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE), Math.floor((mouse.y - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE), 0xFFFF);
+				level1.buildBuilding(Math.floor((mouse.x - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE), Math.floor((mouse.y - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE), "0xFFFF");
 			}
 		}
 	}
@@ -506,7 +505,7 @@ let cancel = null;
 function main_loop(){
 	try {
 		let startFrameTime = new Date();
-		let currentFrame:currentFrame = {
+		let currentFrame:CurrentFrame = {
 			tooltip: true,
 			debug: settings.debug,
 			cps: 0,
@@ -561,12 +560,12 @@ function main_loop(){
 
 
 function load(){
-	loadTextures();
+	loadTexturesIntoMemory();
 	level1 = new Level(314);
 
 	
-	if(localStorage.firstload){
-		localStorage.firstload = false;
+	if(!localStorage.firstload){
+		localStorage.firstload = true;
 		_alert(`Welcome to Untitled Electron Game!
 This is a game about building a factory. It's still in early alpha, so there's not much content.
 There's no good in game tutorial, so to get started check the wiki page: https://github.com/BalaM314/Untitled-Electron-Game/wiki/Quickstart-Guide`);
@@ -618,7 +617,7 @@ let level1:Level;
 
 
 
-function exportData(){
+function exportData():SaveData {
 	return {
 		UntitledElectronGame: {
 			metadata: {
@@ -635,7 +634,7 @@ function exportData(){
 function importData(rawData:string){
 	let tempLevel:Level;
 	try {
-		let data = JSON.parse(rawData);
+		let data:SaveData = JSON.parse(rawData);
 		assert(data.UntitledElectronGame.metadata.validationCode === "esrdtfgvczdsret56u7yhgvfcesrythgvfd!");
 		
 		let levelData = data.UntitledElectronGame.level1;
@@ -661,18 +660,18 @@ let placedBuilding: {
 	ID: BuildingID;
 	modifier: 0x000 | 0x400 | 0x800
 } = {
-	type: 0x0001,
+	type: "0x01",
 	direction: 0x100,
 	modifier: 0x000,
 	get ID(){
 		if(this.type == 0x05){
-			return this.type + this.direction + this.modifier;
+			return hex(+this.type + this.direction + this.modifier, 4) as BuildingID;
 		} else if(this.type == 0x01){
-			return this.type + this.direction;
+			return hex(+this.type + this.direction, 4) as BuildingID;
 		} else if(this.type == 0xFF){
-			return 0xFFFF;
+			return hex(0xFFFF, 4) as BuildingID;
 		} else {
-			return this.type;
+			return hex(+this.type, 4) as BuildingID;
 		}
 	}
 };
@@ -688,6 +687,11 @@ try {
 	console.warn("Invalid persistent settings!\nIf this is your first time visiting this site, nothing to worry about.");
 	localStorage.setItem("settings", JSON.stringify(settings));
 }
+
+console.log("%c Hey there! It looks like you're checking out the console.\nIf you want to view the source code, *please do it at* https://github.com/BalaM314/Untitled-Electron-Game \n Make sure to view the .ts files as the .js files are compiled and thus look weird.", "color: blue; font-size: 30px;")
+
+noise.seed(1);
+loadedTexturesIntoPage();
 
 
 registerEventHandlers();

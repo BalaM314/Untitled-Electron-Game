@@ -1,27 +1,27 @@
 "use strict";
 const names = {
     tile: {
-        0x00: "Grass",
-        0x01: "Stone",
-        0x02: "Water",
-        0x10: "Coal Ore Node",
-        0x11: "Iron Ore Node",
-        0x12: "Copper Ore Node"
+        "0x00": "Grass",
+        "0x01": "Stone",
+        "0x02": "Water",
+        "0x10": "Coal Ore Node",
+        "0x11": "Iron Ore Node",
+        "0x12": "Copper Ore Node"
     },
     building: {
-        0x01: "Conveyor Belt",
-        0x02: "Miner",
-        0x03: "Trash Can",
-        0x04: "Furnace",
-        0x05: "Extractor",
-        0x06: "Storage",
-        0x07: "Alloy Smelter",
-        0x08: "Resource Acceptor",
-        0x09: "Wiremill",
-        0x0A: "Compressor",
-        0x0B: "Lathe",
-        0x10: "Multiblock Secondary",
-        0x11: "Assembler"
+        "0x01": "Conveyor Belt",
+        "0x02": "Miner",
+        "0x03": "Trash Can",
+        "0x04": "Furnace",
+        "0x05": "Extractor",
+        "0x06": "Storage",
+        "0x07": "Alloy Smelter",
+        "0x08": "Resource Acceptor",
+        "0x09": "Wiremill",
+        "0x0A": "Compressor",
+        "0x0B": "Lathe",
+        "0x10": "Multiblock Secondary",
+        "0x11": "Assembler"
     },
     item: {
         "base_null": "Debug Item",
@@ -75,7 +75,7 @@ const generation_consts = {
     }
 };
 const consts = {
-    VERSION: "alpha 1.3.0",
+    VERSION: "alpha 2.0.0",
     CHUNK_SIZE: 16,
     TILE_SIZE: 30,
     DISPLAY_SCALE: 1,
@@ -88,117 +88,130 @@ const consts = {
         }
     }
 };
-const recipes = {
-    maxInputs: 3,
-    "base_mining": {
-        "type": "t-1",
-        "recipes": [
-            {
-                "outputs": [ItemID.base_coalOre],
-                "duration": 60,
-                "tile": 0x10
-            },
-            {
-                "outputs": [ItemID.base_ironOre],
-                "duration": 60,
-                "tile": 0x11
-            },
-            {
-                "outputs": [ItemID.base_copperOre],
-                "duration": 60,
-                "tile": 0x12
-            },
-        ]
+const registry = {
+    recipes: {
+        maxInputs: 3,
+        "base_mining": {
+            "type": "t-1",
+            "recipes": [
+                {
+                    "outputs": [ItemID.base_coalOre],
+                    "duration": 60,
+                    "tile": "0x10"
+                },
+                {
+                    "outputs": [ItemID.base_ironOre],
+                    "duration": 60,
+                    "tile": "0x11"
+                },
+                {
+                    "outputs": [ItemID.base_copperOre],
+                    "duration": 60,
+                    "tile": "0x12"
+                },
+            ]
+        },
+        "base_smelting": {
+            "type": "1-1",
+            "recipes": [
+                {
+                    "inputs": [ItemID.base_coalOre],
+                    "outputs": [ItemID.base_coal],
+                    "duration": 60
+                },
+                {
+                    "inputs": [ItemID.base_ironOre],
+                    "outputs": [ItemID.base_ironIngot],
+                    "duration": 60
+                },
+                {
+                    "inputs": [ItemID.base_copperOre],
+                    "outputs": [ItemID.base_copperIngot],
+                    "duration": 60
+                }
+            ]
+        },
+        "base_alloying": {
+            "type": "2-1",
+            "recipes": [
+                {
+                    "inputs": [ItemID.base_coal, ItemID.base_ironIngot],
+                    "outputs": [ItemID.base_steelIngot],
+                    duration: 240
+                }
+            ]
+        },
+        "base_wiremilling": {
+            "type": "1-1",
+            "recipes": [
+                {
+                    "inputs": [ItemID.base_copperIngot],
+                    "outputs": [ItemID.base_copperWire],
+                    "duration": 120
+                }
+            ]
+        },
+        "base_compressing": {
+            "type": "1-1",
+            "recipes": [
+                {
+                    "inputs": [ItemID.base_ironIngot],
+                    "outputs": [ItemID.base_ironPlate],
+                    "duration": 60
+                },
+                {
+                    "inputs": [ItemID.base_steelIngot],
+                    "outputs": [ItemID.base_steelPlate],
+                    "duration": 60
+                }
+            ]
+        },
+        "base_lathing": {
+            "type": "1-1",
+            "recipes": [
+                {
+                    "inputs": [ItemID.base_ironIngot],
+                    "outputs": [ItemID.base_ironRod],
+                    "duration": 60
+                },
+                {
+                    "inputs": [ItemID.base_steelIngot],
+                    "outputs": [ItemID.base_steelRod],
+                    "duration": 60
+                }
+            ]
+        },
+        "base_assembling": {
+            "type": "2-1",
+            recipes: [
+                {
+                    "inputs": [ItemID.base_steelRod, ItemID.base_copperWire],
+                    "outputs": [ItemID.base_rotor],
+                    duration: 120
+                },
+                {
+                    "inputs": [ItemID.base_ironPlate, ItemID.base_copperWire],
+                    "outputs": [ItemID.base_stator],
+                    duration: 120
+                },
+                {
+                    "inputs": [ItemID.base_stator, ItemID.base_rotor],
+                    "outputs": [ItemID.base_motor],
+                    duration: 30
+                }
+            ]
+        }
     },
-    "base_smelting": {
-        "type": "1-1",
-        "recipes": [
-            {
-                "inputs": [ItemID.base_coalOre],
-                "outputs": [ItemID.base_coal],
-                "duration": 60
-            },
-            {
-                "inputs": [ItemID.base_ironOre],
-                "outputs": [ItemID.base_ironIngot],
-                "duration": 60
-            },
-            {
-                "inputs": [ItemID.base_copperOre],
-                "outputs": [ItemID.base_copperIngot],
-                "duration": 60
-            }
-        ]
-    },
-    "base_alloying": {
-        "type": "2-1",
-        "recipes": [
-            {
-                "inputs": [ItemID.base_coal, ItemID.base_ironIngot],
-                "outputs": [ItemID.base_steelIngot],
-                duration: 240
-            }
-        ]
-    },
-    "base_wiremilling": {
-        "type": "1-1",
-        "recipes": [
-            {
-                "inputs": [ItemID.base_copperIngot],
-                "outputs": [ItemID.base_copperWire],
-                "duration": 120
-            }
-        ]
-    },
-    "base_compressing": {
-        "type": "1-1",
-        "recipes": [
-            {
-                "inputs": [ItemID.base_ironIngot],
-                "outputs": [ItemID.base_ironPlate],
-                "duration": 60
-            },
-            {
-                "inputs": [ItemID.base_steelIngot],
-                "outputs": [ItemID.base_steelPlate],
-                "duration": 60
-            }
-        ]
-    },
-    "base_lathing": {
-        "type": "1-1",
-        "recipes": [
-            {
-                "inputs": [ItemID.base_ironIngot],
-                "outputs": [ItemID.base_ironRod],
-                "duration": 60
-            },
-            {
-                "inputs": [ItemID.base_steelIngot],
-                "outputs": [ItemID.base_steelRod],
-                "duration": 60
-            }
-        ]
-    },
-    "base_assembling": {
-        "type": "2-1",
-        recipes: [
-            {
-                "inputs": [ItemID.base_steelRod, ItemID.base_copperWire],
-                "outputs": [ItemID.base_rotor],
-                duration: 120
-            },
-            {
-                "inputs": [ItemID.base_ironPlate, ItemID.base_copperWire],
-                "outputs": [ItemID.base_stator],
-                duration: 120
-            },
-            {
-                "inputs": [ItemID.base_stator, ItemID.base_rotor],
-                "outputs": [ItemID.base_motor],
-                duration: 30
-            }
-        ]
+    buildings: {},
+    buildingIDs: ["0x0001", "0x0101", "0x0201", "0x0301", "0x0401", "0x0501", "0x0601", "0x0701", "0x0801", "0x0901", "0x0A01", "0x0B01", "0x0C01", "0x0D01", "0x0E01", "0x0F01", "0x1001", "0x1101", "0x1201", "0x1301", "0x1401", "0x1501", "0x1601", "0x1701", "0x1801", "0x1901", "0x1A01", "0x1B01", "0x0002", "0x0003", "0x0004", "0x0005", "0x0105", "0x0205", "0x0305", "0x0405", "0x0505", "0x0605", "0x0705", "0x0805", "0x0905", "0x0A05", "0x0B05", "0x0006", "0x0007", "0x0008", "0x0009", "0x000A", "0x000B", "0x0010", "0x0011", "0xFFFF"],
+    itemIDs: ItemID,
+    tileIDs: ["0x00", "0x01", "0x02", "0x10", "0x11", "0x12", "0xFF"],
+    miscTextures: ["invalidunderlay", "ghostunderlay"],
+    textures: {
+        item: {},
+        building: {},
+        tile: {},
+        misc: {}
     }
 };
 let mouse = {
@@ -254,7 +267,8 @@ let Game = {
     title: {
         splashtext: "",
         splashbehavior: "sin"
-    }
+    },
+    loadedTextures: 0,
 };
 let splashes = [
     "§kGet out of my files! It tickles!",
@@ -354,8 +368,6 @@ let raresplashes = [
     "Never gonna give you up!",
     "Never gonna let you down!",
 ];
-let loadedtextures = 0;
-let textures = new Map();
 function makeError(name) {
     return class extends Error {
         constructor(message) {
