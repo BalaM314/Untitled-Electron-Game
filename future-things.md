@@ -28,3 +28,5 @@ including ability to rebind keys
 registry system
 
 fix the save format
+
+texture loading is sus

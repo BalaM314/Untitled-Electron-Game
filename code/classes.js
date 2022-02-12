@@ -297,12 +297,6 @@ class Level {
     buildBuilding(tileX, tileY, building) {
         if (this.buildingIDAtTile(tileX, tileY) == "0x0008")
             return false;
-        if ((+building % 0x100 != 5 ? this.buildingIDAtTile(tileX, tileY) : this.extractorAtTile(tileX, tileY)?.id) === building) {
-            if (!canOverwriteBuilding) {
-                return false;
-            }
-        }
-        canOverwriteBuilding = false;
         if (+building % 0x100 != 5) {
             this.buildingAtTile(tileX, tileY)?.break();
         }

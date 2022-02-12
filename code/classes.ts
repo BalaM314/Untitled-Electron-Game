@@ -308,13 +308,6 @@ class Level {
 	}
 	buildBuilding(tileX:number, tileY:number, building:BuildingID):boolean {
 		if(this.buildingIDAtTile(tileX, tileY) == "0x0008") return false;
-		if((+building % 0x100 != 5 ? this.buildingIDAtTile(tileX, tileY) : this.extractorAtTile(tileX, tileY)?.id) === building){
-			if(!canOverwriteBuilding){
-				return false;
-			}
-		}//Only overwrite the same building once per build attempt.
-		//Otherwise, you could constantly overwrite a building on every frame you tried to build, which is not good.
-		canOverwriteBuilding = false;
 		if(+building % 0x100 != 5){
 			this.buildingAtTile(tileX, tileY)?.break();
 		}

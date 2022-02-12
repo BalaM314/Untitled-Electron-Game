@@ -11,7 +11,6 @@ function registerEventHandlers() {
             return e.preventDefault();
         mouse.held = true;
         mouse.latestEvent = e;
-        canOverwriteBuilding = true;
         if (state[Game.state]) {
             state[Game.state]?.onclick?.(e);
         }
@@ -19,7 +18,6 @@ function registerEventHandlers() {
     clickcapture.onmouseup = (e) => {
         mouse.held = false;
         mouse.latestEvent = e;
-        canOverwriteBuilding = true;
     };
     clickcapture.addEventListener("touchstart", (e) => {
         e.x = e.touches[0].clientX;
@@ -29,7 +27,6 @@ function registerEventHandlers() {
     clickcapture.addEventListener("touchend", (e) => {
         setTimeout(() => {
             mouse.held = false;
-            canOverwriteBuilding = true;
         }, 500);
     });
     clickcapture.addEventListener("touchmove", (e) => {
@@ -605,7 +602,6 @@ let placedBuilding = {
         }
     }
 };
-let canOverwriteBuilding = true;
 try {
     assert(localStorage.getItem("settings"));
     settings = JSON.parse(localStorage.getItem("settings"));
