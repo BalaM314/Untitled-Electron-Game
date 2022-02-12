@@ -1,11 +1,4 @@
 "use strict";
-var triggerType;
-(function (triggerType) {
-    triggerType[triggerType["placeBuilding"] = 0] = "placeBuilding";
-    triggerType[triggerType["placeBuildingFail"] = 1] = "placeBuildingFail";
-    triggerType[triggerType["spawnItem"] = 2] = "spawnItem";
-    triggerType[triggerType["buildingRun"] = 3] = "buildingRun";
-})(triggerType || (triggerType = {}));
 function sq(x) {
     return x * x;
 }
@@ -252,10 +245,6 @@ function trigger(type, buildingID, itemID) {
             break;
     }
 }
-let alerts = {
-    list: [],
-    active: false
-};
 function _alert(x) {
     alerts.list.push(x);
 }

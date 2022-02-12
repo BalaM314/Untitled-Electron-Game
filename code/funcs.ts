@@ -1,11 +1,5 @@
 
 
-enum triggerType {
-	placeBuilding,
-	placeBuildingFail,
-	spawnItem,
-	buildingRun
-}
 
 
 
@@ -299,10 +293,6 @@ function* pseudoRandom(seed){
 
 }
 
-let alerts = {
-	list: [],
-	active: false
-};
 function _alert(x:string){
 	alerts.list.push(x);
 }

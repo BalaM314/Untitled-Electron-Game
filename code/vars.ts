@@ -61,6 +61,18 @@ enum ItemID {
 	base_motor = "base_motor"
 }
 
+enum triggerType {
+	placeBuilding,
+	placeBuildingFail,
+	spawnItem,
+	buildingRun
+}
+
+let alerts = {
+	list: [],
+	active: false
+};
+
 const generation_consts = {
 	//All distance values are in chunks.
 	perlin_scale: 2 * Math.PI,//An irrational number used to scale the perlin noise. The larger the number, the larger the terrain formations.

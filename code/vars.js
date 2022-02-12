@@ -61,6 +61,17 @@ var ItemID;
     ItemID["base_rotor"] = "base_rotor";
     ItemID["base_motor"] = "base_motor";
 })(ItemID || (ItemID = {}));
+var triggerType;
+(function (triggerType) {
+    triggerType[triggerType["placeBuilding"] = 0] = "placeBuilding";
+    triggerType[triggerType["placeBuildingFail"] = 1] = "placeBuildingFail";
+    triggerType[triggerType["spawnItem"] = 2] = "spawnItem";
+    triggerType[triggerType["buildingRun"] = 3] = "buildingRun";
+})(triggerType || (triggerType = {}));
+let alerts = {
+    list: [],
+    active: false
+};
 const generation_consts = {
     perlin_scale: 2 * Math.PI,
     y_offset: 2031,

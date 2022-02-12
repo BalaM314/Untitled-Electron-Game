@@ -50,7 +50,8 @@ function registerEventHandlers() {
             }
             document.getElementById("toolbar").children?.[parseInt(e.key[1]) + 8]?.classList.add("selected");
         }
-        if (e.key == "Enter" && lastKeysPressed.join(", ") == ["ArrowUp", "ArrowUp", "ArrowDown", "ArrowDown", "ArrowLeft", "ArrowRight", "ArrowLeft", "ArrowRight", "b", "a"].join(", ")) {
+        if (e.key == "Enter" && lastKeysPressed.join(", ") ==
+            ["ArrowUp", "ArrowUp", "ArrowDown", "ArrowDown", "ArrowLeft", "ArrowRight", "ArrowLeft", "ArrowRight", "b", "a"].join(", ")) {
             window.open("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
             for (var [key, value] of Object.entries(level1.resources)) {
                 level1.resources[key] = Infinity;
