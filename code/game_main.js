@@ -616,7 +616,7 @@ catch (err) {
 }
 console.log("%c Hey there! It looks like you're checking out the console.\nIf you want to view the source code, *please do it at* https://github.com/BalaM314/Untitled-Electron-Game \n Make sure to view the .ts files as the .js files are compiled and thus look weird.", "color: blue; font-size: 30px;");
 noise.seed(1);
-loadedTexturesIntoPage();
+loadTexturesIntoPage();
 registerEventHandlers();
 if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
     alert("It looks like you're trying to play on a phone. Unfortunately, mobile devices are not currently supported.");

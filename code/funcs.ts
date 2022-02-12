@@ -332,7 +332,7 @@ function loadTexturesIntoMemory():boolean {
 		registry.textures.misc[imageElement.src.match(/(?<=assets\/textures\/misc\/).*(?=\.png)/)[0]] = imageElement;
 	}
 }
-function loadedTexturesIntoPage(){
+function loadTexturesIntoPage(){
 	for(let buildingID of registry.buildingIDs){
 		let img = document.createElement("img");
 		img.setAttribute("src", `assets/textures/building/${buildingID}.png`);
