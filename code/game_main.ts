@@ -426,19 +426,15 @@ let state: {
 		},
 		onclick: function(e:MouseEvent){
 			if(e.ctrlKey){
-				if(e.shiftKey){
-					level1.addItem(
-						(e.x  / consts.DISPLAY_SCALE - Game.scroll.x),
-						(e.y  / consts.DISPLAY_SCALE - Game.scroll.y),
-						ItemID.base_null
-					);
-				} else {
-					level1.addItem(
-						(Math.floor((e.x  / consts.DISPLAY_SCALE - Game.scroll.x) / consts.TILE_SIZE) + 0.5) * consts.TILE_SIZE,
-						(Math.floor((e.y  / consts.DISPLAY_SCALE - Game.scroll.y) / consts.TILE_SIZE) + 0.5) * consts.TILE_SIZE,
-						ItemID.base_null
-					);
-				}
+				level1.buildingAtPixel(
+					(e.x  / consts.DISPLAY_SCALE - Game.scroll.x),
+					(e.y  / consts.DISPLAY_SCALE - Game.scroll.y)
+				).acceptItem(new Item(
+					(Math.floor((e.x  / consts.DISPLAY_SCALE - Game.scroll.x) / consts.TILE_SIZE) + 0.5) * consts.TILE_SIZE,
+					(Math.floor((e.y  / consts.DISPLAY_SCALE - Game.scroll.y) / consts.TILE_SIZE) + 0.5) * consts.TILE_SIZE,
+					ItemID.base_null,
+					level1
+				))
 			}
 		},
 		onmouseheld: function(){

@@ -3,7 +3,7 @@ class Level {
     constructor(data) {
         this.storage = new Map();
         this.format = consts.VERSION;
-        this.items = [];
+        this.displayItems = [];
         this.resources = {};
         if (typeof data != "object") {
             this.seed = data ?? 0;
@@ -30,16 +30,6 @@ class Level {
             }
             catch (err) {
                 throw new Error(`Error loading chunk ${position}: ${err.message}`);
-            }
-            if (version !== "alpha 0.0.0") {
-                for (let item of items) {
-                    let tempItem = new Item(item.x, item.y, item.id, this);
-                    if (item.grabbedBy) {
-                        tempItem.grabbedBy = this.buildingAtTile(item.grabbedBy.x, item.grabbedBy.y);
-                        assert(tempItem.grabbedBy);
-                    }
-                    this.items.push(tempItem);
-                }
             }
         }
     }
@@ -110,15 +100,7 @@ class Level {
     extractorAtTile(tileX, tileY) {
         return this.getChunk(Math.floor(tileX), Math.floor(tileY)).extractorAt(tileOffsetInChunk(tileX), tileOffsetInChunk(tileY));
     }
-    addItem(x, y, id) {
-        let tempitem = new Item(x, y, id, this);
-        this.items.push(tempitem);
-        return tempitem;
-    }
     update(currentframe) {
-        for (let item of this.items) {
-            item.update(currentframe);
-        }
         for (let chunk of this.storage.values()) {
             chunk.update();
         }
@@ -349,7 +331,7 @@ class Level {
         }
     }
     display(currentframe) {
-        for (let item of this.items) {
+        for (let item of this.displayItems) {
             item.display(currentframe);
         }
         for (let chunk of this.storage.values()) {
@@ -363,7 +345,7 @@ class Level {
         let x = (mousex - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_SCALE;
         let y = (mousey - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_SCALE;
         ctx4.font = "16px monospace";
-        for (let item of this.items) {
+        for (let item of this.displayItems) {
             if ((Math.abs(item.x - x) < 8) && Math.abs(item.y - y) < 8) {
                 ctx4.fillStyle = "#0033CC";
                 ctx4.fillRect(mousex, mousey, (names.item[item.id] ?? item.id).length * 10, 16);
@@ -413,13 +395,9 @@ class Level {
                 chunkOutput[position] = output;
             }
         }
-        let items = [];
-        for (let item of this.items) {
-            items.push(item.export());
-        }
         return {
             chunks: chunkOutput,
-            items: items,
+            items: [],
             resources: this.resources,
             seed: this.seed,
             version: consts.VERSION
@@ -1073,24 +1051,6 @@ class Building {
             return false;
         }
     }
-    grabItem(filter, callback, remove, grabDistance) {
-        grabDistance ?? (grabDistance = 0.5);
-        filter ?? (filter = () => { return true; });
-        for (let item in this.level.items) {
-            if ((Math.abs(this.level.items[item].x - ((this.x + grabDistance) * consts.TILE_SIZE)) <= consts.TILE_SIZE * grabDistance) &&
-                (Math.abs(this.level.items[item].y - ((this.y + grabDistance) * consts.TILE_SIZE)) <= consts.TILE_SIZE * grabDistance) &&
-                filter(this.level.items[item])) {
-                this.level.items[item].grabbedBy = this;
-                callback(this.level.items[item]);
-                let returnItem = this.level.items[item];
-                if (remove) {
-                    this.level.items.splice(parseInt(item), 1);
-                }
-                return returnItem;
-            }
-        }
-        return null;
-    }
     acceptItem(item) {
         if (this.item === null) {
             this.item = item;
@@ -1160,12 +1120,6 @@ class BuildingWithRecipe extends Building {
         this.timer = recipe.duration;
     }
     update() {
-        if (!this.items[0]) {
-            this.grabItem(this.acceptItem.bind(this), null, true);
-        }
-        if (!this.items[1]) {
-            this.grabItem(this.acceptItem.bind(this).bind(this), null, true);
-        }
         if (this.timer > 0) {
             this.timer--;
         }
@@ -1204,9 +1158,6 @@ class Miner extends Building {
     }
 }
 class TrashCan extends Building {
-    update() {
-        this.grabItem(_ => { return true; }, item => { item.deleted = true; }, true);
-    }
     acceptItem(item) {
         return true;
     }
@@ -1512,9 +1463,6 @@ class Conveyor extends Building {
                     break;
             }
         }
-        else {
-            this.grabItem(null, (item) => { this.item = item; }, true);
-        }
     }
     acceptItem(item) {
         if (item.x - this.x * consts.TILE_SIZE <= consts.TILE_SIZE * 0.1 &&
@@ -1567,9 +1515,6 @@ class Extractor extends Conveyor {
             this.item.y = (this.y + 0.5) * consts.TILE_SIZE;
             this.item.x = (this.x + 0.5) * consts.TILE_SIZE;
             item.grabbedBy = this;
-            if (this.level.items.includes(item)) {
-                this.level.items.splice(this.level.items.indexOf(item), 1);
-            }
         }
     }
     dropItem() {
@@ -1701,20 +1646,6 @@ class StorageBuilding extends Building {
         temp.MAX_LENGTH = 64;
         this.inventory = temp;
     }
-    update() {
-        if (this.inventory.length < this.inventory.MAX_LENGTH) {
-            this.grabItem(null, (item) => { this.inventory.push(item); }, true);
-        }
-    }
-    grabItem(filter, callback, remove, grabDistance) {
-        let item = super.grabItem(filter, callback, remove, grabDistance);
-        if (item) {
-            item.x = (this.x + 0.5) * consts.TILE_SIZE;
-            item.y = (this.y + 0.5) * consts.TILE_SIZE;
-            return item;
-        }
-        return null;
-    }
 }
 class ResourceAcceptor extends Building {
     acceptItem(item) {
@@ -1725,16 +1656,6 @@ class ResourceAcceptor extends Building {
         }
         this.level.resources[item.id]++;
         return true;
-    }
-    update() {
-        this.grabItem(null, item => {
-            item.deleted = true;
-            item.grabbedBy = null;
-            if (!this.level.resources[item.id]) {
-                this.level.resources[item.id] = 0;
-            }
-            this.level.resources[item.id]++;
-        }, true);
     }
 }
 class AlloySmelter extends BuildingWithRecipe {
