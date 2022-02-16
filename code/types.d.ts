@@ -73,7 +73,6 @@ interface Recipe {
 }
 
 interface Recipes {
-	maxInputs: number;
 	[index: `${string}_${string}`]: {
 		type: RecipeType;
 		recipes: Recipe[];
@@ -83,7 +82,7 @@ interface Recipes {
 interface Registry {
 	recipes: Recipes;
 	buildings: {
-		[index: string]: typeof Building;
+		[ID in RawBuildingID]: typeof Building;
 	}
 	buildingIDs: BuildingID[];
 	itemIDs: typeof ItemID;
@@ -91,17 +90,17 @@ interface Registry {
 	miscTextures: string[];
 	textures: {
 		item: {
-			[index: string]: HTMLImageElement
-		};
+			[ID in ItemID]: HTMLImageElement
+		} | {};
 		building: {
-			[index: string]: HTMLImageElement
-		};
+			[ID in RawBuildingID]: HTMLImageElement
+		} | {};
 		tile: {
-			[index: string]: HTMLImageElement
-		};
+			[ID in TileID]: HTMLImageElement
+		} | {};
 		misc: {
 			[index: string]: HTMLImageElement
-		};
+		} | {};
 	}
 }
 

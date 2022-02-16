@@ -618,6 +618,6 @@ registerEventHandlers();
 if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
     alert("It looks like you're trying to play on a phone. Unfortunately, mobile devices are not currently supported.");
 }
-Game.title.splashtext = Math.random() < 0.9 ? splashes[Math.ceil(Math.random() * (splashes.length - 1))] : raresplashes[Math.ceil(Math.random() * (raresplashes.length - 1))];
+Game.title.splashtext = Math.random() < 0.95 ? splashes[Math.ceil(Math.random() * (splashes.length - 1))] : raresplashes[Math.ceil(Math.random() * (raresplashes.length - 1))];
 Game.title.splashbehavior = Math.random() < 0.9 ? "sin" : "tan";
 main_loop();

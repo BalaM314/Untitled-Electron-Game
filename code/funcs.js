@@ -1,4 +1,22 @@
 "use strict";
+Array.prototype.sort2 = function (callback) {
+    this.sort((value1, value2) => {
+        let result1 = callback(value1);
+        let result2 = callback(value2);
+        if (result1 < result2) {
+            return -1;
+        }
+        else if (result1 > result2) {
+            return 1;
+        }
+        else {
+            return 0;
+        }
+    });
+};
+Object.defineProperty(Array.prototype, "sort2", {
+    enumerable: false
+});
 function sq(x) {
     return x * x;
 }
@@ -356,4 +374,7 @@ function pixelOffsetInTile(pixelCoord) {
 }
 function tileAtPixel(pixelCoord) {
     return Math.floor(pixelCoord / consts.TILE_SIZE);
+}
+function getRawBuildingID(buildingID) {
+    return hex(+buildingID, 2);
 }

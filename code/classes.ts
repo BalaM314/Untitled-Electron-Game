@@ -147,8 +147,8 @@ class Level {
 			Math.floor(tileY)
 		).extractorAt(tileOffsetInChunk(tileX), tileOffsetInChunk(tileY));
 	}
-	addItem(x:number, y:number, id:string){
-		let tempitem = new Item(x, y, id as ItemID, this);
+	addItem(x:number, y:number, id:ItemID){
+		let tempitem = new Item(x, y, id, this);
 		this.items.push(tempitem);
 		return tempitem;
 	}
@@ -167,33 +167,47 @@ class Level {
 		if(this.getChunk(tileX, tileY, true) == null){
 			return;
 		}
-		switch(+buildingID % 0x100){
+		switch(+getRawBuildingID(buildingID)){
 			case 0x01:
-				this.getChunk(tileX, tileY).displayGhostBuilding(tileOffsetInChunk(tileX), tileOffsetInChunk(tileY), this.getTurnedConveyor(tileX, tileY, +buildingID >> 8), !Conveyor.canBuildAt(tileX, tileY, this));
+				this.getChunk(tileX, tileY).displayGhostBuilding(
+					tileOffsetInChunk(tileX), tileOffsetInChunk(tileY),
+					this.getTurnedConveyor(tileX, tileY, +buildingID >> 8),
+					!Conveyor.canBuildAt(tileX, tileY, this)
+				);
 				break;
 			default:
-				this.getChunk(tileX, tileY).displayGhostBuilding(tileOffsetInChunk(tileX), tileOffsetInChunk(tileY), buildingID, !registry.buildings[hex(+buildingID % 0x100, 2)]?.canBuildAt(tileX, tileY, this));
+				this.getChunk(tileX, tileY).displayGhostBuilding(
+					tileOffsetInChunk(tileX), tileOffsetInChunk(tileY), buildingID,
+					!registry.buildings[getRawBuildingID(buildingID)]?.canBuildAt(tileX, tileY, this)
+				);
 				break;
 		}
 	}
 	getTurnedConveyor(tileX:number, tileY:number, conveyorType:number):BuildingID {
+		//Returns how a conveyor should be turned based on nearby buildings.
 		if(keysHeld.includes("shift")){
 			return hex((conveyorType * 0x100) + 1, 4) as BuildingID;
+			//If holding shift, just return a straight conveyor.
 		}
-		//Returns how a conveyor should be turned based on nearby buildings.
 		tileX = Math.floor(tileX);
 		tileY = Math.floor(tileY);
 		//🍝👨‍💻 is delicious
-		function isOutputBuilding(val:BuildingID):boolean {return val == "0x0002" || val == "0x0004" || val == "0x0007" || val == "0x0009" || val == "0x000A" || val == "0x000B" || val == "0x0011";}
+		function isOutputBuilding(buildingid:BuildingID):boolean {
+			return ["0x0002", "0x0004", "0x0007", "0x0009", "0x000A", "0x000B", "0x0011"].includes(buildingid);
+		}
 		let hasLeftBuilding:BuildingID | boolean = this.buildingIDAtTile(tileX - 1, tileY);
-		hasLeftBuilding = hasLeftBuilding == "0x0001" || hasLeftBuilding == "0x0401" || hasLeftBuilding == "0x0501" || hasLeftBuilding == "0x0C01" || hasLeftBuilding == "0x0D01" || isOutputBuilding(hasLeftBuilding);
+		hasLeftBuilding = ["0x0001", "0x0401", "0x0501", "0x0C01", "0x0D01"].includes(hasLeftBuilding)
+			|| isOutputBuilding(hasLeftBuilding);
 		let hasTopBuilding:BuildingID | boolean = this.buildingIDAtTile(tileX, tileY - 1);
-		hasTopBuilding = hasTopBuilding == "0x0101" || hasTopBuilding == "0x0601" || hasTopBuilding == "0x0701" || hasTopBuilding == "0x0E01" || hasTopBuilding == "0x0F01" || isOutputBuilding(hasTopBuilding);
+		hasTopBuilding = ["0x0101", "0x0601", "0x0701", "0x0E01", "0x0F01"].includes(hasTopBuilding)
+			|| isOutputBuilding(hasTopBuilding);
 		let hasRightBuilding:BuildingID | boolean = this.buildingIDAtTile(tileX + 1, tileY);
-		hasRightBuilding = hasRightBuilding == "0x0201" || hasRightBuilding == "0x0801" || hasRightBuilding == "0x0901" || hasRightBuilding == "0x1001" || hasRightBuilding == "0x1101" || isOutputBuilding(hasRightBuilding);
+		hasRightBuilding = ["0x0201", "0x0801", "0x0901", "0x1001", "0x1101"].includes(hasRightBuilding)
+			|| isOutputBuilding(hasRightBuilding);
 		let hasBottomBuilding:BuildingID | boolean = this.buildingIDAtTile(tileX, tileY + 1);
-		hasBottomBuilding = hasBottomBuilding == "0x0301" || hasBottomBuilding == "0x0A01" || hasBottomBuilding == "0x0B01" || hasBottomBuilding == "0x1201" || hasBottomBuilding == "0x1301" || isOutputBuilding(hasBottomBuilding);
-		let buildingID:BuildingID = "0xFFFF";
+		hasBottomBuilding = ["0x0301", "0x0A01", "0x0B01", "0x1201", "0x1301"].includes(hasBottomBuilding)
+			|| isOutputBuilding(hasBottomBuilding);
+		//this can probably be refactored to take up 10% the space
 		switch(conveyorType){
 			case 0:
 				if(hasLeftBuilding){
@@ -221,74 +235,73 @@ class Level {
 			case 1:
 				if(hasTopBuilding){
 					if(hasLeftBuilding && hasRightBuilding){
-						buildingID = "0x1901";
+						return "0x1901";
 					} else if(hasLeftBuilding){
-						buildingID = "0x0F01";
+						return "0x0F01";
 					} else if(hasRightBuilding){
-						buildingID = "0x0E01";
+						return "0x0E01";
 					} else {
-						buildingID = "0x0101";
+						return "0x0101";
 					}
 				} else {
 					if(hasLeftBuilding && hasRightBuilding){
-						buildingID = "0x1501";
+						return "0x1501";
 					} else if(hasLeftBuilding){
-						buildingID = "0x0701";
+						return "0x0701";
 					} else if(hasRightBuilding){
-						buildingID = "0x0601";
+						return "0x0601";
 					} else {
-						buildingID = "0x0101";
+						return "0x0101";
 					}
 				}
 				break;
 			case 2:
 				if(hasRightBuilding){
 					if(hasTopBuilding && hasBottomBuilding){
-						buildingID = "0x1A01";
+						return "0x1A01";
 					} else if(hasTopBuilding){
-						buildingID = "0x1101";
+						return "0x1101";
 					} else if(hasBottomBuilding){
-						buildingID = "0x1001";
+						return "0x1001";
 					} else {
-						buildingID = "0x0201";
+						return "0x0201";
 					}
 				} else {
 					if(hasTopBuilding && hasBottomBuilding){
-						buildingID = "0x1601";
+						return "0x1601";
 					} else if(hasTopBuilding){
-						buildingID = "0x0901";
+						return "0x0901";
 					} else if(hasBottomBuilding){
-						buildingID = "0x0801";
+						return "0x0801";
 					} else {
-						buildingID = "0x0201";
+						return "0x0201";
 					}
 				}
 				break;
 			case 3:
 				if(hasBottomBuilding){
 					if(hasLeftBuilding && hasRightBuilding){
-						buildingID = "0x1B01";
+						return "0x1B01";
 					} else if(hasLeftBuilding){
-						buildingID = "0x1301";
+						return "0x1301";
 					} else if(hasRightBuilding){
-						buildingID = "0x1201";
+						return "0x1201";
 					} else {
-						buildingID = "0x0301";
+						return "0x0301";
 					}
 				} else {
 					if(hasLeftBuilding && hasRightBuilding){
-						buildingID = "0x1701";
+						return "0x1701";
 					} else if(hasLeftBuilding){
-						buildingID = "0x0B01";
+						return "0x0B01";
 					} else if(hasRightBuilding){
-						buildingID = "0x0A01";
+						return "0x0A01";
 					} else {
-						buildingID = "0x0301";
+						return "0x0301";
 					}
 				}
 				break;
 		}
-		return buildingID;
 	}
 	writeBuilding(tileX:number, tileY:number, building:Building):boolean {
 		if(this.getChunk(tileX,tileY)){
@@ -306,19 +319,19 @@ class Level {
 		}
 		return false;
 	}
-	buildBuilding(tileX:number, tileY:number, building:BuildingID):boolean {
+	buildBuilding(tileX:number, tileY:number, buildingID:BuildingID):boolean {
 		if(this.buildingIDAtTile(tileX, tileY) == "0x0008") return false;
-		if(+building % 0x100 != 5){
+		if(getRawBuildingID(buildingID) != "0x05"){
 			this.buildingAtTile(tileX, tileY)?.break();
 		}
 		let tempBuilding:Building;
 		
-		if(building == "0xFFFF"){
+		if(buildingID == "0xFFFF"){
 			this.writeExtractor(tileX, tileY, null);
 			this.writeBuilding(tileX, tileY, null);
 			return true;
 		}
-		if((+building % 0x100) >> 4 == 0x1){
+		if(((+buildingID) & 0x00F0) == 0x10){
 			//Multiblock handling
 
 			//Break all the buildings under
@@ -326,9 +339,9 @@ class Level {
 			this.buildingAtTile(tileX, tileY + 1)?.break();
 			this.buildingAtTile(tileX+1, tileY+1)?.break();
 
-			switch(+building % 0x100){
-				case 0x11:
-					let controller = new registry.buildings[hex(+building % 0x100, 2)](tileX, tileY, building, this) as MultiBlockController;
+			switch(getRawBuildingID(buildingID)){
+				case "0x11":
+					let controller = new registry.buildings[getRawBuildingID(buildingID)](tileX, tileY, buildingID, this) as MultiBlockController;
 					let secondary1 = new MultiBlockSecondary(tileX + 1, tileY, "0x0010", this);
 					let secondary2 = new MultiBlockSecondary(tileX, tileY + 1, "0x0010", this);
 					let secondary3 = new MultiBlockSecondary(tileX+1, tileY+1, "0x0010", this);
@@ -344,13 +357,15 @@ class Level {
 			}
 			return true;
 		}
-		if(registry.buildings[hex(+building % 0x100, 2)]?.canBuildAt(tileX, tileY, this)){
-			trigger(triggerType.placeBuilding, hex(+building % 0x100, 2) as RawBuildingID);
-			tempBuilding = new registry.buildings[hex(+building % 0x100, 2)](
-				tileX, tileY, +building % 0x100 == 0x01 ? this.getTurnedConveyor(tileX, tileY, +building >> 8) : building, this
+		if(registry.buildings[getRawBuildingID(buildingID)]?.canBuildAt(tileX, tileY, this)){
+			trigger(triggerType.placeBuilding, getRawBuildingID(buildingID));
+			tempBuilding = new registry.buildings[getRawBuildingID(buildingID)](
+				tileX, tileY,
+				getRawBuildingID(buildingID) == "0x01" ?
+				this.getTurnedConveyor(tileX, tileY, +buildingID >> 8) : buildingID, this
 			);
 		} else {
-			trigger(triggerType.placeBuildingFail, hex(+building % 0x100, 2) as RawBuildingID);
+			trigger(triggerType.placeBuildingFail, getRawBuildingID(buildingID));
 			return;
 		}
 		if(tempBuilding instanceof Extractor){
@@ -364,7 +379,7 @@ class Level {
 			item.display(currentframe);
 		}
 		
-		//Insta returns in the display method if offscreen.
+		//Instantly returns in the display method if offscreen.
 		for(let chunk of this.storage.values()){
 			chunk.display(currentframe);
 		}
@@ -387,8 +402,8 @@ class Level {
 			}
 		}
 		if(this.buildingAtPixel(x, y) instanceof Building){
-			let buildingID = hex(+this.buildingAtPixel(x, y).id % 0x100, 2) as RawBuildingID;
-			if(+buildingID == 0x01 && this.buildingAtPixel(x, y).item){
+			let buildingID = getRawBuildingID(this.buildingIDAtPixel(x, y));
+			if(getRawBuildingID(this.buildingIDAtPixel(x, y)) == "0x01" && this.buildingAtPixel(x, y).item){
 				let item = this.buildingAtPixel(x, y).item;
 				if((Math.abs(item.x - x) < 8) && Math.abs(item.y - y) < 8){
 					ctx4.fillStyle = "#0033CC";
@@ -441,6 +456,7 @@ class Level {
 			seed: this.seed,
 			version: consts.VERSION
 		} as any;
+		//todo fix dat silliness
 	}
 }
 
@@ -511,26 +527,28 @@ class Chunk {
 					if(!buildingData) continue;
 					if(+data.version.split(" ")[1].replaceAll(".", "") <= 200){
 						buildingData.id = hex(buildingData.id as any as number, 4) as BuildingID;
+						//aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa I am looking forward to beta when I can throw out these garbage formats
 					}
 					let tempBuilding:Building;
 					try {
-						tempBuilding = new registry.buildings[hex(+buildingData.id % 0x100, 2)](
-							parseInt(x) + (consts.CHUNK_SIZE * this.x), parseInt(y) + (consts.CHUNK_SIZE * this.y), buildingData.id, this.parent
+						tempBuilding = new registry.buildings[getRawBuildingID(buildingData.id)](
+							parseInt(x) + (consts.CHUNK_SIZE * this.x),
+							parseInt(y) + (consts.CHUNK_SIZE * this.y),
+							buildingData.id, this.parent
 						);
 					} catch(err){
-						console.warn(`Failed to import building id ${buildingData.id} at position ${x},${y} in chunk ${this.x},${this.y}`);
-						throw err;
-						continue;
+						console.error(err);
+						throw new Error(`Failed to import building id ${buildingData.id} at position ${x},${y} in chunk ${this.x},${this.y}. See console for more details.`);
 					}
 					if(buildingData.item){
 						//If the building has an item, spawn it in.
-						tempBuilding.item = new Item(buildingData.item.x, buildingData.item.y, buildingData.item.id, this.parent as Level);
+						tempBuilding.item = new Item(buildingData.item.x, buildingData.item.y, buildingData.item.id, this.parent);
 						tempBuilding.item.grabbedBy = tempBuilding;
 					}
 					if(buildingData.inv){
 						//If the building has an inventory, spawn in the items.
 						for(let itemData of buildingData.inv){
-							let tempItem = new Item(itemData.x, itemData.y, itemData.id, this.parent as Level);
+							let tempItem = new Item(itemData.x, itemData.y, itemData.id, this.parent);
 							tempItem.grabbedBy = tempBuilding;
 							tempBuilding.inventory.push(tempItem);
 						}
@@ -546,9 +564,13 @@ class Chunk {
 					if(+data.version.split(" ")[1].replaceAll(".", "") <= 200){
 						buildingData.id = hex(buildingData.id as any as number, 4) as BuildingID;
 					}
-					let tempBuilding = new Extractor(parseInt(x) + (consts.CHUNK_SIZE * this.x), parseInt(y) + (consts.CHUNK_SIZE * this.y), buildingData.id, this.parent as Level);
+					let tempBuilding = new Extractor(
+						parseInt(x) + (consts.CHUNK_SIZE * this.x),
+						parseInt(y) + (consts.CHUNK_SIZE * this.y),
+						buildingData.id, this.parent
+					);
 					if(buildingData.item && +data.version.split(" ")[1].replaceAll(".", "") >= 130){
-						tempBuilding.item = new Item(buildingData.item.x, buildingData.item.y, buildingData.item.id, this.parent as Level);
+						tempBuilding.item = new Item(buildingData.item.x, buildingData.item.y, buildingData.item.id, this.parent);
 						tempBuilding.item.grabbedBy = tempBuilding;
 					}
 					//Same as above but for extractors.
@@ -664,7 +686,8 @@ class Chunk {
 					let noiseHeight = 
 					Math.abs(noise.perlin2(
 						((this.x * consts.CHUNK_SIZE) + +tile + this.parent.seed) / generation_consts.perlin_scale,
-						((this.y * consts.CHUNK_SIZE) + +row + (this.parent.seed + generation_consts.y_offset)) / generation_consts.perlin_scale
+						((this.y * consts.CHUNK_SIZE) + +row + (this.parent.seed + generation_consts.y_offset))
+							/ generation_consts.perlin_scale
 					));
 					//This formula just finds the perlin noise value at a tile, but tweaked so it's different per seed and not mirrored diagonally.
 
@@ -743,7 +766,11 @@ class Chunk {
 		}
 		if(currentframe.debug){
 			ctx4.strokeStyle = "#0000FF";
-			ctx4.strokeRect(this.x * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE + (Game.scroll.x * consts.DISPLAY_SCALE), this.y  * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE + (Game.scroll.y * consts.DISPLAY_SCALE), consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE, consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE);
+			ctx4.strokeRect(
+				this.x * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE + (Game.scroll.x * consts.DISPLAY_SCALE),
+				this.y * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE + (Game.scroll.y * consts.DISPLAY_SCALE),
+				consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE, consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE
+			);
 		}
 	}
 	displayTile(x:number, y:number, currentframe){
@@ -1096,25 +1123,37 @@ class Building {
 		return null;
 	}
 	spawnItem(id:ItemID){
-		id ??= "base_null" as ItemID;
+		id ??= ItemID.base_null;
 		if(
-			(["0x0001", "0x0701", "0x0B01", "0x0C01", "0x0D01", "0x0F01", "0x1301", "0x1501", "0x1701", "0x1801", "0x1901", "0x1B01"].includes(this.level.buildingIDAtTile(this.x + 1, this.y))) &&
-			(this.level.buildingAtTile(this.x + 1, this.y).acceptItem(new Item((this.x + 1.1) * consts.TILE_SIZE, (this.y + 0.5) * consts.TILE_SIZE, id, this.level)))
+			["0x0001", "0x0701", "0x0B01", "0x0C01", "0x0D01", "0x0F01", "0x1301", "0x1501", "0x1701", "0x1801", "0x1901", "0x1B01"]
+			.includes(this.level.buildingIDAtTile(this.x + 1, this.y)) &&
+			this.level.buildingAtTile(this.x + 1, this.y).acceptItem(
+				new Item((this.x + 1.1) * consts.TILE_SIZE, (this.y + 0.5) * consts.TILE_SIZE, id, this.level)
+			)
 		){
 			return true;
 		} else if(
-			(["0x0101", "0x0501", "0x0901", "0x0D01", "0x0E01", "0x0F01", "0x1101", "0x1401", "0x1601", "0x1801", "0x1901", "0x1A01"].includes(this.level.buildingIDAtTile(this.x, this.y + 1))) &&
-			(this.level.buildingAtTile(this.x, this.y + 1).acceptItem(new Item((this.x + 0.5) * consts.TILE_SIZE, (this.y + 1.1) * consts.TILE_SIZE, id, this.level)))
+			["0x0101", "0x0501", "0x0901", "0x0D01", "0x0E01", "0x0F01", "0x1101", "0x1401", "0x1601", "0x1801", "0x1901", "0x1A01"]
+			.includes(this.level.buildingIDAtTile(this.x, this.y + 1)) &&
+			this.level.buildingAtTile(this.x, this.y + 1).acceptItem(
+				new Item((this.x + 0.5) * consts.TILE_SIZE, (this.y + 1.1) * consts.TILE_SIZE, id, this.level)
+			)
 		){
 			return true;
 		} else if(
-			(["0x0201", "0x0601", "0x0A01", "0x0E01", "0x1001", "0x1101", "0x1201", "0x1601", "0x1701", "0x1901", "0x1A01", "0x1B01"].includes(this.level.buildingIDAtTile(this.x - 1, this.y))) &&
-			(this.level.buildingAtTile(this.x - 1, this.y).acceptItem(new Item((this.x - 0.1) * consts.TILE_SIZE, (this.y + 0.5) * consts.TILE_SIZE, id, this.level)))
+			["0x0201", "0x0601", "0x0A01", "0x0E01", "0x1001", "0x1101", "0x1201", "0x1601", "0x1701", "0x1901", "0x1A01", "0x1B01"]
+			.includes(this.level.buildingIDAtTile(this.x - 1, this.y)) &&
+			this.level.buildingAtTile(this.x - 1, this.y).acceptItem(
+				new Item((this.x - 0.1) * consts.TILE_SIZE, (this.y + 0.5) * consts.TILE_SIZE, id, this.level)
+			)
 		){
 			return true;
 		} else if(
-			(["0x0301", "0x0801", "0x0401", "0x0C01", "0x1001", "0x1201", "0x1301", "0x1401", "0x1501", "0x1801", "0x1A01", "0x1B01"].includes(this.level.buildingIDAtTile(this.x, this.y - 1))) &&
-			(this.level.buildingAtTile(this.x, this.y - 1).acceptItem(new Item((this.x + 0.5) * consts.TILE_SIZE, (this.y - 0.1) * consts.TILE_SIZE, id, this.level)))
+			["0x0301", "0x0801", "0x0401", "0x0C01", "0x1001", "0x1201", "0x1301", "0x1401", "0x1501", "0x1801", "0x1A01", "0x1B01"]
+			.includes(this.level.buildingIDAtTile(this.x, this.y - 1)) &&
+			this.level.buildingAtTile(this.x, this.y - 1).acceptItem(
+				new Item((this.x + 0.5) * consts.TILE_SIZE, (this.y - 0.1) * consts.TILE_SIZE, id, this.level)
+			)
 		){
 			return true;
 		} else {
@@ -1184,12 +1223,16 @@ abstract class BuildingWithRecipe extends Building {
 		this.items = [];
 	}
 	acceptItem(item:Item):boolean {
-		for(let i = 0; i < registry.recipes.maxInputs; i ++){
+		for(let i = 0; i < consts.recipeMaxInputs; i ++){
+			//repeat recipeMaxInputs times
 			if(!this.items[i] && !this.items.map(item => item.id).includes(item.id)){
+				//if there is nothing in this item slot and the new item's id is not in the list of current items' ids
 				for(let recipe of (this.constructor as typeof BuildingWithRecipe).recipeType.recipes){
+					//for each recipe this building can do
 					if(!this.items.map(item => recipe.inputs.includes(item.id)).includes(false) && recipe.inputs.includes(item.id)){
-						//unreadable code goes brrr
+						//if all of the current items are inputs of the recipe and the item is an input of the recipe
 						this.items[i] = item;
+						item.grabbedBy = this;
 						if(recipe.inputs.length == i + 1){
 							this.setRecipe(recipe);
 						}
@@ -1206,8 +1249,8 @@ abstract class BuildingWithRecipe extends Building {
 	removeItem():Item {
 		return null;
 	}
-	setRecipe(recipe:Recipe){
-		if(!(<any>recipe?.inputs instanceof Array)) return;
+	setRecipe(recipe:Recipe): void{
+		if(!(recipe.inputs instanceof Array)) throw new ShouldNotBePossibleError("tried to set invalid recipe");
 		this.recipe = recipe;
 		this.timer = recipe.duration;
 	}
@@ -1252,7 +1295,7 @@ class Miner extends Building {
 		} else {
 			this.timer = 61;
 			if(this.spawnItem(this.miningItem)){
-				trigger(triggerType.buildingRun, hex(+this.id % 0x100, 2) as RawBuildingID, this.miningItem);
+				trigger(triggerType.buildingRun, getRawBuildingID(this.id), this.miningItem);
 			}
 		}
 	}
@@ -1311,7 +1354,6 @@ class Conveyor extends Building {
 			}
 			switch(+this.id >> 8){//bit masks ftw, this just grabs the first byte
 				//yes I know there's no need to write the ids in hex but why the heck not
-				//what do you mean I'm repeating myself??
 				case 0x00:
 					if(pixelOffsetInTile(this.item.y) == consts.TILE_SIZE * 0.5){
 						this.item.x += consts.buildings.conveyor.SPEED;
@@ -1872,5 +1914,6 @@ registry.buildings = {
 	"0x0A": Compressor,
 	"0x0B": Lathe,
 	"0x10": MultiBlockSecondary,
-	"0x11": Assembler
+	"0x11": Assembler,
+	"0xFF": null
 };

@@ -6,7 +6,8 @@ const names = {
         "0x02": "Water",
         "0x10": "Coal Ore Node",
         "0x11": "Iron Ore Node",
-        "0x12": "Copper Ore Node"
+        "0x12": "Copper Ore Node",
+        "0xFF": "[D] Broken Tile"
     },
     building: {
         "0x01": "Conveyor Belt",
@@ -21,7 +22,8 @@ const names = {
         "0x0A": "Compressor",
         "0x0B": "Lathe",
         "0x10": "Multiblock Secondary",
-        "0x11": "Assembler"
+        "0x11": "Assembler",
+        "0xFF": "[D] No Building"
     },
     item: {
         "base_null": "Debug Item",
@@ -93,6 +95,7 @@ const consts = {
     get DISPLAY_TILE_SIZE() {
         return this.TILE_SIZE * this.DISPLAY_SCALE;
     },
+    recipeMaxInputs: 3,
     buildings: {
         conveyor: {
             SPEED: 1
@@ -101,7 +104,6 @@ const consts = {
 };
 const registry = {
     recipes: {
-        maxInputs: 3,
         "base_mining": {
             "type": "t-1",
             "recipes": [
@@ -213,7 +215,7 @@ const registry = {
             ]
         }
     },
-    buildings: {},
+    buildings: null,
     buildingIDs: ["0x0001", "0x0101", "0x0201", "0x0301", "0x0401", "0x0501", "0x0601", "0x0701", "0x0801", "0x0901", "0x0A01", "0x0B01", "0x0C01", "0x0D01", "0x0E01", "0x0F01", "0x1001", "0x1101", "0x1201", "0x1301", "0x1401", "0x1501", "0x1601", "0x1701", "0x1801", "0x1901", "0x1A01", "0x1B01", "0x0002", "0x0003", "0x0004", "0x0005", "0x0105", "0x0205", "0x0305", "0x0405", "0x0505", "0x0605", "0x0705", "0x0805", "0x0905", "0x0A05", "0x0B05", "0x0006", "0x0007", "0x0008", "0x0009", "0x000A", "0x000B", "0x0010", "0x0011", "0xFFFF"],
     itemIDs: ItemID,
     tileIDs: ["0x00", "0x01", "0x02", "0x10", "0x11", "0x12", "0xFF"],
@@ -282,7 +284,7 @@ let Game = {
     loadedTextures: 0,
 };
 let splashes = [
-    "§kGet out of my files! It tickles!",
+    "Get out of my files!",
     "Remember everyone, the secret to a good game in 2020 is s p l a s h t e x t",
     "Got any grapes?",
     "e",
@@ -311,7 +313,7 @@ let splashes = [
     "I wonder what this button does!",
     "Ctrl+W for 420 free diamonds!",
     "One day, somewhere in the future, my work will be quoted!",
-    "For the last time guys, the Earth is *round*.",
+    "For the last time guys, the Earth is a *rhombicubeoctahedron*.",
     ".party()!",
     ".play()!",
     ".code()!",
@@ -333,8 +335,6 @@ let splashes = [
     "Getting ready to freak!",
     "Getting ready to speak!",
     "Never gonna give you up!",
-    "§b§o[Enchanted Renamed Item!]§r",
-    "A Very Fancy Door!",
     "Ghostpinged!",
     "████ ████ ██████e██ ████m ████ne ██",
     "Op!",
@@ -358,7 +358,8 @@ let splashes = [
     "abominatiogus",
     "u r sussy",
     "Brought to you by BalaM314!",
-    "Brought to you by the letter π"
+    "Brought to you by the letter π",
+    "Type the Konami code for a secret!"
 ];
 let raresplashes = [
     "This is the rarest splash of all. It's so rare it never displays!",
@@ -378,6 +379,10 @@ let raresplashes = [
     "§6§kMM§r§2lBalaM314 is awesome!§r§6§kMM",
     "Never gonna give you up!",
     "Never gonna let you down!",
+    "§b§o[Enchanted Renamed Item!]§r",
+    "",
+    "amoGUS",
+    "declare let splashes"
 ];
 function makeError(name) {
     return class extends Error {
@@ -393,4 +398,7 @@ const ArgumentError = makeError("ArgumentError");
 const InvalidStateError = makeError("InvalidStateError");
 function importIntoGlobalScope(obj) {
     Object.assign(window, obj);
+}
+function amogus() {
+    return "sus!";
 }

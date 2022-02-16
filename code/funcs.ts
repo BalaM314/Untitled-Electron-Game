@@ -1,6 +1,29 @@
 
 
 
+interface Array<T>{
+	/**
+	 * Sorts an array, with a callback that ranks elements with a number.
+	 */
+	sort2: (callback: (value:T) => number) => void
+}
+
+Array.prototype.sort2 = function(callback){
+	this.sort((value1, value2) => {
+		let result1 = callback(value1);
+		let result2 = callback(value2);
+		if(result1 < result2){
+			return -1;
+		} else if(result1 > result2){
+			return 1;
+		} else {
+			return 0;
+		}
+	});
+};
+Object.defineProperty(Array.prototype, "sort2", {
+	enumerable: false
+});
 
 
 //general functions
@@ -409,4 +432,8 @@ function pixelOffsetInTile(pixelCoord:number):number {
 }
 function tileAtPixel(pixelCoord:number):number {
 	return Math.floor(pixelCoord / consts.TILE_SIZE);
+}
+
+function getRawBuildingID(buildingID: BuildingID):RawBuildingID {
+	return hex(+buildingID, 2) as RawBuildingID;
 }
