@@ -5,7 +5,6 @@
 
 
 class Level {
-	displayItems: Item[];
 	resources: {
 		[index: string]: number
 	}
@@ -16,7 +15,6 @@ class Level {
 	constructor(data:number|LevelData){
 		this.storage = new Map<string, Chunk>();
 		this.format = consts.VERSION;
-		this.displayItems = [];
 		this.resources = {};
 		if(typeof data != "object"){
 			this.seed = data ?? 0;
@@ -356,9 +354,6 @@ class Level {
 		}
 	}
 	display(currentframe:Object):void {
-		for(let item of this.displayItems){
-			item.display(currentframe);
-		}
 		
 		//Instantly returns in the display method if offscreen.
 		for(let chunk of this.storage.values()){
@@ -371,17 +366,6 @@ class Level {
 		let x = (mousex - (Game.scroll.x * consts.DISPLAY_SCALE))/consts.DISPLAY_SCALE;
 		let y = (mousey - (Game.scroll.y * consts.DISPLAY_SCALE))/consts.DISPLAY_SCALE;
 		ctx4.font = "16px monospace";
-		for(let item of this.displayItems){
-			if((Math.abs(item.x - x) < 8) && Math.abs(item.y - y) < 8){
-				ctx4.fillStyle = "#0033CC";
-				ctx4.fillRect(mousex, mousey, (names.item[item.id] ?? item.id).length * 10, 16);
-				ctx4.strokeStyle = "#000000";
-				ctx4.strokeRect(mousex, mousey, (names.item[item.id] ?? item.id).length * 10, 16);
-				ctx4.fillStyle = "#FFFFFF";
-				ctx4.fillText((names.item[item.id] ?? item.id), mousex + 2, mousey + 10);
-				return;
-			}
-		}
 		if(this.buildingAtPixel(x, y) instanceof Building){
 			let buildingID = getRawBuildingID(this.buildingIDAtPixel(x, y));
 			if(getRawBuildingID(this.buildingIDAtPixel(x, y)) == "0x01" && this.buildingAtPixel(x, y).item){
@@ -1276,7 +1260,6 @@ class Conveyor extends Building {
 	}
 	break(){
 		if(this.item instanceof Item){
-			//this.level.items.push(this.item);
 			if(this.item.grabbedBy === this){
 				this.item.grabbedBy = null;
 			}
