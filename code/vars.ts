@@ -256,26 +256,26 @@ const registry:Registry = {
 	},
 	keybinds: {
 		move: {
-			left: ["w"],
-			up: ["a"],
-			down: ["s"],
-			right: ["d"],
-			scroll_faster: ["Shift"],
+			left: new Keybind("w"),
+			up: new Keybind("a"),
+			down: new Keybind("s"),
+			right: new Keybind("d"),
+			scroll_faster: new Keybind("Shift"),
 		},
 		saves: {
-			save_to_file: ["s", "Ctrl", "Shift"],
-			save: ["s", "Ctrl"],
-			load_from_file: ["o", "Ctrl"]
+			save_to_file: new Keybind("s", "Ctrl", "Shift"),
+			save: new Keybind("s", "Ctrl"),
+			load_from_file: new Keybind("o", "Ctrl"),
 		},
 		placement: {
-			force_straight_conveyor: ["Shift"],
-			break_building: ["Backspace"],
-			type_1: [","],
-			type_2: ["."],
-			type_3: ["/"],
+			force_straight_conveyor: new Keybind("Shift"),
+			break_building: new Keybind("Backspace"),
+			type_1: new Keybind(","),
+			type_2: new Keybind("."),
+			type_3: new Keybind("/"),
 		},
 		display: {
-			show_tooltip: ["Shift"]
+			show_tooltip: new Keybind("Shift"),
 		}
 
 		

@@ -101,6 +101,11 @@ interface Registry {
 		misc: {
 			[index: string]: HTMLImageElement
 		} | {};
+	};
+	keybinds: {
+		[index: string]: {
+			[index: string]: Keybind
+		}
 	}
 }
 

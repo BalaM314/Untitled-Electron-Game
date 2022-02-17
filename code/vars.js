@@ -225,6 +225,30 @@ const registry = {
         building: {},
         tile: {},
         misc: {}
+    },
+    keybinds: {
+        move: {
+            left: new Keybind("w"),
+            up: new Keybind("a"),
+            down: new Keybind("s"),
+            right: new Keybind("d"),
+            scroll_faster: new Keybind("Shift"),
+        },
+        saves: {
+            save_to_file: new Keybind("s", "Ctrl", "Shift"),
+            save: new Keybind("s", "Ctrl"),
+            load_from_file: new Keybind("o", "Ctrl"),
+        },
+        placement: {
+            force_straight_conveyor: new Keybind("Shift"),
+            break_building: new Keybind("Backspace"),
+            type_1: new Keybind(","),
+            type_2: new Keybind("."),
+            type_3: new Keybind("/"),
+        },
+        display: {
+            show_tooltip: new Keybind("Shift"),
+        }
     }
 };
 let mouse = {

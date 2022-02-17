@@ -439,11 +439,13 @@ function getRawBuildingID(buildingID: BuildingID):RawBuildingID {
 }
 
 class Keybind {
+	mainKey: string;
+	modifiers: string[];
 	constructor(mainKey: string, ...modifiers: string[]){
 		this.mainKey = mainKey;
 		this.modifiers = modifiers;
 	}
 	get isPressed(){
-		return keysHeld.includes(this.mainkey) && this.modifiers.map(key => keysHeld.includes(key));
+		return keysHeld.includes(this.mainKey) && this.modifiers.map(key => keysHeld.includes(key));
 	}
 }

@@ -378,3 +378,12 @@ function tileAtPixel(pixelCoord) {
 function getRawBuildingID(buildingID) {
     return hex(+buildingID, 2);
 }
+class Keybind {
+    constructor(mainKey, ...modifiers) {
+        this.mainKey = mainKey;
+        this.modifiers = modifiers;
+    }
+    get isPressed() {
+        return keysHeld.includes(this.mainKey) && this.modifiers.map(key => keysHeld.includes(key));
+    }
+}
