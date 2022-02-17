@@ -256,8 +256,8 @@ const registry:Registry = {
 	},
 	keybinds: {
 		move: {
-			left: new Keybind("w"),
-			up: new Keybind("a"),
+			up: new Keybind("w"),
+			left: new Keybind("a"),
 			down: new Keybind("s"),
 			right: new Keybind("d"),
 			scroll_faster: new Keybind("Shift"),

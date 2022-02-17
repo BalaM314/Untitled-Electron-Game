@@ -446,6 +446,6 @@ class Keybind {
 		this.modifiers = modifiers;
 	}
 	get isPressed(){
-		return keysHeld.includes(this.mainKey) && this.modifiers.map(key => keysHeld.includes(key));
+		return keysHeld.includes(this.mainKey) && this.modifiers.filter(key => !keysHeld.includes(key)).length == 0;
 	}
 }
