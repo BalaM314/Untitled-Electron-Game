@@ -253,6 +253,32 @@ const registry:Registry = {
 		tile: {},
 		misc: {}
 		//Loaded in loadTexturesIntoMemory()
+	},
+	keybinds: {
+		move: {
+			left: ["w"],
+			up: ["a"],
+			down: ["s"],
+			right: ["d"],
+			scroll_faster: ["Shift"],
+		},
+		saves: {
+			save_to_file: ["s", "Ctrl", "Shift"],
+			save: ["s", "Ctrl"],
+			load_from_file: ["o", "Ctrl"]
+		},
+		placement: {
+			force_straight_conveyor: ["Shift"],
+			break_building: ["Backspace"],
+			type_1: [","],
+			type_2: ["."],
+			type_3: ["/"],
+		},
+		display: {
+			show_tooltip: ["Shift"]
+		}
+
+		
 	}
 };
 

@@ -437,3 +437,13 @@ function tileAtPixel(pixelCoord:number):number {
 function getRawBuildingID(buildingID: BuildingID):RawBuildingID {
 	return hex(+buildingID, 2) as RawBuildingID;
 }
+
+class Keybind {
+	constructor(mainKey: string, ...modifiers: string[]){
+		this.mainKey = mainKey;
+		this.modifiers = modifiers;
+	}
+	get isPressed(){
+		return keysHeld.includes(this.mainkey) && this.modifiers.map(key => keysHeld.includes(key));
+	}
+}
