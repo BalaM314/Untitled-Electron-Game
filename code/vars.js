@@ -228,26 +228,57 @@ const registry = {
     },
     keybinds: {
         move: {
-            up: new Keybind("w"),
-            left: new Keybind("a"),
-            down: new Keybind("s"),
-            right: new Keybind("d"),
-            scroll_faster: new Keybind("Shift"),
+            up: new Keybind("w", ["!control", "!alt"]),
+            left: new Keybind("a", ["!control", "!alt"]),
+            down: new Keybind("s", ["!control", "!alt"]),
+            right: new Keybind("d", ["!control", "!alt"]),
+            scroll_faster: new Keybind("shift"),
         },
         saves: {
-            save_to_file: new Keybind("s", "Ctrl", "Shift"),
-            save: new Keybind("s", "Ctrl"),
-            load_from_file: new Keybind("o", "Ctrl"),
+            save_to_file: new Keybind("s", ["control", "alt", "!shift"], () => {
+                download("Untitled-Electron-Game-save.json", JSON.stringify(exportData()));
+            }),
+            save: new Keybind("s", ["control", "!alt", "!shift"], () => {
+                if ((!localStorage.getItem("save1") || JSON.parse(localStorage.getItem("save1"))?.metadata?.uuid == level1?.uuid) || confirm("Are you want to save? This will overwrite your current saved world which seems to be different!")) {
+                    try {
+                        localStorage.setItem("save1", JSON.stringify(exportData()));
+                        alert("Saved successfully!");
+                        Game.lastSaved = millis();
+                    }
+                    catch (err) {
+                        alert("Failed to save! " + err.message);
+                    }
+                }
+            }),
+            load_from_file: new Keybind("o", ["control"], () => {
+                uploadButton.click();
+            }),
         },
         placement: {
-            force_straight_conveyor: new Keybind("Shift"),
-            break_building: new Keybind("Backspace"),
-            type_1: new Keybind(","),
-            type_2: new Keybind("."),
-            type_3: new Keybind("/"),
+            force_straight_conveyor: new Keybind("shift"),
+            break_building: new Keybind("backspace"),
+            modifier_1: new Keybind(",", [], () => { placedBuilding.modifier = 0x000; }),
+            modifier_2: new Keybind(".", [], () => { placedBuilding.modifier = 0x400; }),
+            modifier_3: new Keybind("/", [], () => { placedBuilding.modifier = 0x800; }),
+            direction_up: new Keybind("arrowup", [], () => { placedBuilding.direction = 0x300; }),
+            direction_left: new Keybind("arrowleft", [], () => { placedBuilding.direction = 0x200; }),
+            direction_down: new Keybind("arrowdown", [], () => { placedBuilding.direction = 0x100; }),
+            direction_right: new Keybind("arrowright", [], () => { placedBuilding.direction = 0x000; }),
+            type_1: new Keybind("1", [], () => { placedBuilding.type = "0x01"; }),
+            type_2: new Keybind("2", [], () => { placedBuilding.type = "0x02"; }),
+            type_3: new Keybind("3", [], () => { placedBuilding.type = "0x03"; }),
+            type_4: new Keybind("4", [], () => { placedBuilding.type = "0x04"; }),
+            type_5: new Keybind("5", [], () => { placedBuilding.type = "0x05"; }),
+            type_6: new Keybind("6", [], () => { placedBuilding.type = "0x06"; }),
+            type_7: new Keybind("7", [], () => { placedBuilding.type = "0x07"; }),
+            type_9: new Keybind("8", [], () => { placedBuilding.type = "0x09"; }),
+            type_A: new Keybind("9", [], () => { placedBuilding.type = "0x0A"; }),
+            type_B: new Keybind("f1", [], () => { placedBuilding.type = "0x0B"; }),
+            type_11: new Keybind("f2", [], () => { placedBuilding.type = "0x11"; }),
+            type_0: new Keybind("0", [], () => { placedBuilding.type = "0xFF"; }),
         },
         display: {
-            show_tooltip: new Keybind("Shift"),
+            show_tooltip: new Keybind("shift"),
         }
     }
 };

@@ -62,108 +62,15 @@ function registerEventHandlers() {
         }
         lastKeysPressed.push(e.key);
         lastKeysPressed.splice(0, 1);
-        if (e.ctrlKey) {
-            if (e.altKey) {
-                switch (e.key) {
-                    case "s":
-                        e.preventDefault();
-                        download("Untitled-Electron-Game-save.json", JSON.stringify(exportData()));
-                        break;
-                    case "o":
-                        e.preventDefault();
-                        uploadButton.click();
-                        break;
-                }
-            }
-            else {
-                switch (e.key) {
-                    case "s":
-                        if ((!localStorage.getItem("save1") || JSON.parse(localStorage.getItem("save1"))?.metadata?.uuid == level1?.uuid) || confirm("Are you want to save? This will overwrite your current saved world which seems to be different!")) {
-                            try {
-                                localStorage.setItem("save1", JSON.stringify(exportData()));
-                                alert("Saved successfully!");
-                                Game.lastSaved = millis();
-                            }
-                            catch (err) {
-                                alert("Failed to save! " + err.message);
-                            }
-                        }
-                        break;
-                    case "o":
-                        e.preventDefault();
-                        uploadButton.click();
-                        break;
-                }
+        for (let section of Object.values(registry.keybinds)) {
+            for (let keybind of Object.values(section)) {
+                keybind.check(e);
             }
         }
-        else {
-            switch (e.key) {
-                case "ArrowRight":
-                    placedBuilding.direction = 0x000;
-                    break;
-                case "ArrowDown":
-                    placedBuilding.direction = 0x100;
-                    break;
-                case "ArrowLeft":
-                    placedBuilding.direction = 0x200;
-                    break;
-                case "ArrowUp":
-                    placedBuilding.direction = 0x300;
-                    break;
-                case ",":
-                    placedBuilding.modifier = 0x000;
-                    break;
-                case ".":
-                    placedBuilding.modifier = 0x400;
-                    break;
-                case "/":
-                    placedBuilding.modifier = 0x800;
-                    e.preventDefault();
-                    break;
-                case "1":
-                    placedBuilding.type = "0x01";
-                    break;
-                case "2":
-                    placedBuilding.type = "0x02";
-                    break;
-                case "3":
-                    placedBuilding.type = "0x03";
-                    break;
-                case "4":
-                    placedBuilding.type = "0x04";
-                    break;
-                case "5":
-                    placedBuilding.type = "0x05";
-                    break;
-                case "6":
-                    placedBuilding.type = "0x06";
-                    break;
-                case "7":
-                    placedBuilding.type = "0x07";
-                    break;
-                case "8":
-                    placedBuilding.type = "0x09";
-                    break;
-                case "9":
-                    placedBuilding.type = "0x0A";
-                    break;
-                case "F1":
-                    placedBuilding.type = "0x0B";
-                    e.preventDefault();
-                    break;
-                case "F2":
-                    placedBuilding.type = "0x11";
-                    e.preventDefault();
-                    break;
-                case "0":
-                    placedBuilding.type = "0xFF";
-                    break;
-                case "Backspace":
-                    placedBuilding.type = "0xFF";
-                    e.preventDefault();
-                    break;
-            }
+        if (e.ctrlKey && e.key.match(/^[w]$/) || e.key.match(/^[ertuni]$/i) || e.key.match(/^f[5]$/i)) {
+            return;
         }
+        e.preventDefault();
     };
     window.onkeyup = (e) => {
         if (keysHeld.includes(e.key.toLowerCase())) {
@@ -361,6 +268,12 @@ let state = {
         update: function (currentFrame, level) {
             level ?? (level = level1);
             level.generateNecessaryChunks();
+            if (registry.keybinds.move.scroll_faster.isHeld()) {
+                Game.scroll.speed = 20;
+            }
+            else {
+                Game.scroll.speed = 5;
+            }
             try {
                 level.update(currentFrame);
             }
@@ -381,7 +294,7 @@ let state = {
             ctx4.clearRect(0, 0, innerWidth, innerHeight);
             level.display(currentFrame);
             level.displayGhostBuilding((mouse.x - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE, (mouse.y - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE, placedBuilding.ID);
-            if (keysHeld.indexOf("shift") != -1) {
+            if (registry.keybinds.display.show_tooltip.isHeld()) {
                 level.displayTooltip(mouse.x, mouse.y, currentFrame);
             }
             ctx4.font = "30px sans-serif";
@@ -402,28 +315,28 @@ let state = {
         },
         onmouseheld: function () {
             let e = mouse.latestEvent;
-            if (!(keysHeld.includes("control") || keysHeld.includes("backspace")) && placedBuilding.ID != "0xFFFF") {
+            if (!(keysHeld.includes("control") || registry.keybinds.placement.break_building.isHeld()) && placedBuilding.ID != "0xFFFF") {
                 level1.buildBuilding(Math.floor((e.x - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE), Math.floor((e.y - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE), placedBuilding.ID);
             }
         },
         onkeyheld: function (currentframe) {
-            if (keysHeld.includes("w")) {
+            if (registry.keybinds.move.up.isHeld()) {
                 Game.scroll.y += Game.scroll.speed;
                 currentframe.redraw = true;
             }
-            if (keysHeld.includes("a")) {
+            if (registry.keybinds.move.left.isHeld()) {
                 Game.scroll.x += Game.scroll.speed;
                 currentframe.redraw = true;
             }
-            if (keysHeld.includes("s")) {
+            if (registry.keybinds.move.down.isHeld()) {
                 Game.scroll.y -= Game.scroll.speed;
                 currentframe.redraw = true;
             }
-            if (keysHeld.includes("d")) {
+            if (registry.keybinds.move.right.isHeld()) {
                 Game.scroll.x -= Game.scroll.speed;
                 currentframe.redraw = true;
             }
-            if (keysHeld.includes("backspace")) {
+            if (registry.keybinds.placement.break_building.isHeld()) {
                 currentframe.redraw = true;
                 level1.buildBuilding(Math.floor((mouse.x - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE), Math.floor((mouse.y - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE), "0xFFFF");
             }
@@ -466,12 +379,6 @@ function main_loop() {
         Game.forceRedraw = false;
         fixSizes();
         window.getSelection().empty();
-        if (keysHeld.indexOf("shift") !== -1) {
-            Game.scroll.speed = 20;
-        }
-        else {
-            Game.scroll.speed = 5;
-        }
         let currentState = state[Game.state];
         if (!currentState) {
             throw new InvalidStateError(`Invalid game state "${Game.state}"`);

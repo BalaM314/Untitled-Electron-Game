@@ -379,11 +379,36 @@ function getRawBuildingID(buildingID) {
     return hex(+buildingID, 2);
 }
 class Keybind {
-    constructor(mainKey, ...modifiers) {
+    constructor(mainKey, modifiers, action) {
         this.mainKey = mainKey;
-        this.modifiers = modifiers;
+        this.modifiers = modifiers?.map(key => key.toLowerCase()) ?? [];
+        this.action = action ?? (() => { });
     }
-    get isPressed() {
-        return keysHeld.includes(this.mainKey) && this.modifiers.filter(key => !keysHeld.includes(key)).length == 0;
+    isHeld() {
+        let modifiersHeld = this.modifiers
+            .filter(key => !key.startsWith("!"))
+            .filter(key => !keysHeld.includes(key))
+            .length == 0;
+        let disallowedModifiersNotHeld = this.modifiers
+            .filter(key => key.startsWith("!"))
+            .map(key => key.split("!")[1])
+            .filter(key => keysHeld.includes(key))
+            .length == 0;
+        return keysHeld.includes(this.mainKey) && modifiersHeld && disallowedModifiersNotHeld;
+    }
+    check(e) {
+        let modifiersHeld = this.modifiers
+            .filter(key => !key.startsWith("!"))
+            .filter(key => !keysHeld.includes(key))
+            .length == 0;
+        let disallowedModifiersNotHeld = this.modifiers
+            .filter(key => key.startsWith("!"))
+            .map(key => key.split("!")[1])
+            .filter(key => keysHeld.includes(key))
+            .length == 0;
+        if (this.mainKey == e.key.toLowerCase() && modifiersHeld && disallowedModifiersNotHeld) {
+            e.preventDefault();
+            this.action();
+        }
     }
 }

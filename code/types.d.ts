@@ -109,6 +109,8 @@ interface Registry {
 	}
 }
 
+
+
 interface SaveData {
 	UntitledElectronGame: {
 		metadata: {
@@ -170,4 +172,11 @@ interface CurrentFrame {
 	tps: number;//Tiles per frame
 	ips: number;//Items per frame
 	redraw: boolean;
+}
+
+interface Array<T> {
+	/**
+	 * Sorts an array, with a callback that ranks elements with a number.
+	 */
+	sort2: (callback: (value:T) => number) => void
 }

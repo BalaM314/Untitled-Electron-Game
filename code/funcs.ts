@@ -1,12 +1,6 @@
 
 
 
-interface Array<T>{
-	/**
-	 * Sorts an array, with a callback that ranks elements with a number.
-	 */
-	sort2: (callback: (value:T) => number) => void
-}
 
 Array.prototype.sort2 = function(callback){
 	this.sort((value1, value2) => {
@@ -441,11 +435,39 @@ function getRawBuildingID(buildingID: BuildingID):RawBuildingID {
 class Keybind {
 	mainKey: string;
 	modifiers: string[];
-	constructor(mainKey: string, ...modifiers: string[]){
+	action: () => void;
+	constructor(mainKey: string, modifiers?: string[], action?: () => void){
 		this.mainKey = mainKey;
-		this.modifiers = modifiers;
+		this.modifiers = modifiers?.map(key => key.toLowerCase()) ?? [];
+		this.action = action ?? (() => {});
 	}
-	get isPressed(){
-		return keysHeld.includes(this.mainKey) && this.modifiers.filter(key => !keysHeld.includes(key)).length == 0;
+	isHeld(){
+		let modifiersHeld = this.modifiers
+			.filter(key => !key.startsWith("!"))
+			.filter(key => !keysHeld.includes(key))
+			.length == 0;
+		let disallowedModifiersNotHeld = this.modifiers
+			.filter(key => key.startsWith("!"))
+			.map(key => key.split("!")[1])
+			.filter(key => keysHeld.includes(key))
+			.length == 0;
+		//Array.filter and Array.map ftw
+		//these functions have saved me so many for loops
+		return keysHeld.includes(this.mainKey) && modifiersHeld && disallowedModifiersNotHeld;
+	}
+	check(e:KeyboardEvent){
+		let modifiersHeld = this.modifiers
+			.filter(key => !key.startsWith("!"))
+			.filter(key => !keysHeld.includes(key))
+			.length == 0;
+		let disallowedModifiersNotHeld = this.modifiers
+			.filter(key => key.startsWith("!"))
+			.map(key => key.split("!")[1])
+			.filter(key => keysHeld.includes(key))
+			.length == 0;
+		if(this.mainKey == e.key.toLowerCase() && modifiersHeld && disallowedModifiersNotHeld){
+			e.preventDefault();
+			this.action();
+		}
 	}
 }

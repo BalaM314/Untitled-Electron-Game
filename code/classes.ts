@@ -164,7 +164,7 @@ class Level {
 	}
 	getTurnedConveyor(tileX:number, tileY:number, conveyorType:number):BuildingID {
 		//Returns how a conveyor should be turned based on nearby buildings.
-		if(keysHeld.includes("shift")){
+		if(registry.keybinds.placement.force_straight_conveyor.isHeld()){
 			return hex((conveyorType * 0x100) + 1, 4) as BuildingID;
 			//If holding shift, just return a straight conveyor.
 		}
@@ -762,14 +762,13 @@ class Chunk {
 		let pixelX = ((this.x * consts.CHUNK_SIZE) + x) * consts.DISPLAY_TILE_SIZE + (Game.scroll.x * consts.DISPLAY_SCALE);
 		let pixelY = ((this.y * consts.CHUNK_SIZE) + y) * consts.DISPLAY_TILE_SIZE + (Game.scroll.y * consts.DISPLAY_SCALE);
 		let _ctx = ctx1;
-		if(placedBuilding.ID == "0xFFFF"){
-			if(keysHeld.includes("backspace")){
-				_ctx.globalAlpha = 0.9;
-				_ctx.drawImage(registry.textures.misc["invalidunderlay"], pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
-				_ctx.globalAlpha = +buildingID % 0x100 == 0x01 ? 0.3 : 0.7;
-			}
+		if(registry.keybinds.placement.break_building.isHeld()){
+			_ctx.globalAlpha = 0.9;
+			_ctx.drawImage(registry.textures.misc["invalidunderlay"], pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
+			_ctx.globalAlpha = 1.0;
 			return;
 		}
+		if(buildingID == "0xFFFF") return;
 
 		if(isError){
 			_ctx.globalAlpha = 0.9;
@@ -947,28 +946,12 @@ class Item {
 			consts.DISPLAY_SCALE * (this.y + Game.scroll.y - 8) > window.innerHeight
 		){return;}//if offscreen return immediately
 		currentframe.ips ++;
-		ctx3.drawImage(registry.textures.item[this.id], this.x * consts.DISPLAY_SCALE + (Game.scroll.x * consts.DISPLAY_SCALE) - 8*consts.DISPLAY_SCALE, this.y * consts.DISPLAY_SCALE + (Game.scroll.y * consts.DISPLAY_SCALE) - 8*consts.DISPLAY_SCALE, 16 * consts.DISPLAY_SCALE, 16 * consts.DISPLAY_SCALE);
-		if(keysHeld.includes("Shift")){
-			let x = (mouse.x - (Game.scroll.x * consts.DISPLAY_SCALE))/consts.DISPLAY_SCALE;
-			let y = (mouse.y - (Game.scroll.y * consts.DISPLAY_SCALE))/consts.DISPLAY_SCALE;
-			if(
-				x > this.x - (8 * consts.DISPLAY_SCALE) &&
-				y > this.y - (8 * consts.DISPLAY_SCALE) &&
-				x < this.x + (8 * consts.DISPLAY_SCALE) &&
-				y < this.y + (8 * consts.DISPLAY_SCALE)
-			){
-				ctx4.font = "16px monospace";
-				ctx4.fillStyle = "#0033CC";
-				ctx4.fillRect(mouse.x, mouse.y, (names.item[this.id] ?? this.id).length * 10, 16);
-				ctx4.strokeStyle = "#000000";
-				ctx4.strokeRect(mouse.x, mouse.y, (names.item[this.id] ?? this.id).length * 10, 16);
-				ctx4.fillStyle = "#FFFFFF";
-				ctx4.fillText((names.item[this.id] ?? this.id), mouse.x + 2, mouse.y + 10);
-				if(currentframe?.tooltip){
-					currentframe.tooltip = false;
-				}
-			}
-		}
+		ctx3.drawImage(
+			registry.textures.item[this.id],
+			this.x * consts.DISPLAY_SCALE + (Game.scroll.x * consts.DISPLAY_SCALE) - 8*consts.DISPLAY_SCALE,
+			this.y * consts.DISPLAY_SCALE + (Game.scroll.y * consts.DISPLAY_SCALE) - 8*consts.DISPLAY_SCALE,
+			16 * consts.DISPLAY_SCALE, 16 * consts.DISPLAY_SCALE
+		);
 	}
 	export():ItemData {
 		if(this.deleted) return null;
