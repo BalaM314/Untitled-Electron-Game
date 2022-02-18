@@ -67,7 +67,7 @@ function registerEventHandlers() {
                 keybind.check(e);
             }
         }
-        if (e.ctrlKey && e.key.match(/^[w]$/) || e.key.match(/^[ertuni]$/i) || e.key.match(/^f[5]$/i)) {
+        if (e.ctrlKey && e.key.match(/^[w]$/) || e.key.match(/^[ertuni1-9]$/i) || e.key.match(/^f[5]$/i)) {
             return;
         }
         e.preventDefault();
@@ -94,7 +94,7 @@ function registerEventHandlers() {
         mouse.held = false;
     };
     window.onbeforeunload = (e) => {
-        if (Game.state == "title" || Game.state == "loading") {
+        if (Game.state != "game") {
             return;
         }
         if (!localStorage.getItem("save1") || JSON.parse(localStorage.getItem("save1"))?.metadata?.uuid == level1?.uuid) {
@@ -187,7 +187,7 @@ let state = {
                 x: () => innerWidth * 0.25,
                 y: () => innerHeight * 0.5,
                 width: () => innerWidth * 0.25,
-                height: () => innerHeight * 0.2,
+                height: () => innerHeight * 0.15,
                 label: () => "Tutorial: " + settings.tutorial,
                 color: "#0000FF",
                 font: "35px sans-serif",
@@ -197,7 +197,7 @@ let state = {
                 x: () => innerWidth * 0.51,
                 y: () => innerHeight * 0.5,
                 width: () => innerWidth * 0.25,
-                height: () => innerHeight * 0.2,
+                height: () => innerHeight * 0.15,
                 label: () => "Debug: " + settings.debug,
                 color: "#0000FF",
                 font: "35px sans-serif",
@@ -205,9 +205,9 @@ let state = {
             }),
             new Button({
                 x: () => innerWidth * 0.25,
-                y: () => innerHeight * 0.71,
+                y: () => innerHeight * 0.66,
                 width: () => innerWidth * 0.25,
-                height: () => innerHeight * 0.2,
+                height: () => innerHeight * 0.15,
                 label: () => "Always load save: " + settings.alwaysLoadSave,
                 color: "#0000FF",
                 font: "35px sans-serif",
@@ -215,13 +215,23 @@ let state = {
             }),
             new Button({
                 x: () => innerWidth * 0.51,
-                y: () => innerHeight * 0.71,
+                y: () => innerHeight * 0.66,
                 width: () => innerWidth * 0.25,
-                height: () => innerHeight * 0.2,
+                height: () => innerHeight * 0.15,
                 label: () => "Autosave: " + settings.autoSave,
                 color: "#0000FF",
                 font: "35px sans-serif",
                 onClick: () => { settings.autoSave = !settings.autoSave; }
+            }),
+            new Button({
+                x: () => innerWidth * 0.25,
+                y: () => innerHeight * 0.82,
+                width: () => innerWidth * 0.25,
+                height: () => innerHeight * 0.15,
+                label: "Controls",
+                color: "#0000FF",
+                font: "35px sans-serif",
+                onClick: () => { Game.state = "settings.keybinds"; }
             }),
             new Button({
                 x: () => innerWidth * 0.9,
@@ -244,23 +254,49 @@ let state = {
             ctx.textBaseline = "middle";
             ctx.fillStyle = "#000000";
             ctx.fillText("Settings", innerWidth / 2, innerHeight * 0.2);
-            ctx.strokeStyle = "#000000";
-            ctx.strokeRect(innerWidth * 0.9, innerHeight * 0.01, innerWidth * 0.09, innerHeight * 0.09);
-            ctx.fillStyle = "#FF0000";
-            ctx.font = "50px sans-serif";
-            ctx.fillText("❌", innerWidth * 0.945, innerHeight * 0.055);
-            ctx.strokeRect(innerWidth * 0.25, innerHeight * 0.5, innerWidth * 0.25, innerHeight * 0.2);
-            ctx.strokeRect(innerWidth * 0.51, innerHeight * 0.5, innerWidth * 0.25, innerHeight * 0.2);
-            ctx.fillStyle = "#0000FF";
-            rect(innerWidth * 0.25, innerHeight * 0.5, innerWidth * 0.25, innerHeight * 0.2, rectMode.CORNER);
-            rect(innerWidth * 0.51, innerHeight * 0.5, innerWidth * 0.25, innerHeight * 0.2, rectMode.CORNER);
-            ctx.fillStyle = "#FFFFFF";
-            ctx.fillText("Tutorial: " + settings.tutorial, innerWidth * 0.375, innerHeight * 0.6);
-            ctx.fillText("Debug: " + settings.debug, innerWidth * 0.625, innerHeight * 0.6);
             state.settings.buttons.forEach(button => button.display(ctx));
         },
         onclick: function (e) {
             state.settings.buttons.forEach(button => button.handleMouseClick(e));
+        }
+    },
+    "settings.keybinds": {
+        buttons: [
+            new Button({
+                x: () => innerWidth * 0.3,
+                y: () => innerHeight * 0.3,
+                width: () => innerWidth * 0.4,
+                height: () => innerHeight * 0.05,
+                label: () => `Move up: ${registry.keybinds.move.up.modifiers.filter(key => !key.startsWith("!")).join(" + ")}${registry.keybinds.move.up.mainKey}`,
+                color: "#0000FF",
+                font: "15px sans-serif",
+                onClick: () => { registry.keybinds.move.up.mainKey = prompt("Rebind move up to:"); }
+            }),
+            new Button({
+                x: () => innerWidth * 0.9,
+                y: () => innerHeight * 0.01,
+                width: () => innerWidth * 0.09,
+                height: () => innerHeight * 0.09,
+                label: "❌",
+                color: "#0000FF",
+                font: "40px sans-serif",
+                onClick: () => { Game.state = "settings"; }
+            }),
+        ],
+        update: function () { },
+        display: function (currentFrame) {
+            ctx.clearRect(-1, -1, 10000, 10000);
+            ctx.fillStyle = "#0033CC";
+            ctx.fillRect(0, 0, innerWidth, innerHeight);
+            ctx.font = "60px sans-serif";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillStyle = "#000000";
+            ctx.fillText("Keybinds", innerWidth / 2, innerHeight * 0.2);
+            state["settings.keybinds"].buttons.forEach(button => button.display(ctx));
+        },
+        onclick: function (e) {
+            state["settings.keybinds"].buttons.forEach(button => button.handleMouseClick(e));
         }
     },
     game: {

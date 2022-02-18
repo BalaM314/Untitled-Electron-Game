@@ -30,3 +30,5 @@ fix the save format
 texture loading is sus
 
 fix multiblocks breaking the resource acceptors(beta)
+
+make extractors keep their items on save

@@ -340,7 +340,7 @@ let Game: {
 	tutorial: {
 		[index: string]: any
 	};
-	state: "loading" | "title" | "settings" | "game";
+	state: "loading" | "title" | "settings" | "settings.keybinds" | "game";
 	title: {
 		splashtext: string;
 		splashbehavior: string;
