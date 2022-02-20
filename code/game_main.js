@@ -109,6 +109,9 @@ function registerEventHandlers() {
                     localStorage.setItem('save1', JSON.stringify(exportData()));
                     localStorage.removeItem("save-recovered");
                 }
+                else {
+                    alert("Sorry there aren't any save slots yet.");
+                }
             }, 1);
         }
     };
@@ -326,7 +329,8 @@ let state = {
             }
             ctx4.font = "30px sans-serif";
             ctx4.fillStyle = "#000000";
-            ctx4.fillText((Math.round(-(Game.scroll.x * consts.DISPLAY_SCALE) / consts.DISPLAY_TILE_SIZE).toString() + ", " + Math.round(-(Game.scroll.y * consts.DISPLAY_SCALE) / consts.DISPLAY_TILE_SIZE).toString()), 10, 100);
+            ctx4.fillText((Math.round(-(Game.scroll.x * consts.DISPLAY_SCALE) / consts.DISPLAY_TILE_SIZE).toString()
+                + ", " + Math.round(-(Game.scroll.y * consts.DISPLAY_SCALE) / consts.DISPLAY_TILE_SIZE).toString()), 10, 100);
             if (settings.debug) {
                 ctx4.fillText("C: " + currentFrame.cps, 10, 150);
                 ctx4.fillText("I: " + currentFrame.ips, 10, 200);
@@ -428,15 +432,16 @@ function main_loop() {
     }
     catch (err) {
         alert("An error has occurred! Oopsie.\nPlease create an issue on this project's GitHub so I can fix it.\nError message: " + err.message);
-        if (err.message.startsWith("Error updating world:")) {
-        }
         ctxs.forEach((ctx) => { ctx.clearRect(0, 0, innerWidth, innerHeight); });
         throw err;
     }
     Game.animationFrame = requestAnimationFrame(main_loop);
 }
 function load() {
-    loadTexturesIntoMemory();
+    if (!loadTexturesIntoMemory()) {
+        alert("Not all textures have loaded yet somehow! This shouldn't be happening.");
+        return;
+    }
     level1 = new Level(314);
     if (!localStorage.firstload) {
         localStorage.firstload = true;
@@ -444,7 +449,8 @@ function load() {
 This is a game about building a factory. It's still in early alpha, so there's not much content.
 There's no good in game tutorial, so to get started check the wiki page: https://github.com/BalaM314/Untitled-Electron-Game/wiki/Quickstart-Guide`);
     }
-    if (localStorage.getItem("save1") && (settings.alwaysLoadSave || confirm("Would you like to load your save?"))) {
+    if (localStorage.getItem("save1") &&
+        (settings.alwaysLoadSave || confirm("Would you like to load your save?"))) {
         importData(localStorage.getItem("save1"));
     }
     Game.state = "game";
@@ -452,7 +458,8 @@ There's no good in game tutorial, so to get started check the wiki page: https:/
     document.getElementById("toolbar").classList.remove("hidden");
     document.getElementById("resources").classList.remove("hidden");
     if (settings.autoSave) {
-        if (!localStorage.getItem("save1") || JSON.parse(localStorage.getItem("save1"))?.metadata?.uuid == level1.uuid) {
+        if (!localStorage.getItem("save1") ||
+            (JSON.parse(localStorage.getItem("save1"))?.metadata?.uuid == level1?.uuid)) {
             setInterval(() => {
                 localStorage.setItem("save1", JSON.stringify(exportData()));
                 console.log("Autosaved.");
@@ -460,7 +467,7 @@ There's no good in game tutorial, so to get started check the wiki page: https:/
             }, 30000);
         }
         else {
-            alert("It looks like your current world isn't the same world as your save. Autosaving has been disabled to avoid overwriting it.");
+            _alert("It looks like your current world isn't the same world as your save. Autosaving has been disabled to avoid overwriting it.");
         }
     }
 }

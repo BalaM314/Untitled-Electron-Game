@@ -1,4 +1,5 @@
 
+/**Registers event handlers, called once on page load. */
 function registerEventHandlers(){
 
 	//Update mouse position
@@ -106,7 +107,7 @@ function registerEventHandlers(){
 	}
 	
 
-
+	//When file uploaded
 	uploadButton.onchange = function(event:any){
 		//Load a save file
 		let file = event.target.files[0];
@@ -130,12 +131,17 @@ function registerEventHandlers(){
 	}
 
 	window.onbeforeunload = (e:BeforeUnloadEvent) => {
+		//Page is about to close
 		if(Game.state != "game"){
 			return;
+			//If you aren't in-game, just exit
 		}
+
 		if(!localStorage.getItem("save1") || JSON.parse(localStorage.getItem("save1"))?.metadata?.uuid == level1?.uuid){
+			//If there's nothing in save1 or the uuid of save1 and the current level are the same, save
 			localStorage.setItem("save1", JSON.stringify(exportData()));
 		} else {
+			//Try to cancel page close
 			e.preventDefault();
 			e.returnValue = "";
 			localStorage.setItem("save-recovered", JSON.stringify(exportData()));
@@ -143,6 +149,8 @@ function registerEventHandlers(){
 				if(confirm("Could not save automatically on page exit because your current world is unrelated to your saved world.\nWould you like to save anyway? This will overwrite your current save!")){
 					localStorage.setItem('save1', JSON.stringify(exportData()));
 					localStorage.removeItem("save-recovered");
+				} else {
+					alert("Sorry there aren't any save slots yet.");
 				}
 			}, 1);
 		}
@@ -155,8 +163,10 @@ function registerEventHandlers(){
 
 
 
-
+/**Used for fps calculation. */
 let fps = [0, 0, 0, 0, 0, 0];
+//todo fix this VV probably repeating myself a lot
+/**Holds all the function that do things in each game state. */
 let state: {
 	[P in typeof Game.state]: {
 		buttons: Button[],
@@ -373,7 +383,11 @@ let state: {
 			level.display(currentFrame);
 		
 			
-			level.displayGhostBuilding((mouse.x - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE, (mouse.y - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE, placedBuilding.ID);
+			level.displayGhostBuilding(
+				(mouse.x - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE,
+				(mouse.y - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE,
+				placedBuilding.ID
+			);
 			if(registry.keybinds.display.show_tooltip.isHeld()){
 				level.displayTooltip(mouse.x, mouse.y, currentFrame);
 			}
@@ -381,7 +395,12 @@ let state: {
 			//display overlays
 			ctx4.font = "30px sans-serif";
 			ctx4.fillStyle = "#000000";
-			ctx4.fillText((Math.round(- (Game.scroll.x * consts.DISPLAY_SCALE) / consts.DISPLAY_TILE_SIZE).toString() + ", " + Math.round(- (Game.scroll.y * consts.DISPLAY_SCALE) / consts.DISPLAY_TILE_SIZE).toString()), 10, 100);
+			ctx4.fillText((
+					Math.round(- (Game.scroll.x * consts.DISPLAY_SCALE) / consts.DISPLAY_TILE_SIZE).toString()
+					+ ", " + Math.round(- (Game.scroll.y * consts.DISPLAY_SCALE) / consts.DISPLAY_TILE_SIZE).toString()
+				),
+				10, 100
+			);
 			
 			if(settings.debug){
 				ctx4.fillText("C: " + currentFrame.cps, 10, 150);
@@ -408,7 +427,11 @@ let state: {
 		onmouseheld: function(){
 			let e = mouse.latestEvent;
 			if(!(keysHeld.includes("control") || registry.keybinds.placement.break_building.isHeld()) && placedBuilding.ID != "0xFFFF"){
-				level1.buildBuilding(Math.floor((e.x - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE), Math.floor((e.y - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE), placedBuilding.ID);
+				level1.buildBuilding(
+					Math.floor((e.x - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE),
+					Math.floor((e.y - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE),
+					placedBuilding.ID
+				);
 			}
 		},
 		//Unlike the onkeydown function, this one needs to run based on keys being held.
@@ -431,16 +454,20 @@ let state: {
 			}
 			if(registry.keybinds.placement.break_building.isHeld()){
 				currentframe.redraw = true;
-				level1.buildBuilding(Math.floor((mouse.x - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE), Math.floor((mouse.y - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE), BuildingID["0xFFFF"]);
+				level1.buildBuilding(
+					Math.floor((mouse.x - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE),
+					Math.floor((mouse.y - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE),
+					BuildingID["0xFFFF"]
+				);
 			}
 		}
 	}
 };
 
 
-
-
+/**Sets the canvas sizes to the window size. */
 function fixSizes(){
+	//This has to be done dynamically because for some reason setting a canvas to width:100% height:100% makes it glitch out.
 	for(let x of ctxs){
 		if(x.canvas.width != window.innerWidth){
 			x.canvas.width = window.innerWidth;
@@ -452,6 +479,7 @@ function fixSizes(){
 		}
 	}
 }
+
 
 function handleAlerts(){
 	if(alerts.list.length && alerts.active == false){
@@ -465,7 +493,7 @@ function handleAlerts(){
 
 
 
-
+/**The main loop! Called once per frame. */
 function main_loop(){
 	try {
 		let startFrameTime = new Date();
@@ -508,18 +536,18 @@ function main_loop(){
 
 	} catch(err){
 		alert("An error has occurred! Oopsie.\nPlease create an issue on this project's GitHub so I can fix it.\nError message: " + err.message);
-		if(err.message.startsWith("Error updating world:")){
-
-		}
 		ctxs.forEach((ctx) => {ctx.clearRect(0,0,innerWidth,innerHeight)});
 		throw err;
 	}
 	Game.animationFrame = requestAnimationFrame(main_loop);
 }
 
-
+/**Called when switching to gamestate "game". */
 function load(){
-	loadTexturesIntoMemory();
+	if(!loadTexturesIntoMemory()){
+		alert("Not all textures have loaded yet somehow! This shouldn't be happening.");
+		return;
+	}
 	level1 = new Level(314);
 
 	
@@ -530,7 +558,10 @@ This is a game about building a factory. It's still in early alpha, so there's n
 There's no good in game tutorial, so to get started check the wiki page: https://github.com/BalaM314/Untitled-Electron-Game/wiki/Quickstart-Guide`);
 	}
 
-	if(localStorage.getItem("save1") && (settings.alwaysLoadSave || confirm("Would you like to load your save?"))){
+	if(
+		localStorage.getItem("save1") &&
+		(settings.alwaysLoadSave || confirm("Would you like to load your save?"))
+	){
 		importData(localStorage.getItem("save1"));
 	}
 
@@ -540,14 +571,17 @@ There's no good in game tutorial, so to get started check the wiki page: https:/
 	document.getElementById("resources").classList.remove("hidden");
 
 	if(settings.autoSave){
-		if(!localStorage.getItem("save1") || JSON.parse(localStorage.getItem("save1"))?.metadata?.uuid == level1.uuid){
+		if(
+			!localStorage.getItem("save1") ||
+			(JSON.parse(localStorage.getItem("save1"))?.metadata?.uuid == level1?.uuid)
+		){
 			setInterval(() => {
 				localStorage.setItem("save1", JSON.stringify(exportData()));
 				console.log("Autosaved.");
 				Game.lastSaved = millis();
 			}, 30000);
 		} else {
-			alert("It looks like your current world isn't the same world as your save. Autosaving has been disabled to avoid overwriting it.");
+			_alert("It looks like your current world isn't the same world as your save. Autosaving has been disabled to avoid overwriting it.");
 		}
 	}
 }
@@ -555,7 +589,7 @@ There's no good in game tutorial, so to get started check the wiki page: https:/
 
 
 
-
+/**Exports an Untitled Electron Game save, as an object. */
 function exportData():SaveData {
 	return {
 		UntitledElectronGame: {
@@ -570,6 +604,7 @@ function exportData():SaveData {
 	};
 }
 
+/**Imports an Untitled Electron Game save. */
 function importData(rawData:string){
 	let tempLevel:Level;
 	try {
@@ -591,7 +626,7 @@ function importData(rawData:string){
 	}
 }
 
-
+/**An object to store the type, direction, and modifier of placed buildings. */
 let placedBuilding: {
 	type: RawBuildingID
 	direction: 0x000 | 0x100 | 0x200 | 0x300;
@@ -615,7 +650,7 @@ let placedBuilding: {
 };
 
 
-
+/**Called once on page load. */
 function init(){
 	try {
 		assert(localStorage.getItem("settings"));
