@@ -56,6 +56,15 @@
 				font-size: 200%;
 				z-index: 0;
 			}
+			#loading_background {
+				position: absolute;
+				width: 100%;
+				height: 100%;
+				background-color: #44C;
+				text-align: center;
+				font-size: 200%;
+				z-index: 0;
+			}
 			#toolbar {
 				position: absolute;
 				display: flex;
@@ -185,7 +194,11 @@
 			<span id="base_steelIngot">0</span>
 		</div>
 		<div class="hidden" onload="this.innerText = 'Why are you able to read this?\nThis div contains a boilerplate description for search engines.';">Untitled Electron Game is a factory building game that's in early alpha. Play it now!</div>
-		<div id="error_background">Oops! If you're seeing this(for more than a second), something went wrong. Please check the dev console(F12 then console) for any red boxes, take a screenshot, and report it to the <a href="https://github.com/BalaM314/Untitled-Electron-Game/issues">issue tracker.</a></div>
+		<div id="error_background" class="hidden">Oops! If you're seeing this(for more than a second), something went wrong. Please check the dev console(F12 then console) for any red boxes, take a screenshot, and report it to the <a href="https://github.com/BalaM314/Untitled-Electron-Game/issues">issue tracker.</a></div>
+		<div id="loading_background">
+			<h1>Loading...</h1>
+			<p>If this screen lasts for more than a few seconds, something may be wrong. Try refreshing the page.</p>
+		</div>
 		<div id="toolbar" class="hidden">
 			<img src="assets/textures/building/0x0001.png" id="1" title="Conveyor">
 			<img src="assets/textures/building/0x0002.png" id="2" title="Miner">

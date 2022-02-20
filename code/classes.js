@@ -14,7 +14,7 @@ class Level {
             this.buildBuilding(-1, -1, "0x0008");
         }
         else {
-            let { chunks, items, resources, seed, version, uuid } = data;
+            let { chunks, resources, seed, version, uuid } = data;
             this.seed = seed;
             this.resources = resources;
             this.uuid = uuid;

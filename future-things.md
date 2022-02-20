@@ -31,4 +31,4 @@ texture loading is sus
 
 fix multiblocks breaking the resource acceptors(beta)
 
-make extractors keep their items on save
+make buildings with recipes keep their items on save

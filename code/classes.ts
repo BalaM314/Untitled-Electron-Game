@@ -26,7 +26,7 @@ class Level {
 			this.buildBuilding(-1, -1, "0x0008");
 		} else {
 			// Generate a level from JSON
-			let {chunks, items, resources, seed, version, uuid} = data;
+			let {chunks, resources, seed, version, uuid} = data;
 			this.seed = seed;
 			this.resources = resources;
 			this.uuid = uuid;
@@ -531,6 +531,7 @@ class Chunk {
 						buildingData.id, this.parent
 					);
 					if(buildingData.item && +data.version.split(" ")[1].replaceAll(".", "") >= 130){
+						//AAAAAAAAAAAAAAaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaAAA
 						tempBuilding.item = new Item(buildingData.item.x, buildingData.item.y, buildingData.item.id, this.parent);
 						tempBuilding.item.grabbedBy = tempBuilding;
 					}

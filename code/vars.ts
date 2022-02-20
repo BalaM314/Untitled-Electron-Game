@@ -112,7 +112,7 @@ const generation_consts = {
 	}
 };
 const consts = {
-	VERSION: "alpha 2.0.0",
+	VERSION: "alpha 2.0.1",
 	CHUNK_SIZE: 16,//Size of a chunk in tiles.
 	TILE_SIZE: 30,//Sile of a tile in pixels.
 	DISPLAY_SCALE: 1,

@@ -669,5 +669,8 @@ if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigat
 Game.title.splashtext = Math.random() < 0.95 ? splashes[Math.ceil(Math.random() * (splashes.length - 1))] : raresplashes[Math.ceil(Math.random() * (raresplashes.length - 1))];
 Game.title.splashbehavior = Math.random() < 0.9 ? "sin" : "tan";
 
+document.getElementById("error_background").classList.remove("hidden");
+document.getElementById("loading_background").classList.add("hidden");
+
 main_loop();
 
