@@ -45,6 +45,7 @@ class Level {
 
 		}
 	}
+	
 	getChunk(tileX:number, tileY:number, dontGenerateChunk?:boolean):Chunk {
 		if(this.storage.get(`${Math.floor(tileX / consts.CHUNK_SIZE)},${Math.floor(tileY / consts.CHUNK_SIZE)}`)){
 			return this.storage.get(`${Math.floor(tileX / consts.CHUNK_SIZE)},${Math.floor(tileY / consts.CHUNK_SIZE)}`);
@@ -63,26 +64,6 @@ class Level {
 			.generate()
 		);
 		return this.storage.get(`${x},${y}`);
-	}
-	tileAtByPixel(pixelX:number, pixelY:number):TileID{
-		return this.getChunk(
-			Math.floor(pixelX/consts.TILE_SIZE),
-			Math.floor(pixelY/consts.TILE_SIZE)
-		).tileAt(tileOffsetInChunk(pixelX/consts.TILE_SIZE), tileOffsetInChunk(pixelY/consts.TILE_SIZE));
-	}
-	tileAtByTile(tileX:number, tileY:number):TileID{
-		return this.getChunk(
-			Math.floor(tileX),
-			Math.floor(tileY)
-		).tileAt(tileOffsetInChunk(tileX), tileOffsetInChunk(tileY));
-	}
-	setTileByTile(tileX:number, tileY:number, tile:TileID):boolean {
-		if(this.getChunk(tileX,tileY)){
-			this.getChunk(tileX,tileY).setTile(tileOffsetInChunk(tileX), tileOffsetInChunk(tileY), tile);
-			Game.forceRedraw = true;
-			return true;
-		}
-		return false;
 	}
 	generateNecessaryChunks(){
 		let xOffset = - Math.floor((Game.scroll.x * consts.DISPLAY_SCALE) / (consts.DISPLAY_TILE_SIZE * consts.CHUNK_SIZE));
@@ -103,6 +84,27 @@ class Level {
 		this.generateChunk(xOffset + 3, yOffset);
 		this.generateChunk(xOffset + 3, yOffset + 1);
 		//good enough
+	}
+
+	tileAtByPixel(pixelX:number, pixelY:number):TileID{
+		return this.getChunk(
+			Math.floor(pixelX/consts.TILE_SIZE),
+			Math.floor(pixelY/consts.TILE_SIZE)
+		).tileAt(tileOffsetInChunk(pixelX/consts.TILE_SIZE), tileOffsetInChunk(pixelY/consts.TILE_SIZE));
+	}
+	tileAtByTile(tileX:number, tileY:number):TileID{
+		return this.getChunk(
+			Math.floor(tileX),
+			Math.floor(tileY)
+		).tileAt(tileOffsetInChunk(tileX), tileOffsetInChunk(tileY));
+	}
+	setTileByTile(tileX:number, tileY:number, tile:TileID):boolean {
+		if(this.getChunk(tileX,tileY)){
+			this.getChunk(tileX,tileY).setTile(tileOffsetInChunk(tileX), tileOffsetInChunk(tileY), tile);
+			Game.forceRedraw = true;
+			return true;
+		}
+		return false;
 	}
 	buildingIDAtPixel(pixelX:number, pixelY:number):BuildingID {
 		return this.getChunk(
@@ -134,11 +136,24 @@ class Level {
 			Math.floor(tileY)
 		).extractorAt(tileOffsetInChunk(tileX), tileOffsetInChunk(tileY));
 	}
-	update(currentFrame:CurrentFrame){
-		for(let chunk of this.storage.values()){
-			chunk.update(currentFrame);
+	writeBuilding(tileX:number, tileY:number, building:Building):boolean {
+		if(this.getChunk(tileX,tileY)){
+			this.getChunk(tileX,tileY).setBuilding(tileOffsetInChunk(tileX), tileOffsetInChunk(tileY), building);
+			Game.forceRedraw = true;
+			return true;
 		}
+		return false;
 	}
+	writeExtractor(tileX:number, tileY:number, building:Extractor):boolean {
+		if(this.getChunk(tileX,tileY)){
+			this.getChunk(tileX,tileY).setExtractor(tileOffsetInChunk(tileX), tileOffsetInChunk(tileY), building);
+			Game.forceRedraw = true;
+			return true;
+		}
+		return false;
+	}
+	
+	
 	displayGhostBuilding(tileX:number, tileY:number, buildingID:BuildingID){
 		tileX = Math.floor(tileX);
 		tileY = Math.floor(tileY);
@@ -174,19 +189,19 @@ class Level {
 		function isOutputBuilding(buildingid:BuildingID):boolean {
 			return ["0x0002", "0x0004", "0x0007", "0x0009", "0x000A", "0x000B", "0x0011"].includes(buildingid);
 		}
-		let hasLeftBuilding:BuildingID | boolean = this.buildingIDAtTile(tileX - 1, tileY);
-		hasLeftBuilding = ["0x0001", "0x0401", "0x0501", "0x0C01", "0x0D01"].includes(hasLeftBuilding)
-			|| isOutputBuilding(hasLeftBuilding);
-		let hasTopBuilding:BuildingID | boolean = this.buildingIDAtTile(tileX, tileY - 1);
-		hasTopBuilding = ["0x0101", "0x0601", "0x0701", "0x0E01", "0x0F01"].includes(hasTopBuilding)
-			|| isOutputBuilding(hasTopBuilding);
-		let hasRightBuilding:BuildingID | boolean = this.buildingIDAtTile(tileX + 1, tileY);
-		hasRightBuilding = ["0x0201", "0x0801", "0x0901", "0x1001", "0x1101"].includes(hasRightBuilding)
-			|| isOutputBuilding(hasRightBuilding);
-		let hasBottomBuilding:BuildingID | boolean = this.buildingIDAtTile(tileX, tileY + 1);
-		hasBottomBuilding = ["0x0301", "0x0A01", "0x0B01", "0x1201", "0x1301"].includes(hasBottomBuilding)
-			|| isOutputBuilding(hasBottomBuilding);
-		//this can probably be refactored to take up 10% the space
+		let leftBuilding:BuildingID = this.buildingIDAtTile(tileX - 1, tileY);
+		let hasLeftBuilding = ["0x0001", "0x0401", "0x0501", "0x0C01", "0x0D01"].includes(leftBuilding)
+			|| isOutputBuilding(leftBuilding);
+		let topBuilding:BuildingID = this.buildingIDAtTile(tileX, tileY - 1);
+		let hasTopBuilding = ["0x0101", "0x0601", "0x0701", "0x0E01", "0x0F01"].includes(topBuilding)
+			|| isOutputBuilding(topBuilding);
+		let rightBuilding:BuildingID = this.buildingIDAtTile(tileX + 1, tileY);
+		let hasRightBuilding = ["0x0201", "0x0801", "0x0901", "0x1001", "0x1101"].includes(rightBuilding)
+			|| isOutputBuilding(rightBuilding);
+		let bottomBuilding:BuildingID = this.buildingIDAtTile(tileX, tileY + 1);
+		let hasBottomBuilding = ["0x0301", "0x0A01", "0x0B01", "0x1201", "0x1301"].includes(bottomBuilding)
+			|| isOutputBuilding(bottomBuilding);
+		
 		switch(conveyorType){
 			case 0:
 				if(hasLeftBuilding){
@@ -282,22 +297,6 @@ class Level {
 				break;
 		}
 	}
-	writeBuilding(tileX:number, tileY:number, building:Building):boolean {
-		if(this.getChunk(tileX,tileY)){
-			this.getChunk(tileX,tileY).setBuilding(tileOffsetInChunk(tileX), tileOffsetInChunk(tileY), building);
-			Game.forceRedraw = true;
-			return true;
-		}
-		return false;
-	}
-	writeExtractor(tileX:number, tileY:number, building:Extractor):boolean {
-		if(this.getChunk(tileX,tileY)){
-			this.getChunk(tileX,tileY).setExtractor(tileOffsetInChunk(tileX), tileOffsetInChunk(tileY), building);
-			Game.forceRedraw = true;
-			return true;
-		}
-		return false;
-	}
 	buildBuilding(tileX:number, tileY:number, buildingID:BuildingID):boolean {
 		if(this.buildingIDAtTile(tileX, tileY) == "0x0008") return false;
 		if(getRawBuildingID(buildingID) != "0x05"){
@@ -353,6 +352,12 @@ class Level {
 			return this.writeBuilding(tileX, tileY, tempBuilding);
 		}
 	}
+
+	update(currentFrame:CurrentFrame){
+		for(let chunk of this.storage.values()){
+			chunk.update(currentFrame);
+		}
+	}
 	display(currentframe:Object):void {
 		
 		//Instantly returns in the display method if offscreen.
@@ -397,8 +402,6 @@ class Level {
 		ctx4.fillText((names.tile[tileID] ?? tileID), mousex + 2, mousey + 10);
 		return;
 	}
-
-
 	export():LevelData {
 		//Exports the level's data to JSON.
 		let chunkOutput = {};
@@ -435,7 +438,7 @@ class Chunk {
 	y: number;
 	chunkSeed: number;
 	parent: Level;
-	constructor({ x, y, seed, parent}: { x: number; y: number; seed: number; parent: Level;}, data?:ChunkData){
+	constructor({x, y, seed, parent}: { x: number; y: number; seed: number; parent: Level;}, data?:ChunkData){
 		this.x = x;
 		this.y = y;
 		this.parent = parent;
@@ -783,49 +786,13 @@ class Chunk {
 			}
 			_ctx.globalAlpha = +buildingID % 0x100 == 0x01 ? 0.3 : 0.7;
 		}
-		if(registry.textures.building[buildingID]){
-			switch(buildingID){
-				case "0x0005":
-					_ctx.drawImage(registry.textures.building[buildingID], pixelX, pixelY, consts.DISPLAY_TILE_SIZE * 2, consts.DISPLAY_TILE_SIZE); break;
-				case "0x0105":
-					_ctx.drawImage(registry.textures.building[buildingID], pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE * 2); break;
-				case "0x0205":
-					_ctx.drawImage(registry.textures.building[buildingID], pixelX - consts.DISPLAY_TILE_SIZE, pixelY, consts.DISPLAY_TILE_SIZE * 2, consts.DISPLAY_TILE_SIZE); break;
-				case "0x0305":
-					_ctx.drawImage(registry.textures.building[buildingID], pixelX, pixelY - consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE * 2); break;
-				case "0x0405":
-					_ctx.drawImage(registry.textures.building[buildingID], pixelX, pixelY, consts.DISPLAY_TILE_SIZE * 3, consts.DISPLAY_TILE_SIZE); break;
-				case "0x0505":
-					_ctx.drawImage(registry.textures.building[buildingID], pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE * 3); break;
-				case "0x0605":
-					_ctx.drawImage(registry.textures.building[buildingID], pixelX - consts.DISPLAY_TILE_SIZE * 2, pixelY, consts.DISPLAY_TILE_SIZE * 3, consts.DISPLAY_TILE_SIZE); break;
-				case "0x0705":
-					_ctx.drawImage(registry.textures.building[buildingID], pixelX, pixelY - consts.DISPLAY_TILE_SIZE * 2, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE * 3); break;
-				case "0x0805":
-					_ctx.drawImage(registry.textures.building[buildingID], pixelX, pixelY, consts.DISPLAY_TILE_SIZE * 4, consts.DISPLAY_TILE_SIZE); break;
-				case "0x0905":
-					_ctx.drawImage(registry.textures.building[buildingID], pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE * 4); break;
-				case "0x0A05":
-					_ctx.drawImage(registry.textures.building[buildingID], pixelX - consts.DISPLAY_TILE_SIZE * 3, pixelY, consts.DISPLAY_TILE_SIZE * 4, consts.DISPLAY_TILE_SIZE); break;
-				case "0x0B05":
-					_ctx.drawImage(registry.textures.building[buildingID], pixelX, pixelY - consts.DISPLAY_TILE_SIZE * 3, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE * 4); break;
-				case "0x0011":
-					_ctx.drawImage(registry.textures.building[buildingID], pixelX, pixelY, consts.DISPLAY_TILE_SIZE * 2, consts.DISPLAY_TILE_SIZE * 2); break;
-				default:
-					_ctx.drawImage(registry.textures.building[buildingID], pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE); break;
-			}
-			_ctx.globalAlpha = 1.0;
-		} else {
-			_ctx.fillStyle = "#FF00FF";
-			rect(pixelX, pixelY, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
-			rect(pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY + consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
-			_ctx.fillStyle = "#000000";
-			rect(pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
-			rect(pixelX, pixelY + consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
-			_ctx.font = "15px sans-serif";
-			_ctx.fillStyle = "#00FF00";
-			_ctx.fillText(buildingID.toString(), pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY + consts.DISPLAY_TILE_SIZE / 2);
-		}
+		Building.prototype.display.bind({
+			x: x,
+			y: y,
+			id: buildingID,
+			level: this
+		})();
+		_ctx.globalAlpha = 1.0;
 	}
 	displayL3(x:number, y:number, buildingID:BuildingID, isGhost?:number){
 		if(buildingID == "0xFFFF"){return;}
