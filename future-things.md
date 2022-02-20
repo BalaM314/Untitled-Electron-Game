@@ -23,7 +23,7 @@ yes
 
 ### more settings
 
-including ability to rebind keys
+make rebinds save to localstorage
 
 fix the save format
 

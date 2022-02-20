@@ -393,7 +393,7 @@ let splashes:string[] = [
 	"Got any grapes?",
 	"e",
 	"Hello fellow untitled electron game enthusiast, I have made this splash text ridiculously long to the point where it is only actually readable by accessing the game files. wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww Hello fellow untitled electron game enthusiast, I have made this splash text ridiculously long to the point where it is only actually readable by accessing the game files.",
-	"/execute order 66",
+	"/execute order 420",
 	"Now a noodle.",
 	"${splash}",
 	"Goes brrrrrrr!",
@@ -467,7 +467,6 @@ let splashes:string[] = [
 ];
 let raresplashes: string[] = [
 	"This is the rarest splash of all. It's so rare it never displays!",
-	"HAIL SUN CORP",
 	"notched apple",
 	"Diamonds never were actually forever",
 	"\"Now you can eat sunlight!\" - bill wurtz",

@@ -73,6 +73,11 @@ function registerEventHandlers(){
 			}
 		}
 
+		if(e.ctrlKey && (e.key.match(/^[w]$/) || e.key.match(/^[ertuni1-9]$/i) || e.key.match(/^f[5]$/i) )){
+			return;
+			//If you pressed one of these key combos, return
+		}
+
 		//Push key to keysHeld
 		if(keysHeld.indexOf(e.key.toLowerCase()) == -1){
 			keysHeld.push(e.key.toLowerCase());
@@ -89,10 +94,6 @@ function registerEventHandlers(){
 			}
 		}
 
-		if(e.ctrlKey && e.key.match(/^[w]$/) || e.key.match(/^[ertuni1-9]$/i) || e.key.match(/^f[5]$/i)){
-			return;
-			//If you pressed one of these key combos, return
-		}
 		//Otherwise prevent default
 		e.preventDefault();
 
@@ -312,16 +313,17 @@ let state: {
 	},
 	"settings.keybinds": {
 		buttons: [
-			new Button({
-				x: () => innerWidth * 0.3,
-				y: () => innerHeight * 0.3,
-				width: () => innerWidth * 0.4,
-				height: () => innerHeight * 0.05,
-				label: () => `Move up: ${registry.keybinds.move.up.modifiers.filter(key => !key.startsWith("!")).join(" + ")}${registry.keybinds.move.up.mainKey}`,
-				color: "#0000FF",
-				font: "15px sans-serif",
-				onClick: () => {registry.keybinds.move.up.mainKey = prompt("Rebind move up to:");}
-			}),
+			makeRebindButton(0.3, ["move", "up"], "Move up", "w"),
+			makeRebindButton(0.35, ["move", "left"], "Move left", "a"),
+			makeRebindButton(0.4, ["move", "down"], "Move down", "s"),
+			makeRebindButton(0.45, ["move", "right"], "Move right", "d"),
+			makeRebindButton(0.5, ["move", "scroll_faster"], "Scroll faster", "shift"),
+			makeRebindButton(0.55, ["saves", "save_to_file"], "Save to file", "s"),
+			makeRebindButton(0.6, ["saves", "save"], "Save to browser", "s"),
+			makeRebindButton(0.65, ["saves", "load_from_file"], "Load from file", "o"),
+			makeRebindButton(0.7, ["placement", "break_building"], "Break building", "backspace"),
+			makeRebindButton(0.75, ["placement", "force_straight_conveyor"], "Force straight conveyor", "shift"),
+			makeRebindButton(0.8, ["display", "show_tooltip"], "Show tooltips", "shift"),
 			new Button({
 				x: () => innerWidth * 0.9,
 				y: () => innerHeight * 0.01,

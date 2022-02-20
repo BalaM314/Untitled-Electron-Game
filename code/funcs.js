@@ -412,3 +412,21 @@ class Keybind {
         }
     }
 }
+function makeRebindButton(y, buttonID, buttonName, defaultKey) {
+    return new Button({
+        x: () => innerWidth * 0.3,
+        y: () => innerHeight * y,
+        width: () => innerWidth * 0.4,
+        height: () => innerHeight * 0.05,
+        label: () => `${buttonName}: ${registry.keybinds[buttonID[0]][buttonID[1]].modifiers
+            .filter(key => !key.startsWith("!"))
+            .map(el => el + " + ")
+            .join("")}${registry.keybinds[buttonID[0]][buttonID[1]].mainKey}`,
+        color: "#0000FF",
+        font: "15px sans-serif",
+        onClick: () => {
+            registry.keybinds[buttonID[0]][buttonID[1]].mainKey =
+                (prompt(`Rebind ${buttonName.toLowerCase()} to:`) ?? defaultKey).toLowerCase().substring(0, 1);
+        }
+    });
+}
