@@ -295,7 +295,6 @@ let settings = {
     debug: true,
     alwaysLoadSave: true,
     autoSave: true,
-    tutorial: false,
 };
 let Game = {
     scroll: {
@@ -306,31 +305,7 @@ let Game = {
     startTime: new Date().getTime(),
     lastSaved: null,
     forceRedraw: true,
-    tutorial: {
-        conveyor: {
-            placed: true,
-            beltchain: true,
-            placefail: true
-        },
-        miner: {
-            placefail: true,
-            placed: true,
-            coaloutput: true
-        },
-        trashcan: {
-            placed: true
-        },
-        furnace: {
-            placefail: true,
-            placed: true
-        },
-        item: {
-            coal: true,
-            iron: true,
-            steel: true
-        },
-        multiplesteel: false
-    },
+    tutorial: {},
     state: "loading",
     title: {
         splashtext: "",

@@ -113,8 +113,10 @@ const generation_consts = {
 };
 const consts = {
 	VERSION: "alpha 2.0.1",
-	CHUNK_SIZE: 16,//Size of a chunk in tiles.
-	TILE_SIZE: 30,//Sile of a tile in pixels.
+	/**Size of a chunk in tiles. */
+	CHUNK_SIZE: 16,
+	/**Size of a tile in pixels. */
+	TILE_SIZE: 30,
 	DISPLAY_SCALE: 1,
 	get DISPLAY_TILE_SIZE(){
 		return this.TILE_SIZE * this.DISPLAY_SCALE;
@@ -130,6 +132,7 @@ const consts = {
 
 
 const registry:Registry = {
+	/**List of recipes. */
 	recipes: {
 		"base_mining": {
 			"type": "t-1",
@@ -242,11 +245,17 @@ const registry:Registry = {
 			]
 		}
 	},
-	buildings: null,//Initialized at the end of classes.ts
+	/**Contains a mapping from building IDs to classes. */
+	buildings: null,//Initialized at the end of classes.ts.
+	/**List of building IDs. */
 	buildingIDs: ["0x0001","0x0101","0x0201","0x0301","0x0401","0x0501","0x0601","0x0701","0x0801","0x0901","0x0A01","0x0B01","0x0C01","0x0D01","0x0E01","0x0F01","0x1001","0x1101","0x1201","0x1301","0x1401","0x1501","0x1601","0x1701","0x1801","0x1901","0x1A01","0x1B01","0x0002","0x0003","0x0004","0x0005","0x0105","0x0205","0x0305","0x0405","0x0505","0x0605","0x0705","0x0805","0x0905","0x0A05","0x0B05","0x0006","0x0007","0x0008","0x0009","0x000A","0x000B","0x0010","0x0011","0xFFFF"],
+	/**List of item IDs. */
 	itemIDs: ItemID,
+	/**List of tile IDs. */
 	tileIDs: ["0x00","0x01","0x02","0x10","0x11","0x12","0xFF"],
+	/**List of miscellanous texture IDs. */
 	miscTextures: ["invalidunderlay", "ghostunderlay"],
+	/**Stores textures(as HTMLImageElements). */
 	textures: {
 		item: {},
 		building: {},
@@ -254,6 +263,7 @@ const registry:Registry = {
 		misc: {}
 		//Loaded in loadTexturesIntoMemory()
 	},
+	/**Contains all the keybindings for keyboard controls. */
 	keybinds: {
 		move: {
 			up: new Keybind("w", ["!control", "!alt"]),
@@ -326,7 +336,6 @@ let settings = {
 	debug: true,
 	alwaysLoadSave: true,
 	autoSave: true,
-	tutorial: false,
 };
 let Game: {
 	scroll: {
@@ -357,29 +366,7 @@ let Game: {
 	lastSaved: null,
 	forceRedraw: true,
 	tutorial: {
-		conveyor: {
-			placed: true,
-			beltchain: true,
-			placefail: true
-		},
-		miner: {
-			placefail: true,
-			placed: true,
-			coaloutput: true
-		},
-		trashcan: {
-			placed: true
-		},
-		furnace: {
-			placefail: true,
-			placed: true
-		},
-		item: {
-			coal: true,
-			iron: true,
-			steel: true
-		},
-		multiplesteel: false
+		
 	},
 	state: "loading",
 	title: {

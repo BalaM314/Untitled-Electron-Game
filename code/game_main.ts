@@ -235,16 +235,6 @@ let state: {
 	settings: {
 		buttons: [
 			new Button({
-				x: () => innerWidth * 0.25,
-				y: () => innerHeight * 0.5,
-				width: () => innerWidth * 0.25,
-				height: () => innerHeight * 0.15,
-				label: () => "Tutorial: " + settings.tutorial,
-				color: "#0000FF",
-				font: "35px sans-serif",
-				onClick: () => {settings.tutorial = !settings.tutorial;}
-			}),
-			new Button({
 				x: () => innerWidth * 0.51,
 				y: () => innerHeight * 0.5,
 				width: () => innerWidth * 0.25,
@@ -549,24 +539,6 @@ There's no good in game tutorial, so to get started check the wiki page: https:/
 	document.getElementById("toolbar").classList.remove("hidden");
 	document.getElementById("resources").classList.remove("hidden");
 
-	if(settings.tutorial){
-		setTimeout(() => {
-			alert(`
-Welcome to Untitled Electron Game!
-This is a game about... well I don't really know, but it has items, conveyor belts, and machines. Guess you could call it a factory game?
-
-For now there's no real goal, but I suggest you automate iron and coal production.
-To get started, place a conveyor belt.
-
-Basic controls:
-Click to place a building.
-Use the number keys to choose the type of building.
-Press 0 to "place air"(delete buildings).
-Use WASD to move around the map and mouse wheel to zoom.
-Press Shift to move faster and for tooltips.`
-			);
-		}, 500);
-	}
 	if(settings.autoSave){
 		if(!localStorage.getItem("save1") || JSON.parse(localStorage.getItem("save1"))?.metadata?.uuid == level1.uuid){
 			setInterval(() => {

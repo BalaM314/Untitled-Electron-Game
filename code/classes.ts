@@ -134,9 +134,9 @@ class Level {
 			Math.floor(tileY)
 		).extractorAt(tileOffsetInChunk(tileX), tileOffsetInChunk(tileY));
 	}
-	update(currentframe){
+	update(currentFrame:CurrentFrame){
 		for(let chunk of this.storage.values()){
-			chunk.update();
+			chunk.update(currentFrame);
 		}
 	}
 	displayGhostBuilding(tileX:number, tileY:number, buildingID:BuildingID){
@@ -542,10 +542,10 @@ class Chunk {
 
 		return this;
 	}
-	update():Chunk {
+	update(currentFrame:CurrentFrame):Chunk {
 		for(let row of this.layers[1]){
 			for(let value of row){
-				value?.update?.();
+				value?.update?.(currentFrame);
 			}
 		}
 		for(let row of this.layers[2]){
@@ -913,8 +913,6 @@ class Item {
 	x: number;
 	y: number;
 	level: Level;
-	startY: number | undefined;
-	startX: number | undefined;
 	grabbedBy: Building;
 	deleted: boolean;
 	constructor(x:number, y:number, id:ItemID, level:Level){
@@ -924,19 +922,9 @@ class Item {
 		this.level = level;
 		this.grabbedBy = null;
 		this.deleted = false;
-		if(this.id == ItemID.base_null){
-			this.startX = x;
-			this.startY = y;
-		}
 	}
 	update(currentframe){
-		if(Game.tutorial.conveyor.beltchain && settings.tutorial && ((Math.abs(this.startX - this.x) + 1 > consts.TILE_SIZE * 2) || (Math.abs(this.startY - this.y) + 1 > consts.TILE_SIZE * 2))){
-			_alert("Nice!\nConveyor belts are also the way to put items in machines.\nSpeaking of which, let's try automating coal: Place a Miner(2 key).");
-			Game.tutorial.conveyor.beltchain = false;
-		}
-		if(this.deleted){
-			//do stuff
-		}
+		
 	}
 	display(currentframe){
 		if(
@@ -993,8 +981,8 @@ class Building {
 		}
 		this.level.writeBuilding(this.x, this.y, null);
 	}
-	update(){
-		
+	update(currentFrame:CurrentFrame){
+		this.item?.update(currentFrame);
 	}
 	display(currentFrame:CurrentFrame){
 		let pixelX = this.x * consts.DISPLAY_TILE_SIZE + Game.scroll.x * consts.DISPLAY_SCALE;
