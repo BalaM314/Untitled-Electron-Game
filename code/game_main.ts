@@ -676,4 +676,3 @@ function init(){
 }
 
 init();
-
