@@ -60,7 +60,7 @@ function registerEventHandlers() {
         if (e.ctrlKey && (e.key.match(/^[w]$/) || e.key.match(/^[ertuni1-9]$/i) || e.key.match(/^f[5]$/i))) {
             return;
         }
-        if (keysHeld.indexOf(e.key.toLowerCase()) == -1) {
+        if (keysHeld.includes(e.key.toLowerCase())) {
             keysHeld.push(e.key.toLowerCase());
         }
         lastKeysPressed.push(e.key);
@@ -401,7 +401,6 @@ function handleAlerts() {
         alerts.active = true;
     }
 }
-let cancel = null;
 function main_loop() {
     try {
         let startFrameTime = new Date();
@@ -444,7 +443,7 @@ function main_loop() {
         ctxs.forEach((ctx) => { ctx.clearRect(0, 0, innerWidth, innerHeight); });
         throw err;
     }
-    cancel = requestAnimationFrame(main_loop);
+    Game.animationFrame = requestAnimationFrame(main_loop);
 }
 function load() {
     loadTexturesIntoMemory();
@@ -492,7 +491,6 @@ Press Shift to move faster and for tooltips.`);
         }
     }
 }
-let level1;
 function exportData() {
     return {
         UntitledElectronGame: {
@@ -542,23 +540,26 @@ let placedBuilding = {
         }
     }
 };
-try {
-    assert(localStorage.getItem("settings"));
-    settings = JSON.parse(localStorage.getItem("settings"));
+function init() {
+    try {
+        assert(localStorage.getItem("settings"));
+        settings = JSON.parse(localStorage.getItem("settings"));
+    }
+    catch (err) {
+        console.warn("Invalid persistent settings!\nIf this is your first time visiting this site, nothing to worry about.");
+        localStorage.setItem("settings", JSON.stringify(settings));
+    }
+    console.log("%c Hey there! It looks like you're checking out the console.\nIf you want to view the source code, *please do it at* https://github.com/BalaM314/Untitled-Electron-Game \n Make sure to view the .ts files as the .js files are compiled and thus look weird.", "color: blue; font-size: 30px;");
+    noise.seed(1);
+    loadTexturesIntoPage();
+    registerEventHandlers();
+    if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+        alert("It looks like you're trying to play on a phone. Unfortunately, mobile devices are not currently supported.");
+    }
+    Game.title.splashtext = Math.random() < 0.95 ? splashes[Math.ceil(Math.random() * (splashes.length - 1))] : raresplashes[Math.ceil(Math.random() * (raresplashes.length - 1))];
+    Game.title.splashbehavior = Math.random() < 0.9 ? "sin" : "tan";
+    document.getElementById("error_background").classList.remove("hidden");
+    document.getElementById("loading_background").classList.add("hidden");
+    main_loop();
 }
-catch (err) {
-    console.warn("Invalid persistent settings!\nIf this is your first time visiting this site, nothing to worry about.");
-    localStorage.setItem("settings", JSON.stringify(settings));
-}
-console.log("%c Hey there! It looks like you're checking out the console.\nIf you want to view the source code, *please do it at* https://github.com/BalaM314/Untitled-Electron-Game \n Make sure to view the .ts files as the .js files are compiled and thus look weird.", "color: blue; font-size: 30px;");
-noise.seed(1);
-loadTexturesIntoPage();
-registerEventHandlers();
-if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
-    alert("It looks like you're trying to play on a phone. Unfortunately, mobile devices are not currently supported.");
-}
-Game.title.splashtext = Math.random() < 0.95 ? splashes[Math.ceil(Math.random() * (splashes.length - 1))] : raresplashes[Math.ceil(Math.random() * (raresplashes.length - 1))];
-Game.title.splashbehavior = Math.random() < 0.9 ? "sin" : "tan";
-document.getElementById("error_background").classList.remove("hidden");
-document.getElementById("loading_background").classList.add("hidden");
-main_loop();
+init();

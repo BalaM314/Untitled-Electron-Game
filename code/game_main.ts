@@ -79,7 +79,7 @@ function registerEventHandlers(){
 		}
 
 		//Push key to keysHeld
-		if(keysHeld.indexOf(e.key.toLowerCase()) == -1){
+		if(keysHeld.includes(e.key.toLowerCase())){
 			keysHeld.push(e.key.toLowerCase());
 		}
 
@@ -421,6 +421,7 @@ let state: {
 				level1.buildBuilding(Math.floor((e.x - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE), Math.floor((e.y - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE), placedBuilding.ID);
 			}
 		},
+		//Unlike the onkeydown function, this one needs to run based on keys being held.
 		onkeyheld: function(currentframe:CurrentFrame){
 			if(registry.keybinds.move.up.isHeld()){
 				Game.scroll.y += Game.scroll.speed;
@@ -447,7 +448,7 @@ let state: {
 };
 
 
-//Unlike the onkeydown function, this one needs to run based on keys being held.
+
 
 function fixSizes(){
 	for(let x of ctxs){
@@ -474,7 +475,7 @@ function handleAlerts(){
 
 
 
-let cancel = null;
+
 function main_loop(){
 	try {
 		let startFrameTime = new Date();
@@ -523,7 +524,7 @@ function main_loop(){
 		ctxs.forEach((ctx) => {ctx.clearRect(0,0,innerWidth,innerHeight)});
 		throw err;
 	}
-	cancel = requestAnimationFrame(main_loop);
+	Game.animationFrame = requestAnimationFrame(main_loop);
 }
 
 
@@ -578,8 +579,6 @@ Press Shift to move faster and for tooltips.`
 		}
 	}
 }
-
-let level1:Level;
 
 
 
@@ -646,31 +645,35 @@ let placedBuilding: {
 
 
 
-try {
-	assert(localStorage.getItem("settings"));
-	settings = JSON.parse(localStorage.getItem("settings"));
-} catch(err){
-	console.warn("Invalid persistent settings!\nIf this is your first time visiting this site, nothing to worry about.");
-	localStorage.setItem("settings", JSON.stringify(settings));
+function init(){
+	try {
+		assert(localStorage.getItem("settings"));
+		settings = JSON.parse(localStorage.getItem("settings"));
+	} catch(err){
+		console.warn("Invalid persistent settings!\nIf this is your first time visiting this site, nothing to worry about.");
+		localStorage.setItem("settings", JSON.stringify(settings));
+	}
+	
+	console.log("%c Hey there! It looks like you're checking out the console.\nIf you want to view the source code, *please do it at* https://github.com/BalaM314/Untitled-Electron-Game \n Make sure to view the .ts files as the .js files are compiled and thus look weird.", "color: blue; font-size: 30px;")
+	
+	noise.seed(1);
+	loadTexturesIntoPage();
+	
+	
+	registerEventHandlers();
+	
+	if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){
+		alert("It looks like you're trying to play on a phone. Unfortunately, mobile devices are not currently supported.");
+	}
+	
+	Game.title.splashtext = Math.random() < 0.95 ? splashes[Math.ceil(Math.random() * (splashes.length - 1))] : raresplashes[Math.ceil(Math.random() * (raresplashes.length - 1))];
+	Game.title.splashbehavior = Math.random() < 0.9 ? "sin" : "tan";
+	
+	document.getElementById("error_background").classList.remove("hidden");
+	document.getElementById("loading_background").classList.add("hidden");
+	
+	main_loop();
 }
 
-console.log("%c Hey there! It looks like you're checking out the console.\nIf you want to view the source code, *please do it at* https://github.com/BalaM314/Untitled-Electron-Game \n Make sure to view the .ts files as the .js files are compiled and thus look weird.", "color: blue; font-size: 30px;")
-
-noise.seed(1);
-loadTexturesIntoPage();
-
-
-registerEventHandlers();
-
-if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){
-  alert("It looks like you're trying to play on a phone. Unfortunately, mobile devices are not currently supported.");
-}
-
-Game.title.splashtext = Math.random() < 0.95 ? splashes[Math.ceil(Math.random() * (splashes.length - 1))] : raresplashes[Math.ceil(Math.random() * (raresplashes.length - 1))];
-Game.title.splashbehavior = Math.random() < 0.9 ? "sin" : "tan";
-
-document.getElementById("error_background").classList.remove("hidden");
-document.getElementById("loading_background").classList.add("hidden");
-
-main_loop();
+init();
 

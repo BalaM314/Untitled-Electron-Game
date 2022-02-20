@@ -346,6 +346,7 @@ let Game: {
 		splashbehavior: string;
 	};
 	loadedTextures: number;
+	animationFrame: number;
 } = {
 	scroll: {
 		x: 300,
@@ -386,7 +387,9 @@ let Game: {
 		splashbehavior: "sin"
 	},
 	loadedTextures: 0,
+	animationFrame: 0,
 };
+let level1: Level = null;
 let splashes:string[] = [
 	"Get out of my files!",
 	"Remember everyone, the secret to a good game in 2020 is s p l a s h t e x t",

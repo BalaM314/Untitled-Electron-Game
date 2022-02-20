@@ -337,7 +337,9 @@ let Game = {
         splashbehavior: "sin"
     },
     loadedTextures: 0,
+    animationFrame: 0,
 };
+let level1 = null;
 let splashes = [
     "Get out of my files!",
     "Remember everyone, the secret to a good game in 2020 is s p l a s h t e x t",
