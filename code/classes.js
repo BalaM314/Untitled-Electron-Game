@@ -382,10 +382,10 @@ class Level {
         }
         return {
             chunks: chunkOutput,
-            items: [],
             resources: this.resources,
             seed: this.seed,
-            version: consts.VERSION
+            version: consts.VERSION,
+            uuid: this.uuid
         };
     }
 }

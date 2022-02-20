@@ -118,7 +118,7 @@ interface SaveData {
 			id: string;
 			version: string;
 			timeCreated: string;
-		}
+		};
 		level1: LevelData;
 	}
 }
@@ -127,7 +127,6 @@ interface LevelData {
 	chunks: {
 		[index: string]: ChunkData
 	};
-	items: ItemData[];
 	resources: {
 		[index: string]: number;
 	};

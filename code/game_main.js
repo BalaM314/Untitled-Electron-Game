@@ -512,7 +512,6 @@ function importData(rawData) {
         let levelData = data.UntitledElectronGame.level1;
         levelData.version = data.UntitledElectronGame.metadata.version;
         assert(levelData.chunks instanceof Object);
-        assert(levelData.items instanceof Array);
         tempLevel = new Level(levelData);
         level1 = tempLevel;
     }

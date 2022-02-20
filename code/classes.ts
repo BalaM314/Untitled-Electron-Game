@@ -32,7 +32,7 @@ class Level {
 			this.uuid = uuid;
 			try {
 				for(var [position, chunkData] of Object.entries(chunks)){//Use of var here is intentional.
-					(chunkData as any).version = version;
+					chunkData.version = version;
 					this.storage.set(position, new Chunk({
 						x: parseInt(position.split(",")[0]), y: parseInt(position.split(",")[1]),
 						seed: seed, parent: this
@@ -412,12 +412,11 @@ class Level {
 
 		return {
 			chunks: chunkOutput,
-			items: [],
 			resources: this.resources,
 			seed: this.seed,
-			version: consts.VERSION
-		} as any;
-		//todo fix dat silliness
+			version: consts.VERSION,
+			uuid: this.uuid
+		};
 	}
 }
 
