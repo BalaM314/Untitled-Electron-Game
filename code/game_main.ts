@@ -79,7 +79,7 @@ function registerEventHandlers(){
 		}
 
 		//Push key to keysHeld
-		if(keysHeld.includes(e.key.toLowerCase())){
+		if(!keysHeld.includes(e.key.toLowerCase())){
 			keysHeld.push(e.key.toLowerCase());
 		}
 

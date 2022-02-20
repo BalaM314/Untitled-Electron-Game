@@ -60,7 +60,7 @@ function registerEventHandlers() {
         if (e.ctrlKey && (e.key.match(/^[w]$/) || e.key.match(/^[ertuni1-9]$/i) || e.key.match(/^f[5]$/i))) {
             return;
         }
-        if (keysHeld.includes(e.key.toLowerCase())) {
+        if (!keysHeld.includes(e.key.toLowerCase())) {
             keysHeld.push(e.key.toLowerCase());
         }
         lastKeysPressed.push(e.key);
