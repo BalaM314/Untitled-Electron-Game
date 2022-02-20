@@ -20,10 +20,10 @@ class Level {
 			this.seed = data ?? 0;
 			this.uuid = Math.random().toString().substring(2);
 			this.generateNecessaryChunks();
-			this.buildBuilding(0, 0, "0x0008");
-			this.buildBuilding(0, -1, "0x0008");
-			this.buildBuilding(-1, 0, "0x0008");
-			this.buildBuilding(-1, -1, "0x0008");
+			this.buildBuilding(0, 0, BuildingID["0x0008"]);
+			this.buildBuilding(0, -1, BuildingID["0x0008"]);
+			this.buildBuilding(-1, 0, BuildingID["0x0008"]);
+			this.buildBuilding(-1, -1, BuildingID["0x0008"]);
 		} else {
 			// Generate a level from JSON
 			let {chunks, resources, seed, version, uuid} = data;
@@ -108,13 +108,13 @@ class Level {
 		return this.getChunk(
 			Math.floor(pixelX/consts.TILE_SIZE),
 			Math.floor(pixelY/consts.TILE_SIZE)
-		).buildingAt(tileOffsetInChunk(pixelX/consts.TILE_SIZE), tileOffsetInChunk(pixelY/consts.TILE_SIZE))?.id ?? "0xFFFF";
+		).buildingAt(tileOffsetInChunk(pixelX/consts.TILE_SIZE), tileOffsetInChunk(pixelY/consts.TILE_SIZE))?.id ?? BuildingID["0xFFFF"];
 	}
 	buildingIDAtTile(tileX:number, tileY:number):BuildingID {
 		return this.getChunk(
 			Math.floor(tileX),
 			Math.floor(tileY)
-		).buildingAt(tileOffsetInChunk(tileX), tileOffsetInChunk(tileY))?.id ?? "0xFFFF";
+		).buildingAt(tileOffsetInChunk(tileX), tileOffsetInChunk(tileY))?.id ?? BuildingID["0xFFFF"];
 	}
 	buildingAtTile(tileX:number, tileY:number):Building {
 		return this.getChunk(
@@ -191,92 +191,92 @@ class Level {
 			case 0:
 				if(hasLeftBuilding){
 					if(hasTopBuilding && hasBottomBuilding){
-						return "0x1801";
+						return BuildingID["0x1801"];
 					} else if(hasTopBuilding){
-						return "0x0D01";
+						return BuildingID["0x0D01"];
 					} else if(hasBottomBuilding){
-						return "0x0C01";
+						return BuildingID["0x0C01"];
 					} else {
-						return "0x0001";
+						return BuildingID["0x0001"];
 					}
 				} else {
 					if(hasTopBuilding && hasBottomBuilding){
-						return "0x1401";
+						return BuildingID["0x1401"];
 					} else if(hasTopBuilding){
-						return "0x0501";
+						return BuildingID["0x0501"];
 					} else if(hasBottomBuilding){
-						return "0x0401";
+						return BuildingID["0x0401"];
 					} else {
-						return "0x0001";
+						return BuildingID["0x0001"];
 					}
 				}
 				break;
 			case 1:
 				if(hasTopBuilding){
 					if(hasLeftBuilding && hasRightBuilding){
-						return "0x1901";
+						return BuildingID["0x1901"];
 					} else if(hasLeftBuilding){
-						return "0x0F01";
+						return BuildingID["0x0F01"];
 					} else if(hasRightBuilding){
-						return "0x0E01";
+						return BuildingID["0x0E01"];
 					} else {
-						return "0x0101";
+						return BuildingID["0x0101"];
 					}
 				} else {
 					if(hasLeftBuilding && hasRightBuilding){
-						return "0x1501";
+						return BuildingID["0x1501"];
 					} else if(hasLeftBuilding){
-						return "0x0701";
+						return BuildingID["0x0701"];
 					} else if(hasRightBuilding){
-						return "0x0601";
+						return BuildingID["0x0601"];
 					} else {
-						return "0x0101";
+						return BuildingID["0x0101"];
 					}
 				}
 				break;
 			case 2:
 				if(hasRightBuilding){
 					if(hasTopBuilding && hasBottomBuilding){
-						return "0x1A01";
+						return BuildingID["0x1A01"];
 					} else if(hasTopBuilding){
-						return "0x1101";
+						return BuildingID["0x1101"];
 					} else if(hasBottomBuilding){
-						return "0x1001";
+						return BuildingID["0x1001"];
 					} else {
-						return "0x0201";
+						return BuildingID["0x0201"];
 					}
 				} else {
 					if(hasTopBuilding && hasBottomBuilding){
-						return "0x1601";
+						return BuildingID["0x1601"];
 					} else if(hasTopBuilding){
-						return "0x0901";
+						return BuildingID["0x0901"];
 					} else if(hasBottomBuilding){
-						return "0x0801";
+						return BuildingID["0x0801"];
 					} else {
-						return "0x0201";
+						return BuildingID["0x0201"];
 					}
 				}
 				break;
 			case 3:
 				if(hasBottomBuilding){
 					if(hasLeftBuilding && hasRightBuilding){
-						return "0x1B01";
+						return BuildingID["0x1B01"];
 					} else if(hasLeftBuilding){
-						return "0x1301";
+						return BuildingID["0x1301"];
 					} else if(hasRightBuilding){
-						return "0x1201";
+						return BuildingID["0x1201"];
 					} else {
-						return "0x0301";
+						return BuildingID["0x0301"];
 					}
 				} else {
 					if(hasLeftBuilding && hasRightBuilding){
-						return "0x1701";
+						return BuildingID["0x1701"];
 					} else if(hasLeftBuilding){
-						return "0x0B01";
+						return BuildingID["0x0B01"];
 					} else if(hasRightBuilding){
-						return "0x0A01";
+						return BuildingID["0x0A01"];
 					} else {
-						return "0x0301";
+						return BuildingID["0x0301"];
 					}
 				}
 				break;
@@ -321,9 +321,9 @@ class Level {
 			switch(getRawBuildingID(buildingID)){
 				case "0x11":
 					let controller = new registry.buildings[getRawBuildingID(buildingID)](tileX, tileY, buildingID, this) as MultiBlockController;
-					let secondary1 = new MultiBlockSecondary(tileX + 1, tileY, "0x0010", this);
-					let secondary2 = new MultiBlockSecondary(tileX, tileY + 1, "0x0010", this);
-					let secondary3 = new MultiBlockSecondary(tileX+1, tileY+1, "0x0010", this);
+					let secondary1 = new MultiBlockSecondary(tileX + 1, tileY, BuildingID["0x0010"], this);
+					let secondary2 = new MultiBlockSecondary(tileX, tileY + 1, BuildingID["0x0010"], this);
+					let secondary3 = new MultiBlockSecondary(tileX+1, tileY+1, BuildingID["0x0010"], this);
 					controller.secondaries = [secondary1, secondary2, secondary3];
 					[secondary1, secondary2, secondary3].forEach(secondary => secondary.controller = controller);
 					this.writeBuilding(tileX, tileY, controller);
@@ -720,7 +720,7 @@ class Chunk {
 		for(let y = 0; y < this.layers[2].length; y ++){
 			for(let x = 0; x < this.layers[2][y].length; x ++){
 				if(this.layers[2][y][x]){
-					this.displayL3(x, y, this.layers[2][y][x]?.id ?? "0xFFFF");
+					this.displayL3(x, y, this.layers[2][y][x]?.id ?? BuildingID["0xFFFF"]);
 					this.layers[2][y][x].display(currentframe);
 				}
 			}

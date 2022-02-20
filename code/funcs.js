@@ -25,7 +25,7 @@ function millis() {
 }
 function gcd(x, y) {
     if ((typeof x !== 'number') || (typeof y !== 'number')) {
-        return false;
+        return 1;
     }
     x = Math.abs(x);
     y = Math.abs(y);
@@ -185,25 +185,25 @@ function _alert(x) {
     alerts.list.push(x);
 }
 function loadTexturesIntoMemory() {
-    for (let imageElement of document.getElementById("item").children) {
+    for (let imageElement of Array.from(document.getElementById("item").children)) {
         if (!imageElement.complete) {
             return false;
         }
         registry.textures.item[imageElement.src.match(/(?<=assets\/textures\/item\/).*(?=\.png)/)[0]] = imageElement;
     }
-    for (let imageElement of document.getElementById("building").children) {
+    for (let imageElement of Array.from(document.getElementById("building").children)) {
         if (!imageElement.complete) {
             return false;
         }
         registry.textures.building[imageElement.src.match(/(?<=assets\/textures\/building\/).*(?=\.png)/)[0]] = imageElement;
     }
-    for (let imageElement of document.getElementById("tile").children) {
+    for (let imageElement of Array.from(document.getElementById("tile").children)) {
         if (!imageElement.complete) {
             return false;
         }
         registry.textures.tile[imageElement.src.match(/(?<=assets\/textures\/tile\/).*(?=\.png)/)[0]] = imageElement;
     }
-    for (let imageElement of document.getElementById("misc").children) {
+    for (let imageElement of Array.from(document.getElementById("misc").children)) {
         if (!imageElement.complete) {
             return false;
         }
@@ -211,7 +211,7 @@ function loadTexturesIntoMemory() {
     }
 }
 function loadTexturesIntoPage() {
-    for (let buildingID of registry.buildingIDs) {
+    for (let buildingID of Object.values(registry.buildingIDs)) {
         let img = document.createElement("img");
         img.setAttribute("src", `assets/textures/building/${buildingID}.png`);
         img.addEventListener("load", () => {
@@ -261,7 +261,7 @@ function loadTexturesIntoPage() {
     }
 }
 function getTotalTextures() {
-    return registry.buildingIDs.length + Object.values(registry.itemIDs).length + registry.tileIDs.length + registry.miscTextures.length;
+    return Object.values(registry.buildingIDs).length + Object.values(registry.itemIDs).length + registry.tileIDs.length + registry.miscTextures.length;
 }
 function hex(num, length) {
     return `0x${(Array(length).fill("0").join("") + num.toString(16)).toUpperCase().slice(-length)}`;
