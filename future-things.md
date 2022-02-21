@@ -13,9 +13,9 @@ The code for it is there, just need to add the actual animations
 
 Eventually
 
-### Water chunks
+### Better terain generation
 
-Will be made more useful
+water chunks, etc
 
 ### UI polish
 
@@ -25,10 +25,18 @@ yes
 
 make rebinds save to localstorage
 
-fix the save format
+fix the save format being inefficient
+
+fix performance, don't redraw the tiles on every frame when moving
 
 texture loading is sus
 
 fix multiblocks breaking the resource acceptors(beta)
 
 make buildings with recipes keep their items on save
+
+add pausing
+
+fix the text of the alert box overflowing
+
+add link to wiki on title screen
