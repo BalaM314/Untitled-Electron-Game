@@ -209,6 +209,7 @@ function loadTexturesIntoMemory() {
         }
         registry.textures.misc[imageElement.src.match(/(?<=assets\/textures\/misc\/).*(?=\.png)/)[0]] = imageElement;
     }
+    return true;
 }
 function loadTexturesIntoPage() {
     for (let buildingID of Object.values(registry.buildingIDs)) {
