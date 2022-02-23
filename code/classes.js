@@ -700,8 +700,8 @@ class Chunk {
             _ctx.globalAlpha = +buildingID % 0x100 == 0x01 ? 0.3 : 0.7;
         }
         Building.prototype.display.bind({
-            x: x,
-            y: y,
+            x: pixelX,
+            y: pixelY,
             id: buildingID,
             level: this
         })();
