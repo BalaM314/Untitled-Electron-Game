@@ -38,5 +38,3 @@ make buildings with recipes keep their items on save
 add pausing
 
 fix the text of the alert box overflowing
-
-add link to wiki on title screen

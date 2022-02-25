@@ -222,6 +222,16 @@ let state: {
 				font: "40px sans-serif",
 				onClick: () => {Game.state = "settings";}
 			}),
+			new Button({
+				x: () => innerWidth * 0.9,
+				y: () => innerHeight * 0.5,
+				width: () => innerWidth * 0.05,
+				height: () => innerHeight * 0.05,
+				label: "Help",
+				color: "#0000FF",
+				font: "30px sans-serif",
+				onClick: () => {window.open("https://github.com/BalaM314/Untitled-Electron-Game/wiki/Quickstart-Guide");}
+			}),
 		],
 		update: function(){},
 		display: function(currentFrame:CurrentFrame){
@@ -276,7 +286,7 @@ let state: {
 			}),
 			new Button({
 				x: () => innerWidth * 0.25,
-				y: () => innerHeight * 0.82,
+				y: () => innerHeight * 0.5,
 				width: () => innerWidth * 0.25,
 				height: () => innerHeight * 0.15,
 				label: "Controls",
