@@ -786,12 +786,13 @@ class Chunk {
 			}
 			_ctx.globalAlpha = +buildingID % 0x100 == 0x01 ? 0.3 : 0.7;
 		}
+		
 		Building.prototype.display.bind({
-			x: pixelX,
-			y: pixelY,
+			x: (this.x * consts.CHUNK_SIZE) + x,
+			y: (this.y * consts.CHUNK_SIZE) + y,
 			id: buildingID,
 			level: this
-		})();
+		})({}, ctx1);
 		_ctx.globalAlpha = 1.0;
 	}
 	displayL3(x:number, y:number, buildingID:BuildingID, isGhost?:number){
@@ -951,10 +952,10 @@ class Building {
 	update(currentFrame:CurrentFrame){
 		this.item?.update(currentFrame);
 	}
-	display(currentFrame:CurrentFrame){
+	display(currentFrame:CurrentFrame, ctx?: CanvasRenderingContext2D){
 		let pixelX = this.x * consts.DISPLAY_TILE_SIZE + Game.scroll.x * consts.DISPLAY_SCALE;
 		let pixelY = this.y * consts.DISPLAY_TILE_SIZE + Game.scroll.y * consts.DISPLAY_SCALE;
-		let _ctx = ctx2;
+		let _ctx = ctx ?? ctx2;
 		let texture = registry.textures.building[this.id];
 		if(texture){
 			if(+this.id % 0x100 == 5){

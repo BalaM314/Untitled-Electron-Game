@@ -361,6 +361,7 @@ let Game = {
     lastSaved: null,
     forceRedraw: true,
     tutorial: {},
+    paused: false,
     state: "loading",
     title: {
         splashtext: "",

@@ -406,6 +406,7 @@ let Game: {
 		[index: string]: any
 	};
 	state: "loading" | "title" | "settings" | "settings.keybinds" | "game";
+	paused: boolean;
 	title: {
 		splashtext: string;
 		splashbehavior: string;
@@ -424,6 +425,7 @@ let Game: {
 	tutorial: {
 		
 	},
+	paused: false,
 	state: "loading",
 	title: {
 		splashtext: "",

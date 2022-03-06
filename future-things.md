@@ -38,3 +38,6 @@ make buildings with recipes keep their items on save
 add pausing
 
 fix the text of the alert box overflowing
+
+make "i wonder what this button does" splash do something when you click it
+probably rickroll you
