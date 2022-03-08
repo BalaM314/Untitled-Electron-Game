@@ -19,16 +19,23 @@ Object.defineProperty(Array.prototype, "sort2", {
 	enumerable: false
 });
 
+CanvasRenderingContext2D.prototype.clear = function(){
+	// this.globalAlpha = 1.0;
+	// this.fillStyle = "#000000";
+	// this.strokeStyle = "#000000";
+	(this as CanvasRenderingContext2D).clearRect(0, 0, this.canvas.width, this.canvas.height);
+};
+Object.defineProperty(CanvasRenderingContext2D.prototype, "clear", {
+	enumerable: false
+});
 
-//general functions
-function sq(x:number):number{
-	return x * x;
-}
-
+/**Returns the time passed since program start in milliseconds. */
 function millis():number{
 	return (new Date()).valueOf() - Game.startTime.valueOf();
+	//todo does this even work
 }
 
+/**Finds the greatest common divisor of two numbers */
 function gcd(x:number, y:number){
 	if((typeof x !== 'number') || (typeof y !== 'number')){
 		return 1;
@@ -46,6 +53,7 @@ function gcd(x:number, y:number){
 function random(min:number, max:number): number;
 function random<T>(list:T, max?:null): number;
 
+/**Chooses a random number between min and max, or selects a random element from an array. */
 function random(min:any, max:number):any{
 	if(typeof min == "number"){
 		if(arguments.length > 2){
@@ -61,7 +69,7 @@ function random(min:any, max:number):any{
 		}
 		return Math.random()*(max-min) + min;
 	} else if(min instanceof Array){
-		return min[Math.floor(random(0, min.length + 1))];
+		return min[Math.floor(random(0, min.length))];
 	}
 }
 

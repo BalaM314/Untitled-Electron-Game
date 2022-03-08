@@ -124,5 +124,10 @@ interface Array<T> {
 	/**
 	 * Sorts an array, with a callback that ranks elements with a number.
 	 */
-	sort2: (callback: (value:T) => number) => void
+	sort2: (callback: (value:T) => number) => void;
+}
+
+interface CanvasRenderingContext2D {
+	/**Clears a ctx. */
+	clear: () => void;
 }

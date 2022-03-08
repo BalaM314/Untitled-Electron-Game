@@ -187,7 +187,7 @@ let state: {
 			}
 		},
 		display: function(currentFrame:CurrentFrame){
-			ctx.clearRect(-1, -1, 10000, 10000);
+			ctx.clear();
 			ctx.fillStyle = "#0033CC";
 			ctx.fillRect(0, 0, innerWidth, innerHeight);
 			ctx.font = "70px sans-serif";
@@ -235,7 +235,7 @@ let state: {
 		],
 		update: function(){},
 		display: function(currentFrame:CurrentFrame){
-			ctx.clearRect(-1, -1, 10000, 10000);
+			ctx.clear();
 			ctx.fillStyle = "#0033CC";
 			ctx.fillRect(0, 0, innerWidth, innerHeight);
 			ctx.font = "70px sans-serif";
@@ -307,7 +307,7 @@ let state: {
 		],
 		update: function(){},
 		display: function(currentFrame:CurrentFrame){
-			ctx.clearRect(-1, -1, 10000, 10000);
+			ctx.clear();
 			ctx.fillStyle = "#0033CC";
 			ctx.fillRect(0, 0, innerWidth, innerHeight);
 			ctx.font = "70px sans-serif";
@@ -347,7 +347,7 @@ let state: {
 		],
 		update: function(){},
 		display: function(currentFrame:CurrentFrame){
-			ctx.clearRect(-1, -1, 10000, 10000);
+			ctx.clear();
 			ctx.fillStyle = "#0033CC";
 			ctx.fillRect(0, 0, innerWidth, innerHeight);
 			ctx.font = "60px sans-serif";
@@ -364,6 +364,7 @@ let state: {
 	game: {
 		buttons: [],
 		update: function(currentFrame:CurrentFrame, level:Level){
+			if(Game.paused) return;
 			level ??= level1;
 			level.generateNecessaryChunks();
 			if(registry.keybinds.move.scroll_faster.isHeld()){
@@ -381,8 +382,20 @@ let state: {
 		display: function(currentFrame:CurrentFrame, level:Level){
 			level ??= level1;
 			//display
+
+			if(Game.paused){
+				ctx4.font = "48px sans-serif";
+				ctx4.fillStyle = "#3333CC";
+				ctx4.textAlign = "center";
+				ctx4.fillText("Game paused", innerWidth * 0.5, innerHeight * 0.2);
+				ctx4.font = "24px sans-serif";
+				ctx4.fillText("Press esc to unpause", innerWidth * 0.5, innerHeight * 0.25);
+				Game.forceRedraw = true;
+				return;
+			}
+
 			if(currentFrame.redraw){
-				ctx.clearRect(0, 0, innerWidth, innerHeight);
+				ctx.clear();
 			}
 			ctx1.clearRect(0, 0, innerWidth, innerHeight);
 			ctx2.clearRect(0, 0, innerWidth, innerHeight);
@@ -405,6 +418,7 @@ let state: {
 			//display overlays
 			ctx4.font = "30px sans-serif";
 			ctx4.fillStyle = "#000000";
+			ctx4.textAlign = "left";
 			ctx4.fillText((
 					Math.round(- (Game.scroll.x * consts.DISPLAY_SCALE) / consts.DISPLAY_TILE_SIZE).toString()
 					+ ", " + Math.round(- (Game.scroll.y * consts.DISPLAY_SCALE) / consts.DISPLAY_TILE_SIZE).toString()
@@ -422,6 +436,7 @@ let state: {
 			}
 		},
 		onclick: function(e:MouseEvent){
+			if(Game.paused) return;
 			if(e.ctrlKey){
 				level1.buildingAtPixel(
 					(e.x  / consts.DISPLAY_SCALE - Game.scroll.x),
@@ -435,6 +450,7 @@ let state: {
 			}
 		},
 		onmouseheld: function(){
+			if(Game.paused) return;
 			let e = mouse.latestEvent;
 			if(!(keysHeld.includes("control") || registry.keybinds.placement.break_building.isHeld()) && placedBuilding.ID != "0xFFFF"){
 				level1.buildBuilding(
@@ -539,6 +555,9 @@ function main_loop(){
 			fps.splice(0, 1);
 			fps.push(frameMS);
 			let avgFPS = Math.round(constrain(5000/(fps[0] + fps[1] + fps[2] + fps[3] + fps[4]), 0, 60));
+			ctx4.fillStyle = "#000000";
+			ctx4.font = "30px sans-serif";
+			ctx4.textAlign = "left";
 			ctx4.fillText(avgFPS + " fps", 10, 50);
 		}
 
@@ -546,7 +565,7 @@ function main_loop(){
 
 	} catch(err){
 		alert("An error has occurred! Oopsie.\nPlease create an issue on this project's GitHub so I can fix it.\nError message: " + err.message);
-		ctxs.forEach((ctx) => {ctx.clearRect(0,0,innerWidth,innerHeight)});
+		ctxs.forEach((ctx) => {ctx.clear();});
 		throw err;
 	}
 	Game.animationFrame = requestAnimationFrame(main_loop);
@@ -583,7 +602,7 @@ There's no good in game tutorial, so to get started check the wiki page: https:/
 	if(settings.autoSave){
 		if(
 			!localStorage.getItem("save1") ||
-			(JSON.parse(localStorage.getItem("save1"))?.metadata?.uuid == level1?.uuid)
+			((JSON.parse(localStorage.getItem("save1")) as SaveData).UntitledElectronGame?.level1?.uuid == level1?.uuid)
 		){
 			setInterval(() => {
 				localStorage.setItem("save1", JSON.stringify(exportData()));

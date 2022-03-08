@@ -17,9 +17,12 @@ Array.prototype.sort2 = function (callback) {
 Object.defineProperty(Array.prototype, "sort2", {
     enumerable: false
 });
-function sq(x) {
-    return x * x;
-}
+CanvasRenderingContext2D.prototype.clear = function () {
+    this.clearRect(0, 0, this.canvas.width, this.canvas.height);
+};
+Object.defineProperty(CanvasRenderingContext2D.prototype, "clear", {
+    enumerable: false
+});
 function millis() {
     return (new Date()).valueOf() - Game.startTime.valueOf();
 }
@@ -52,7 +55,7 @@ function random(min, max) {
         return Math.random() * (max - min) + min;
     }
     else if (min instanceof Array) {
-        return min[Math.floor(random(0, min.length + 1))];
+        return min[Math.floor(random(0, min.length))];
     }
 }
 function range(start, end) {

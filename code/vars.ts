@@ -333,7 +333,11 @@ const registry:Registry = {
 				download("Untitled-Electron-Game-save.json", JSON.stringify(exportData()));
 			}),
 			save: new Keybind("s", ["control", "!alt", "!shift"], () => {
-				if((!localStorage.getItem("save1") || JSON.parse(localStorage.getItem("save1"))?.metadata?.uuid == level1?.uuid) || confirm("Are you want to save? This will overwrite your current saved world which seems to be different!")){
+				if(
+					(!localStorage.getItem("save1") 
+						|| (JSON.parse(localStorage.getItem("save1")) as SaveData).UntitledElectronGame?.level1?.uuid == level1?.uuid)
+					|| confirm("Are you sure you want to save? This will overwrite your current saved world which seems to be different!")
+				){
 					try {
 						localStorage.setItem("save1", JSON.stringify(exportData()));
 						alert("Saved successfully!");
@@ -372,6 +376,9 @@ const registry:Registry = {
 		},
 		display: {
 			show_tooltip: new Keybind("shift"),
+		},
+		misc: {
+			pause: new Keybind("escape", [], () => {Game.paused = !Game.paused;}),
 		}
 
 		
