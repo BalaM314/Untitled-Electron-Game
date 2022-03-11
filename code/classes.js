@@ -1069,9 +1069,6 @@ class TrashCan extends Building {
     }
 }
 class Furnace extends BuildingWithRecipe {
-    static canBuildAt(tileX, tileY, level) {
-        return level.tileAtByTile(tileX, tileY) == "0x01";
-    }
 }
 Furnace.recipeType = registry.recipes.base_smelting;
 Furnace.animated = true;
