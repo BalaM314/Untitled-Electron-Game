@@ -584,7 +584,7 @@ function load(){
 		localStorage.firstload = true;
 		_alert(`Welcome to Untitled Electron Game!
 This is a game about building a factory. It's still in early alpha, so there's not much content.
-There's no good in game tutorial, so to get started check the wiki page: https://github.com/BalaM314/Untitled-Electron-Game/wiki/Quickstart-Guide`);
+There's no good in game tutorial, so to get started check the <a href="https://github.com/BalaM314/Untitled-Electron-Game/wiki/Quickstart-Guide">wiki page</a>.`);
 	}
 
 	if(
