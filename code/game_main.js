@@ -416,7 +416,7 @@ function fixSizes() {
 function handleAlerts() {
     if (alerts.list.length && alerts.active == false) {
         mouse.held = false;
-        alertmessage.innerText = alerts.list.shift();
+        alertmessage.innerHTML = alerts.list.shift();
         alertmessage.style.setProperty("--text-length", alertmessage.innerText.length.toString());
         alertbox.classList.add("active");
         alerts.active = true;
@@ -477,7 +477,7 @@ function load() {
         localStorage.firstload = true;
         _alert(`Welcome to Untitled Electron Game!
 This is a game about building a factory. It's still in early alpha, so there's not much content.
-There's no good in game tutorial, so to get started check the wiki page: https://github.com/BalaM314/Untitled-Electron-Game/wiki/Quickstart-Guide`);
+There's no good in game tutorial, so to get started check the <a href="https://github.com/BalaM314/Untitled-Electron-Game/wiki/Quickstart-Guide">wiki page</a>.`);
     }
     if (localStorage.getItem("save1") &&
         (settings.alwaysLoadSave || confirm("Would you like to load your save?"))) {
