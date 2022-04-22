@@ -510,7 +510,7 @@ function fixSizes(){
 function handleAlerts(){
 	if(alerts.list.length && alerts.active == false){
 		mouse.held = false;
-		alertmessage.innerText = alerts.list.shift();
+		alertmessage.innerHTML = alerts.list.shift();
 		alertmessage.style.setProperty("--text-length", alertmessage.innerText.length.toString());
 		alertbox.classList.add("active");
 		alerts.active = true;
