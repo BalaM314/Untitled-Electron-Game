@@ -351,7 +351,7 @@ let state = {
             ctx3.clearRect(0, 0, innerWidth, innerHeight);
             ctx4.clearRect(0, 0, innerWidth, innerHeight);
             level.display(currentFrame);
-            level.displayGhostBuilding((mouse.x - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE, (mouse.y - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE, placedBuilding.ID);
+            level.displayGhostBuilding((mouse.x - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE, (mouse.y - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE, placedBuilding.ID, currentFrame);
             if (registry.keybinds.display.show_tooltip.isHeld()) {
                 level.displayTooltip(mouse.x, mouse.y, currentFrame);
             }
@@ -372,7 +372,7 @@ let state = {
             if (Game.paused)
                 return;
             if (e.ctrlKey) {
-                level1.buildingAtPixel((e.x / consts.DISPLAY_SCALE - Game.scroll.x), (e.y / consts.DISPLAY_SCALE - Game.scroll.y))?.acceptItem(new Item((Math.floor((e.x / consts.DISPLAY_SCALE - Game.scroll.x) / consts.TILE_SIZE) + 0.5) * consts.TILE_SIZE, (Math.floor((e.y / consts.DISPLAY_SCALE - Game.scroll.y) / consts.TILE_SIZE) + 0.5) * consts.TILE_SIZE, ItemID.base_null, level1));
+                level1.buildingAtPixel((e.x / consts.DISPLAY_SCALE - Game.scroll.x), (e.y / consts.DISPLAY_SCALE - Game.scroll.y))?.acceptItem(new Item((Math.floor((e.x / consts.DISPLAY_SCALE - Game.scroll.x) / consts.TILE_SIZE) + 0.5) * consts.TILE_SIZE, (Math.floor((e.y / consts.DISPLAY_SCALE - Game.scroll.y) / consts.TILE_SIZE) + 0.5) * consts.TILE_SIZE, ItemID.base_null));
             }
         },
         onmouseheld() {

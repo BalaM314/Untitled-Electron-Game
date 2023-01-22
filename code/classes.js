@@ -448,12 +448,12 @@ class Chunk {
                         throw new Error(`Failed to import building id ${buildingData.id} at position ${x},${y} in chunk ${this.x},${this.y}. See console for more details.`);
                     }
                     if (buildingData.item) {
-                        tempBuilding.item = new Item(buildingData.item.x, buildingData.item.y, buildingData.item.id, this.parent);
+                        tempBuilding.item = new Item(buildingData.item.x, buildingData.item.y, buildingData.item.id);
                         tempBuilding.item.grabbedBy = tempBuilding;
                     }
                     if (buildingData.inv && tempBuilding instanceof StorageBuilding) {
                         for (let itemData of buildingData.inv) {
-                            let tempItem = new Item(itemData.x, itemData.y, itemData.id, this.parent);
+                            let tempItem = new Item(itemData.x, itemData.y, itemData.id);
                             tempItem.grabbedBy = tempBuilding;
                             tempBuilding.inventory.push(tempItem);
                         }
@@ -472,7 +472,7 @@ class Chunk {
                     }
                     let tempBuilding = new Extractor(parseInt(x) + (consts.CHUNK_SIZE * this.x), parseInt(y) + (consts.CHUNK_SIZE * this.y), buildingData.id, this.parent);
                     if (buildingData.item && +data.version.split(" ")[1].replaceAll(".", "") >= 130) {
-                        tempBuilding.item = new Item(buildingData.item.x, buildingData.item.y, buildingData.item.id, this.parent);
+                        tempBuilding.item = new Item(buildingData.item.x, buildingData.item.y, buildingData.item.id);
                         tempBuilding.item.grabbedBy = tempBuilding;
                     }
                     this.layers[2][y][x] = tempBuilding;
@@ -800,11 +800,10 @@ class Chunk {
     }
 }
 class Item {
-    constructor(x, y, id, level) {
-        this.id = id;
+    constructor(x, y, id) {
         this.x = x;
         this.y = y;
-        this.level = level;
+        this.id = id;
         this.grabbedBy = null;
         this.deleted = false;
     }
@@ -832,12 +831,12 @@ class Item {
     }
 }
 class Building {
-    constructor(tileX, tileY, id, level) {
-        this.item = null;
-        this.x = tileX;
-        this.y = tileY;
+    constructor(x, y, id, level) {
+        this.x = x;
+        this.y = y;
         this.id = id;
         this.level = level;
+        this.item = null;
     }
     static canBuildAt(tileX, tileY, level) {
         return level.tileAtByTile(tileX, tileY) != "0x02";
@@ -935,22 +934,22 @@ class Building {
         id ?? (id = ItemID.base_null);
         if (["0x0001", "0x0701", "0x0B01", "0x0C01", "0x0D01", "0x0F01", "0x1301", "0x1501", "0x1701", "0x1801", "0x1901", "0x1B01"]
             .includes(this.level.buildingIDAtTile(this.x + 1, this.y)) &&
-            this.level.buildingAtTile(this.x + 1, this.y).acceptItem(new Item((this.x + 1.1) * consts.TILE_SIZE, (this.y + 0.5) * consts.TILE_SIZE, id, this.level))) {
+            this.level.buildingAtTile(this.x + 1, this.y).acceptItem(new Item((this.x + 1.1) * consts.TILE_SIZE, (this.y + 0.5) * consts.TILE_SIZE, id))) {
             return true;
         }
         else if (["0x0101", "0x0501", "0x0901", "0x0D01", "0x0E01", "0x0F01", "0x1101", "0x1401", "0x1601", "0x1801", "0x1901", "0x1A01"]
             .includes(this.level.buildingIDAtTile(this.x, this.y + 1)) &&
-            this.level.buildingAtTile(this.x, this.y + 1).acceptItem(new Item((this.x + 0.5) * consts.TILE_SIZE, (this.y + 1.1) * consts.TILE_SIZE, id, this.level))) {
+            this.level.buildingAtTile(this.x, this.y + 1).acceptItem(new Item((this.x + 0.5) * consts.TILE_SIZE, (this.y + 1.1) * consts.TILE_SIZE, id))) {
             return true;
         }
         else if (["0x0201", "0x0601", "0x0A01", "0x0E01", "0x1001", "0x1101", "0x1201", "0x1601", "0x1701", "0x1901", "0x1A01", "0x1B01"]
             .includes(this.level.buildingIDAtTile(this.x - 1, this.y)) &&
-            this.level.buildingAtTile(this.x - 1, this.y).acceptItem(new Item((this.x - 0.1) * consts.TILE_SIZE, (this.y + 0.5) * consts.TILE_SIZE, id, this.level))) {
+            this.level.buildingAtTile(this.x - 1, this.y).acceptItem(new Item((this.x - 0.1) * consts.TILE_SIZE, (this.y + 0.5) * consts.TILE_SIZE, id))) {
             return true;
         }
         else if (["0x0301", "0x0801", "0x0401", "0x0C01", "0x1001", "0x1201", "0x1301", "0x1401", "0x1501", "0x1801", "0x1A01", "0x1B01"]
             .includes(this.level.buildingIDAtTile(this.x, this.y - 1)) &&
-            this.level.buildingAtTile(this.x, this.y - 1).acceptItem(new Item((this.x + 0.5) * consts.TILE_SIZE, (this.y - 0.1) * consts.TILE_SIZE, id, this.level))) {
+            this.level.buildingAtTile(this.x, this.y - 1).acceptItem(new Item((this.x + 0.5) * consts.TILE_SIZE, (this.y - 0.1) * consts.TILE_SIZE, id))) {
             return true;
         }
         else {

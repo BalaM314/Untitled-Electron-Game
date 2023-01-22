@@ -413,7 +413,7 @@ let state: {
 			level.displayGhostBuilding(
 				(mouse.x - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE,
 				(mouse.y - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE,
-				placedBuilding.ID
+				placedBuilding.ID, currentFrame
 			);
 			if(registry.keybinds.display.show_tooltip.isHeld()){
 				level.displayTooltip(mouse.x, mouse.y, currentFrame);
@@ -448,8 +448,7 @@ let state: {
 				)?.acceptItem(new Item(
 					(Math.floor((e.x  / consts.DISPLAY_SCALE - Game.scroll.x) / consts.TILE_SIZE) + 0.5) * consts.TILE_SIZE,
 					(Math.floor((e.y  / consts.DISPLAY_SCALE - Game.scroll.y) / consts.TILE_SIZE) + 0.5) * consts.TILE_SIZE,
-					ItemID.base_null,
-					level1
+					ItemID.base_null
 				));
 			}
 		},
