@@ -1081,15 +1081,6 @@ class Conveyor extends Building {
         super(tileX, tileY, id, level);
         this.item = null;
     }
-    break() {
-        if (this.item instanceof Item) {
-            if (this.item.grabbedBy === this) {
-                this.item.grabbedBy = null;
-            }
-        }
-        this.item = null;
-        super.break();
-    }
     display(currentFrame) {
         super.display(currentFrame);
         if (this.item instanceof Item) {
@@ -1545,6 +1536,12 @@ class Extractor extends Conveyor {
         else {
             this.grabItemFromTile();
         }
+    }
+    break() {
+        if (this.item) {
+            this.item.grabbedBy = null;
+        }
+        this.level.writeExtractor(this.x, this.y, null);
     }
 }
 class StorageBuilding extends Building {
