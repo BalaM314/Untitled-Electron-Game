@@ -296,14 +296,26 @@ class Level {
 	}
 	buildBuilding(tileX:number, tileY:number, buildingID:BuildingID):boolean {
 		if(this.buildingIDAtTile(tileX, tileY) == "0x0008") return false;
-		if(getRawBuildingID(buildingID) != "0x05"){
+
+		//Only overwrite the same building once per build attempt.
+		//Otherwise, you could constantly overwrite a building on every frame you tried to build, which is not good.
+		if(getRawBuildingID(buildingID) == "0x05"){
+			if(this.extractorAtTile(tileX, tileY)?.id == buildingID){
+				if(!canOverwriteBuilding) return false;
+				canOverwriteBuilding = false;
+			}
+			this.extractorAtTile(tileX, tileY)?.break();
+		} else {
+			if(this.buildingAtTile(tileX, tileY)?.id == buildingID){
+				if(!canOverwriteBuilding) return false;
+				canOverwriteBuilding = false;
+			}
 			this.buildingAtTile(tileX, tileY)?.break();
 		}
+
 		let tempBuilding:Building;
 		
 		if(buildingID == "0xFFFF"){
-			this.writeExtractor(tileX, tileY, null);
-			this.writeBuilding(tileX, tileY, null);
 			return true;
 		}
 		if(((+buildingID) & 0x00F0) == 0x10){

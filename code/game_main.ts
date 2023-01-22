@@ -13,6 +13,7 @@ function registerEventHandlers(){
 		if(e.button) return e.preventDefault();//right click bad
 		mouse.held = true;
 		mouse.latestEvent = e;
+		canOverwriteBuilding = true;
 		if(state[Game.state]){
 			state[Game.state]?.onclick?.(e);
 		}
@@ -20,6 +21,7 @@ function registerEventHandlers(){
 	clickcapture.onmouseup = (e:MouseEvent) => {
 		mouse.held = false;
 		mouse.latestEvent = e;
+		canOverwriteBuilding = true;
 	}
 
 	//For touch screens
@@ -33,6 +35,7 @@ function registerEventHandlers(){
 		//Delays by 500ms
 		setTimeout(() => {
 			mouse.held = false;
+			canOverwriteBuilding = true;
 		}, 500);
 	});
 	clickcapture.addEventListener("touchmove", (e:any) => {
@@ -678,6 +681,8 @@ let placedBuilding: {
 		}
 	}
 };
+
+let canOverwriteBuilding = true;
 
 
 /**Called once on page load. */
