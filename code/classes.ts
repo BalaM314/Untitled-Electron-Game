@@ -504,7 +504,7 @@ class Chunk {
 						tempBuilding.item = new Item(buildingData.item.x, buildingData.item.y, buildingData.item.id, this.parent);
 						tempBuilding.item.grabbedBy = tempBuilding;
 					}
-					if(buildingData.inv){
+					if(buildingData.inv && tempBuilding instanceof StorageBuilding){
 						//If the building has an inventory, spawn in the items.
 						for(let itemData of buildingData.inv){
 							let tempItem = new Item(itemData.x, itemData.y, itemData.id, this.parent);
@@ -928,8 +928,6 @@ class Building {
 	y: number;
 	id: BuildingID;
 	item: Item | null = null;
-	//TODO why is this on Building and not StorageBuilding?
-	inventory: StorageInventory;
 	level: Level;
 	static animated = false;
 	constructor(tileX:number, tileY: number, id:BuildingID, level:Level){
@@ -937,9 +935,6 @@ class Building {
 		this.y = tileY;
 		this.id = id;
 		this.level = level;
-		let inventory:any = [];
-		inventory.MAX_LENGTH = 64;
-		this.inventory = inventory as StorageInventory;
 	}
 	static canBuildAt(tileX:number, tileY:number, level:Level){
 		return level.tileAtByTile(tileX, tileY) != "0x02";
@@ -947,11 +942,6 @@ class Building {
 	break(){
 		if(this.item){
 			this.item.grabbedBy = null;
-		}
-		if(this.inventory){
-			for(let item of this.inventory){
-				item.grabbedBy = null;
-			}
 		}
 		this.level.writeBuilding(this.x, this.y, null);
 	}
@@ -1014,7 +1004,6 @@ class Building {
 	}
 	hasItem():Item | null {
 		if(this.item) return this.item;
-		if(this.inventory && this.inventory?.length != 0) return this.inventory[0];
 		return null;
 	}
 	removeItem():Item | null {
@@ -1022,9 +1011,6 @@ class Building {
 			let temp = this.item;
 			this.item = null;
 			return temp;
-		}
-		if(this.inventory?.length > 0){
-			return this.inventory.pop()!;
 		}
 		return null;
 	}
@@ -1071,27 +1057,17 @@ class Building {
 			this.item = item;
 			item.grabbedBy = this;
 			return true;
-		} else if(this.inventory?.length < this.inventory?.MAX_LENGTH){
-			this.inventory.push(item);
-			return true;
 		} else {
 			return false;
 		}
 	}
 	export():BuildingData {
-		let inv:ItemData[] = [];
-		if(this.inventory){
-			for(let item of this.inventory){
-				const data = item.export();
-				if(data) inv.push(data);
-			}
-		}
 		return {
 			x: this.x,
 			y: this.y,
 			id: this.id,
 			item: this.item?.export() ?? null,
-			inv: inv
+			inv: []
 		};
 	}
 }
@@ -1642,6 +1618,46 @@ class StorageBuilding extends Building {
 		let temp:any = [];
 		temp.MAX_LENGTH = 64;
 		this.inventory = temp;
+	}
+	break(){
+		if(this.inventory){
+			for(let item of this.inventory){
+				item.grabbedBy = null;
+			}
+		}
+		super.break();
+	}
+	hasItem(){
+		if(this.inventory && this.inventory?.length != 0) return this.inventory[0];
+		return super.hasItem();
+	}
+	removeItem(){
+		if(this.inventory?.length > 0){
+			return this.inventory.pop()!;
+		}
+		return super.removeItem();
+	}
+	acceptItem(item:Item) {
+		if(this.inventory?.length < this.inventory?.MAX_LENGTH){
+			this.inventory.push(item);
+			return true;
+		} else return super.acceptItem(item);
+	}
+	export():BuildingData {
+		let inv:ItemData[] = [];
+		if(this.inventory){
+			for(let item of this.inventory){
+				const data = item.export();
+				if(data) inv.push(data);
+			}
+		}
+		return {
+			x: this.x,
+			y: this.y,
+			id: this.id,
+			item: this.item?.export() ?? null,
+			inv: inv
+		};
 	}
 }
 
