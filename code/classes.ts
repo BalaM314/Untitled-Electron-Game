@@ -1167,8 +1167,8 @@ class Miner extends Building {
 		if(this.timer > 0){
 			this.timer --;
 		} else {
-			this.timer = 61;
 			if(this.spawnItem(this.miningItem)){
+				this.timer = 61;
 				trigger(triggerType.buildingRun, getRawBuildingID(this.id), this.miningItem);
 			}
 		}
