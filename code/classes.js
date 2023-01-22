@@ -110,21 +110,18 @@ class Level {
         }
         return false;
     }
-    displayGhostBuilding(tileX, tileY, buildingID) {
+    displayGhostBuilding(tileX, tileY, buildingID, currentframe) {
         tileX = Math.floor(tileX);
         tileY = Math.floor(tileY);
         if (!this.hasChunk(tileX, tileY)) {
             return;
         }
-        switch (getRawBuildingID(buildingID)) {
-            case "0x01":
-                let meta = +buildingID >> 8;
-                this.getChunk(tileX, tileY).displayGhostBuilding(tileOffsetInChunk(tileX), tileOffsetInChunk(tileY), [0, 1, 2, 3].includes(meta) ? this.getTurnedConveyor(tileX, tileY, meta) : buildingID, !Conveyor.canBuildAt(tileX, tileY, this));
-                break;
-            default:
-                this.getChunk(tileX, tileY).displayGhostBuilding(tileOffsetInChunk(tileX), tileOffsetInChunk(tileY), buildingID, !registry.buildings[getRawBuildingID(buildingID)]?.canBuildAt(tileX, tileY, this));
-                break;
+        let id = buildingID;
+        const meta = +buildingID >> 8;
+        if (getRawBuildingID(buildingID) == "0x01" && [0, 1, 2, 3].includes(meta)) {
+            id = this.getTurnedConveyor(tileX, tileY, meta);
         }
+        this.getChunk(tileX, tileY).displayGhostBuilding(tileOffsetInChunk(tileX), tileOffsetInChunk(tileY), id, !registry.buildings[getRawBuildingID(buildingID)]?.canBuildAt(tileX, tileY, this), currentframe);
     }
     getTurnedConveyor(tileX, tileY, conveyorType) {
         if (registry.keybinds.placement.force_straight_conveyor.isHeld()) {
@@ -687,7 +684,7 @@ class Chunk {
         if (currentframe.debug)
             ctx.strokeRect(pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
     }
-    displayGhostBuilding(x, y, buildingID, isError) {
+    displayGhostBuilding(x, y, buildingID, isError, currentframe) {
         let pixelX = ((this.x * consts.CHUNK_SIZE) + x) * consts.DISPLAY_TILE_SIZE + (Game.scroll.x * consts.DISPLAY_SCALE);
         let pixelY = ((this.y * consts.CHUNK_SIZE) + y) * consts.DISPLAY_TILE_SIZE + (Game.scroll.y * consts.DISPLAY_SCALE);
         let _ctx = ctx1;
@@ -699,27 +696,25 @@ class Chunk {
         }
         if (buildingID == "0xFFFF")
             return;
+        _ctx.globalAlpha = 0.9;
         if (isError) {
-            _ctx.globalAlpha = 0.9;
             _ctx.drawImage(registry.textures.misc["invalidunderlay"], pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
-            _ctx.globalAlpha = +buildingID % 0x100 == 0x01 ? 0.3 : 0.7;
         }
         else {
-            _ctx.globalAlpha = 0.9;
             if ((+buildingID & 0x00F0) == 0x10) {
                 _ctx.drawImage(registry.textures.misc["ghostunderlay"], pixelX, pixelY, consts.DISPLAY_TILE_SIZE * 2, consts.DISPLAY_TILE_SIZE * 2);
             }
             else {
                 _ctx.drawImage(registry.textures.misc["ghostunderlay"], pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
             }
-            _ctx.globalAlpha = +buildingID % 0x100 == 0x01 ? 0.3 : 0.7;
         }
+        _ctx.globalAlpha = +buildingID % 0x100 == 0x01 ? 0.3 : 0.7;
         Building.prototype.display.bind({
             x: (this.x * consts.CHUNK_SIZE) + x,
             y: (this.y * consts.CHUNK_SIZE) + y,
             id: buildingID,
             level: this
-        })({}, ctx1);
+        })(currentframe, ctx1);
         _ctx.globalAlpha = 1.0;
     }
     displayL3(x, y, buildingID, isGhost) {
@@ -983,6 +978,7 @@ class Building {
     }
 }
 Building.animated = false;
+Building.outputsItems = false;
 class BuildingWithRecipe extends Building {
     constructor(tileX, tileY, id, level) {
         super(tileX, tileY, id, level);
@@ -1037,6 +1033,7 @@ class BuildingWithRecipe extends Building {
         }
     }
 }
+BuildingWithRecipe.outputsItems = true;
 class Miner extends Building {
     constructor(tileX, tileY, id, level) {
         super(tileX, tileY, id, level);
@@ -1067,6 +1064,7 @@ class Miner extends Building {
         }
     }
 }
+Miner.outputsItems = true;
 class TrashCan extends Building {
     acceptItem(item) {
         return true;
@@ -1663,6 +1661,7 @@ class MultiBlockController extends BuildingWithRecipe {
     }
 }
 MultiBlockController.size = [1, 1];
+MultiBlockController.outputsItems = true;
 class MultiBlockSecondary extends Building {
     constructor() {
         super(...arguments);
@@ -1687,6 +1686,7 @@ class MultiBlockSecondary extends Building {
         }
     }
 }
+MultiBlockSecondary.outputsItems = true;
 class Assembler extends MultiBlockController {
 }
 Assembler.recipeType = registry.recipes.base_assembling;

@@ -150,29 +150,22 @@ class Level {
 	}
 	
 	
-	displayGhostBuilding(tileX:number, tileY:number, buildingID:BuildingID){
+	displayGhostBuilding(tileX:number, tileY:number, buildingID:BuildingID, currentframe:CurrentFrame){
 		tileX = Math.floor(tileX);
 		tileY = Math.floor(tileY);
 		//Tells a chunk to display a ghost building.
 		if(!this.hasChunk(tileX, tileY)){
 			return;
 		}
-		switch(getRawBuildingID(buildingID)){
-			case "0x01":
-				let meta = +buildingID >> 8;
-				this.getChunk(tileX, tileY).displayGhostBuilding(
-					tileOffsetInChunk(tileX), tileOffsetInChunk(tileY),
-					[0, 1, 2, 3].includes(meta) ? this.getTurnedConveyor(tileX, tileY, meta as 0 | 1 | 2 | 3) : buildingID,
-					!Conveyor.canBuildAt(tileX, tileY, this)
-				);
-				break;
-			default:
-				this.getChunk(tileX, tileY).displayGhostBuilding(
-					tileOffsetInChunk(tileX), tileOffsetInChunk(tileY), buildingID,
-					!registry.buildings[getRawBuildingID(buildingID)]?.canBuildAt(tileX, tileY, this)
-				);
-				break;
+		let id = buildingID;
+		const meta = +buildingID >> 8;
+		if(getRawBuildingID(buildingID) == "0x01" && [0, 1, 2, 3].includes(meta)){
+			id = this.getTurnedConveyor(tileX, tileY, meta as 0 | 1 | 2 | 3);
 		}
+		this.getChunk(tileX, tileY).displayGhostBuilding(
+			tileOffsetInChunk(tileX), tileOffsetInChunk(tileY), id,
+			!registry.buildings[getRawBuildingID(buildingID)]?.canBuildAt(tileX, tileY, this), currentframe
+		);
 	}
 	getTurnedConveyor(tileX:number, tileY:number, conveyorType:0 | 1 | 2 | 3):BuildingID {
 		//Returns how a conveyor should be turned based on nearby buildings.
@@ -775,7 +768,7 @@ class Chunk {
 		}
 		if(currentframe.debug) ctx.strokeRect(pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
 	}
-	displayGhostBuilding(x:number, y:number, buildingID:BuildingID, isError:boolean){
+	displayGhostBuilding(x:number, y:number, buildingID:BuildingID, isError:boolean, currentframe:CurrentFrame){
 		let pixelX = ((this.x * consts.CHUNK_SIZE) + x) * consts.DISPLAY_TILE_SIZE + (Game.scroll.x * consts.DISPLAY_SCALE);
 		let pixelY = ((this.y * consts.CHUNK_SIZE) + y) * consts.DISPLAY_TILE_SIZE + (Game.scroll.y * consts.DISPLAY_SCALE);
 		let _ctx = ctx1;
@@ -787,26 +780,24 @@ class Chunk {
 		}
 		if(buildingID == "0xFFFF") return;
 
+		_ctx.globalAlpha = 0.9;
 		if(isError){
-			_ctx.globalAlpha = 0.9;
 			_ctx.drawImage(registry.textures.misc["invalidunderlay"], pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
-			_ctx.globalAlpha = +buildingID % 0x100 == 0x01 ? 0.3 : 0.7;
 		} else {
-			_ctx.globalAlpha = 0.9;
 			if((+buildingID & 0x00F0) == 0x10){
 				_ctx.drawImage(registry.textures.misc["ghostunderlay"], pixelX, pixelY, consts.DISPLAY_TILE_SIZE * 2, consts.DISPLAY_TILE_SIZE * 2);
 			} else {
 				_ctx.drawImage(registry.textures.misc["ghostunderlay"], pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
 			}
-			_ctx.globalAlpha = +buildingID % 0x100 == 0x01 ? 0.3 : 0.7;
 		}
+		_ctx.globalAlpha = +buildingID % 0x100 == 0x01 ? 0.3 : 0.7;
 		
 		Building.prototype.display.bind({
 			x: (this.x * consts.CHUNK_SIZE) + x,
 			y: (this.y * consts.CHUNK_SIZE) + y,
 			id: buildingID,
 			level: this
-		})({} as CurrentFrame, ctx1);
+		})(currentframe, ctx1);
 		//TODO! grab currentframe
 		_ctx.globalAlpha = 1.0;
 	}
@@ -942,6 +933,7 @@ class Building {
 	item: Item | null = null;
 	level: Level;
 	static animated = false;
+	static outputsItems = false;
 	constructor(tileX:number, tileY: number, id:BuildingID, level:Level){
 		this.x = tileX;
 		this.y = tileY;
@@ -1090,6 +1082,7 @@ abstract class BuildingWithRecipe extends Building {
 	timer: number;
 	recipe: Recipe | null = null;
 	items: Item[];
+	static outputsItems = true;
 	static recipeType: {recipes: Recipe[]};
 	constructor(tileX:number, tileY:number, id:BuildingID, level:Level){
 		super(tileX, tileY, id, level);
@@ -1148,6 +1141,7 @@ abstract class BuildingWithRecipe extends Building {
 class Miner extends Building {
 	timer: number;
 	miningItem: ItemID | null = null;
+	static outputsItems = true;
 	constructor(tileX:number, tileY:number, id:BuildingID, level:Level){
 		super(tileX, tileY, id, level);
 		this.timer = 61;
@@ -1706,6 +1700,7 @@ class Lathe extends BuildingWithRecipe {
 class MultiBlockController extends BuildingWithRecipe {
 	secondaries: MultiBlockSecondary[];
 	static size = [1, 1];
+	static outputsItems = true;
 	constructor(tileX:number, tileY:number, id:BuildingID, level:Level){
 		super(tileX, tileY, id, level);
 		this.secondaries = [];
@@ -1753,6 +1748,7 @@ class MultiBlockController extends BuildingWithRecipe {
 class MultiBlockSecondary extends Building {
 	/**Assigned in buildBuilding */
 	controller: MultiBlockController | null = null;
+	static outputsItems = true;
 	acceptItem(item: Item):boolean {
 		return this.controller?.acceptItem(item) ?? false;
 	}
