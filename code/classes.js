@@ -116,9 +116,9 @@ class Level {
         if (!this.hasChunk(tileX, tileY)) {
             return;
         }
-        switch (+getRawBuildingID(buildingID)) {
-            case 0x01:
-                let meta = +buildingID & 0xFF00;
+        switch (getRawBuildingID(buildingID)) {
+            case "0x01":
+                let meta = +buildingID >> 8;
                 this.getChunk(tileX, tileY).displayGhostBuilding(tileOffsetInChunk(tileX), tileOffsetInChunk(tileY), [0, 1, 2, 3].includes(meta) ? this.getTurnedConveyor(tileX, tileY, meta) : buildingID, !Conveyor.canBuildAt(tileX, tileY, this));
                 break;
             default:
