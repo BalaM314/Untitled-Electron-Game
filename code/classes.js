@@ -387,6 +387,7 @@ class Level {
 }
 class Chunk {
     constructor({ x, y, seed, parent }, data) {
+        this.hasBuildings = false;
         this.x = x;
         this.y = y;
         this.parent = parent;
@@ -426,6 +427,7 @@ class Chunk {
                     let buildingData = data.layers[0][y][x];
                     if (!buildingData)
                         continue;
+                    this.hasBuildings = true;
                     if (+data.version.split(" ")[1].replaceAll(".", "") <= 200) {
                         buildingData.id = hex(buildingData.id, 4);
                     }
@@ -456,6 +458,7 @@ class Chunk {
                     let buildingData = data.layers[1][y][x];
                     if (!buildingData)
                         continue;
+                    this.hasBuildings = true;
                     if (+data.version.split(" ")[1].replaceAll(".", "") <= 200) {
                         buildingData.id = hex(buildingData.id, 4);
                     }
@@ -471,6 +474,8 @@ class Chunk {
         return this;
     }
     update(currentFrame) {
+        if (!this.hasBuildings)
+            return this;
         for (let row of this.layers[1]) {
             for (let value of row) {
                 value?.update?.(currentFrame);
@@ -507,6 +512,8 @@ class Chunk {
             return false;
         }
         this.layers[1][tileY][tileX] = value;
+        if (value instanceof Building)
+            this.hasBuildings = true;
         return true;
     }
     setExtractor(tileX, tileY, value) {
@@ -514,6 +521,8 @@ class Chunk {
             return false;
         }
         this.layers[2][tileY][tileX] = value;
+        if (value instanceof Building)
+            this.hasBuildings = true;
         return true;
     }
     displayToConsole() {

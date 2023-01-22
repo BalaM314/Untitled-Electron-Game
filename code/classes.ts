@@ -435,6 +435,7 @@ class Chunk {
 	y: number;
 	chunkSeed: number;
 	parent: Level;
+	hasBuildings: boolean = false;
 	constructor({x, y, seed, parent}: { x: number; y: number; seed: number; parent: Level;}, data?:ChunkData){
 		this.x = x;
 		this.y = y;
@@ -482,6 +483,7 @@ class Chunk {
 				for(let x in data.layers[0][y]){
 					let buildingData = data.layers[0][y][x];
 					if(!buildingData) continue;
+					this.hasBuildings = true;
 					if(+data.version.split(" ")[1].replaceAll(".", "") <= 200){
 						buildingData.id = hex(buildingData.id as any as number, 4) as BuildingID;
 						//aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa I am looking forward to beta when I can throw out these garbage formats
@@ -518,6 +520,7 @@ class Chunk {
 				for(let x in data.layers[1][y]){
 					let buildingData = data.layers[1][y][x];
 					if(!buildingData) continue;
+					this.hasBuildings = true;
 					if(+data.version.split(" ")[1].replaceAll(".", "") <= 200){
 						buildingData.id = hex(buildingData.id as any as number, 4) as BuildingID;
 					}
@@ -540,6 +543,7 @@ class Chunk {
 		return this;
 	}
 	update(currentFrame:CurrentFrame):Chunk {
+		if(!this.hasBuildings) return this;
 		for(let row of this.layers[1]){
 			for(let value of row){
 				value?.update?.(currentFrame);
@@ -575,6 +579,7 @@ class Chunk {
 			return false;
 		}
 		this.layers[1][tileY][tileX] = value;
+		if(value instanceof Building) this.hasBuildings = true;
 		return true;
 	}
 	setExtractor(tileX:number, tileY:number, value:Extractor | null):boolean {
@@ -582,6 +587,7 @@ class Chunk {
 			return false;
 		}
 		this.layers[2][tileY][tileX] = value;
+		if(value instanceof Building) this.hasBuildings = true;
 		return true;
 	}
 	/**
