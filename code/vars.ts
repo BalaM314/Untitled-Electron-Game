@@ -302,7 +302,7 @@ const registry:Registry = {
 		}
 	},
 	/**Contains a mapping from building IDs to classes. */
-	buildings: null,//Initialized at the end of classes.ts.
+	buildings: null!,//Initialized at the end of classes.ts.
 	/**List of building IDs. */
 	buildingIDs: BuildingID,
 	/**List of item IDs. */
@@ -313,10 +313,10 @@ const registry:Registry = {
 	miscTextures: ["invalidunderlay", "ghostunderlay"],
 	/**Stores textures(as HTMLImageElements). */
 	textures: {
-		item: {},
-		building: {},
-		tile: {},
-		misc: {}
+		item: {} as any,
+		building: {} as any,
+		tile: {} as any,
+		misc: {} as any
 		//Loaded in loadTexturesIntoMemory()
 	},
 	/**Contains all the keybindings for keyboard controls. */
@@ -335,7 +335,7 @@ const registry:Registry = {
 			save: new Keybind("s", ["control", "!alt", "!shift"], () => {
 				if(
 					(!localStorage.getItem("save1") 
-						|| (JSON.parse(localStorage.getItem("save1")) as SaveData).UntitledElectronGame?.level1?.uuid == level1?.uuid)
+						|| (JSON.parse(localStorage.getItem("save1")!) as SaveData).UntitledElectronGame?.level1?.uuid == level1?.uuid)
 					|| confirm("Are you sure you want to save? This will overwrite your current saved world which seems to be different!")
 				){
 					try {
@@ -343,7 +343,7 @@ const registry:Registry = {
 						alert("Saved successfully!");
 						Game.lastSaved = millis();
 					} catch(err){
-						alert("Failed to save! " + err.message);
+						alert("Failed to save! " + parseError(err));
 					}
 				}
 			}),
@@ -389,7 +389,7 @@ let mouse = {
 	x: 0,
 	y: 0,
 	held: false,
-	latestEvent: null
+	latestEvent: null as MouseEvent | null
 };
 let keysHeld:string[] = [];
 let lastKeysPressed:string[] = ["", "", "", "", "", "", "", "", "", ""];
@@ -416,7 +416,7 @@ let Game: {
 	paused: boolean;
 	title: {
 		splashtext: string;
-		splashbehavior: string;
+		splashbehavior: (x:number) => number;
 	};
 	loadedTextures: number;
 	animationFrame: number;
@@ -427,7 +427,7 @@ let Game: {
 		speed: 5
 	},
 	startTime: new Date().getTime(),
-	lastSaved: null,
+	lastSaved: 0,
 	forceRedraw: true,
 	tutorial: {
 		
@@ -436,12 +436,12 @@ let Game: {
 	state: "loading",
 	title: {
 		splashtext: "",
-		splashbehavior: "sin"
+		splashbehavior: Math.sin
 	},
 	loadedTextures: 0,
 	animationFrame: 0,
 };
-let level1: Level = null;
+let level1:Level = null!;
 let splashes:string[] = [
 	"Get out of my files!",
 	"Remember everyone, the secret to a good game in 2020 is s p l a s h t e x t",
@@ -543,7 +543,7 @@ let raresplashes: string[] = [
 	"declare let splashes"
 ];
 
-function makeError(name):(typeof Error){
+function makeError(name:string):(typeof Error){
 	return class extends Error {
 		constructor(message?: string){
 			super(...arguments);

@@ -10,9 +10,14 @@ const uploadButton = document.getElementById('uploadButton');
 let alertmessage = document.getElementById("alertmessage");
 let alertexit = document.getElementById("alertexit");
 let alertbox = document.getElementById("alertbox");
-for (let element of document.getElementById("toolbar").children) {
+const toolbarEl = document.getElementById("toolbar");
+const clickcapture = document.getElementById("clickcapture");
+const errorBackground = document.getElementById("error_background");
+const loadingBackground = document.getElementById("loading_background");
+const resourcesEl = document.getElementById("resources");
+for (let element of toolbarEl.children) {
     element.addEventListener("click", (event) => {
-        for (let x of document.getElementById("toolbar").children) {
+        for (let x of toolbarEl.children) {
             x.classList.remove("selected");
         }
         event.target.classList.add("selected");

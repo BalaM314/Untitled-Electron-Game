@@ -9,7 +9,6 @@ function registerEventHandlers(){
 		mouse.latestEvent = e;
 	}
 
-	let clickcapture = document.getElementById("clickcapture");
 	clickcapture.onmousedown = (e:MouseEvent) => {
 		if(e.button) return e.preventDefault();//right click bad
 		mouse.held = true;
@@ -27,7 +26,7 @@ function registerEventHandlers(){
 	clickcapture.addEventListener("touchstart", (e:any) => {
 		e.x = e.touches[0].clientX;
 		e.y = e.touches[0].clientY;
-		clickcapture.onmousedown(e);
+		clickcapture.onmousedown?.(e);
 	});
 	clickcapture.addEventListener("touchend", (e:any) => {
 		//When the screen is tapped, touchend is fired immediately after touchstart, leaving no time for buildings to be placed.
@@ -39,7 +38,7 @@ function registerEventHandlers(){
 	clickcapture.addEventListener("touchmove", (e:any) => {
 		e.x = e.touches[0].clientX;
 		e.y = e.touches[0].clientY;
-		window.onmousemove(e);
+		window.onmousemove?.(e);
 	});
 
 	clickcapture.oncontextmenu = (e) => {
@@ -52,16 +51,16 @@ function registerEventHandlers(){
 
 		//If you pressed a number or function key, draw a box around the building you selected.
 		if(!isNaN(parseInt(e.key))){
-			for(let x of document.getElementById("toolbar").children){
+			for(let x of toolbarEl.children){
 				x.classList.remove("selected");
 			}
-			(document.getElementById("toolbar").children?.[parseInt(e.key) - 1] as HTMLElement)?.classList.add("selected");
+			(toolbarEl.children?.[parseInt(e.key) - 1] as HTMLElement)?.classList.add("selected");
 		}
 		if(!isNaN(parseInt(e.key[1]))){
-			for(let x of document.getElementById("toolbar").children){
+			for(let x of toolbarEl.children){
 				x.classList.remove("selected");
 			}
-			(document.getElementById("toolbar").children?.[parseInt(e.key[1]) + 8] as HTMLElement)?.classList.add("selected");
+			(toolbarEl.children?.[parseInt(e.key[1]) + 8] as HTMLElement)?.classList.add("selected");
 		}
 
 		//Easter egg
@@ -108,13 +107,15 @@ function registerEventHandlers(){
 	
 
 	//When file uploaded
-	uploadButton.onchange = function(event:any){
+	uploadButton.onchange = (event:Event) => {
 		//Load a save file
-		let file = event.target.files[0];
+		let file = ((event.target as any)?.files?.[0] ?? null) as Blob | null;
+		if(file == null) return;
 		let reader = new FileReader();
 		reader.readAsText(file);
-		reader.onload = function(readerEvent){
-			let content = readerEvent.target.result.toString();
+		reader.onload = e => {
+			let content = e.target?.result?.toString();
+			if(content == null) return;
 			importData(content);
 		}
 	}
@@ -137,7 +138,7 @@ function registerEventHandlers(){
 			//If you aren't in-game, just exit
 		}
 
-		if(!localStorage.getItem("save1") || JSON.parse(localStorage.getItem("save1"))?.metadata?.uuid == level1?.uuid){
+		if(!localStorage.getItem("save1") || JSON.parse(localStorage.getItem("save1")!)?.metadata?.uuid == level1?.uuid){
 			//If there's nothing in save1 or the uuid of save1 and the current level are the same, save
 			localStorage.setItem("save1", JSON.stringify(exportData()));
 		} else {
@@ -244,7 +245,7 @@ let state: {
 			ctx.fillStyle = "#000000";
 			ctx.fillText("Untitled Electron Game", innerWidth / 2, innerHeight * 0.2);
 			ctx.fillStyle = "#cccc00";
-			ctx.font = `${20 + 5*Math[Game.title.splashbehavior](millis() / 400)}px sans-serif`;
+			ctx.font = `${20 + 5*Game.title.splashbehavior(millis() / 400)}px sans-serif`;
 			ctx.fillText(Game.title.splashtext ?? "splash not found! this is actually an error pls report", innerWidth / 2, innerHeight * 0.35);
 			state.title.buttons.forEach(button => button.display(ctx));
 		},
@@ -376,7 +377,7 @@ let state: {
 				level.update(currentFrame);
 			} catch(err){
 				console.error(err);
-				throw new Error(`Error updating world: ${err.message}`);
+				throw new Error(`Error updating world: ${parseError(err)}`);
 			}			
 		},
 		display: function(currentFrame:CurrentFrame, level:Level){
@@ -435,27 +436,27 @@ let state: {
 				(item as HTMLSpanElement).innerText = (level1.resources[item.id] ?? 0).toString();
 			}
 		},
-		onclick: function(e:MouseEvent){
+		onclick(e:MouseEvent){
 			if(Game.paused) return;
 			if(e.ctrlKey){
 				level1.buildingAtPixel(
 					(e.x  / consts.DISPLAY_SCALE - Game.scroll.x),
 					(e.y  / consts.DISPLAY_SCALE - Game.scroll.y)
-				).acceptItem(new Item(
+				)?.acceptItem(new Item(
 					(Math.floor((e.x  / consts.DISPLAY_SCALE - Game.scroll.x) / consts.TILE_SIZE) + 0.5) * consts.TILE_SIZE,
 					(Math.floor((e.y  / consts.DISPLAY_SCALE - Game.scroll.y) / consts.TILE_SIZE) + 0.5) * consts.TILE_SIZE,
 					ItemID.base_null,
 					level1
-				))
+				));
 			}
 		},
-		onmouseheld: function(){
+		onmouseheld(){
 			if(Game.paused) return;
-			let e = mouse.latestEvent;
+			if(!mouse.latestEvent) return;
 			if(!(keysHeld.includes("control") || registry.keybinds.placement.break_building.isHeld()) && placedBuilding.ID != "0xFFFF"){
 				level1.buildBuilding(
-					Math.floor((e.x - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE),
-					Math.floor((e.y - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE),
+					Math.floor((mouse.latestEvent.x - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE),
+					Math.floor((mouse.latestEvent.y - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE),
 					placedBuilding.ID
 				);
 			}
@@ -510,7 +511,7 @@ function fixSizes(){
 function handleAlerts(){
 	if(alerts.list.length && alerts.active == false){
 		mouse.held = false;
-		alertmessage.innerHTML = alerts.list.shift();
+		alertmessage.innerHTML = alerts.list.shift()!;
 		alertmessage.style.setProperty("--text-length", alertmessage.innerText.length.toString());
 		alertbox.classList.add("active");
 		alerts.active = true;
@@ -533,7 +534,7 @@ function main_loop(){
 		};
 		Game.forceRedraw = false;
 		fixSizes();
-		window.getSelection().empty();
+		window.getSelection()?.empty();
 		
 		let currentState = state[Game.state];
 		if(!currentState){
@@ -564,7 +565,7 @@ function main_loop(){
 		handleAlerts();
 
 	} catch(err){
-		alert("An error has occurred! Oopsie.\nPlease create an issue on this project's GitHub so I can fix it.\nError message: " + err.message);
+		alert("An error has occurred! Oopsie.\nPlease create an issue on this project's GitHub so I can fix it.\nError message: " + parseError(err));
 		ctxs.forEach((ctx) => {ctx.clear();});
 		throw err;
 	}
@@ -591,18 +592,18 @@ There's no good in game tutorial, so to get started check the <a href="https://g
 		localStorage.getItem("save1") &&
 		(settings.alwaysLoadSave || confirm("Would you like to load your save?"))
 	){
-		importData(localStorage.getItem("save1"));
+		importData(localStorage.getItem("save1")!);
 	}
 
 	Game.state = "game";
 	Game.forceRedraw = true;
-	document.getElementById("toolbar").classList.remove("hidden");
-	document.getElementById("resources").classList.remove("hidden");
+	toolbarEl.classList.remove("hidden");
+	resourcesEl.classList.remove("hidden");
 
 	if(settings.autoSave){
 		if(
 			!localStorage.getItem("save1") ||
-			((JSON.parse(localStorage.getItem("save1")) as SaveData).UntitledElectronGame?.level1?.uuid == level1?.uuid)
+			((JSON.parse(localStorage.getItem("save1")!) as SaveData).UntitledElectronGame?.level1?.uuid == level1?.uuid)
 		){
 			setInterval(() => {
 				localStorage.setItem("save1", JSON.stringify(exportData()));
@@ -651,7 +652,7 @@ function importData(rawData:string){
 
 	} catch(err){
 		console.error("Import failed.", err);
-		alert("Import failed! " + err.message);
+		alert("Import failed! " + parseError(err));
 	}
 }
 
@@ -666,11 +667,11 @@ let placedBuilding: {
 	direction: 0x100,
 	modifier: 0x000,
 	get ID(){
-		if(this.type == 0x05){
+		if(this.type == "0x05"){
 			return hex(+this.type + this.direction + this.modifier, 4) as BuildingID;
-		} else if(this.type == 0x01){
+		} else if(this.type == "0x01"){
 			return hex(+this.type + this.direction, 4) as BuildingID;
-		} else if(this.type == 0xFF){
+		} else if(this.type == "0xFF"){
 			return hex(0xFFFF, 4) as BuildingID;
 		} else {
 			return hex(+this.type, 4) as BuildingID;
@@ -683,7 +684,7 @@ let placedBuilding: {
 function init(){
 	try {
 		assert(localStorage.getItem("settings"));
-		settings = JSON.parse(localStorage.getItem("settings"));
+		settings = JSON.parse(localStorage.getItem("settings")!);
 	} catch(err){
 		console.warn("Invalid persistent settings!\nIf this is your first time visiting this site, nothing to worry about.");
 		localStorage.setItem("settings", JSON.stringify(settings));
@@ -702,10 +703,10 @@ function init(){
 	}
 	
 	Game.title.splashtext = Math.random() < 0.95 ? splashes[Math.ceil(Math.random() * (splashes.length - 1))] : raresplashes[Math.ceil(Math.random() * (raresplashes.length - 1))];
-	Game.title.splashbehavior = Math.random() < 0.9 ? "sin" : "tan";
+	Game.title.splashbehavior = Math.random() < 0.9 ? Math.sin : Math.tan;
 	
-	document.getElementById("error_background").classList.remove("hidden");
-	document.getElementById("loading_background").classList.add("hidden");
+	errorBackground.classList.remove("hidden");
+	loadingBackground.classList.add("hidden");
 	
 	main_loop();
 }

@@ -5,7 +5,6 @@ function registerEventHandlers() {
         mouse.y = e.y;
         mouse.latestEvent = e;
     };
-    let clickcapture = document.getElementById("clickcapture");
     clickcapture.onmousedown = (e) => {
         if (e.button)
             return e.preventDefault();
@@ -22,7 +21,7 @@ function registerEventHandlers() {
     clickcapture.addEventListener("touchstart", (e) => {
         e.x = e.touches[0].clientX;
         e.y = e.touches[0].clientY;
-        clickcapture.onmousedown(e);
+        clickcapture.onmousedown?.(e);
     });
     clickcapture.addEventListener("touchend", (e) => {
         setTimeout(() => {
@@ -32,23 +31,23 @@ function registerEventHandlers() {
     clickcapture.addEventListener("touchmove", (e) => {
         e.x = e.touches[0].clientX;
         e.y = e.touches[0].clientY;
-        window.onmousemove(e);
+        window.onmousemove?.(e);
     });
     clickcapture.oncontextmenu = (e) => {
         e.preventDefault();
     };
     window.onkeydown = (e) => {
         if (!isNaN(parseInt(e.key))) {
-            for (let x of document.getElementById("toolbar").children) {
+            for (let x of toolbarEl.children) {
                 x.classList.remove("selected");
             }
-            document.getElementById("toolbar").children?.[parseInt(e.key) - 1]?.classList.add("selected");
+            toolbarEl.children?.[parseInt(e.key) - 1]?.classList.add("selected");
         }
         if (!isNaN(parseInt(e.key[1]))) {
-            for (let x of document.getElementById("toolbar").children) {
+            for (let x of toolbarEl.children) {
                 x.classList.remove("selected");
             }
-            document.getElementById("toolbar").children?.[parseInt(e.key[1]) + 8]?.classList.add("selected");
+            toolbarEl.children?.[parseInt(e.key[1]) + 8]?.classList.add("selected");
         }
         if (e.key == "Enter" && lastKeysPressed.join(", ") ==
             ["ArrowUp", "ArrowUp", "ArrowDown", "ArrowDown", "ArrowLeft", "ArrowRight", "ArrowLeft", "ArrowRight", "b", "a"].join(", ")) {
@@ -77,12 +76,16 @@ function registerEventHandlers() {
             keysHeld.splice(keysHeld.indexOf(e.key.toLowerCase()), 1);
         }
     };
-    uploadButton.onchange = function (event) {
-        let file = event.target.files[0];
+    uploadButton.onchange = (event) => {
+        let file = (event.target?.files?.[0] ?? null);
+        if (file == null)
+            return;
         let reader = new FileReader();
         reader.readAsText(file);
-        reader.onload = function (readerEvent) {
-            let content = readerEvent.target.result.toString();
+        reader.onload = e => {
+            let content = e.target?.result?.toString();
+            if (content == null)
+                return;
             importData(content);
         };
     };
@@ -186,7 +189,7 @@ let state = {
             ctx.fillStyle = "#000000";
             ctx.fillText("Untitled Electron Game", innerWidth / 2, innerHeight * 0.2);
             ctx.fillStyle = "#cccc00";
-            ctx.font = `${20 + 5 * Math[Game.title.splashbehavior](millis() / 400)}px sans-serif`;
+            ctx.font = `${20 + 5 * Game.title.splashbehavior(millis() / 400)}px sans-serif`;
             ctx.fillText(Game.title.splashtext ?? "splash not found! this is actually an error pls report", innerWidth / 2, innerHeight * 0.35);
             state.title.buttons.forEach(button => button.display(ctx));
         },
@@ -321,7 +324,7 @@ let state = {
             }
             catch (err) {
                 console.error(err);
-                throw new Error(`Error updating world: ${err.message}`);
+                throw new Error(`Error updating world: ${parseError(err)}`);
             }
         },
         display: function (currentFrame, level) {
@@ -362,19 +365,20 @@ let state = {
                 item.innerText = (level1.resources[item.id] ?? 0).toString();
             }
         },
-        onclick: function (e) {
+        onclick(e) {
             if (Game.paused)
                 return;
             if (e.ctrlKey) {
-                level1.buildingAtPixel((e.x / consts.DISPLAY_SCALE - Game.scroll.x), (e.y / consts.DISPLAY_SCALE - Game.scroll.y)).acceptItem(new Item((Math.floor((e.x / consts.DISPLAY_SCALE - Game.scroll.x) / consts.TILE_SIZE) + 0.5) * consts.TILE_SIZE, (Math.floor((e.y / consts.DISPLAY_SCALE - Game.scroll.y) / consts.TILE_SIZE) + 0.5) * consts.TILE_SIZE, ItemID.base_null, level1));
+                level1.buildingAtPixel((e.x / consts.DISPLAY_SCALE - Game.scroll.x), (e.y / consts.DISPLAY_SCALE - Game.scroll.y))?.acceptItem(new Item((Math.floor((e.x / consts.DISPLAY_SCALE - Game.scroll.x) / consts.TILE_SIZE) + 0.5) * consts.TILE_SIZE, (Math.floor((e.y / consts.DISPLAY_SCALE - Game.scroll.y) / consts.TILE_SIZE) + 0.5) * consts.TILE_SIZE, ItemID.base_null, level1));
             }
         },
-        onmouseheld: function () {
+        onmouseheld() {
             if (Game.paused)
                 return;
-            let e = mouse.latestEvent;
+            if (!mouse.latestEvent)
+                return;
             if (!(keysHeld.includes("control") || registry.keybinds.placement.break_building.isHeld()) && placedBuilding.ID != "0xFFFF") {
-                level1.buildBuilding(Math.floor((e.x - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE), Math.floor((e.y - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE), placedBuilding.ID);
+                level1.buildBuilding(Math.floor((mouse.latestEvent.x - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE), Math.floor((mouse.latestEvent.y - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE), placedBuilding.ID);
             }
         },
         onkeyheld: function (currentframe) {
@@ -435,7 +439,7 @@ function main_loop() {
         };
         Game.forceRedraw = false;
         fixSizes();
-        window.getSelection().empty();
+        window.getSelection()?.empty();
         let currentState = state[Game.state];
         if (!currentState) {
             throw new InvalidStateError(`Invalid game state "${Game.state}"`);
@@ -461,7 +465,7 @@ function main_loop() {
         handleAlerts();
     }
     catch (err) {
-        alert("An error has occurred! Oopsie.\nPlease create an issue on this project's GitHub so I can fix it.\nError message: " + err.message);
+        alert("An error has occurred! Oopsie.\nPlease create an issue on this project's GitHub so I can fix it.\nError message: " + parseError(err));
         ctxs.forEach((ctx) => { ctx.clear(); });
         throw err;
     }
@@ -485,8 +489,8 @@ There's no good in game tutorial, so to get started check the <a href="https://g
     }
     Game.state = "game";
     Game.forceRedraw = true;
-    document.getElementById("toolbar").classList.remove("hidden");
-    document.getElementById("resources").classList.remove("hidden");
+    toolbarEl.classList.remove("hidden");
+    resourcesEl.classList.remove("hidden");
     if (settings.autoSave) {
         if (!localStorage.getItem("save1") ||
             (JSON.parse(localStorage.getItem("save1")).UntitledElectronGame?.level1?.uuid == level1?.uuid)) {
@@ -527,7 +531,7 @@ function importData(rawData) {
     }
     catch (err) {
         console.error("Import failed.", err);
-        alert("Import failed! " + err.message);
+        alert("Import failed! " + parseError(err));
     }
 }
 let placedBuilding = {
@@ -535,13 +539,13 @@ let placedBuilding = {
     direction: 0x100,
     modifier: 0x000,
     get ID() {
-        if (this.type == 0x05) {
+        if (this.type == "0x05") {
             return hex(+this.type + this.direction + this.modifier, 4);
         }
-        else if (this.type == 0x01) {
+        else if (this.type == "0x01") {
             return hex(+this.type + this.direction, 4);
         }
-        else if (this.type == 0xFF) {
+        else if (this.type == "0xFF") {
             return hex(0xFFFF, 4);
         }
         else {
@@ -566,9 +570,9 @@ function init() {
         alert("It looks like you're trying to play on a phone. Unfortunately, mobile devices are not currently supported.");
     }
     Game.title.splashtext = Math.random() < 0.95 ? splashes[Math.ceil(Math.random() * (splashes.length - 1))] : raresplashes[Math.ceil(Math.random() * (raresplashes.length - 1))];
-    Game.title.splashbehavior = Math.random() < 0.9 ? "sin" : "tan";
-    document.getElementById("error_background").classList.remove("hidden");
-    document.getElementById("loading_background").classList.add("hidden");
+    Game.title.splashbehavior = Math.random() < 0.9 ? Math.sin : Math.tan;
+    errorBackground.classList.remove("hidden");
+    loadingBackground.classList.add("hidden");
     main_loop();
 }
 init();

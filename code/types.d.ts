@@ -38,16 +38,16 @@ interface Registry {
 	textures: {
 		item: {
 			[ID in ItemID]: HTMLImageElement
-		} | {};
+		};
 		building: {
-			[ID in RawBuildingID]: HTMLImageElement
-		} | {};
+			[ID in BuildingID]: HTMLImageElement
+		};
 		tile: {
 			[ID in TileID]: HTMLImageElement
-		} | {};
+		};
 		misc: {
 			[index: string]: HTMLImageElement
-		} | {};
+		};
 	};
 	keybinds: {
 		[index: string]: {
@@ -83,7 +83,7 @@ interface LevelData {
 }
 
 interface ChunkData {
-	layers: [BuildingData[][], BuildingData[][]];
+	layers: [(BuildingData | null)[][], (BuildingData | null)[][]];
 	version: string;
 }
 	
@@ -92,7 +92,7 @@ interface BuildingData {
 	x: number;
 	y: number;
 	id: BuildingID;
-	item: ItemData;
+	item: ItemData | null;
 	inv: ItemData[];
 }
 

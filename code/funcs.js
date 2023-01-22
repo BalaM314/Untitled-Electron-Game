@@ -86,6 +86,16 @@ function download(filename, text) {
     temp2.click();
     document.body.removeChild(temp2);
 }
+function parseError(err) {
+    if (err instanceof Error) {
+        return err.message;
+    }
+    else if (typeof err == "number" || typeof err == "string" || typeof err == "boolean") {
+        return err.toString();
+    }
+    else
+        return err;
+}
 class Button {
     constructor(config) {
         if (config.x instanceof Function)
@@ -108,9 +118,9 @@ class Button {
             Object.defineProperty(this, "label", { get: config.label });
         else
             this.label = config.label ?? "Button";
-        this.color = config.color || "#0000FF";
-        this.font = config.font || "20px sans-serif";
-        this.onClick = config.onClick || (() => { });
+        this.color = config.color ?? "#0000FF";
+        this.font = config.font ?? "20px sans-serif";
+        this.onClick = config.onClick ?? (() => { });
     }
     ;
     display(_ctx) {

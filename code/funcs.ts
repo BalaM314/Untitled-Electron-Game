@@ -54,7 +54,7 @@ function random(min:number, max:number): number;
 function random<T>(list:T, max?:null): number;
 
 /**Chooses a random number between min and max, or selects a random element from an array. */
-function random(min:any, max:number):any{
+function random(min:any, max?:any):any{
 	if(typeof min == "number"){
 		if(arguments.length > 2){
 			throw new ArgumentError("Too many arguments for random");
@@ -94,7 +94,7 @@ function assert(x:any){
 	}
 }
 
-function download(filename, text){
+function download(filename:string, text:string){
   //Self explanatory.
   let temp2 = document.createElement('a');
   temp2.setAttribute('href', 'data:text/json;charset=utf-8,' + encodeURIComponent(text));
@@ -105,17 +105,35 @@ function download(filename, text){
   document.body.removeChild(temp2);
 }
 
+function parseError(err:unknown){
+	if(err instanceof Error){
+		return err.message;
+	} else if(typeof err == "number" || typeof err == "string" || typeof err == "boolean"){
+		return err.toString();
+	} else return err;
+}
+
 //Yes I know this is a class. There's nothing you can do about it.
 class Button {
-	x: number;
-	y: number;
-	width: number;
-	height: number;
-	label: string;
+	declare x: number;
+	declare y: number;
+	declare width: number;
+	declare height: number;
+	declare label: string;
+	//is this really the best way to solve this?
 	color: string;
 	font: string;
-	onClick: (event:MouseEvent) => {}
-  constructor(config){
+	onClick: (event:MouseEvent) => void
+  constructor(config:{
+		x: number | (() => number);
+		y: number | (() => number);
+		width: number | (() => number);
+		height: number | (() => number);
+		label: string | (() => string);
+		color: string;
+		font: string;
+		onClick: (event:MouseEvent) => void;
+	}){
 		if(config.x instanceof Function)
 			Object.defineProperty(this, "x", {get: config.x});
 		else
@@ -141,9 +159,9 @@ class Button {
 		else
 			this.label = config.label ?? "Button";
 		
-		this.color = config.color || "#0000FF";
-		this.font = config.font || "20px sans-serif";
-		this.onClick = config.onClick || (()=>{});
+		this.color = config.color ?? "#0000FF";
+		this.font = config.font ?? "20px sans-serif";
+		this.onClick = config.onClick ?? (()=>{});
   };
   display(_ctx:CanvasRenderingContext2D){
 		_ctx.fillStyle = this.color;
@@ -205,13 +223,13 @@ function rect(x:number, y:number, w:number, h:number, mode?:rectMode, _ctx?:Canv
 	}
 }
 
-function ellipse(x, y, w, h){
+function ellipse(x:number, y:number, w:number, h:number){
 	ctx.beginPath();
 	ctx.ellipse(x, y, w, h, 0, 0, Math.PI * 2);
 	ctx.fill();
 }
 
-function* pseudoRandom(seed){
+function* pseudoRandom(seed:number){
 	let value = seed + 11111111111111;
 	while(true){
 		value = value * 16807 % 16777216;
@@ -233,29 +251,30 @@ function _alert(x:string){
 	alerts.list.push(x);
 }
 function loadTexturesIntoMemory():boolean {
-	for(let imageElement of Array.from(document.getElementById("item").children) as HTMLImageElement[]){
+	//TODO v a l i d a t i o n
+	for(let imageElement of Array.from(document.getElementById("item")!.children) as HTMLImageElement[]){
 		if(!imageElement.complete){
 			return false;
 		}
-		registry.textures.item[imageElement.src.match(/(?<=assets\/textures\/item\/).*(?=\.png)/)[0]] = imageElement;
+		(registry.textures.item as any)[imageElement.src.match(/(?<=assets\/textures\/item\/).*(?=\.png)/)![0]] = imageElement;
 	}
-	for(let imageElement of Array.from(document.getElementById("building").children) as HTMLImageElement[]){
+	for(let imageElement of Array.from(document.getElementById("building")!.children) as HTMLImageElement[]){
 		if(!imageElement.complete){
 			return false;
 		}
-		registry.textures.building[imageElement.src.match(/(?<=assets\/textures\/building\/).*(?=\.png)/)[0]] = imageElement;
+		(registry.textures.building as any)[imageElement.src.match(/(?<=assets\/textures\/building\/).*(?=\.png)/)![0]] = imageElement;
 	}
-	for(let imageElement of Array.from(document.getElementById("tile").children) as HTMLImageElement[]){
+	for(let imageElement of Array.from(document.getElementById("tile")!.children) as HTMLImageElement[]){
 		if(!imageElement.complete){
 			return false;
 		}
-		registry.textures.tile[imageElement.src.match(/(?<=assets\/textures\/tile\/).*(?=\.png)/)[0]] = imageElement;
+		(registry.textures.tile as any)[imageElement.src.match(/(?<=assets\/textures\/tile\/).*(?=\.png)/)![0]] = imageElement;
 	}
-	for(let imageElement of Array.from(document.getElementById("misc").children) as HTMLImageElement[]){
+	for(let imageElement of Array.from(document.getElementById("misc")!.children) as HTMLImageElement[]){
 		if(!imageElement.complete){
 			return false;
 		}
-		registry.textures.misc[imageElement.src.match(/(?<=assets\/textures\/misc\/).*(?=\.png)/)[0]] = imageElement;
+		(registry.textures.misc as any)[imageElement.src.match(/(?<=assets\/textures\/misc\/).*(?=\.png)/)![0]] = imageElement;
 	}
 	return true;
 }
@@ -270,7 +289,7 @@ function loadTexturesIntoPage(){
 			alert("Failed to load texture " + (err.target as HTMLImageElement).src.split("assets/textures/")[1]);
 			throw err;
 		});
-		document.getElementById("building").appendChild(img);
+		document.getElementById("building")!.appendChild(img);
 	}
 	for(let itemID of Object.values(registry.itemIDs)){
 		let img = document.createElement("img");
@@ -282,7 +301,7 @@ function loadTexturesIntoPage(){
 			alert("Failed to load texture " + (err.target as HTMLImageElement).src.split("assets/textures/")[1]);
 			throw err;
 		});
-		document.getElementById("item").appendChild(img);
+		document.getElementById("item")!.appendChild(img);
 	}
 	for(let tileID of registry.tileIDs){
 		let img = document.createElement("img");
@@ -294,7 +313,7 @@ function loadTexturesIntoPage(){
 			alert("Failed to load texture " + (err.target as HTMLImageElement).src.split("assets/textures/")[1]);
 			throw err;
 		});
-		document.getElementById("tile").appendChild(img);
+		document.getElementById("tile")!.appendChild(img);
 	}
 	for(let textureID of registry.miscTextures){
 		let img = document.createElement("img");
@@ -306,7 +325,7 @@ function loadTexturesIntoPage(){
 			alert("Failed to load texture " + (err.target as HTMLImageElement).src.split("assets/textures/")[1]);
 			throw err;
 		});
-		document.getElementById("misc").appendChild(img);
+		document.getElementById("misc")!.appendChild(img);
 	}
 }
 
@@ -319,7 +338,7 @@ function hex(num:number, length:number){
 	//it just works
 }
 
-function zoom(scaleFactor){
+function zoom(scaleFactor:number){
 	scaleFactor = constrain(scaleFactor, 0.9, 1.1);
 	if(consts.DISPLAY_SCALE * scaleFactor < 1){
 		scaleFactor = 1 / consts.DISPLAY_SCALE;

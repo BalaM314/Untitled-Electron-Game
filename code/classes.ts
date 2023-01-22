@@ -30,8 +30,9 @@ class Level {
 			this.seed = seed;
 			this.resources = resources;
 			this.uuid = uuid;
+			let position, chunkData;
 			try {
-				for(var [position, chunkData] of Object.entries(chunks)){//Use of var here is intentional.
+				for([position, chunkData] of Object.entries(chunks)){
 					chunkData.version = version;
 					this.storage.set(position, new Chunk({
 						x: parseInt(position.split(",")[0]), y: parseInt(position.split(",")[1]),
@@ -40,20 +41,19 @@ class Level {
 					//Generate a chunk with that data
 				}
 			} catch(err){
-				throw new Error(`Error loading chunk ${position}: ${err.message}`)
+				throw new Error(`Error loading chunk ${position}: ${parseError(err)}`)
 			}
 
 		}
 	}
-	
-	getChunk(tileX:number, tileY:number, dontGenerateChunk?:boolean):Chunk {
-		if(this.storage.get(`${Math.floor(tileX / consts.CHUNK_SIZE)},${Math.floor(tileY / consts.CHUNK_SIZE)}`)){
-			return this.storage.get(`${Math.floor(tileX / consts.CHUNK_SIZE)},${Math.floor(tileY / consts.CHUNK_SIZE)}`);
-		} else if(!dontGenerateChunk){
-			return this.generateChunk(Math.floor(tileX / consts.CHUNK_SIZE),Math.floor(tileY / consts.CHUNK_SIZE));
-		} else {
-			return null;
+	hasChunk(tileX:number, tileY:number):boolean {
+		return !! this.storage.get(`${Math.floor(tileX / consts.CHUNK_SIZE)},${Math.floor(tileY / consts.CHUNK_SIZE)}`);
+	}
+	getChunk(tileX:number, tileY:number):Chunk {
+		if(!this.hasChunk(tileX, tileY)){
+			this.generateChunk(Math.floor(tileX / consts.CHUNK_SIZE), Math.floor(tileY / consts.CHUNK_SIZE));
 		}
+		return this.storage.get(`${Math.floor(tileX / consts.CHUNK_SIZE)},${Math.floor(tileY / consts.CHUNK_SIZE)}`)!;
 	}
 	generateChunk(x:number, y:number){
 		if(this.storage.get(`${x},${y}`)){
@@ -63,7 +63,6 @@ class Level {
 			new Chunk({x: x, y: y, seed: this.seed, parent: this})
 			.generate()
 		);
-		return this.storage.get(`${x},${y}`);
 	}
 	generateNecessaryChunks(){
 		let xOffset = - Math.floor((Game.scroll.x * consts.DISPLAY_SCALE) / (consts.DISPLAY_TILE_SIZE * consts.CHUNK_SIZE));
@@ -99,12 +98,9 @@ class Level {
 		).tileAt(tileOffsetInChunk(tileX), tileOffsetInChunk(tileY));
 	}
 	setTileByTile(tileX:number, tileY:number, tile:TileID):boolean {
-		if(this.getChunk(tileX,tileY)){
-			this.getChunk(tileX,tileY).setTile(tileOffsetInChunk(tileX), tileOffsetInChunk(tileY), tile);
-			Game.forceRedraw = true;
-			return true;
-		}
-		return false;
+		this.getChunk(tileX,tileY).setTile(tileOffsetInChunk(tileX), tileOffsetInChunk(tileY), tile);
+		Game.forceRedraw = true;
+		return true;
 	}
 	buildingIDAtPixel(pixelX:number, pixelY:number):BuildingID {
 		return this.getChunk(
@@ -118,25 +114,25 @@ class Level {
 			Math.floor(tileY)
 		).buildingAt(tileOffsetInChunk(tileX), tileOffsetInChunk(tileY))?.id ?? BuildingID["0xFFFF"];
 	}
-	buildingAtTile(tileX:number, tileY:number):Building {
+	buildingAtTile(tileX:number, tileY:number):Building | null {
 		return this.getChunk(
 			Math.floor(tileX),
 			Math.floor(tileY)
 		).buildingAt(tileOffsetInChunk(tileX), tileOffsetInChunk(tileY));
 	}
-	buildingAtPixel(pixelX:number, pixelY:number):Building {
+	buildingAtPixel(pixelX:number, pixelY:number):Building | null {
 		return this.getChunk(
 			Math.floor(pixelX/consts.TILE_SIZE),
 			Math.floor(pixelY/consts.TILE_SIZE)
 		).buildingAt(tileOffsetInChunk(pixelX/consts.TILE_SIZE), tileOffsetInChunk(pixelY/consts.TILE_SIZE));
 	}
-	extractorAtTile(tileX:number, tileY:number):Extractor {
+	extractorAtTile(tileX:number, tileY:number):Extractor | null {
 		return this.getChunk(
 			Math.floor(tileX),
 			Math.floor(tileY)
 		).extractorAt(tileOffsetInChunk(tileX), tileOffsetInChunk(tileY));
 	}
-	writeBuilding(tileX:number, tileY:number, building:Building):boolean {
+	writeBuilding(tileX:number, tileY:number, building:Building | null):boolean {
 		if(this.getChunk(tileX,tileY)){
 			this.getChunk(tileX,tileY).setBuilding(tileOffsetInChunk(tileX), tileOffsetInChunk(tileY), building);
 			Game.forceRedraw = true;
@@ -144,7 +140,7 @@ class Level {
 		}
 		return false;
 	}
-	writeExtractor(tileX:number, tileY:number, building:Extractor):boolean {
+	writeExtractor(tileX:number, tileY:number, building:Extractor | null):boolean {
 		if(this.getChunk(tileX,tileY)){
 			this.getChunk(tileX,tileY).setExtractor(tileOffsetInChunk(tileX), tileOffsetInChunk(tileY), building);
 			Game.forceRedraw = true;
@@ -158,14 +154,15 @@ class Level {
 		tileX = Math.floor(tileX);
 		tileY = Math.floor(tileY);
 		//Tells a chunk to display a ghost building.
-		if(this.getChunk(tileX, tileY, true) == null){
+		if(!this.hasChunk(tileX, tileY)){
 			return;
 		}
 		switch(+getRawBuildingID(buildingID)){
 			case 0x01:
+				let meta = +buildingID & 0xFF00;
 				this.getChunk(tileX, tileY).displayGhostBuilding(
 					tileOffsetInChunk(tileX), tileOffsetInChunk(tileY),
-					this.getTurnedConveyor(tileX, tileY, +buildingID >> 8),
+					[0, 1, 2, 3].includes(meta) ? this.getTurnedConveyor(tileX, tileY, meta as 0 | 1 | 2 | 3) : buildingID,
 					!Conveyor.canBuildAt(tileX, tileY, this)
 				);
 				break;
@@ -177,7 +174,7 @@ class Level {
 				break;
 		}
 	}
-	getTurnedConveyor(tileX:number, tileY:number, conveyorType:number):BuildingID {
+	getTurnedConveyor(tileX:number, tileY:number, conveyorType:0 | 1 | 2 | 3):BuildingID {
 		//Returns how a conveyor should be turned based on nearby buildings.
 		if(registry.keybinds.placement.force_straight_conveyor.isHeld()){
 			return hex((conveyorType * 0x100) + 1, 4) as BuildingID;
@@ -340,11 +337,11 @@ class Level {
 			tempBuilding = new registry.buildings[getRawBuildingID(buildingID)](
 				tileX, tileY,
 				getRawBuildingID(buildingID) == "0x01" ?
-				this.getTurnedConveyor(tileX, tileY, +buildingID >> 8) : buildingID, this
+				this.getTurnedConveyor(tileX, tileY, +buildingID >> 8 as 0 | 1 | 2 | 3) : buildingID, this
 			);
 		} else {
 			trigger(triggerType.placeBuildingFail, getRawBuildingID(buildingID));
-			return;
+			return false;
 		}
 		if(tempBuilding instanceof Extractor){
 			return this.writeExtractor(tileX, tileY, tempBuilding);
@@ -366,16 +363,16 @@ class Level {
 		}
 		
 	}
-	displayTooltip(mousex:number, mousey:number, currentframe){
+	displayTooltip(mousex:number, mousey:number, currentframe:CurrentFrame){
 		if(!currentframe.tooltip){return;}
 		let x = (mousex - (Game.scroll.x * consts.DISPLAY_SCALE))/consts.DISPLAY_SCALE;
 		let y = (mousey - (Game.scroll.y * consts.DISPLAY_SCALE))/consts.DISPLAY_SCALE;
 		ctx4.font = "16px monospace";
 		if(this.buildingAtPixel(x, y) instanceof Building){
 			let buildingID = getRawBuildingID(this.buildingIDAtPixel(x, y));
-			if(getRawBuildingID(this.buildingIDAtPixel(x, y)) == "0x01" && this.buildingAtPixel(x, y).item){
-				let item = this.buildingAtPixel(x, y).item;
-				if((Math.abs(item.x - x) < 8) && Math.abs(item.y - y) < 8){
+			if(getRawBuildingID(this.buildingIDAtPixel(x, y)) == "0x01" && this.buildingAtPixel(x, y)!.item){
+				let item = this.buildingAtPixel(x, y)!.item;
+				if(item && (Math.abs(item.x - x) < 8) && Math.abs(item.y - y) < 8){
 					ctx4.fillStyle = "#0033CC";
 					ctx4.fillRect(mousex, mousey, (names.item[item.id] ?? item.id).length * 10, 16);
 					ctx4.strokeStyle = "#000000";
@@ -404,7 +401,7 @@ class Level {
 	}
 	export():LevelData {
 		//Exports the level's data to JSON.
-		let chunkOutput = {};
+		let chunkOutput:Record<string, ChunkData> = {};
 		for(let [position, chunk] of this.storage.entries()){
 			let output = chunk.export();
 			if(output){
@@ -430,8 +427,8 @@ class Level {
 class Chunk {
 	layers: [
 		TileID[][],
-		Building[][],
-		Extractor[][]
+		(Building | null)[][],
+		(Extractor | null)[][]
 	];
 	generator: Generator;
 	x: number;
@@ -449,12 +446,11 @@ class Chunk {
 		);
 		this.generator = pseudoRandom(this.chunkSeed);
 		this.layers = [
-			null,
-			null,
-			null
+			[],
+			[],
+			[]
 		];
 
-		this.layers[0] = [];
 		for(let x = 0; x < consts.CHUNK_SIZE; x ++){
 			this.layers[0][x] = [];
 			for(let z = 0; z < consts.CHUNK_SIZE; z ++){
@@ -462,7 +458,6 @@ class Chunk {
 			}
 		}
 
-		this.layers[1] = [];
 		for(let x = 0; x < consts.CHUNK_SIZE; x ++){
 			this.layers[1][x] = [];
 			for(let z = 0; z < consts.CHUNK_SIZE; z ++){
@@ -470,7 +465,6 @@ class Chunk {
 			}
 		}
 
-		this.layers[2] = [];
 		for(let x = 0; x < consts.CHUNK_SIZE; x ++){
 			this.layers[2][x] = [];
 			for(let z = 0; z < consts.CHUNK_SIZE; z ++){
@@ -559,29 +553,31 @@ class Chunk {
 		return this;
 	}
 	tileAt(tileX:number, tileY:number):TileID {
-		return this.layers[0]?.[tileY]?.[tileX] ?? null;
+		return this.layers[0][tileY]?.[tileX] ?? (() => {throw new Error(`Tile ${tileX}, ${tileY} does not exist!`)})();
 	}
-	buildingAt(tileX:number, tileY:number):Building {
-		return this.layers[1]?.[tileY]?.[tileX] ?? null;
+	buildingAt(tileX:number, tileY:number):Building | null {
+		return this.layers[1][tileY]?.[tileX] ?? null;
 	}
-	extractorAt(tileX:number, tileY:number):Extractor {
-		return this.layers[2]?.[tileY]?.[tileX] ?? null;
+	extractorAt(tileX:number, tileY:number):Extractor | null {
+		return this.layers[2][tileY]?.[tileX] ?? null;
 	}
 	setTile(tileX:number, tileY:number, value:TileID):boolean {
-		if(this.tileAt(tileX, tileY) == null){
+		try {
+			this.tileAt(tileX, tileY);
+		} catch(err){
 			return false;
 		}
 		this.layers[0][tileY][tileX] = value;
 		return true;
 	}
-	setBuilding(tileX:number, tileY:number, value:Building):boolean {
+	setBuilding(tileX:number, tileY:number, value:Building | null):boolean {
 		if(this.tileAt(tileX, tileY) == null){
 			return false;
 		}
 		this.layers[1][tileY][tileX] = value;
 		return true;
 	}
-	setExtractor(tileX:number, tileY:number, value:Extractor):boolean {
+	setExtractor(tileX:number, tileY:number, value:Extractor | null):boolean {
 		if(this.tileAt(tileX, tileY) == null){
 			return false;
 		}
@@ -695,13 +691,13 @@ class Chunk {
 
 		return this;
 	}
-	display(currentframe){
+	display(currentframe:any){
 		if(
 			(Game.scroll.x * consts.DISPLAY_SCALE) + this.x * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE > window.innerWidth + 1 ||
 			(Game.scroll.x * consts.DISPLAY_SCALE) + this.x * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE < -1 - consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE ||
 			(Game.scroll.y * consts.DISPLAY_SCALE) + this.y * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE > window.innerHeight + 1 ||
 			(Game.scroll.y * consts.DISPLAY_SCALE) + this.y * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE < -1 - consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE
-		){return;}//if offscreen return immediately
+		) return;//if offscreen return immediately
 		currentframe.cps ++;
 		ctx.strokeStyle = "#000000";
 		ctx.lineWidth = 1;
@@ -716,7 +712,7 @@ class Chunk {
 		for(let y = 0; y < this.layers[1].length; y ++){
 			for(let x = 0; x < this.layers[1][y].length; x ++){
 				if(this.layers[1][y][x] instanceof Building){
-					this.layers[1][y][x].display(currentframe);
+					this.layers[1][y][x]!.display(currentframe);
 				}
 			}
 		}
@@ -724,7 +720,7 @@ class Chunk {
 			for(let x = 0; x < this.layers[2][y].length; x ++){
 				if(this.layers[2][y][x]){
 					this.displayL3(x, y, this.layers[2][y][x]?.id ?? BuildingID["0xFFFF"]);
-					this.layers[2][y][x].display(currentframe);
+					this.layers[2][y][x]!.display(currentframe);
 				}
 			}
 		}
@@ -737,7 +733,7 @@ class Chunk {
 			);
 		}
 	}
-	displayTile(x:number, y:number, currentframe){
+	displayTile(x:number, y:number, currentframe:CurrentFrame){
 		currentframe.tps ++;
 		let pixelX = ((this.x * consts.CHUNK_SIZE) + x) * consts.DISPLAY_TILE_SIZE + (Game.scroll.x * consts.DISPLAY_SCALE);
 		let pixelY = ((this.y * consts.CHUNK_SIZE) + y) * consts.DISPLAY_TILE_SIZE + (Game.scroll.y * consts.DISPLAY_SCALE);
@@ -792,7 +788,8 @@ class Chunk {
 			y: (this.y * consts.CHUNK_SIZE) + y,
 			id: buildingID,
 			level: this
-		})({}, ctx1);
+		})({} as CurrentFrame, ctx1);
+		//TODO! grab currentframe
 		_ctx.globalAlpha = 1.0;
 	}
 	displayL3(x:number, y:number, buildingID:BuildingID, isGhost?:number){
@@ -836,14 +833,14 @@ class Chunk {
 			rect(pixelX, pixelY + consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
 			_ctx.font = "15px sans-serif";
 			_ctx.fillStyle = "#00FF00";
-			_ctx.fillText(this.buildingAt(x, y).toString(), pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY + consts.DISPLAY_TILE_SIZE / 2);
+			_ctx.fillText(buildingID, pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY + consts.DISPLAY_TILE_SIZE / 2);
 		}
 	}
-	export():ChunkData {
-		let exportDataL1 = [];
+	export():ChunkData | null {
+		let exportDataL1:(BuildingData | null)[][] = [];
 		let hasBuildings = false;
 		for(let row of this.layers[1]){
-			let tempRow = [];
+			let tempRow:(BuildingData | null)[] = [];
 			for(let building of row){
 				if(building instanceof Building){
 					hasBuildings = true;
@@ -853,9 +850,9 @@ class Chunk {
 			exportDataL1.push(tempRow);
 		}
 
-		let exportDataL2 = [];
+		let exportDataL2:(BuildingData | null)[][]= [];
 		for(let row of this.layers[2]){
-			let tempRow = [];
+			let tempRow:(BuildingData | null)[] = [];
 			for(let extractor of row){
 				if(extractor instanceof Extractor){
 					hasBuildings = true;
@@ -881,7 +878,7 @@ class Item {
 	x: number;
 	y: number;
 	level: Level;
-	grabbedBy: Building;
+	grabbedBy: Building | null;
 	deleted: boolean;
 	constructor(x:number, y:number, id:ItemID, level:Level){
 		this.id = id;
@@ -891,10 +888,10 @@ class Item {
 		this.grabbedBy = null;
 		this.deleted = false;
 	}
-	update(currentframe){
-		
+	update(currentframe:CurrentFrame){
+		//nothing necessary
 	}
-	display(currentframe){
+	display(currentframe:CurrentFrame){
 		if(
 			consts.DISPLAY_SCALE * (this.x + Game.scroll.x - 8) < 0 ||
 			consts.DISPLAY_SCALE * (this.x + Game.scroll.x - 8) > window.innerWidth ||
@@ -909,13 +906,13 @@ class Item {
 			16 * consts.DISPLAY_SCALE, 16 * consts.DISPLAY_SCALE
 		);
 	}
-	export():ItemData {
-		if(this.deleted) return null;
+	export():ItemData | null {
+		if(this.deleted || !this.grabbedBy) return null;
 		return {
 			id: this.id,
 			x: this.x,
 			y: this.y,
-			grabbedBy: this.grabbedBy ? {x: this.grabbedBy.x, y: this.grabbedBy.y} : null
+			grabbedBy: {x: this.grabbedBy.x, y: this.grabbedBy.y},
 		};
 	}
 }
@@ -924,7 +921,8 @@ class Building {
 	x: number;
 	y: number;
 	id: BuildingID;
-	item: Item;
+	item: Item | null = null;
+	//TODO why is this on Building and not StorageBuilding?
 	inventory: StorageInventory;
 	level: Level;
 	static animated = false;
@@ -933,7 +931,9 @@ class Building {
 		this.y = tileY;
 		this.id = id;
 		this.level = level;
-		this.inventory = null;
+		let inventory:any = [];
+		inventory.MAX_LENGTH = 64;
+		this.inventory = inventory as StorageInventory;
 	}
 	static canBuildAt(tileX:number, tileY:number, level:Level){
 		return level.tileAtByTile(tileX, tileY) != "0x02";
@@ -1006,19 +1006,19 @@ class Building {
 			_ctx.fillText(this.id.toString(), pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY + consts.DISPLAY_TILE_SIZE / 2);
 		}
 	}
-	hasItem():Item {
+	hasItem():Item | null {
 		if(this.item) return this.item;
 		if(this.inventory && this.inventory?.length != 0) return this.inventory[0];
 		return null;
 	}
-	removeItem():Item {
+	removeItem():Item | null {
 		if(this.item){
 			let temp = this.item;
 			this.item = null;
 			return temp;
 		}
 		if(this.inventory?.length > 0){
-			return this.inventory.pop();
+			return this.inventory.pop()!;
 		}
 		return null;
 	}
@@ -1027,7 +1027,7 @@ class Building {
 		if(
 			["0x0001", "0x0701", "0x0B01", "0x0C01", "0x0D01", "0x0F01", "0x1301", "0x1501", "0x1701", "0x1801", "0x1901", "0x1B01"]
 			.includes(this.level.buildingIDAtTile(this.x + 1, this.y)) &&
-			this.level.buildingAtTile(this.x + 1, this.y).acceptItem(
+			this.level.buildingAtTile(this.x + 1, this.y)!.acceptItem(
 				new Item((this.x + 1.1) * consts.TILE_SIZE, (this.y + 0.5) * consts.TILE_SIZE, id, this.level)
 			)
 		){
@@ -1035,7 +1035,7 @@ class Building {
 		} else if(
 			["0x0101", "0x0501", "0x0901", "0x0D01", "0x0E01", "0x0F01", "0x1101", "0x1401", "0x1601", "0x1801", "0x1901", "0x1A01"]
 			.includes(this.level.buildingIDAtTile(this.x, this.y + 1)) &&
-			this.level.buildingAtTile(this.x, this.y + 1).acceptItem(
+			this.level.buildingAtTile(this.x, this.y + 1)!.acceptItem(
 				new Item((this.x + 0.5) * consts.TILE_SIZE, (this.y + 1.1) * consts.TILE_SIZE, id, this.level)
 			)
 		){
@@ -1043,7 +1043,7 @@ class Building {
 		} else if(
 			["0x0201", "0x0601", "0x0A01", "0x0E01", "0x1001", "0x1101", "0x1201", "0x1601", "0x1701", "0x1901", "0x1A01", "0x1B01"]
 			.includes(this.level.buildingIDAtTile(this.x - 1, this.y)) &&
-			this.level.buildingAtTile(this.x - 1, this.y).acceptItem(
+			this.level.buildingAtTile(this.x - 1, this.y)!.acceptItem(
 				new Item((this.x - 0.1) * consts.TILE_SIZE, (this.y + 0.5) * consts.TILE_SIZE, id, this.level)
 			)
 		){
@@ -1051,7 +1051,7 @@ class Building {
 		} else if(
 			["0x0301", "0x0801", "0x0401", "0x0C01", "0x1001", "0x1201", "0x1301", "0x1401", "0x1501", "0x1801", "0x1A01", "0x1B01"]
 			.includes(this.level.buildingIDAtTile(this.x, this.y - 1)) &&
-			this.level.buildingAtTile(this.x, this.y - 1).acceptItem(
+			this.level.buildingAtTile(this.x, this.y - 1)!.acceptItem(
 				new Item((this.x + 0.5) * consts.TILE_SIZE, (this.y - 0.1) * consts.TILE_SIZE, id, this.level)
 			)
 		){
@@ -1073,17 +1073,18 @@ class Building {
 		}
 	}
 	export():BuildingData {
-		let inv = [];
+		let inv:ItemData[] = [];
 		if(this.inventory){
 			for(let item of this.inventory){
-				inv.push(item.export());
+				const data = item.export();
+				if(data) inv.push(data);
 			}
 		}
 		return {
 			x: this.x,
 			y: this.y,
 			id: this.id,
-			item: this.item?.export(),
+			item: this.item?.export() ?? null,
 			inv: inv
 		};
 	}
@@ -1093,7 +1094,7 @@ class Building {
 
 abstract class BuildingWithRecipe extends Building {
 	timer: number;
-	recipe: Recipe;
+	recipe: Recipe | null = null;
 	items: Item[];
 	static recipeType: {recipes: Recipe[]};
 	constructor(tileX:number, tileY:number, id:BuildingID, level:Level){
@@ -1109,7 +1110,8 @@ abstract class BuildingWithRecipe extends Building {
 				//if there is nothing in this item slot and the new item's id is not in the list of current items' ids
 				for(let recipe of (this.constructor as typeof BuildingWithRecipe).recipeType.recipes){
 					//for each recipe this building can do
-					if(!this.items.map(item => recipe.inputs.includes(item.id)).includes(false) && recipe.inputs.includes(item.id)){
+					if(!recipe.inputs) continue;//If the recipe has no inputs, it cant be the right one
+					if(!this.items.map(item => recipe.inputs!.includes(item.id)).includes(false) && recipe.inputs.includes(item.id)){
 						//if all of the current items are inputs of the recipe and the item is an input of the recipe
 						this.items[i] = item;
 						item.grabbedBy = this;
@@ -1122,14 +1124,15 @@ abstract class BuildingWithRecipe extends Building {
 				return false;
 			}
 		}
+		return false;
 	}
-	hasItem():Item {
+	hasItem(){
 		return null;
 	}
-	removeItem():Item {
+	removeItem(){
 		return null;
 	}
-	setRecipe(recipe:Recipe): void{
+	setRecipe(recipe:Recipe){
 		if(!(recipe.inputs instanceof Array)) throw new ShouldNotBePossibleError("tried to set invalid recipe");
 		this.recipe = recipe;
 		this.timer = recipe.duration;
@@ -1137,7 +1140,7 @@ abstract class BuildingWithRecipe extends Building {
 	update(){
 		if(this.timer > 0){
 			this.timer --;
-		} else if(this.timer == 0){
+		} else if(this.timer == 0 && this.recipe){
 			if(this.spawnItem(this.recipe.outputs[0])){
 				this.timer = -1;
 				this.items = [];
@@ -1150,20 +1153,23 @@ abstract class BuildingWithRecipe extends Building {
 
 class Miner extends Building {
 	timer: number;
-	miningItem: ItemID;
+	miningItem: ItemID | null = null;
 	constructor(tileX:number, tileY:number, id:BuildingID, level:Level){
 		super(tileX, tileY, id, level);
 		this.timer = 61;
 		for(let recipe of registry.recipes.base_mining.recipes){
 			if(recipe.tile == level.tileAtByTile(tileX, tileY)){
 				this.miningItem = recipe.outputs[0];
+				return;
 			}
 		}
+		console.warn(`Miner cannot mine tile at ${tileX}, ${tileY}`);
 	}
 	static canBuildAt(tileX:number, tileY:number, level:Level):boolean {
 		return +level.tileAtByTile(tileX, tileY) >> 4 == 1;
 	}
 	update(){
+		if(!this.miningItem) return;
 		if(this.timer > 0){
 			this.timer --;
 		} else {
@@ -1519,9 +1525,10 @@ class Extractor extends Conveyor {
 
 		if(
 			this.level.buildingAtTile(this.x, this.y) instanceof Building &&
-			filter(this.level.buildingAtTile(this.x, this.y).hasItem())
+			this.level.buildingAtTile(this.x, this.y)!.hasItem() &&
+			filter(this.level.buildingAtTile(this.x, this.y)!.hasItem()!)
 		){
-			let item = this.level.buildingAtTile(this.x, this.y).removeItem();
+			let item = this.level.buildingAtTile(this.x, this.y)!.removeItem();
 			if(!(item instanceof Item)) throw new ShouldNotBePossibleError("received invalid item");
 			if(item.deleted) throw new ShouldNotBePossibleError("received deleted item");
 			this.item = item;
@@ -1621,7 +1628,6 @@ class Extractor extends Conveyor {
 
 interface StorageInventory extends Array<Item> {
 	MAX_LENGTH: number;
-	at: Function;
 }
 class StorageBuilding extends Building {
 	inventory: StorageInventory;
@@ -1713,9 +1719,10 @@ class MultiBlockController extends BuildingWithRecipe {
 }
 
 class MultiBlockSecondary extends Building {
-	controller: MultiBlockController;
+	/**Assigned in buildBuilding */
+	controller: MultiBlockController | null = null;
 	acceptItem(item: Item):boolean {
-		return this.controller.acceptItem(item);
+		return this.controller?.acceptItem(item) ?? false;
 	}
 	break(isRecursive?:boolean){
 		if(!isRecursive){
@@ -1753,5 +1760,5 @@ registry.buildings = {
 	"0x0B": Lathe,
 	"0x10": MultiBlockSecondary,
 	"0x11": Assembler,
-	"0xFF": null
+	"0xFF": null! //TODO! fix this
 };

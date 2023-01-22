@@ -303,7 +303,7 @@ const registry = {
                         Game.lastSaved = millis();
                     }
                     catch (err) {
-                        alert("Failed to save! " + err.message);
+                        alert("Failed to save! " + parseError(err));
                     }
                 }
             }),
@@ -363,14 +363,14 @@ let Game = {
         speed: 5
     },
     startTime: new Date().getTime(),
-    lastSaved: null,
+    lastSaved: 0,
     forceRedraw: true,
     tutorial: {},
     paused: false,
     state: "loading",
     title: {
         splashtext: "",
-        splashbehavior: "sin"
+        splashbehavior: Math.sin
     },
     loadedTextures: 0,
     animationFrame: 0,
