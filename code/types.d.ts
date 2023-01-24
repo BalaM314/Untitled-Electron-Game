@@ -1,11 +1,11 @@
 type TileID = 
-"0x00" |  //Grass
-"0x01" |  //stone
-"0x02" |	//water
-"0x10" |  //iron ore
-"0x11" |  //coal ore
-"0x12" |	//copper ore
-"0xFF" ;  //Unset
+"base_grass" |  //Grass
+"base_stone" |  //stone
+"base_water" |	//water
+"base_ore_iron" |  //iron ore
+"base_ore_coal" |  //coal ore
+"base_ore_copper" |	//copper ore
+"base_null" ;  //Unset
 
 
 type RawBuildingID = "0x01" | "0x02" | "0x03" | "0x04" | "0x05" | "0x06" | "0x07" | "0x08" | "0x09" | "0x0A" | "0x0B" | "0x10" | "0x11" | "0xFF";

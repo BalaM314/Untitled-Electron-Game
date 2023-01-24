@@ -460,7 +460,7 @@ class Chunk {
 		for(let x = 0; x < consts.CHUNK_SIZE; x ++){
 			this.layers[0][x] = [];
 			for(let z = 0; z < consts.CHUNK_SIZE; z ++){
-				this.layers[0][x].push("0xFF");
+				this.layers[0][x].push("base_null");
 			}
 		}
 
@@ -623,14 +623,14 @@ class Chunk {
 				for(let tile in this.layers[0][row]){
 					//Choose the tile to be placed:
 					if(row == "0" || row == "15" || tile == "0" || tile == "15"){
-						this.layers[0][row][tile] = "0x02";//If on edge, place water
+						this.layers[0][row][tile] = "base_water";//If on edge, place water
 					} else if(row == "1" || row == "14" || tile == "1" || tile == "14"){
-						this.layers[0][row][tile] = this.generator.next().value > 0.5 ? "0x01" : "0x02";//If near edge, place 50-50 stone or water		
+						this.layers[0][row][tile] = this.generator.next().value > 0.5 ? "base_stone" : "base_water";//If near edge, place 50-50 stone or water		
 					} else {
 						this.layers[0][row][tile] = 
 						this.generator.next().value < 0.1 ?
-						(this.generator.next().value < 0.3 ? "0x11" : "0x10")
-						: "0x01";
+						(this.generator.next().value < 0.3 ? "base_ore_iron" : "base_ore_coal")
+						: "base_stone";
 						//Otherwise, stone, iron, or coal.
 					}
 				}
@@ -640,14 +640,14 @@ class Chunk {
 			//Based on perlin noise.
 
 			//Chooses which ore to generate based on RNG and ditance from spawn.
-			let oreToGenerate:TileID = "0xFF";
+			let oreToGenerate:TileID;
 			let oreRand = this.generator.next().value;
 			if(distanceFromSpawn < generation_consts.hilly.min_iron_distance){
-				oreToGenerate = "0x10";
+				oreToGenerate = "base_ore_coal";
 			} else if(distanceFromSpawn < generation_consts.hilly.min_copper_distance){
-				oreToGenerate = oreRand > 0.5 ? "0x10" : "0x11";
+				oreToGenerate = oreRand > 0.5 ? "base_ore_coal" : "base_ore_iron";
 			} else {
-				oreToGenerate = oreRand > 0.5 ? "0x10" : (oreRand > 0.25 ? "0x11" : "0x12");
+				oreToGenerate = oreRand > 0.5 ? "base_ore_coal" : (oreRand > 0.25 ? "base_ore_iron" : "base_ore_copper");
 			}
 
 
@@ -665,9 +665,9 @@ class Chunk {
 					if((noiseHeight + distanceBoost / 2) > generation_consts.hilly.ore_threshold){
 						this.layers[0][row][tile] = oreToGenerate;
 					} else if((noiseHeight + distanceBoost) > generation_consts.hilly.stone_threshold){
-						this.layers[0][row][tile] = "0x01";
+						this.layers[0][row][tile] = "base_stone";
 					} else {
-						this.layers[0][row][tile] = "0x00";
+						this.layers[0][row][tile] = "base_grass";
 					}
 				}
 			}
@@ -675,28 +675,28 @@ class Chunk {
 			//Old terrain generation. I kept it, just only close to spawn.
 			for(let row in this.layers[0]){
 				for(let tile in this.layers[0][row]){
-					this.layers[0][row][tile] = "0x00";
+					this.layers[0][row][tile] = "base_grass";
 				}
 			}
-			let oreToGenerate:TileID = "0xFF";
+			let oreToGenerate:TileID;
 			if(distanceFromSpawn < 3){
-				oreToGenerate = "0x10";
+				oreToGenerate = "base_ore_coal";
 			} else {
-				oreToGenerate = (this.generator.next().value > 0.5) ? "0x11" : "0x10";
+				oreToGenerate = (this.generator.next().value > 0.5) ? "base_ore_iron" : "base_ore_coal";
 			}
 			let hill_x = Math.floor(this.generator.next().value * 16);
 			let hill_y = Math.floor(this.generator.next().value * 16);
 
 			//Makes a "hill", with an ore node in the middle, stone on the sides, and maybe stone in the corners.
 			this.setTile(hill_x, hill_y, oreToGenerate);
-			this.setTile(hill_x + 1, hill_y, "0x01");
-			this.setTile(hill_x - 1, hill_y, "0x01");
-			this.setTile(hill_x, hill_y + 1, "0x01");
-			this.setTile(hill_x, hill_y - 1, "0x01");
-			this.setTile(hill_x + 1, hill_y + 1, (this.generator.next().value > 0.5) ? "0x01" : "0x00");
-			this.setTile(hill_x + 1, hill_y - 1, (this.generator.next().value > 0.5) ? "0x01" : "0x00");
-			this.setTile(hill_x - 1, hill_y + 1, (this.generator.next().value > 0.5) ? "0x01" : "0x00");
-			this.setTile(hill_x - 1, hill_y - 1, (this.generator.next().value > 0.5) ? "0x01" : "0x00");
+			this.setTile(hill_x + 1, hill_y, "base_stone");
+			this.setTile(hill_x - 1, hill_y, "base_stone");
+			this.setTile(hill_x, hill_y + 1, "base_stone");
+			this.setTile(hill_x, hill_y - 1, "base_stone");
+			this.setTile(hill_x + 1, hill_y + 1, (this.generator.next().value > 0.5) ? "base_stone" : "base_grass");
+			this.setTile(hill_x + 1, hill_y - 1, (this.generator.next().value > 0.5) ? "base_stone" : "base_grass");
+			this.setTile(hill_x - 1, hill_y + 1, (this.generator.next().value > 0.5) ? "base_stone" : "base_grass");
+			this.setTile(hill_x - 1, hill_y - 1, (this.generator.next().value > 0.5) ? "base_stone" : "base_grass");
 		}
 
 
@@ -748,9 +748,10 @@ class Chunk {
 		currentframe.tps ++;
 		let pixelX = ((this.x * consts.CHUNK_SIZE) + x) * consts.DISPLAY_TILE_SIZE + (Game.scroll.x * consts.DISPLAY_SCALE);
 		let pixelY = ((this.y * consts.CHUNK_SIZE) + y) * consts.DISPLAY_TILE_SIZE + (Game.scroll.y * consts.DISPLAY_SCALE);
-		if(settings.graphics_mode || (this.tileAt(x,y) != "0x00")){
-			if(registry.textures.tile[this.tileAt(x,y)]){
-				ctx.drawImage(registry.textures.tile[this.tileAt(x,y)], pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
+		const tile = this.tileAt(x,y);
+		if(settings.graphics_mode || (tile != "base_grass")){
+			if(registry.textures.tile[tile]){
+				ctx.drawImage(registry.textures.tile[tile], pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
 			} else {
 				ctx.fillStyle = "#FF00FF";
 				rect(pixelX, pixelY, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2);
@@ -760,7 +761,7 @@ class Chunk {
 				rect(pixelX, pixelY + consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2);
 				ctx.font = "15px sans-serif";
 				ctx.fillStyle = "#00FF00";
-				ctx.fillText(this.tileAt(x, y).toString(), pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY + consts.DISPLAY_TILE_SIZE / 2);
+				ctx.fillText(tile.toString(), pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY + consts.DISPLAY_TILE_SIZE / 2);
 			}
 		} else {
 			ctx.fillStyle = "#00CC33";
@@ -921,7 +922,8 @@ class Building {
 	static outputsItems = false;
 	constructor(public x:number, public y:number, public id:BuildingID, public level:Level){}
 	static canBuildAt(tileX:number, tileY:number, level:Level){
-		return level.tileAtByTile(tileX, tileY) != "0x02";
+		//By default, buildings cant be built on water
+		return level.tileAtByTile(tileX, tileY) != "base_water";
 	}
 	break(){
 		if(this.item){
@@ -1134,7 +1136,7 @@ class Miner extends Building {
 		console.warn(`Miner cannot mine tile at ${tileX}, ${tileY}`);
 	}
 	static canBuildAt(tileX:number, tileY:number, level:Level):boolean {
-		return +level.tileAtByTile(tileX, tileY) >> 4 == 1;
+		return level.tileAtByTile(tileX, tileY).split("_")[1] == "ore";
 	}
 	update(){
 		if(!this.miningItem) return;

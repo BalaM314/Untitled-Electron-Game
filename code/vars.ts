@@ -10,13 +10,13 @@ const names: {
 	};
 } = {
 	tile: {
-		"0x00": "Grass",
-		"0x01": "Stone",
-		"0x02": "Water",
-		"0x10": "Coal Ore Node",
-		"0x11": "Iron Ore Node",
-		"0x12": "Copper Ore Node",
-		"0xFF": "[D] Broken Tile"
+		"base_grass": "Grass",
+		"base_stone": "Stone",
+		"base_water": "Water",
+		"base_ore_coal": "Coal Ore Node",
+		"base_ore_iron": "Iron Ore Node",
+		"base_ore_copper": "Copper Ore Node",
+		"base_null": "Null Tile"
 	},
 	building: {
 		"0x01": "Conveyor Belt",
@@ -196,17 +196,17 @@ const registry:Registry = {
 				{
 					"outputs": [ItemID.base_coalOre],
 					"duration": 60,
-					"tile": "0x10"
+					"tile": "base_ore_coal"
 				},
 				{
 					"outputs": [ItemID.base_ironOre],
 					"duration": 60,
-					"tile": "0x11"
+					"tile": "base_ore_iron"
 				},
 				{
 					"outputs": [ItemID.base_copperOre],
 					"duration": 60,
-					"tile": "0x12"
+					"tile": "base_ore_copper"
 				},
 			]
 		},
@@ -308,7 +308,7 @@ const registry:Registry = {
 	/**List of item IDs. */
 	itemIDs: ItemID,
 	/**List of tile IDs. */
-	tileIDs: ["0x00","0x01","0x02","0x10","0x11","0x12","0xFF"],
+	tileIDs: ["base_grass","base_stone","base_water","base_ore_coal","base_ore_iron","base_ore_copper","base_null"],
 	/**List of miscellanous texture IDs. */
 	miscTextures: ["invalidunderlay", "ghostunderlay"],
 	/**Stores textures(as HTMLImageElements). */
