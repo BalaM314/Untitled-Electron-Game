@@ -229,12 +229,19 @@ function ellipse(x:number, y:number, w:number, h:number){
 	ctx.fill();
 }
 
-function* pseudoRandom(seed:number){
+function* pseudoRandom(seed:number) {
 	let value = seed + 11111111111111;
 	while(true){
 		value = value * 16807 % 16777216;
-		yield value / 16777216;
+		let num = value / 16777216;
+		yield {
+			value: num,
+			chance(amount:number){
+				return num < amount;
+			}
+		}
 	}
+	return null! as never;
 }
 
 

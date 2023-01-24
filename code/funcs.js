@@ -189,8 +189,15 @@ function* pseudoRandom(seed) {
     let value = seed + 11111111111111;
     while (true) {
         value = value * 16807 % 16777216;
-        yield value / 16777216;
+        let num = value / 16777216;
+        yield {
+            value: num,
+            chance(amount) {
+                return num < amount;
+            }
+        };
     }
+    return null;
 }
 function trigger(type, buildingID, itemID) {
 }
