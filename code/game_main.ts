@@ -411,8 +411,8 @@ let state: {
 		
 			
 			level.displayGhostBuilding(
-				(mouse.x - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE,
-				(mouse.y - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE,
+				Math.floor((mouse.x - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE),
+				Math.floor((mouse.y - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE),
 				placedBuilding.ID, currentFrame
 			);
 			if(registry.keybinds.display.show_tooltip.isHeld()){
@@ -423,6 +423,7 @@ let state: {
 			ctx4.font = "30px sans-serif";
 			ctx4.fillStyle = "#000000";
 			ctx4.textAlign = "left";
+			//TODO change this to tile coords of cursor
 			ctx4.fillText((
 					Math.round(- (Game.scroll.x * consts.DISPLAY_SCALE) / consts.DISPLAY_TILE_SIZE).toString()
 					+ ", " + Math.round(- (Game.scroll.y * consts.DISPLAY_SCALE) / consts.DISPLAY_TILE_SIZE).toString()

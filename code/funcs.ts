@@ -361,17 +361,97 @@ function zoom(scaleFactor:number){
 	Game.scroll.y -= (innerHeight * 0.5 * (scaleFactor - 1))/consts.DISPLAY_SCALE;
 }
 
-function tileOffsetInChunk(tileCoord:number):number {
-	tileCoord = Math.floor(tileCoord) % consts.CHUNK_SIZE;
-	return tileCoord + (tileCoord < 0 ? consts.CHUNK_SIZE : 0);
-}
 
-function pixelOffsetInTile(pixelCoord:number):number {
-	pixelCoord = Math.floor(pixelCoord) % consts.TILE_SIZE;
-	return pixelCoord + (pixelCoord < 0 ? consts.TILE_SIZE : 0);
-}
-function tileAtPixel(pixelCoord:number):number {
-	return Math.floor(pixelCoord / consts.TILE_SIZE);
+class Pos {
+	private constructor(public pixelX:number, public pixelY:number){}
+	static fromPixelCoords(x:number, y:number){
+		return new Pos(x, y);
+	}
+	static fromTileCoords(x:number, y:number, centered:boolean){
+		return new Pos(this.tileToPixel(x, centered), this.tileToPixel(y, centered));
+	}
+	get pixelXCenteredInTile(){
+		return Pos.tileToPixel(this.tileX, true);
+	}
+	get pixelYCenteredInTile(){
+		return Pos.tileToPixel(this.tileY, true);
+	}
+	get tileX(){
+		return Pos.pixelToTile(this.pixelX);
+	}
+	get tileY(){
+		return Pos.pixelToTile(this.pixelY);
+	}
+	get tileXExact(){
+		return Pos.pixelToTileExact(this.pixelX);
+	}
+	get tileYExact(){
+		return Pos.pixelToTileExact(this.pixelY);
+	}
+	get tileOffsetXInPixels(){
+		return Pos.tileOffsetInPixels(this.pixelX);
+	}
+	get tileOffsetYInPixels(){
+		return Pos.tileOffsetInPixels(this.pixelY);
+	}
+	get tileOffsetXInTiles(){
+		return Pos.tileOffsetInTiles(this.pixelX);
+	}
+	get tileOffsetYInTiles(){
+		return Pos.tileOffsetInTiles(this.pixelY);
+	}
+	get tileOffsetXCentered(){
+		return Pos.tileOffsetInTiles(this.pixelX) == 0.5;
+	}
+	get tileOffsetYCentered(){
+		return Pos.tileOffsetInTiles(this.pixelY) == 0.5;
+	}
+	get chunkOffsetXInTiles(){
+		return Pos.chunkOffsetInTiles(this.tileX);
+	}
+	get chunkOffsetYInTiles(){
+		return Pos.chunkOffsetInTiles(this.tileY);
+	}
+	get chunkX(){
+		return Pos.pixelToChunk(this.pixelX);
+	}
+	get chunkY(){
+		return Pos.pixelToChunk(this.pixelY);
+	}
+	
+	static pixelToTile(pixelCoord:number){
+		return Math.floor(pixelCoord / consts.TILE_SIZE);
+	}
+	static pixelToTileExact(pixelCoord:number){
+		return pixelCoord / consts.TILE_SIZE;
+	}
+	static tileToPixel(tileCoord:number, centered:boolean){
+		return (tileCoord + <any>centered * 0.5) * consts.TILE_SIZE;
+	}
+	static chunkToTile(chunkCoord: number) {
+		return chunkCoord * consts.CHUNK_SIZE;
+	}
+	static tileToChunk(tileCoord:number){
+		return Math.floor(tileCoord / consts.CHUNK_SIZE);
+	}
+	static tileToChunkExact(tileCoord:number){
+		return Math.floor(tileCoord / consts.CHUNK_SIZE);
+	}
+	static pixelToChunk(pixelCoord:number){
+		return Math.floor(pixelCoord / (consts.TILE_SIZE * consts.CHUNK_SIZE));
+	}
+	static tileOffsetInPixels(pixelCoord:number):number {
+		pixelCoord = Math.floor(pixelCoord) % consts.TILE_SIZE;
+		return pixelCoord + (pixelCoord < 0 ? consts.TILE_SIZE : 0);
+	}
+	static tileOffsetInTiles(pixelCoord:number):number {
+		pixelCoord = Math.floor(pixelCoord) % consts.TILE_SIZE;
+		return (pixelCoord + (pixelCoord < 0 ? consts.TILE_SIZE : 0)) / consts.TILE_SIZE;
+	}
+	static chunkOffsetInTiles(tileCoord:number):number {
+		tileCoord = Math.floor(tileCoord) % consts.CHUNK_SIZE;
+		return tileCoord + (tileCoord < 0 ? consts.CHUNK_SIZE : 0);
+	}
 }
 
 function getRawBuildingID(buildingID: BuildingID):RawBuildingID {

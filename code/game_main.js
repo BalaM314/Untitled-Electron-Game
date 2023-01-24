@@ -351,7 +351,7 @@ let state = {
             ctx3.clearRect(0, 0, innerWidth, innerHeight);
             ctx4.clearRect(0, 0, innerWidth, innerHeight);
             level.display(currentFrame);
-            level.displayGhostBuilding((mouse.x - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE, (mouse.y - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE, placedBuilding.ID, currentFrame);
+            level.displayGhostBuilding(Math.floor((mouse.x - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE), Math.floor((mouse.y - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE), placedBuilding.ID, currentFrame);
             if (registry.keybinds.display.show_tooltip.isHeld()) {
                 level.displayTooltip(mouse.x, mouse.y, currentFrame);
             }

@@ -34,19 +34,19 @@ class Level {
         }
     }
     hasChunk(tileX, tileY) {
-        return !!this.storage.get(`${Math.floor(tileX / consts.CHUNK_SIZE)},${Math.floor(tileY / consts.CHUNK_SIZE)}`);
+        return !!this.storage.get(`${Pos.tileToChunk(tileX)},${Pos.tileToChunk(tileY)}`);
     }
     getChunk(tileX, tileY) {
         if (!this.hasChunk(tileX, tileY)) {
-            this.generateChunk(Math.floor(tileX / consts.CHUNK_SIZE), Math.floor(tileY / consts.CHUNK_SIZE));
+            this.generateChunk(Pos.tileToChunk(tileX), Pos.tileToChunk(tileY));
         }
-        return this.storage.get(`${Math.floor(tileX / consts.CHUNK_SIZE)},${Math.floor(tileY / consts.CHUNK_SIZE)}`);
+        return this.storage.get(`${Pos.tileToChunk(tileX)},${Pos.tileToChunk(tileY)}`);
     }
     generateChunk(x, y) {
         if (this.storage.get(`${x},${y}`)) {
             return;
         }
-        this.storage.set(`${x},${y}`, new Chunk({ x: x, y: y, seed: this.seed, parent: this })
+        this.storage.set(`${x},${y}`, new Chunk({ x, y, seed: this.seed, parent: this })
             .generate());
     }
     generateNecessaryChunks() {
@@ -69,34 +69,40 @@ class Level {
         this.generateChunk(xOffset + 3, yOffset + 1);
     }
     tileAtByPixel(pixelX, pixelY) {
-        return this.getChunk(Math.floor(pixelX / consts.TILE_SIZE), Math.floor(pixelY / consts.TILE_SIZE)).tileAt(tileOffsetInChunk(pixelX / consts.TILE_SIZE), tileOffsetInChunk(pixelY / consts.TILE_SIZE));
+        return this.getChunk(Pos.pixelToTile(pixelX), Pos.pixelToTile(pixelY)).tileAt(Pos.chunkOffsetInTiles(Pos.pixelToTile(pixelX)), Pos.chunkOffsetInTiles(Pos.pixelToTile(pixelY)));
     }
     tileAtByTile(tileX, tileY) {
-        return this.getChunk(Math.floor(tileX), Math.floor(tileY)).tileAt(tileOffsetInChunk(tileX), tileOffsetInChunk(tileY));
+        return this.getChunk(tileX, tileY).tileAt(Pos.chunkOffsetInTiles(tileX), Pos.chunkOffsetInTiles(tileY));
     }
     setTileByTile(tileX, tileY, tile) {
-        this.getChunk(tileX, tileY).setTile(tileOffsetInChunk(tileX), tileOffsetInChunk(tileY), tile);
+        this.getChunk(tileX, tileY).setTile(Pos.chunkOffsetInTiles(tileX), Pos.chunkOffsetInTiles(tileY), tile);
         Game.forceRedraw = true;
         return true;
     }
     buildingIDAtPixel(pixelX, pixelY) {
-        return this.getChunk(Math.floor(pixelX / consts.TILE_SIZE), Math.floor(pixelY / consts.TILE_SIZE)).buildingAt(tileOffsetInChunk(pixelX / consts.TILE_SIZE), tileOffsetInChunk(pixelY / consts.TILE_SIZE))?.id ?? BuildingID["0xFFFF"];
+        return this.getChunk(Pos.pixelToTile(pixelX), Pos.pixelToTile(pixelY)).buildingAt(Pos.chunkOffsetInTiles(Pos.pixelToTile(pixelX)), Pos.chunkOffsetInTiles(Pos.pixelToTile(pixelY)))?.id ?? BuildingID["0xFFFF"];
     }
     buildingIDAtTile(tileX, tileY) {
-        return this.getChunk(Math.floor(tileX), Math.floor(tileY)).buildingAt(tileOffsetInChunk(tileX), tileOffsetInChunk(tileY))?.id ?? BuildingID["0xFFFF"];
+        return this.getChunk(tileX, tileY).buildingAt(Pos.chunkOffsetInTiles(tileX), Pos.chunkOffsetInTiles(tileY))?.id ?? BuildingID["0xFFFF"];
     }
     buildingAtTile(tileX, tileY) {
-        return this.getChunk(Math.floor(tileX), Math.floor(tileY)).buildingAt(tileOffsetInChunk(tileX), tileOffsetInChunk(tileY));
+        return this.getChunk(tileX, tileY).buildingAt(Pos.chunkOffsetInTiles(tileX), Pos.chunkOffsetInTiles(tileY));
     }
     buildingAtPixel(pixelX, pixelY) {
-        return this.getChunk(Math.floor(pixelX / consts.TILE_SIZE), Math.floor(pixelY / consts.TILE_SIZE)).buildingAt(tileOffsetInChunk(pixelX / consts.TILE_SIZE), tileOffsetInChunk(pixelY / consts.TILE_SIZE));
+        return this.getChunk(Pos.pixelToTile(pixelX), Pos.pixelToTile(pixelY)).buildingAt(Pos.chunkOffsetInTiles(Pos.pixelToTile(pixelX)), Pos.chunkOffsetInTiles(Pos.pixelToTile(pixelY)));
+    }
+    buildingAtPos(pos) {
+        return this.getChunk(pos.tileX, pos.tileY).buildingAt(pos.chunkOffsetXInTiles, pos.chunkOffsetYInTiles);
     }
     extractorAtTile(tileX, tileY) {
-        return this.getChunk(Math.floor(tileX), Math.floor(tileY)).extractorAt(tileOffsetInChunk(tileX), tileOffsetInChunk(tileY));
+        return this.getChunk(Math.floor(tileX), Math.floor(tileY)).extractorAt(Pos.chunkOffsetInTiles(tileX), Pos.chunkOffsetInTiles(tileY));
+    }
+    extractorAtPos(pos) {
+        return this.getChunk(pos.tileX, pos.tileY).extractorAt(pos.chunkOffsetXInTiles, pos.chunkOffsetYInTiles);
     }
     writeBuilding(tileX, tileY, building) {
         if (this.getChunk(tileX, tileY)) {
-            this.getChunk(tileX, tileY).setBuilding(tileOffsetInChunk(tileX), tileOffsetInChunk(tileY), building);
+            this.getChunk(tileX, tileY).setBuilding(Pos.chunkOffsetInTiles(tileX), Pos.chunkOffsetInTiles(tileY), building);
             Game.forceRedraw = true;
             return true;
         }
@@ -104,7 +110,7 @@ class Level {
     }
     writeExtractor(tileX, tileY, building) {
         if (this.getChunk(tileX, tileY)) {
-            this.getChunk(tileX, tileY).setExtractor(tileOffsetInChunk(tileX), tileOffsetInChunk(tileY), building);
+            this.getChunk(tileX, tileY).setExtractor(Pos.chunkOffsetInTiles(tileX), Pos.chunkOffsetInTiles(tileY), building);
             Game.forceRedraw = true;
             return true;
         }
@@ -121,7 +127,7 @@ class Level {
         if (getRawBuildingID(buildingID) == "0x01" && [0, 1, 2, 3].includes(meta)) {
             id = this.getTurnedConveyor(tileX, tileY, meta);
         }
-        this.getChunk(tileX, tileY).displayGhostBuilding(tileOffsetInChunk(tileX), tileOffsetInChunk(tileY), id, !registry.buildings[getRawBuildingID(buildingID)]?.canBuildAt(tileX, tileY, this), currentframe);
+        this.getChunk(tileX, tileY).displayGhostBuilding(Pos.chunkOffsetInTiles(tileX), Pos.chunkOffsetInTiles(tileY), id, !registry.buildings[getRawBuildingID(buildingID)]?.canBuildAt(tileX, tileY, this), currentframe);
     }
     getTurnedConveyor(tileX, tileY, conveyorType) {
         if (registry.keybinds.placement.force_straight_conveyor.isHeld()) {
@@ -348,9 +354,9 @@ class Level {
         ctx4.font = "16px monospace";
         if (this.buildingAtPixel(x, y) instanceof Building) {
             let buildingID = getRawBuildingID(this.buildingIDAtPixel(x, y));
-            if (getRawBuildingID(this.buildingIDAtPixel(x, y)) == "0x01" && this.buildingAtPixel(x, y).item) {
+            if (buildingID == "0x01" && this.buildingAtPixel(x, y).item) {
                 let item = this.buildingAtPixel(x, y).item;
-                if (item && (Math.abs(item.x - x) < 8) && Math.abs(item.y - y) < 8) {
+                if (item && (Math.abs(item.pos.pixelX - x) < 8) && Math.abs(item.pos.pixelY - y) < 8) {
                     ctx4.fillStyle = "#0033CC";
                     ctx4.fillRect(mousex, mousey, (names.item[item.id] ?? item.id).length * 10, 16);
                     ctx4.strokeStyle = "#000000";
@@ -471,7 +477,7 @@ class Chunk {
                     if (+data.version.split(" ")[1].replaceAll(".", "") <= 200) {
                         buildingData.id = hex(buildingData.id, 4);
                     }
-                    let tempBuilding = new Extractor(parseInt(x) + (consts.CHUNK_SIZE * this.x), parseInt(y) + (consts.CHUNK_SIZE * this.y), buildingData.id, this.parent);
+                    let tempBuilding = new Extractor(parseInt(x) + Pos.chunkToTile(this.x), parseInt(y) + Pos.chunkToTile(this.y), buildingData.id, this.parent);
                     if (buildingData.item && +data.version.split(" ")[1].replaceAll(".", "") >= 130) {
                         tempBuilding.item = new Item(buildingData.item.x, buildingData.item.y, buildingData.item.id);
                         tempBuilding.item.grabbedBy = tempBuilding;
@@ -715,8 +721,7 @@ class Chunk {
         }
         _ctx.globalAlpha = +buildingID % 0x100 == 0x01 ? 0.3 : 0.7;
         Building.prototype.display.bind({
-            x: (this.x * consts.CHUNK_SIZE) + x,
-            y: (this.y * consts.CHUNK_SIZE) + y,
+            pos: Pos.fromTileCoords((this.x * consts.CHUNK_SIZE) + x, (this.y * consts.CHUNK_SIZE) + y, false),
             id: buildingID,
             level: this
         })(currentframe, ctx1);
@@ -806,42 +811,40 @@ class Chunk {
 }
 class Item {
     constructor(x, y, id) {
-        this.x = x;
-        this.y = y;
         this.id = id;
         this.grabbedBy = null;
         this.deleted = false;
+        this.pos = Pos.fromPixelCoords(x, y);
     }
     update(currentframe) {
     }
     display(currentframe) {
-        if (consts.DISPLAY_SCALE * (this.x + Game.scroll.x - 8) < 0 ||
-            consts.DISPLAY_SCALE * (this.x + Game.scroll.x - 8) > window.innerWidth ||
-            consts.DISPLAY_SCALE * (this.y + Game.scroll.y - 8) < 0 ||
-            consts.DISPLAY_SCALE * (this.y + Game.scroll.y - 8) > window.innerHeight) {
+        if (consts.DISPLAY_SCALE * (this.pos.pixelX + Game.scroll.x - 8) < 0 ||
+            consts.DISPLAY_SCALE * (this.pos.pixelX + Game.scroll.x - 8) > window.innerWidth ||
+            consts.DISPLAY_SCALE * (this.pos.pixelY + Game.scroll.y - 8) < 0 ||
+            consts.DISPLAY_SCALE * (this.pos.pixelY + Game.scroll.y - 8) > window.innerHeight) {
             return;
         }
         currentframe.ips++;
-        ctx3.drawImage(registry.textures.item[this.id], this.x * consts.DISPLAY_SCALE + (Game.scroll.x * consts.DISPLAY_SCALE) - 8 * consts.DISPLAY_SCALE, this.y * consts.DISPLAY_SCALE + (Game.scroll.y * consts.DISPLAY_SCALE) - 8 * consts.DISPLAY_SCALE, 16 * consts.DISPLAY_SCALE, 16 * consts.DISPLAY_SCALE);
+        ctx3.drawImage(registry.textures.item[this.id], this.pos.pixelX * consts.DISPLAY_SCALE + (Game.scroll.x * consts.DISPLAY_SCALE) - 8 * consts.DISPLAY_SCALE, this.pos.pixelY * consts.DISPLAY_SCALE + (Game.scroll.y * consts.DISPLAY_SCALE) - 8 * consts.DISPLAY_SCALE, 16 * consts.DISPLAY_SCALE, 16 * consts.DISPLAY_SCALE);
     }
     export() {
         if (this.deleted || !this.grabbedBy)
             return null;
         return {
             id: this.id,
-            x: this.x,
-            y: this.y,
-            grabbedBy: { x: this.grabbedBy.x, y: this.grabbedBy.y },
+            x: this.pos.pixelX,
+            y: this.pos.pixelY,
+            grabbedBy: { x: this.grabbedBy.pos.tileX, y: this.grabbedBy.pos.tileY },
         };
     }
 }
 class Building {
     constructor(x, y, id, level) {
-        this.x = x;
-        this.y = y;
         this.id = id;
         this.level = level;
         this.item = null;
+        this.pos = Pos.fromTileCoords(x, y, false);
     }
     static canBuildAt(tileX, tileY, level) {
         return level.tileAtByTile(tileX, tileY) != "base_water";
@@ -850,14 +853,14 @@ class Building {
         if (this.item) {
             this.item.grabbedBy = null;
         }
-        this.level.writeBuilding(this.x, this.y, null);
+        this.level.writeBuilding(this.pos.tileX, this.pos.tileY, null);
     }
     update(currentFrame) {
         this.item?.update(currentFrame);
     }
     display(currentFrame, ctx) {
-        let pixelX = this.x * consts.DISPLAY_TILE_SIZE + Game.scroll.x * consts.DISPLAY_SCALE;
-        let pixelY = this.y * consts.DISPLAY_TILE_SIZE + Game.scroll.y * consts.DISPLAY_SCALE;
+        let pixelX = this.pos.tileX * consts.DISPLAY_TILE_SIZE + Game.scroll.x * consts.DISPLAY_SCALE;
+        let pixelY = this.pos.tileY * consts.DISPLAY_TILE_SIZE + Game.scroll.y * consts.DISPLAY_SCALE;
         let _ctx = ctx ?? ctx2;
         let texture = registry.textures.building[this.id];
         if (texture) {
@@ -940,20 +943,24 @@ class Building {
     }
     spawnItem(id) {
         id ?? (id = ItemID.base_null);
-        if (this.level.buildingAtTile(this.x + 1, this.y)?.acceptsItemFromSide(Direction.left) &&
-            this.level.buildingAtTile(this.x + 1, this.y).acceptItem(new Item((this.x + 1.1) * consts.TILE_SIZE, (this.y + 0.5) * consts.TILE_SIZE, id))) {
+        if (this.level.buildingAtTile(this.pos.tileX + 1, this.pos.tileY) instanceof Conveyor &&
+            this.level.buildingAtTile(this.pos.tileX + 1, this.pos.tileY).acceptsItemFromSide(Direction.left) &&
+            this.level.buildingAtTile(this.pos.tileX + 1, this.pos.tileY).acceptItem(new Item((this.pos.tileX + 1.1) * consts.TILE_SIZE, (this.pos.tileY + 0.5) * consts.TILE_SIZE, id))) {
             return true;
         }
-        else if (this.level.buildingAtTile(this.x, this.y + 1)?.acceptsItemFromSide(Direction.up) &&
-            this.level.buildingAtTile(this.x, this.y + 1).acceptItem(new Item((this.x + 0.5) * consts.TILE_SIZE, (this.y + 1.1) * consts.TILE_SIZE, id))) {
+        else if (this.level.buildingAtTile(this.pos.tileX, this.pos.tileY + 1) instanceof Conveyor &&
+            this.level.buildingAtTile(this.pos.tileX, this.pos.tileY + 1).acceptsItemFromSide(Direction.up) &&
+            this.level.buildingAtTile(this.pos.tileX, this.pos.tileY + 1).acceptItem(new Item((this.pos.tileX + 0.5) * consts.TILE_SIZE, (this.pos.tileY + 1.1) * consts.TILE_SIZE, id))) {
             return true;
         }
-        else if (this.level.buildingAtTile(this.x - 1, this.y)?.acceptsItemFromSide(Direction.right) &&
-            this.level.buildingAtTile(this.x - 1, this.y).acceptItem(new Item((this.x - 0.1) * consts.TILE_SIZE, (this.y + 0.5) * consts.TILE_SIZE, id))) {
+        else if (this.level.buildingAtTile(this.pos.tileX - 1, this.pos.tileY) instanceof Conveyor &&
+            this.level.buildingAtTile(this.pos.tileX - 1, this.pos.tileY).acceptsItemFromSide(Direction.right) &&
+            this.level.buildingAtTile(this.pos.tileX - 1, this.pos.tileY).acceptItem(new Item((this.pos.tileX - 0.1) * consts.TILE_SIZE, (this.pos.tileY + 0.5) * consts.TILE_SIZE, id))) {
             return true;
         }
-        else if (this.level.buildingAtTile(this.x, this.y - 1)?.acceptsItemFromSide(Direction.down) &&
-            this.level.buildingAtTile(this.x, this.y - 1).acceptItem(new Item((this.x + 0.5) * consts.TILE_SIZE, (this.y - 0.1) * consts.TILE_SIZE, id))) {
+        else if (this.level.buildingAtTile(this.pos.tileX, this.pos.tileY - 1) instanceof Conveyor &&
+            this.level.buildingAtTile(this.pos.tileX, this.pos.tileY - 1).acceptsItemFromSide(Direction.down) &&
+            this.level.buildingAtTile(this.pos.tileX, this.pos.tileY - 1).acceptItem(new Item((this.pos.tileX + 0.5) * consts.TILE_SIZE, (this.pos.tileY - 0.1) * consts.TILE_SIZE, id))) {
             return true;
         }
         else {
@@ -972,8 +979,8 @@ class Building {
     }
     export() {
         return {
-            x: this.x,
-            y: this.y,
+            x: this.pos.tileX,
+            y: this.pos.tileY,
             id: this.id,
             item: this.item?.export() ?? null,
             inv: []
@@ -1097,17 +1104,17 @@ class Conveyor extends Building {
                 0x01, 0x05, 0x09, 0x0D, 0x0E, 0x0F, 0x11, 0x14, 0x16, 0x18, 0x19, 0x1A,
             ].includes(+this.id >> 8);
             case Direction.right: return [
-                0x02, 0x06, 0x0A, 0x0E, 0x10, 0x11, 0x12, 0x16, 0x17, 0x19, 0x1A, 0x1B,
+                0x02, 0x06, 0x0A, 0x0E, 0x10, 0x11, 0x12, 0x15, 0x17, 0x19, 0x1A, 0x1B,
             ].includes(+this.id >> 8);
             case Direction.down: return [
-                0x03, 0x08, 0x04, 0x0C, 0x10, 0x12, 0x13, 0x14, 0x15, 0x18, 0x1A, 0x1B,
+                0x03, 0x08, 0x04, 0x0C, 0x10, 0x12, 0x13, 0x14, 0x16, 0x18, 0x1A, 0x1B,
             ].includes(+this.id >> 8);
         }
     }
     update() {
         if (this.item instanceof Item) {
-            if (Math.floor(this.item.x / consts.TILE_SIZE) != this.x || Math.floor(this.item.y / consts.TILE_SIZE) != this.y) {
-                let building = this.level.buildingAtTile(Math.floor(this.item.x / consts.TILE_SIZE), Math.floor(this.item.y / consts.TILE_SIZE));
+            if (this.item.pos.tileX != this.pos.tileX || this.item.pos.tileY != this.pos.tileY) {
+                let building = this.level.buildingAtPos(this.item.pos);
                 if (!building)
                     return;
                 if (building.acceptItem(this.item)) {
@@ -1117,293 +1124,280 @@ class Conveyor extends Building {
             }
             switch (+this.id >> 8) {
                 case 0x00:
-                    if (pixelOffsetInTile(this.item.y) == consts.TILE_SIZE * 0.5) {
-                        this.item.x += consts.buildings.conveyor.SPEED;
+                    if (this.item.pos.tileOffsetYCentered) {
+                        this.item.pos.pixelX += consts.buildings.conveyor.SPEED;
                     }
                     break;
                 case 0x01:
-                    if (pixelOffsetInTile(this.item.x) == consts.TILE_SIZE * 0.5) {
-                        this.item.y += consts.buildings.conveyor.SPEED;
+                    if (this.item.pos.tileOffsetXCentered) {
+                        this.item.pos.pixelY += consts.buildings.conveyor.SPEED;
                     }
                     break;
                 case 0x02:
-                    if (pixelOffsetInTile(this.item.y) == consts.TILE_SIZE * 0.5) {
-                        this.item.x -= consts.buildings.conveyor.SPEED;
+                    if (this.item.pos.tileOffsetYCentered) {
+                        this.item.pos.pixelX -= consts.buildings.conveyor.SPEED;
                     }
                     break;
                 case 0x03:
-                    if (pixelOffsetInTile(this.item.x) == consts.TILE_SIZE * 0.5) {
-                        this.item.y -= consts.buildings.conveyor.SPEED;
+                    if (this.item.pos.tileOffsetXCentered) {
+                        this.item.pos.pixelY -= consts.buildings.conveyor.SPEED;
                     }
                     break;
                 case 0x04:
-                    if (pixelOffsetInTile(this.item.x) >= consts.TILE_SIZE * 0.5 && pixelOffsetInTile(this.item.y) == consts.TILE_SIZE * 0.5) {
-                        this.item.x++;
-                        this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE / 2;
+                    if (this.item.pos.tileOffsetXInTiles >= 0.5 && this.item.pos.tileOffsetYCentered) {
+                        this.item.pos.pixelX++;
+                        this.item.pos.pixelY = this.pos.pixelYCenteredInTile;
                     }
-                    else if (pixelOffsetInTile(this.item.x) == consts.TILE_SIZE * 0.5 && pixelOffsetInTile(this.item.y) >= consts.TILE_SIZE * 0.5) {
-                        this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE / 2;
-                        this.item.y--;
+                    else if (this.item.pos.tileOffsetXCentered && this.item.pos.tileOffsetYInTiles > 0.5) {
+                        this.item.pos.pixelX = this.pos.pixelXCenteredInTile;
+                        this.item.pos.pixelY--;
                     }
                     break;
                 case 0x05:
-                    if (pixelOffsetInTile(this.item.x) >= consts.TILE_SIZE * 0.5 && pixelOffsetInTile(this.item.y) == consts.TILE_SIZE * 0.5) {
-                        this.item.x++;
-                        this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE / 2;
+                    if (this.item.pos.tileOffsetXInTiles >= 0.5 && this.item.pos.tileOffsetYCentered) {
+                        this.item.pos.pixelX++;
+                        this.item.pos.pixelY = this.pos.pixelYCenteredInTile;
                     }
-                    else if (pixelOffsetInTile(this.item.x) == consts.TILE_SIZE * 0.5 && pixelOffsetInTile(this.item.y) <= consts.TILE_SIZE * 0.5) {
-                        this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE / 2;
-                        this.item.y++;
+                    else if (this.item.pos.tileOffsetXCentered && this.item.pos.tileOffsetYInTiles < 0.5) {
+                        this.item.pos.pixelX = this.pos.pixelXCenteredInTile;
+                        this.item.pos.pixelY++;
                     }
                     break;
                 case 0x06:
-                    if (pixelOffsetInTile(this.item.x) == consts.TILE_SIZE * 0.5 && pixelOffsetInTile(this.item.y) >= consts.TILE_SIZE * 0.5) {
-                        this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE / 2;
-                        this.item.y++;
+                    if (this.item.pos.tileOffsetXCentered && this.item.pos.tileOffsetYInTiles >= 0.5) {
+                        this.item.pos.pixelX = this.pos.pixelXCenteredInTile;
+                        this.item.pos.pixelY++;
                     }
-                    else if (pixelOffsetInTile(this.item.x) > consts.TILE_SIZE * 0.5 && pixelOffsetInTile(this.item.y) == consts.TILE_SIZE * 0.5) {
-                        this.item.x--;
-                        this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE / 2;
+                    else if (this.item.pos.tileOffsetXInTiles > 0.5 && this.item.pos.tileOffsetYCentered) {
+                        this.item.pos.pixelX--;
+                        this.item.pos.pixelY = this.pos.pixelYCenteredInTile;
                     }
                     break;
                 case 0x07:
-                    if (pixelOffsetInTile(this.item.x) == consts.TILE_SIZE * 0.5 && pixelOffsetInTile(this.item.y) >= consts.TILE_SIZE * 0.5) {
-                        this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE / 2;
-                        this.item.y++;
+                    if (this.item.pos.tileOffsetXCentered && this.item.pos.tileOffsetYInTiles >= 0.5) {
+                        this.item.pos.pixelX = this.pos.pixelXCenteredInTile;
+                        this.item.pos.pixelY++;
                     }
-                    else if (pixelOffsetInTile(this.item.x) < consts.TILE_SIZE * 0.5 && pixelOffsetInTile(this.item.y) == consts.TILE_SIZE * 0.5) {
-                        this.item.x++;
-                        this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE / 2;
+                    else if (this.item.pos.tileOffsetXInTiles < 0.5 && this.item.pos.tileOffsetYCentered) {
+                        this.item.pos.pixelX++;
+                        this.item.pos.pixelY = this.pos.pixelYCenteredInTile;
                     }
                     break;
                 case 0x08:
-                    if (pixelOffsetInTile(this.item.x) <= consts.TILE_SIZE * 0.5 && pixelOffsetInTile(this.item.y) == consts.TILE_SIZE * 0.5) {
-                        this.item.x--;
-                        this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE / 2;
+                    if (this.item.pos.tileOffsetXInTiles <= 0.5 && this.item.pos.tileOffsetYCentered) {
+                        this.item.pos.pixelX--;
+                        this.item.pos.pixelY = this.pos.pixelYCenteredInTile;
                     }
-                    else if (pixelOffsetInTile(this.item.x) == consts.TILE_SIZE * 0.5 && pixelOffsetInTile(this.item.y) >= consts.TILE_SIZE * 0.5) {
-                        this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE / 2;
-                        this.item.y--;
+                    else if (this.item.pos.tileOffsetXCentered && this.item.pos.tileOffsetYInTiles >= 0.5) {
+                        this.item.pos.pixelX = this.pos.pixelXCenteredInTile;
+                        this.item.pos.pixelY--;
                     }
                     break;
                 case 0x09:
-                    if (pixelOffsetInTile(this.item.x) <= consts.TILE_SIZE * 0.5 && pixelOffsetInTile(this.item.y) == consts.TILE_SIZE * 0.5) {
-                        this.item.x--;
-                        this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE / 2;
+                    if (this.item.pos.tileOffsetXInTiles <= 0.5 && this.item.pos.tileOffsetYCentered) {
+                        this.item.pos.pixelX--;
+                        this.item.pos.pixelY = this.pos.pixelYCenteredInTile;
                     }
-                    else if (pixelOffsetInTile(this.item.x) == consts.TILE_SIZE * 0.5 && pixelOffsetInTile(this.item.y) <= consts.TILE_SIZE * 0.5) {
-                        this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE / 2;
-                        this.item.y++;
+                    else if (this.item.pos.tileOffsetXCentered && this.item.pos.tileOffsetYInTiles <= 0.5) {
+                        this.item.pos.pixelX = this.pos.pixelXCenteredInTile;
+                        this.item.pos.pixelY++;
                     }
                     break;
                 case 0x0A:
-                    if (pixelOffsetInTile(this.item.x) == consts.TILE_SIZE * 0.5 && pixelOffsetInTile(this.item.y) <= consts.TILE_SIZE * 0.5) {
-                        this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE / 2;
-                        this.item.y--;
+                    if (this.item.pos.tileOffsetXCentered && this.item.pos.tileOffsetYInTiles <= 0.5) {
+                        this.item.pos.pixelX = this.pos.pixelXCenteredInTile;
+                        this.item.pos.pixelY--;
                     }
-                    else if (pixelOffsetInTile(this.item.x) > consts.TILE_SIZE * 0.5 && pixelOffsetInTile(this.item.y) == consts.TILE_SIZE * 0.5) {
-                        this.item.x--;
-                        this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE / 2;
+                    else if (this.item.pos.tileOffsetXInTiles > 0.5 && this.item.pos.tileOffsetYCentered) {
+                        this.item.pos.pixelX--;
+                        this.item.pos.pixelY = this.pos.pixelYCenteredInTile;
                     }
                     break;
                 case 0x0B:
-                    if (pixelOffsetInTile(this.item.x) == consts.TILE_SIZE * 0.5 && pixelOffsetInTile(this.item.y) <= consts.TILE_SIZE * 0.5) {
-                        this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE / 2;
-                        this.item.y--;
+                    if (this.item.pos.tileOffsetXCentered && this.item.pos.tileOffsetYInTiles <= 0.5) {
+                        this.item.pos.pixelX = this.pos.pixelXCenteredInTile;
+                        this.item.pos.pixelY--;
                     }
-                    else if (pixelOffsetInTile(this.item.x) < consts.TILE_SIZE * 0.5 && pixelOffsetInTile(this.item.y) == consts.TILE_SIZE * 0.5) {
-                        this.item.x++;
-                        this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE / 2;
+                    else if (this.item.pos.tileOffsetXInTiles < 0.5 && this.item.pos.tileOffsetYCentered) {
+                        this.item.pos.pixelX++;
+                        this.item.pos.pixelY = this.pos.pixelYCenteredInTile;
                     }
                     break;
                 case 0x0C:
-                    if (pixelOffsetInTile(this.item.y) == consts.TILE_SIZE * 0.5) {
-                        this.item.x++;
-                        this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE / 2;
+                    if (this.item.pos.tileOffsetYCentered) {
+                        this.item.pos.pixelX++;
+                        this.item.pos.pixelY = this.pos.pixelYCenteredInTile;
                     }
-                    else if (pixelOffsetInTile(this.item.x) == consts.TILE_SIZE * 0.5 && pixelOffsetInTile(this.item.y) >= consts.TILE_SIZE * 0.5) {
-                        this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE / 2;
-                        this.item.y--;
+                    else if (this.item.pos.tileOffsetXCentered && this.item.pos.tileOffsetYInTiles >= 0.5) {
+                        this.item.pos.pixelX = this.pos.pixelXCenteredInTile;
+                        this.item.pos.pixelY--;
                     }
                     break;
                 case 0x0D:
-                    if (pixelOffsetInTile(this.item.y) == consts.TILE_SIZE * 0.5) {
-                        this.item.x++;
-                        this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE / 2;
+                    if (this.item.pos.tileOffsetYCentered) {
+                        this.item.pos.pixelX++;
+                        this.item.pos.pixelY = this.pos.pixelYCenteredInTile;
                     }
-                    else if (pixelOffsetInTile(this.item.x) == consts.TILE_SIZE * 0.5 && pixelOffsetInTile(this.item.y) <= consts.TILE_SIZE * 0.5) {
-                        this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE / 2;
-                        this.item.y++;
+                    else if (this.item.pos.tileOffsetXCentered && this.item.pos.tileOffsetYInTiles <= 0.5) {
+                        this.item.pos.pixelX = this.pos.pixelXCenteredInTile;
+                        this.item.pos.pixelY++;
                     }
                     break;
                 case 0x0E:
-                    if (pixelOffsetInTile(this.item.x) == consts.TILE_SIZE * 0.5) {
-                        this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE / 2;
-                        this.item.y++;
+                    if (this.item.pos.tileOffsetXCentered) {
+                        this.item.pos.pixelX = this.pos.pixelXCenteredInTile;
+                        this.item.pos.pixelY++;
                     }
-                    else if (pixelOffsetInTile(this.item.x) > consts.TILE_SIZE * 0.5 && pixelOffsetInTile(this.item.y) == consts.TILE_SIZE * 0.5) {
-                        this.item.x--;
-                        this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE / 2;
+                    else if (this.item.pos.tileOffsetXInTiles > 0.5 && this.item.pos.tileOffsetYCentered) {
+                        this.item.pos.pixelX--;
+                        this.item.pos.pixelY = this.pos.pixelYCenteredInTile;
                     }
                     break;
                 case 0x0F:
-                    if (pixelOffsetInTile(this.item.x) == consts.TILE_SIZE * 0.5) {
-                        this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE / 2;
-                        this.item.y++;
+                    if (this.item.pos.tileOffsetXCentered) {
+                        this.item.pos.pixelX = this.pos.pixelXCenteredInTile;
+                        this.item.pos.pixelY++;
                     }
-                    else if (pixelOffsetInTile(this.item.x) < consts.TILE_SIZE * 0.5 && pixelOffsetInTile(this.item.y) == consts.TILE_SIZE * 0.5) {
-                        this.item.x++;
-                        this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE / 2;
+                    else if (this.item.pos.tileOffsetXInTiles < 0.5 && this.item.pos.tileOffsetYCentered) {
+                        this.item.pos.pixelX++;
+                        this.item.pos.pixelY = this.pos.pixelYCenteredInTile;
                     }
                     break;
                 case 0x10:
-                    if (pixelOffsetInTile(this.item.y) == consts.TILE_SIZE * 0.5) {
-                        this.item.x--;
-                        this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE / 2;
+                    if (this.item.pos.tileOffsetYCentered) {
+                        this.item.pos.pixelX--;
+                        this.item.pos.pixelY = this.pos.pixelYCenteredInTile;
                     }
-                    else if (pixelOffsetInTile(this.item.x) == consts.TILE_SIZE * 0.5 && pixelOffsetInTile(this.item.y) >= consts.TILE_SIZE * 0.5) {
-                        this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE / 2;
-                        this.item.y--;
+                    else if (this.item.pos.tileOffsetXCentered && this.item.pos.tileOffsetYInTiles >= 0.5) {
+                        this.item.pos.pixelX = this.pos.pixelXCenteredInTile;
+                        this.item.pos.pixelY--;
                     }
                     break;
                 case 0x11:
-                    if (pixelOffsetInTile(this.item.y) == consts.TILE_SIZE * 0.5) {
-                        this.item.x--;
-                        this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE / 2;
+                    if (this.item.pos.tileOffsetYCentered) {
+                        this.item.pos.pixelX--;
+                        this.item.pos.pixelY = this.pos.pixelYCenteredInTile;
                     }
-                    else if (pixelOffsetInTile(this.item.x) == consts.TILE_SIZE * 0.5 && pixelOffsetInTile(this.item.y) <= consts.TILE_SIZE * 0.5) {
-                        this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE / 2;
-                        this.item.y++;
+                    else if (this.item.pos.tileOffsetXCentered && this.item.pos.tileOffsetYInTiles <= 0.5) {
+                        this.item.pos.pixelX = this.pos.pixelXCenteredInTile;
+                        this.item.pos.pixelY++;
                     }
                     break;
                 case 0x12:
-                    if (pixelOffsetInTile(this.item.x) == consts.TILE_SIZE * 0.5) {
-                        this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE / 2;
-                        this.item.y--;
+                    if (this.item.pos.tileOffsetXCentered) {
+                        this.item.pos.pixelX = this.pos.pixelXCenteredInTile;
+                        this.item.pos.pixelY--;
                     }
-                    else if (pixelOffsetInTile(this.item.x) > consts.TILE_SIZE * 0.5 && pixelOffsetInTile(this.item.y) == consts.TILE_SIZE * 0.5) {
-                        this.item.x--;
-                        this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE / 2;
+                    else if (this.item.pos.tileOffsetXInTiles > 0.5 && this.item.pos.tileOffsetYCentered) {
+                        this.item.pos.pixelX--;
+                        this.item.pos.pixelY = this.pos.pixelYCenteredInTile;
                     }
                     break;
                 case 0x13:
-                    if (pixelOffsetInTile(this.item.x) == consts.TILE_SIZE * 0.5) {
-                        this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE / 2;
-                        this.item.y--;
+                    if (this.item.pos.tileOffsetXCentered) {
+                        this.item.pos.pixelX = this.pos.pixelXCenteredInTile;
+                        this.item.pos.pixelY--;
                     }
-                    else if (pixelOffsetInTile(this.item.x) < consts.TILE_SIZE * 0.5 && pixelOffsetInTile(this.item.y) == consts.TILE_SIZE * 0.5) {
-                        this.item.x++;
-                        this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE / 2;
+                    else if (this.item.pos.tileOffsetXInTiles < 0.5 && this.item.pos.tileOffsetYCentered) {
+                        this.item.pos.pixelX++;
+                        this.item.pos.pixelY = this.pos.pixelYCenteredInTile;
                     }
                     break;
                 case 0x14:
-                    if (pixelOffsetInTile(this.item.x) >= consts.TILE_SIZE * 0.5 && pixelOffsetInTile(this.item.y) == consts.TILE_SIZE * 0.5) {
-                        this.item.x++;
-                        this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE / 2;
+                    if (this.item.pos.tileOffsetXInTiles >= 0.5 && this.item.pos.tileOffsetYCentered) {
+                        this.item.pos.pixelX++;
+                        this.item.pos.pixelY = this.pos.pixelYCenteredInTile;
                     }
-                    else if (pixelOffsetInTile(this.item.x) == consts.TILE_SIZE * 0.5) {
-                        this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE / 2;
-                        this.item.y += pixelOffsetInTile(this.item.y) > consts.TILE_SIZE / 2 ? -1 : 1;
+                    else if (this.item.pos.tileOffsetXCentered) {
+                        this.item.pos.pixelX = this.pos.pixelXCenteredInTile;
+                        this.item.pos.pixelY += this.item.pos.tileOffsetYInTiles > 0.5 ? -1 : 1;
                     }
                     break;
                 case 0x15:
-                    if (pixelOffsetInTile(this.item.x) == consts.TILE_SIZE * 0.5 && pixelOffsetInTile(this.item.y) >= consts.TILE_SIZE * 0.5) {
-                        this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE / 2;
-                        this.item.y++;
+                    if (this.item.pos.tileOffsetXCentered && this.item.pos.tileOffsetYInTiles >= 0.5) {
+                        this.item.pos.pixelX = this.pos.pixelXCenteredInTile;
+                        this.item.pos.pixelY++;
                     }
-                    else if (pixelOffsetInTile(this.item.y) == consts.TILE_SIZE * 0.5) {
-                        this.item.x += pixelOffsetInTile(this.item.x) > consts.TILE_SIZE / 2 ? -1 : 1;
-                        this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE / 2;
+                    else if (this.item.pos.tileOffsetYCentered) {
+                        this.item.pos.pixelX += this.item.pos.tileOffsetXInTiles > 0.5 ? -1 : 1;
+                        this.item.pos.pixelY = this.pos.pixelYCenteredInTile;
                     }
                     break;
                 case 0x16:
-                    if (pixelOffsetInTile(this.item.x) <= consts.TILE_SIZE * 0.5 && pixelOffsetInTile(this.item.y) == consts.TILE_SIZE * 0.5) {
-                        this.item.x--;
-                        this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE / 2;
+                    if (this.item.pos.tileOffsetXInTiles <= 0.5 && this.item.pos.tileOffsetYCentered) {
+                        this.item.pos.pixelX--;
+                        this.item.pos.pixelY = this.pos.pixelYCenteredInTile;
                     }
-                    else if (pixelOffsetInTile(this.item.x) == consts.TILE_SIZE * 0.5) {
-                        this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE / 2;
-                        this.item.y += pixelOffsetInTile(this.item.y) > consts.TILE_SIZE / 2 ? -1 : 1;
+                    else if (this.item.pos.tileOffsetXCentered) {
+                        this.item.pos.pixelX = this.pos.pixelXCenteredInTile;
+                        this.item.pos.pixelY += this.item.pos.tileOffsetYInTiles > 0.5 ? -1 : 1;
                     }
                     break;
                 case 0x17:
-                    if (pixelOffsetInTile(this.item.x) == consts.TILE_SIZE * 0.5 && pixelOffsetInTile(this.item.y) <= consts.TILE_SIZE * 0.5) {
-                        this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE / 2;
-                        this.item.y--;
+                    if (this.item.pos.tileOffsetXCentered && this.item.pos.tileOffsetYInTiles <= 0.5) {
+                        this.item.pos.pixelX = this.pos.pixelXCenteredInTile;
+                        this.item.pos.pixelY--;
                     }
-                    else if (pixelOffsetInTile(this.item.y) == consts.TILE_SIZE * 0.5) {
-                        this.item.x += pixelOffsetInTile(this.item.x) > consts.TILE_SIZE / 2 ? -1 : 1;
-                        this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE / 2;
+                    else if (this.item.pos.tileOffsetYCentered) {
+                        this.item.pos.pixelX += this.item.pos.tileOffsetXInTiles > 0.5 ? -1 : 1;
+                        this.item.pos.pixelY = this.pos.pixelYCenteredInTile;
                     }
                     break;
                 case 0x18:
-                    if (pixelOffsetInTile(this.item.y) == consts.TILE_SIZE * 0.5) {
-                        this.item.x++;
-                        this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE / 2;
+                    if (this.item.pos.tileOffsetYCentered) {
+                        this.item.pos.pixelX++;
+                        this.item.pos.pixelY = this.pos.pixelYCenteredInTile;
                     }
-                    else if (pixelOffsetInTile(this.item.x) == consts.TILE_SIZE * 0.5) {
-                        this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE / 2;
-                        this.item.y += pixelOffsetInTile(this.item.y) > consts.TILE_SIZE / 2 ? -1 : 1;
+                    else if (this.item.pos.tileOffsetXCentered) {
+                        this.item.pos.pixelX = this.pos.pixelXCenteredInTile;
+                        this.item.pos.pixelY += this.item.pos.tileOffsetYInTiles > 0.5 ? -1 : 1;
                     }
                     break;
                 case 0x19:
-                    if (pixelOffsetInTile(this.item.x) == consts.TILE_SIZE * 0.5) {
-                        this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE / 2;
-                        this.item.y++;
+                    if (this.item.pos.tileOffsetXCentered) {
+                        this.item.pos.pixelX = this.pos.pixelXCenteredInTile;
+                        this.item.pos.pixelY++;
                     }
-                    else if (pixelOffsetInTile(this.item.y) == consts.TILE_SIZE * 0.5) {
-                        this.item.x += pixelOffsetInTile(this.item.x) > consts.TILE_SIZE / 2 ? -1 : 1;
-                        this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE / 2;
+                    else if (this.item.pos.tileOffsetYCentered) {
+                        this.item.pos.pixelX += this.item.pos.tileOffsetXInTiles > 0.5 ? -1 : 1;
+                        this.item.pos.pixelY = this.pos.pixelYCenteredInTile;
                     }
                     break;
                 case 0x1A:
-                    if (pixelOffsetInTile(this.item.y) == consts.TILE_SIZE * 0.5) {
-                        this.item.x--;
-                        this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE / 2;
+                    if (this.item.pos.tileOffsetYCentered) {
+                        this.item.pos.pixelX--;
+                        this.item.pos.pixelY = this.pos.pixelYCenteredInTile;
                     }
-                    else if (pixelOffsetInTile(this.item.x) == consts.TILE_SIZE * 0.5) {
-                        this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE / 2;
-                        this.item.y += pixelOffsetInTile(this.item.y) > consts.TILE_SIZE / 2 ? -1 : 1;
+                    else if (this.item.pos.tileOffsetXCentered) {
+                        this.item.pos.pixelX = this.pos.pixelXCenteredInTile;
+                        this.item.pos.pixelY += this.item.pos.tileOffsetYInTiles > 0.5 ? -1 : 1;
                     }
                     break;
                 case 0x1B:
-                    if (pixelOffsetInTile(this.item.x) == consts.TILE_SIZE * 0.5) {
-                        this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE / 2;
-                        this.item.y--;
+                    if (this.item.pos.tileOffsetXCentered) {
+                        this.item.pos.pixelX = this.pos.pixelXCenteredInTile;
+                        this.item.pos.pixelY--;
                     }
-                    else if (pixelOffsetInTile(this.item.y) == consts.TILE_SIZE * 0.5) {
-                        this.item.x += pixelOffsetInTile(this.item.x) > consts.TILE_SIZE / 2 ? -1 : 1;
-                        this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE / 2;
+                    else if (this.item.pos.tileOffsetYCentered) {
+                        this.item.pos.pixelX += this.item.pos.tileOffsetXInTiles > 0.5 ? -1 : 1;
+                        this.item.pos.pixelY = this.pos.pixelYCenteredInTile;
                     }
                     break;
             }
         }
     }
     acceptItem(item) {
-        if (item.x - this.x * consts.TILE_SIZE <= consts.TILE_SIZE * 0.1 &&
-            this.acceptsItemFromSide(Direction.left)) {
+        if (item.pos.tileX != this.pos.tileX || item.pos.tileY != this.pos.tileY)
+            return false;
+        if (item.pos.tileOffsetXInTiles <= 0.1 && this.acceptsItemFromSide(Direction.left) ||
+            item.pos.tileOffsetYInTiles <= 0.1 && this.acceptsItemFromSide(Direction.up) ||
+            item.pos.tileOffsetXInTiles >= 0.9 && this.acceptsItemFromSide(Direction.right) ||
+            item.pos.tileOffsetYInTiles >= 0.9 && this.acceptsItemFromSide(Direction.down) ||
+            item.pos.tileOffsetXCentered && item.pos.tileOffsetYCentered) {
             return super.acceptItem(item);
         }
-        if (item.y - this.y * consts.TILE_SIZE <= consts.TILE_SIZE * 0.1 &&
-            this.acceptsItemFromSide(Direction.up)) {
-            return super.acceptItem(item);
-        }
-        if (item.x - this.x * consts.TILE_SIZE >= consts.TILE_SIZE * 0.9 &&
-            this.acceptsItemFromSide(Direction.right)) {
-            return super.acceptItem(item);
-        }
-        if (item.y - this.y * consts.TILE_SIZE >= consts.TILE_SIZE * 0.9 &&
-            this.acceptsItemFromSide(Direction.down)) {
-            return super.acceptItem(item);
-        }
-        if (pixelOffsetInTile(item.x) == consts.TILE_SIZE / 2 &&
-            pixelOffsetInTile(item.y) == consts.TILE_SIZE / 2 &&
-            super.acceptItem(item)) {
-            item.x = (this.x + 0.5) * consts.TILE_SIZE;
-            item.y = (this.y + 0.5) * consts.TILE_SIZE;
-            return true;
-        }
-        return false;
+        else
+            return false;
     }
 }
 class Extractor extends Conveyor {
@@ -1419,29 +1413,29 @@ class Extractor extends Conveyor {
     grabItemFromTile(filter, callback, remove, grabDistance) {
         filter ?? (filter = (item) => { return item instanceof Item; });
         callback ?? (callback = () => { });
-        if (this.level.buildingAtTile(this.x, this.y) instanceof Building &&
-            this.level.buildingAtTile(this.x, this.y).hasItem() &&
-            filter(this.level.buildingAtTile(this.x, this.y).hasItem())) {
-            let item = this.level.buildingAtTile(this.x, this.y).removeItem();
+        if (this.level.buildingAtPos(this.pos) instanceof Building &&
+            this.level.buildingAtPos(this.pos).hasItem() &&
+            filter(this.level.buildingAtPos(this.pos).hasItem())) {
+            let item = this.level.buildingAtPos(this.pos).removeItem();
             if (!(item instanceof Item))
                 throw new ShouldNotBePossibleError("received invalid item");
             if (item.deleted)
                 throw new ShouldNotBePossibleError("received deleted item");
             this.item = item;
-            this.item.y = (this.y + 0.5) * consts.TILE_SIZE;
-            this.item.x = (this.x + 0.5) * consts.TILE_SIZE;
+            this.item.pos.pixelX = this.pos.pixelXCenteredInTile;
+            this.item.pos.pixelY = this.pos.pixelYCenteredInTile;
             item.grabbedBy = this;
         }
     }
     dropItem() {
         if (this.item instanceof Item) {
-            if (this.level.buildingAtPixel(this.item.x, this.item.y)?.acceptItem(this.item)) {
+            if (this.level.buildingAtPos(this.item.pos)?.acceptItem(this.item)) {
                 this.item = null;
             }
         }
         else {
             console.error(this);
-            throw new InvalidStateError(`no item to drop; extractor at ${this.x} ${this.y}`);
+            throw new InvalidStateError(`no item to drop; extractor at ${this.pos.tileX} ${this.pos.tileY}`);
         }
     }
     update() {
@@ -1453,99 +1447,99 @@ class Extractor extends Conveyor {
             }
             switch (this.id) {
                 case "0x0005":
-                    if (this.item.x >= (this.x + 1.5) * consts.TILE_SIZE) {
+                    if (this.item.pos.tileXExact >= this.pos.tileX + 1.5) {
                         return this.dropItem();
                     }
                     else {
-                        this.item.x++;
+                        this.item.pos.pixelX++;
                     }
                     break;
                 case "0x0105":
-                    if (this.item.y >= (this.y + 1.5) * consts.TILE_SIZE) {
+                    if (this.item.pos.tileYExact >= this.pos.tileY + 1.5) {
                         return this.dropItem();
                     }
                     else {
-                        this.item.y++;
+                        this.item.pos.pixelY++;
                     }
                     break;
                 case "0x0205":
-                    if (this.item.x <= (this.x - 0.5) * consts.TILE_SIZE) {
+                    if (this.item.pos.tileXExact <= this.pos.tileX - 0.5) {
                         return this.dropItem();
                     }
                     else {
-                        this.item.x--;
+                        this.item.pos.pixelX--;
                     }
                     break;
                 case "0x0305":
-                    if (this.item.y <= (this.y - 0.5) * consts.TILE_SIZE) {
+                    if (this.item.pos.tileYExact <= this.pos.tileY - 0.5) {
                         return this.dropItem();
                     }
                     else {
-                        this.item.y--;
+                        this.item.pos.pixelY--;
                     }
                     break;
                 case "0x0405":
-                    if (this.item.x >= (this.x + 2.5) * consts.TILE_SIZE) {
+                    if (this.item.pos.tileXExact >= this.pos.tileX + 2.5) {
                         return this.dropItem();
                     }
                     else {
-                        this.item.x++;
+                        this.item.pos.pixelX++;
                     }
                     break;
                 case "0x0505":
-                    if (this.item.y >= (this.y + 2.5) * consts.TILE_SIZE) {
+                    if (this.item.pos.tileYExact >= this.pos.tileY + 2.5) {
                         return this.dropItem();
                     }
                     else {
-                        this.item.y++;
+                        this.item.pos.pixelY++;
                     }
                     break;
                 case "0x0605":
-                    if (this.item.x <= (this.x - 1.5) * consts.TILE_SIZE) {
+                    if (this.item.pos.tileXExact <= this.pos.tileX - 1.5) {
                         return this.dropItem();
                     }
                     else {
-                        this.item.x--;
+                        this.item.pos.pixelX--;
                     }
                     break;
                 case "0x0705":
-                    if (this.item.y <= (this.y - 1.5) * consts.TILE_SIZE) {
+                    if (this.item.pos.tileYExact <= this.pos.tileY - 1.5) {
                         return this.dropItem();
                     }
                     else {
-                        this.item.y--;
+                        this.item.pos.pixelY--;
                     }
                     break;
                 case "0x0805":
-                    if (this.item.x >= (this.x + 3.5) * consts.TILE_SIZE) {
+                    if (this.item.pos.tileXExact >= this.pos.tileX + 3.5) {
                         return this.dropItem();
                     }
                     else {
-                        this.item.x++;
+                        this.item.pos.pixelX++;
                     }
                     break;
                 case "0x0905":
-                    if (this.item.y >= (this.y + 3.5) * consts.TILE_SIZE) {
+                    if (this.item.pos.tileYExact >= this.pos.tileY + 3.5) {
                         return this.dropItem();
                     }
                     else {
-                        this.item.y++;
+                        this.item.pos.pixelY++;
                     }
                     break;
                 case "0x0A05":
-                    if (this.item.x <= (this.x - 2.5) * consts.TILE_SIZE) {
+                    if (this.item.pos.tileXExact <= this.pos.tileX - 2.5) {
                         return this.dropItem();
                     }
                     else {
-                        this.item.x--;
+                        this.item.pos.pixelX--;
                     }
                     break;
                 case "0x0B05":
-                    if (this.item.y <= (this.y - 2.5) * consts.TILE_SIZE) {
+                    if (this.item.pos.tileYExact <= this.pos.tileY - 2.5) {
                         return this.dropItem();
                     }
                     else {
-                        this.item.y--;
+                        this.item.pos.pixelY--;
                     }
                     break;
             }
@@ -1558,7 +1552,7 @@ class Extractor extends Conveyor {
         if (this.item) {
             this.item.grabbedBy = null;
         }
-        this.level.writeExtractor(this.x, this.y, null);
+        this.level.writeExtractor(this.pos.tileX, this.pos.tileY, null);
     }
 }
 class StorageBuilding extends Building {
@@ -1605,8 +1599,8 @@ class StorageBuilding extends Building {
             }
         }
         return {
-            x: this.x,
-            y: this.y,
+            x: this.pos.tileX,
+            y: this.pos.tileY,
             id: this.id,
             item: this.item?.export() ?? null,
             inv: inv
@@ -1650,9 +1644,9 @@ class MultiBlockController extends BuildingWithRecipe {
     update() {
         if (this.secondaries.length != this.constructor.size[0] * this.constructor.size[1] - 1) {
             let possibleSecondaries = [
-                this.level.buildingAtTile(this.x + 1, this.y),
-                this.level.buildingAtTile(this.x, this.y + 1),
-                this.level.buildingAtTile(this.x + 1, this.y + 1)
+                this.level.buildingAtTile(this.pos.tileX + 1, this.pos.tileY),
+                this.level.buildingAtTile(this.pos.tileX, this.pos.tileY + 1),
+                this.level.buildingAtTile(this.pos.tileX + 1, this.pos.tileY + 1)
             ];
             for (let possibleSecondary of possibleSecondaries) {
                 if (possibleSecondary instanceof MultiBlockSecondary && (possibleSecondary.controller == this || possibleSecondary.controller == undefined)) {
