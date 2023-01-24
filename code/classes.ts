@@ -1007,35 +1007,35 @@ class Building {
 		}
 		return null;
 	}
+	/**Whether a building can ever accept items from a particular side. */
+	acceptsItemFromSide(side:Direction):boolean {
+		return true;
+	}
 	spawnItem(id:ItemID){
 		id ??= ItemID.base_null;
 		if(
-			["0x0001", "0x0701", "0x0B01", "0x0C01", "0x0D01", "0x0F01", "0x1301", "0x1501", "0x1701", "0x1801", "0x1901", "0x1B01"]
-			.includes(this.level.buildingIDAtTile(this.x + 1, this.y)) &&
+			this.level.buildingAtTile(this.x + 1, this.y)?.acceptsItemFromSide(Direction.left) &&
 			this.level.buildingAtTile(this.x + 1, this.y)!.acceptItem(
 				new Item((this.x + 1.1) * consts.TILE_SIZE, (this.y + 0.5) * consts.TILE_SIZE, id)
 			)
 		){
 			return true;
 		} else if(
-			["0x0101", "0x0501", "0x0901", "0x0D01", "0x0E01", "0x0F01", "0x1101", "0x1401", "0x1601", "0x1801", "0x1901", "0x1A01"]
-			.includes(this.level.buildingIDAtTile(this.x, this.y + 1)) &&
+			this.level.buildingAtTile(this.x, this.y + 1)?.acceptsItemFromSide(Direction.up) &&
 			this.level.buildingAtTile(this.x, this.y + 1)!.acceptItem(
 				new Item((this.x + 0.5) * consts.TILE_SIZE, (this.y + 1.1) * consts.TILE_SIZE, id)
 			)
 		){
 			return true;
 		} else if(
-			["0x0201", "0x0601", "0x0A01", "0x0E01", "0x1001", "0x1101", "0x1201", "0x1601", "0x1701", "0x1901", "0x1A01", "0x1B01"]
-			.includes(this.level.buildingIDAtTile(this.x - 1, this.y)) &&
+			this.level.buildingAtTile(this.x - 1, this.y)?.acceptsItemFromSide(Direction.right) &&
 			this.level.buildingAtTile(this.x - 1, this.y)!.acceptItem(
 				new Item((this.x - 0.1) * consts.TILE_SIZE, (this.y + 0.5) * consts.TILE_SIZE, id)
 			)
 		){
 			return true;
 		} else if(
-			["0x0301", "0x0801", "0x0401", "0x0C01", "0x1001", "0x1201", "0x1301", "0x1401", "0x1501", "0x1801", "0x1A01", "0x1B01"]
-			.includes(this.level.buildingIDAtTile(this.x, this.y - 1)) &&
+			this.level.buildingAtTile(this.x, this.y - 1)?.acceptsItemFromSide(Direction.down) &&
 			this.level.buildingAtTile(this.x, this.y - 1)!.acceptItem(
 				new Item((this.x + 0.5) * consts.TILE_SIZE, (this.y - 0.1) * consts.TILE_SIZE, id)
 			)
@@ -1181,6 +1181,23 @@ class Conveyor extends Building {
 		super.display(currentFrame);
 		if(this.item instanceof Item){
 			this.item.display(currentFrame);
+		}
+	}
+	acceptsItemFromSide(side:Direction):boolean {
+		//Bit cursed, but far better than what it used to be
+		switch(side){
+			case Direction.left: return [
+				0x00, 0x07, 0x0B, 0x0C, 0x0D, 0x0F, 0x13, 0x15, 0x17, 0x18, 0x19, 0x1B,
+			].includes(+this.id >> 8);
+			case Direction.up: return [
+				0x01, 0x05, 0x09, 0x0D, 0x0E, 0x0F, 0x11, 0x14, 0x16, 0x18, 0x19, 0x1A,
+			].includes(+this.id >> 8);
+			case Direction.right: return [
+				0x02, 0x06, 0x0A, 0x0E, 0x10, 0x11, 0x12, 0x16, 0x17, 0x19, 0x1A, 0x1B,
+			].includes(+this.id >> 8);
+			case Direction.down: return [
+				0x03, 0x08, 0x04, 0x0C, 0x10, 0x12, 0x13, 0x14, 0x15, 0x18, 0x1A, 0x1B,
+			].includes(+this.id >> 8);
 		}
 	}
 	update(){
@@ -1442,22 +1459,22 @@ class Conveyor extends Building {
 	}
 	acceptItem(item: Item):boolean {
 		if(item.x - this.x * consts.TILE_SIZE <= consts.TILE_SIZE * 0.1 &&
-			[0x00, 0x07, 0x0B, 0x0C, 0x0D, 0x0F, 0x13, 0x15, 0x17, 0x18, 0x19, 0x1B].includes(+this.id >> 8)){
+			this.acceptsItemFromSide(Direction.left)){
 			//item on left
 			return super.acceptItem(item);
 		}
 		if(item.y - this.y * consts.TILE_SIZE <= consts.TILE_SIZE * 0.1 &&
-			[0x01, 0x05, 0x09, 0x0D, 0x0E, 0x0F, 0x11, 0x14, 0x16, 0x18, 0x19, 0x1A].includes(+this.id >> 8)){
+			this.acceptsItemFromSide(Direction.up)){
 			//item on top
 			return super.acceptItem(item);
 		}
 		if(item.x - this.x * consts.TILE_SIZE >= consts.TILE_SIZE * 0.9 &&
-			[0x02, 0x06, 0x0A, 0x0E, 0x10, 0x11, 0x12, 0x15, 0x17, 0x19, 0x1A, 0x1B].includes(+this.id >> 8)){
+			this.acceptsItemFromSide(Direction.right)){
 			//item on right
 			return super.acceptItem(item);
 		}
 		if(item.y - this.y * consts.TILE_SIZE >= consts.TILE_SIZE * 0.9 &&
-			[0x03, 0x08, 0x04, 0x0C, 0x10, 0x12, 0x13, 0x14, 0x16, 0x18, 0x1A, 0x1B].includes(+this.id >> 8)){
+			this.acceptsItemFromSide(Direction.down)){
 			//item on bottom
 			return super.acceptItem(item);
 		}
