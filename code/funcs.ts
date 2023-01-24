@@ -32,7 +32,6 @@ Object.defineProperty(CanvasRenderingContext2D.prototype, "clear", {
 /**Returns the time passed since program start in milliseconds. */
 function millis():number{
 	return (new Date()).valueOf() - Game.startTime.valueOf();
-	//todo does this even work
 }
 
 /**Finds the greatest common divisor of two numbers */
@@ -258,7 +257,6 @@ function _alert(x:string){
 	alerts.list.push(x);
 }
 function loadTexturesIntoMemory():boolean {
-	//TODO v a l i d a t i o n
 	for(let imageElement of Array.from(document.getElementById("item")!.children) as HTMLImageElement[]){
 		if(!imageElement.complete){
 			return false;

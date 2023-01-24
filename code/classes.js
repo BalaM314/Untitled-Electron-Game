@@ -298,12 +298,13 @@ class Level {
             return true;
         }
         if (((+buildingID) & 0x00F0) == 0x10) {
+            const block = registry.buildings[getRawBuildingID(buildingID)];
             this.buildingAtTile(tileX + 1, tileY)?.break();
             this.buildingAtTile(tileX, tileY + 1)?.break();
             this.buildingAtTile(tileX + 1, tileY + 1)?.break();
             switch (getRawBuildingID(buildingID)) {
                 case "0x11":
-                    let controller = new registry.buildings[getRawBuildingID(buildingID)](tileX, tileY, buildingID, this);
+                    let controller = new block(tileX, tileY, buildingID, this);
                     let secondary1 = new MultiBlockSecondary(tileX + 1, tileY, BuildingID["0x0010"], this);
                     let secondary2 = new MultiBlockSecondary(tileX, tileY + 1, BuildingID["0x0010"], this);
                     let secondary3 = new MultiBlockSecondary(tileX + 1, tileY + 1, BuildingID["0x0010"], this);
@@ -941,26 +942,34 @@ class Building {
     acceptsItemFromSide(side) {
         return true;
     }
+    buildAt(direction) {
+        switch (direction) {
+            case Direction.right: return this.level.buildingAtTile(this.pos.tileX + 1, this.pos.tileY);
+            case Direction.down: return this.level.buildingAtTile(this.pos.tileX, this.pos.tileY + 1);
+            case Direction.left: return this.level.buildingAtTile(this.pos.tileX - 1, this.pos.tileY);
+            case Direction.up: return this.level.buildingAtTile(this.pos.tileX, this.pos.tileY - 1);
+        }
+    }
     spawnItem(id) {
         id ?? (id = ItemID.base_null);
-        if (this.level.buildingAtTile(this.pos.tileX + 1, this.pos.tileY) instanceof Conveyor &&
-            this.level.buildingAtTile(this.pos.tileX + 1, this.pos.tileY).acceptsItemFromSide(Direction.left) &&
-            this.level.buildingAtTile(this.pos.tileX + 1, this.pos.tileY).acceptItem(new Item((this.pos.tileX + 1.1) * consts.TILE_SIZE, (this.pos.tileY + 0.5) * consts.TILE_SIZE, id))) {
+        if (this.buildAt(Direction.right) instanceof Conveyor &&
+            this.buildAt(Direction.right).acceptsItemFromSide(Direction.left) &&
+            this.buildAt(Direction.right).acceptItem(new Item((this.pos.tileX + 1.1) * consts.TILE_SIZE, (this.pos.tileY + 0.5) * consts.TILE_SIZE, id))) {
             return true;
         }
-        else if (this.level.buildingAtTile(this.pos.tileX, this.pos.tileY + 1) instanceof Conveyor &&
-            this.level.buildingAtTile(this.pos.tileX, this.pos.tileY + 1).acceptsItemFromSide(Direction.up) &&
-            this.level.buildingAtTile(this.pos.tileX, this.pos.tileY + 1).acceptItem(new Item((this.pos.tileX + 0.5) * consts.TILE_SIZE, (this.pos.tileY + 1.1) * consts.TILE_SIZE, id))) {
+        else if (this.buildAt(Direction.down) instanceof Conveyor &&
+            this.buildAt(Direction.down).acceptsItemFromSide(Direction.up) &&
+            this.buildAt(Direction.down).acceptItem(new Item((this.pos.tileX + 0.5) * consts.TILE_SIZE, (this.pos.tileY + 1.1) * consts.TILE_SIZE, id))) {
             return true;
         }
-        else if (this.level.buildingAtTile(this.pos.tileX - 1, this.pos.tileY) instanceof Conveyor &&
-            this.level.buildingAtTile(this.pos.tileX - 1, this.pos.tileY).acceptsItemFromSide(Direction.right) &&
-            this.level.buildingAtTile(this.pos.tileX - 1, this.pos.tileY).acceptItem(new Item((this.pos.tileX - 0.1) * consts.TILE_SIZE, (this.pos.tileY + 0.5) * consts.TILE_SIZE, id))) {
+        else if (this.buildAt(Direction.left) instanceof Conveyor &&
+            this.buildAt(Direction.left).acceptsItemFromSide(Direction.right) &&
+            this.buildAt(Direction.left).acceptItem(new Item((this.pos.tileX - 0.1) * consts.TILE_SIZE, (this.pos.tileY + 0.5) * consts.TILE_SIZE, id))) {
             return true;
         }
-        else if (this.level.buildingAtTile(this.pos.tileX, this.pos.tileY - 1) instanceof Conveyor &&
-            this.level.buildingAtTile(this.pos.tileX, this.pos.tileY - 1).acceptsItemFromSide(Direction.down) &&
-            this.level.buildingAtTile(this.pos.tileX, this.pos.tileY - 1).acceptItem(new Item((this.pos.tileX + 0.5) * consts.TILE_SIZE, (this.pos.tileY - 0.1) * consts.TILE_SIZE, id))) {
+        else if (this.buildAt(Direction.up) instanceof Conveyor &&
+            this.buildAt(Direction.up).acceptsItemFromSide(Direction.down) &&
+            this.buildAt(Direction.up).acceptItem(new Item((this.pos.tileX + 0.5) * consts.TILE_SIZE, (this.pos.tileY - 0.1) * consts.TILE_SIZE, id))) {
             return true;
         }
         else {
@@ -1595,23 +1604,29 @@ class MultiBlockController extends BuildingWithRecipe {
     }
     update() {
         if (this.secondaries.length != this.constructor.size[0] * this.constructor.size[1] - 1) {
-            let possibleSecondaries = [
-                this.level.buildingAtTile(this.pos.tileX + 1, this.pos.tileY),
-                this.level.buildingAtTile(this.pos.tileX, this.pos.tileY + 1),
-                this.level.buildingAtTile(this.pos.tileX + 1, this.pos.tileY + 1)
-            ];
-            for (let possibleSecondary of possibleSecondaries) {
-                if (possibleSecondary instanceof MultiBlockSecondary && (possibleSecondary.controller == this || possibleSecondary.controller == undefined)) {
-                    possibleSecondary.controller = this;
-                    this.secondaries.push(possibleSecondary);
-                }
-                else {
-                    return this.break();
-                }
-            }
+            if (!this.resetSecondaries())
+                this.break();
             console.warn("Multiblock disconnected from secondaries. If you just loaded a save, this is fine.");
         }
         super.update();
+    }
+    resetSecondaries() {
+        let possibleSecondaries = [
+            this.buildAt(Direction.right),
+            this.buildAt(Direction.down),
+            this.level.buildingAtTile(this.pos.tileX + 1, this.pos.tileY + 1)
+        ];
+        for (let possibleSecondary of possibleSecondaries) {
+            if (possibleSecondary instanceof MultiBlockSecondary &&
+                (possibleSecondary.controller == this || possibleSecondary.controller == undefined)) {
+                possibleSecondary.controller = this;
+                this.secondaries.push(possibleSecondary);
+            }
+            else {
+                return false;
+            }
+        }
+        return true;
     }
     spawnItem(id) {
         if (super.spawnItem(id)) {

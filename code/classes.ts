@@ -327,16 +327,17 @@ class Level {
 		}
 		if(((+buildingID) & 0x00F0) == 0x10){
 			//Multiblock handling
-			//TODO use the size thing
-
+			const block = registry.buildings[getRawBuildingID(buildingID)] as typeof MultiBlockController;
+			
 			//Break all the buildings under
+			//TODO use the size thing
 			this.buildingAtTile(tileX + 1, tileY)?.break();
 			this.buildingAtTile(tileX, tileY + 1)?.break();
 			this.buildingAtTile(tileX+1, tileY+1)?.break();
 
 			switch(getRawBuildingID(buildingID)){
 				case "0x11":
-					let controller = new registry.buildings[getRawBuildingID(buildingID)](tileX, tileY, buildingID, this) as MultiBlockController;
+					let controller = new block(tileX, tileY, buildingID, this);
 					let secondary1 = new MultiBlockSecondary(tileX + 1, tileY, BuildingID["0x0010"], this);
 					let secondary2 = new MultiBlockSecondary(tileX, tileY + 1, BuildingID["0x0010"], this);
 					let secondary3 = new MultiBlockSecondary(tileX+1, tileY+1, BuildingID["0x0010"], this);
@@ -823,7 +824,6 @@ class Chunk {
 			id: buildingID,
 			level: this
 		})(currentframe, ctx1);
-		//TODO! grab currentframe
 		_ctx.globalAlpha = 1.0;
 	}
 	displayL3(x:number, y:number, buildingID:BuildingID, isGhost?:number){
@@ -1034,37 +1034,44 @@ class Building {
 	acceptsItemFromSide(side:Direction):boolean {
 		return true;
 	}
+	buildAt(direction:Direction){
+		switch(direction){
+			case Direction.right: return this.level.buildingAtTile(this.pos.tileX + 1, this.pos.tileY);
+			case Direction.down: return this.level.buildingAtTile(this.pos.tileX, this.pos.tileY + 1);
+			case Direction.left: return this.level.buildingAtTile(this.pos.tileX - 1, this.pos.tileY);
+			case Direction.up: return this.level.buildingAtTile(this.pos.tileX, this.pos.tileY - 1);
+		}
+	}
 	spawnItem(id:ItemID){
 		id ??= ItemID.base_null;
-		//TODO level.buildRight, buildLeft or buildAt(Direction.right)
 		if(
-			this.level.buildingAtTile(this.pos.tileX + 1, this.pos.tileY) instanceof Conveyor &&
-			this.level.buildingAtTile(this.pos.tileX + 1, this.pos.tileY)!.acceptsItemFromSide(Direction.left) &&
-			this.level.buildingAtTile(this.pos.tileX + 1, this.pos.tileY)!.acceptItem(
+			this.buildAt(Direction.right) instanceof Conveyor &&
+			this.buildAt(Direction.right)!.acceptsItemFromSide(Direction.left) &&
+			this.buildAt(Direction.right)!.acceptItem(
 				new Item((this.pos.tileX + 1.1) * consts.TILE_SIZE, (this.pos.tileY + 0.5) * consts.TILE_SIZE, id)
 			)
 		){
 			return true;
 		} else if(
-			this.level.buildingAtTile(this.pos.tileX, this.pos.tileY + 1) instanceof Conveyor &&
-			this.level.buildingAtTile(this.pos.tileX, this.pos.tileY + 1)!.acceptsItemFromSide(Direction.up) &&
-			this.level.buildingAtTile(this.pos.tileX, this.pos.tileY + 1)!.acceptItem(
+			this.buildAt(Direction.down) instanceof Conveyor &&
+			this.buildAt(Direction.down)!.acceptsItemFromSide(Direction.up) &&
+			this.buildAt(Direction.down)!.acceptItem(
 				new Item((this.pos.tileX + 0.5) * consts.TILE_SIZE, (this.pos.tileY + 1.1) * consts.TILE_SIZE, id)
 			)
 		){
 			return true;
 		} else if(
-			this.level.buildingAtTile(this.pos.tileX - 1, this.pos.tileY) instanceof Conveyor &&
-			this.level.buildingAtTile(this.pos.tileX - 1, this.pos.tileY)!.acceptsItemFromSide(Direction.right) &&
-			this.level.buildingAtTile(this.pos.tileX - 1, this.pos.tileY)!.acceptItem(
+			this.buildAt(Direction.left) instanceof Conveyor &&
+			this.buildAt(Direction.left)!.acceptsItemFromSide(Direction.right) &&
+			this.buildAt(Direction.left)!.acceptItem(
 				new Item((this.pos.tileX - 0.1) * consts.TILE_SIZE, (this.pos.tileY + 0.5) * consts.TILE_SIZE, id)
 			)
 		){
 			return true;
 		} else if(
-			this.level.buildingAtTile(this.pos.tileX, this.pos.tileY - 1) instanceof Conveyor &&
-			this.level.buildingAtTile(this.pos.tileX, this.pos.tileY - 1)!.acceptsItemFromSide(Direction.down) &&
-			this.level.buildingAtTile(this.pos.tileX, this.pos.tileY - 1)!.acceptItem(
+			this.buildAt(Direction.up) instanceof Conveyor &&
+			this.buildAt(Direction.up)!.acceptsItemFromSide(Direction.down) &&
+			this.buildAt(Direction.up)!.acceptItem(
 				new Item((this.pos.tileX + 0.5) * consts.TILE_SIZE, (this.pos.tileY - 0.1) * consts.TILE_SIZE, id)
 			)
 		){
@@ -1674,28 +1681,32 @@ class MultiBlockController extends BuildingWithRecipe {
 		super.break();
 	}
 	update(): void {
-		//TODO refactor, create resetSecondaries method
 		if(this.secondaries.length != (this.constructor as typeof MultiBlockController).size[0] * (this.constructor as typeof MultiBlockController).size[1] - 1){
-			//try to reconnect to secondaries
-			//would most likely happen on loading a save
-			//TODO this.buildRight
-			let possibleSecondaries = [
-				this.level.buildingAtTile(this.pos.tileX + 1, this.pos.tileY),
-				this.level.buildingAtTile(this.pos.tileX, this.pos.tileY + 1),
-				this.level.buildingAtTile(this.pos.tileX + 1, this.pos.tileY + 1)
-			];
-			for(let possibleSecondary of possibleSecondaries){
-				if(possibleSecondary instanceof MultiBlockSecondary && (possibleSecondary.controller == this || possibleSecondary.controller == undefined)){
-					possibleSecondary.controller = this;
-					this.secondaries.push(possibleSecondary);
-				} else {
-					//cannot reconnect to secondary, break
-					return this.break();
-				}
-			}
+			if(!this.resetSecondaries()) this.break();
 			console.warn("Multiblock disconnected from secondaries. If you just loaded a save, this is fine.");
 		}
 		super.update();
+	}
+	/**Attempts to reconnects to secondaries, returning if the attempt succeeded. */
+	resetSecondaries():boolean {
+		//This should be based on size
+		let possibleSecondaries = [
+			this.buildAt(Direction.right),
+			this.buildAt(Direction.down),
+			this.level.buildingAtTile(this.pos.tileX + 1, this.pos.tileY + 1)
+		];
+		for(let possibleSecondary of possibleSecondaries){
+			if(
+				possibleSecondary instanceof MultiBlockSecondary && 
+				(possibleSecondary.controller == this || possibleSecondary.controller == undefined)
+			){
+				possibleSecondary.controller = this;
+				this.secondaries.push(possibleSecondary);
+			} else {
+				return false;
+			}
+		}
+		return true;
 	}
 	spawnItem(id: ItemID):boolean {
 		if(super.spawnItem(id)){
@@ -1753,5 +1764,5 @@ registry.buildings = {
 	"0x0B": Lathe,
 	"0x10": MultiBlockSecondary,
 	"0x11": Assembler,
-	"0xFF": null! //TODO! fix this
+	"0xFF": null!
 };
