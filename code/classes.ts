@@ -132,17 +132,17 @@ class Level {
 			pos.tileY
 		).buildingAt(pos.chunkOffsetXInTiles, pos.chunkOffsetYInTiles);
 	}
-	extractorAtTile(tileX:number, tileY:number):Extractor | null {
+	overlayBuildAtTile(tileX:number, tileY:number):OverlayBuild | null {
 		return this.getChunk(
 			Math.floor(tileX),
 			Math.floor(tileY)
-		).extractorAt(Pos.chunkOffsetInTiles(tileX), Pos.chunkOffsetInTiles(tileY));
+		).overlayBuildAt(Pos.chunkOffsetInTiles(tileX), Pos.chunkOffsetInTiles(tileY));
 	}
-	extractorAtPos(pos:Pos):Extractor | null {
+	overlayBuildAtPos(pos:Pos):OverlayBuild | null {
 		return this.getChunk(
 			pos.tileX,
 			pos.tileY
-		).extractorAt(pos.chunkOffsetXInTiles, pos.chunkOffsetYInTiles);
+		).overlayBuildAt(pos.chunkOffsetXInTiles, pos.chunkOffsetYInTiles);
 	}
 	writeBuilding(tileX:number, tileY:number, building:Building | null):boolean {
 		if(this.getChunk(tileX,tileY)){
@@ -152,9 +152,9 @@ class Level {
 		}
 		return false;
 	}
-	writeExtractor(tileX:number, tileY:number, building:Extractor | null):boolean {
+	writeOverlayBuild(tileX:number, tileY:number, building:OverlayBuild | null):boolean {
 		if(this.getChunk(tileX,tileY)){
-			this.getChunk(tileX,tileY).setExtractor(Pos.chunkOffsetInTiles(tileX), Pos.chunkOffsetInTiles(tileY), building);
+			this.getChunk(tileX,tileY).setOverlayBuild(Pos.chunkOffsetInTiles(tileX), Pos.chunkOffsetInTiles(tileY), building);
 			Game.forceRedraw = true;
 			return true;
 		}
@@ -306,18 +306,18 @@ class Level {
 		//Only overwrite the same building once per build attempt.
 		//Otherwise, you could constantly overwrite a building on every frame you tried to build, which is not good.
 		if(getRawBuildingID(buildingID) == "0x05"){
-			if(this.extractorAtTile(tileX, tileY)?.id == buildingID){
+			if(this.overlayBuildAtTile(tileX, tileY)?.id == buildingID){
 				if(!canOverwriteBuilding) return false;
 				canOverwriteBuilding = false;
 			}
-			this.extractorAtTile(tileX, tileY)?.break();
+			this.overlayBuildAtTile(tileX, tileY)?.break();
 		} else {
 			if(this.buildingAtTile(tileX, tileY)?.id == buildingID){
 				if(!canOverwriteBuilding) return false;
 				canOverwriteBuilding = false;
 			}
 			this.buildingAtTile(tileX, tileY)?.break();
-			this.extractorAtTile(tileX, tileY)?.break();
+			this.overlayBuildAtTile(tileX, tileY)?.break();
 		}
 
 		let tempBuilding:Building;
@@ -364,8 +364,8 @@ class Level {
 			trigger(triggerType.placeBuildingFail, getRawBuildingID(buildingID));
 			return false;
 		}
-		if(tempBuilding instanceof Extractor){
-			return this.writeExtractor(tileX, tileY, tempBuilding);
+		if(tempBuilding instanceof OverlayBuild){
+			return this.writeOverlayBuild(tileX, tileY, tempBuilding);
 		} else {
 			return this.writeBuilding(tileX, tileY, tempBuilding);
 		}
@@ -450,7 +450,7 @@ class Chunk {
 	layers: [
 		TileID[][],
 		(Building | null)[][],
-		(Extractor | null)[][]
+		(OverlayBuild | null)[][]
 	];
 	_generator: Generator<{
     value: number;
@@ -544,6 +544,7 @@ class Chunk {
 				}
 			}
 
+			//Same as above but for overlay builds.
 			for(let y in data.layers[1]){
 				for(let x in data.layers[1][y]){
 					let buildingData = data.layers[1][y][x];
@@ -552,17 +553,16 @@ class Chunk {
 					if(+data.version.split(" ")[1].replaceAll(".", "") <= 200){
 						buildingData.id = hex(buildingData.id as any as number, 4) as BuildingID;
 					}
-					let tempBuilding = new Extractor(
+					let tempBuilding = new registry.buildings[getRawBuildingID(buildingData.id)](
 						parseInt(x) + Pos.chunkToTile(this.x),
 						parseInt(y) + Pos.chunkToTile(this.y),
 						buildingData.id, this.parent
-					);
+					) as OverlayBuild;
 					if(buildingData.item && +data.version.split(" ")[1].replaceAll(".", "") >= 130){
 						//AAAAAAAAAAAAAAaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaAAA
 						tempBuilding.item = new Item(buildingData.item.x, buildingData.item.y, buildingData.item.id);
 						tempBuilding.item.grabbedBy = tempBuilding;
 					}
-					//Same as above but for extractors.
 					this.layers[2][y][x] = tempBuilding;
 				}
 			}
@@ -579,7 +579,7 @@ class Chunk {
 		}
 		for(let row of this.layers[2]){
 			for(let value of row){
-				value?.update?.();
+				value?.update?.(currentFrame);
 			}
 		}
 		return this;
@@ -590,7 +590,7 @@ class Chunk {
 	buildingAt(tileX:number, tileY:number):Building | null {
 		return this.layers[1][tileY]?.[tileX] ?? null;
 	}
-	extractorAt(tileX:number, tileY:number):Extractor | null {
+	overlayBuildAt(tileX:number, tileY:number):OverlayBuild | null {
 		return this.layers[2][tileY]?.[tileX] ?? null;
 	}
 	setTile(tileX:number, tileY:number, value:TileID):boolean {
@@ -610,7 +610,7 @@ class Chunk {
 		if(value instanceof Building) this.hasBuildings = true;
 		return true;
 	}
-	setExtractor(tileX:number, tileY:number, value:Extractor | null):boolean {
+	setOverlayBuild(tileX:number, tileY:number, value:OverlayBuild | null):boolean {
 		if(this.tileAt(tileX, tileY) == null){
 			return false;
 		}
@@ -887,11 +887,11 @@ class Chunk {
 		let exportDataL2:(BuildingData | null)[][]= [];
 		for(let row of this.layers[2]){
 			let tempRow:(BuildingData | null)[] = [];
-			for(let extractor of row){
-				if(extractor instanceof Extractor){
+			for(let overlayBuild of row){
+				if(overlayBuild instanceof Building){
 					hasBuildings = true;
 				}
-				tempRow.push(extractor?.export() ?? null);
+				tempRow.push(overlayBuild?.export() ?? null);
 			}
 			exportDataL2.push(tempRow);
 		}
@@ -1208,10 +1208,6 @@ class Furnace extends BuildingWithRecipe {
 }
 
 class Conveyor extends Building {
-	constructor(tileX:number, tileY:number, id:BuildingID, level:Level){
-		super(tileX, tileY, id, level);
-		this.item = null;
-	}
 	display(currentFrame:CurrentFrame){
 		super.display(currentFrame);
 		if(this.item instanceof Item){
@@ -1455,11 +1451,19 @@ class Conveyor extends Building {
 	}
 }
 
-
-class Extractor extends Conveyor {
-	constructor(x:number, y:number, id:BuildingID, level:Level){
-		super(x, y, id, level);
+class OverlayBuild extends Building {
+	buildingUnder(){
+		return this.level.buildingAtPos(this.pos);
 	}
+	break(){
+		if(this.item){
+			this.item.grabbedBy = null;
+		}
+		this.level.writeOverlayBuild(this.pos.tileX, this.pos.tileY, null);
+	}
+}
+
+class Extractor extends OverlayBuild {
 
 	display(currentFrame:CurrentFrame){
 		super.display(currentFrame);
@@ -1473,9 +1477,9 @@ class Extractor extends Conveyor {
 		callback ??= () => {};
 
 		if(
-			this.level.buildingAtPos(this.pos) instanceof Building &&
-			this.level.buildingAtPos(this.pos)!.hasItem() &&
-			filter(this.level.buildingAtPos(this.pos)!.hasItem()!)
+			this.buildingUnder() instanceof Building &&
+			this.buildingUnder()!.hasItem() &&
+			filter(this.buildingUnder()!.hasItem()!)
 		){
 			let item = this.level.buildingAtPos(this.pos)!.removeItem();
 			if(!(item instanceof Item)) throw new ShouldNotBePossibleError("received invalid item");
@@ -1574,12 +1578,8 @@ class Extractor extends Conveyor {
 		}
 	}
 
-	break(){
-		if(this.item){
-			this.item.grabbedBy = null;
-		}
-		this.level.writeExtractor(this.pos.tileX, this.pos.tileY, null);
-	}
+	acceptsItemFromSide(side:Direction){ return false; }
+	acceptItem(item:Item){ return false; }
 }
 
 interface StorageInventory extends Array<Item> {
