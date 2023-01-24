@@ -118,6 +118,13 @@ var BuildingID;
     BuildingID["0x0011"] = "0x0011";
     BuildingID["0xFFFF"] = "0xFFFF";
 })(BuildingID || (BuildingID = {}));
+var Direction;
+(function (Direction) {
+    Direction[Direction["right"] = 0] = "right";
+    Direction[Direction["down"] = 1] = "down";
+    Direction[Direction["left"] = 2] = "left";
+    Direction[Direction["up"] = 3] = "up";
+})(Direction || (Direction = {}));
 var triggerType;
 (function (triggerType) {
     triggerType[triggerType["placeBuilding"] = 0] = "placeBuilding";

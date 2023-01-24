@@ -95,7 +95,7 @@ enum BuildingID {
 	"0x1101"="0x1101",	//Conveyor Belt Facing Right+Up->Left
 	"0x1201"="0x1201",	//Conveyor Belt Facing Down+Right->Up
 	"0x1301"="0x1301",	//Conveyor Belt Facing Down+Left->Up
-	"0x1401"="0x1401",	//Conveyor Belt Facing Down+up->Right
+	"0x1401"="0x1401",	//Conveyor Belt Facing Down+Up->Right
 	"0x1501"="0x1501",	//Conveyor Belt Facing Right+Left->Down
 	"0x1601"="0x1601",	//Conveyor Belt Facing Down+Up->Left
 	"0x1701"="0x1701",	//Conveyor Belt Facing Right+Left->Up
@@ -127,6 +127,10 @@ enum BuildingID {
 	"0x0010"="0x0010",	//Multiblock secondary
 	"0x0011"="0x0011",	//Assembler
 	"0xFFFF"="0xFFFF",	//Unset
+}
+
+enum Direction {
+	right, down, left, up
 }
 
 enum triggerType {

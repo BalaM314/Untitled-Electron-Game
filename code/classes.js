@@ -285,6 +285,7 @@ class Level {
                 canOverwriteBuilding = false;
             }
             this.buildingAtTile(tileX, tileY)?.break();
+            this.extractorAtTile(tileX, tileY)?.break();
         }
         let tempBuilding;
         if (buildingID == "0xFFFF") {
@@ -1307,7 +1308,7 @@ class Conveyor extends Building {
                     }
                     else if (pixelOffsetInTile(this.item.x) == consts.TILE_SIZE * 0.5) {
                         this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE / 2;
-                        this.item.y -= pixelOffsetInTile(this.item.y) > consts.TILE_SIZE / 2 ? -1 : 1;
+                        this.item.y += pixelOffsetInTile(this.item.y) > consts.TILE_SIZE / 2 ? -1 : 1;
                     }
                     break;
                 case 0x17:
@@ -1316,7 +1317,7 @@ class Conveyor extends Building {
                         this.item.y--;
                     }
                     else if (pixelOffsetInTile(this.item.y) == consts.TILE_SIZE * 0.5) {
-                        this.item.x -= pixelOffsetInTile(this.item.x) > consts.TILE_SIZE / 2 ? -1 : 1;
+                        this.item.x += pixelOffsetInTile(this.item.x) > consts.TILE_SIZE / 2 ? -1 : 1;
                         this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE / 2;
                     }
                     break;
@@ -1331,7 +1332,7 @@ class Conveyor extends Building {
                     }
                     break;
                 case 0x19:
-                    if (pixelOffsetInTile(this.item.y) >= consts.TILE_SIZE * 0.5) {
+                    if (pixelOffsetInTile(this.item.x) == consts.TILE_SIZE * 0.5) {
                         this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE / 2;
                         this.item.y++;
                     }
@@ -1347,16 +1348,16 @@ class Conveyor extends Building {
                     }
                     else if (pixelOffsetInTile(this.item.x) == consts.TILE_SIZE * 0.5) {
                         this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE / 2;
-                        this.item.y -= pixelOffsetInTile(this.item.y) > consts.TILE_SIZE / 2 ? -1 : 1;
+                        this.item.y += pixelOffsetInTile(this.item.y) > consts.TILE_SIZE / 2 ? -1 : 1;
                     }
                     break;
                 case 0x1B:
-                    if (pixelOffsetInTile(this.item.y) <= consts.TILE_SIZE * 0.5) {
+                    if (pixelOffsetInTile(this.item.x) == consts.TILE_SIZE * 0.5) {
                         this.item.x = (Math.floor(this.item.x / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE / 2;
                         this.item.y--;
                     }
                     else if (pixelOffsetInTile(this.item.y) == consts.TILE_SIZE * 0.5) {
-                        this.item.x -= pixelOffsetInTile(this.item.x) > consts.TILE_SIZE / 2 ? -1 : 1;
+                        this.item.x += pixelOffsetInTile(this.item.x) > consts.TILE_SIZE / 2 ? -1 : 1;
                         this.item.y = (Math.floor(this.item.y / consts.TILE_SIZE) * consts.TILE_SIZE) + consts.TILE_SIZE / 2;
                     }
                     break;
@@ -1373,11 +1374,11 @@ class Conveyor extends Building {
             return super.acceptItem(item);
         }
         if (item.x - this.x * consts.TILE_SIZE >= consts.TILE_SIZE * 0.9 &&
-            [0x02, 0x06, 0x0A, 0x0E, 0x10, 0x11, 0x12, 0x16, 0x17, 0x19, 0x1A, 0x1B].includes(+this.id >> 8)) {
+            [0x02, 0x06, 0x0A, 0x0E, 0x10, 0x11, 0x12, 0x15, 0x17, 0x19, 0x1A, 0x1B].includes(+this.id >> 8)) {
             return super.acceptItem(item);
         }
         if (item.y - this.y * consts.TILE_SIZE >= consts.TILE_SIZE * 0.9 &&
-            [0x03, 0x08, 0x04, 0x0C, 0x10, 0x12, 0x13, 0x14, 0x15, 0x18, 0x1A, 0x1B].includes(+this.id >> 8)) {
+            [0x03, 0x08, 0x04, 0x0C, 0x10, 0x12, 0x13, 0x14, 0x16, 0x18, 0x1A, 0x1B].includes(+this.id >> 8)) {
             return super.acceptItem(item);
         }
         if (pixelOffsetInTile(item.x) == consts.TILE_SIZE / 2 &&
