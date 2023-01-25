@@ -44,13 +44,13 @@ function registerEventHandlers() {
             for (let x of toolbarEl.children) {
                 x.classList.remove("selected");
             }
-            toolbarEl.children?.[parseInt(e.key) - 1]?.classList.add("selected");
+            toolbarEl.children[parseInt(e.key) - 1]?.classList.add("selected");
         }
         if (!isNaN(parseInt(e.key[1]))) {
             for (let x of toolbarEl.children) {
                 x.classList.remove("selected");
             }
-            toolbarEl.children?.[parseInt(e.key[1]) + 8]?.classList.add("selected");
+            toolbarEl.children[parseInt(e.key[1]) + 8]?.classList.add("selected");
         }
         if (e.key == "Enter" && lastKeysPressed.join(", ") ==
             ["ArrowUp", "ArrowUp", "ArrowDown", "ArrowDown", "ArrowLeft", "ArrowRight", "ArrowLeft", "ArrowRight", "b", "a"].join(", ")) {
@@ -364,7 +364,7 @@ let state = {
                 ctx4.fillText("C: " + currentFrame.cps, 10, 150);
                 ctx4.fillText("I: " + currentFrame.ips, 10, 200);
             }
-            for (let item of document.getElementById("resources").children) {
+            for (let item of (resourcesEl).children) {
                 item.innerText = (level1.resources[item.id] ?? 0).toString();
             }
         },

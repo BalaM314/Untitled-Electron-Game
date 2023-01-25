@@ -57,13 +57,13 @@ function registerEventHandlers(){
 			for(let x of toolbarEl.children){
 				x.classList.remove("selected");
 			}
-			(toolbarEl.children?.[parseInt(e.key) - 1] as HTMLElement)?.classList.add("selected");
+			(toolbarEl.children[parseInt(e.key) - 1] as HTMLElement)?.classList.add("selected");
 		}
 		if(!isNaN(parseInt(e.key[1]))){
 			for(let x of toolbarEl.children){
 				x.classList.remove("selected");
 			}
-			(toolbarEl.children?.[parseInt(e.key[1]) + 8] as HTMLElement)?.classList.add("selected");
+			(toolbarEl.children[parseInt(e.key[1]) + 8] as HTMLElement)?.classList.add("selected");
 		}
 
 		//Easter egg
@@ -434,7 +434,7 @@ let state: {
 				ctx4.fillText("I: " + currentFrame.ips, 10, 200);
 			}
 		
-			for(let item of (<HTMLDivElement>document.getElementById("resources")!).children){
+			for(let item of (resourcesEl).children){
 				(item as HTMLSpanElement).innerText = (level1.resources[item.id] ?? 0).toString();
 			}
 		},

@@ -199,31 +199,40 @@ function* pseudoRandom(seed) {
     }
     return null;
 }
+function getElement(id, type) {
+    const element = document.getElementById(id);
+    if (element instanceof type)
+        return element;
+    else if (element != null)
+        throw new Error(`Element with id was fetched as type ${type}, but was of type ${element.constructor.name}`);
+    else
+        throw new Error(`Element with id ${id} does not exist`);
+}
 function trigger(type, buildingID, itemID) {
 }
 function _alert(x) {
     alerts.list.push(x);
 }
 function loadTexturesIntoMemory() {
-    for (let imageElement of Array.from(document.getElementById("item").children)) {
+    for (let imageElement of Array.from(texturesDivs.item.children)) {
         if (!imageElement.complete) {
             return false;
         }
         registry.textures.item[imageElement.src.match(/(?<=assets\/textures\/item\/).*(?=\.png)/)[0]] = imageElement;
     }
-    for (let imageElement of Array.from(document.getElementById("building").children)) {
+    for (let imageElement of Array.from(texturesDivs.building.children)) {
         if (!imageElement.complete) {
             return false;
         }
         registry.textures.building[imageElement.src.match(/(?<=assets\/textures\/building\/).*(?=\.png)/)[0]] = imageElement;
     }
-    for (let imageElement of Array.from(document.getElementById("tile").children)) {
+    for (let imageElement of Array.from(texturesDivs.tile.children)) {
         if (!imageElement.complete) {
             return false;
         }
         registry.textures.tile[imageElement.src.match(/(?<=assets\/textures\/tile\/).*(?=\.png)/)[0]] = imageElement;
     }
-    for (let imageElement of Array.from(document.getElementById("misc").children)) {
+    for (let imageElement of Array.from(texturesDivs.misc.children)) {
         if (!imageElement.complete) {
             return false;
         }
@@ -242,7 +251,7 @@ function loadTexturesIntoPage() {
             alert("Failed to load texture " + err.target.src.split("assets/textures/")[1]);
             throw err;
         });
-        document.getElementById("building").appendChild(img);
+        texturesDivs.building.appendChild(img);
     }
     for (let itemID of Object.values(registry.itemIDs)) {
         let img = document.createElement("img");
@@ -254,7 +263,7 @@ function loadTexturesIntoPage() {
             alert("Failed to load texture " + err.target.src.split("assets/textures/")[1]);
             throw err;
         });
-        document.getElementById("item").appendChild(img);
+        texturesDivs.item.appendChild(img);
     }
     for (let tileID of registry.tileIDs) {
         let img = document.createElement("img");
@@ -266,7 +275,7 @@ function loadTexturesIntoPage() {
             alert("Failed to load texture " + err.target.src.split("assets/textures/")[1]);
             throw err;
         });
-        document.getElementById("tile").appendChild(img);
+        texturesDivs.tile.appendChild(img);
     }
     for (let textureID of registry.miscTextures) {
         let img = document.createElement("img");
@@ -278,7 +287,7 @@ function loadTexturesIntoPage() {
             alert("Failed to load texture " + err.target.src.split("assets/textures/")[1]);
             throw err;
         });
-        document.getElementById("misc").appendChild(img);
+        texturesDivs.misc.appendChild(img);
     }
 }
 function getTotalTextures() {
