@@ -948,13 +948,18 @@ class Building {
 	static animated = false;
 	static outputsItems = false;
 	pos:Pos;
+	_id: RawBuildingID;
+	_meta: number;
 	constructor(x:number, y:number, public id:BuildingID, public level:Level){
+		this._id = getRawBuildingID(id);
+		this._meta = +id >> 8;
 		this.pos = Pos.fromTileCoords(x, y, false);
 	}
 	static canBuildAt(tileX:number, tileY:number, level:Level){
 		//By default, buildings cant be built on water
 		return level.tileAtByTile(tileX, tileY) != "base_water";
 	}
+	/**Called to destroy the building. Should remove all references to it. */
 	break(){
 		if(this.item){
 			this.item.grabbedBy = null;
@@ -970,36 +975,42 @@ class Building {
 		let _ctx = ctx ?? ctx2;
 		let texture = registry.textures.building[this.id];
 		if(texture){
-			if(+this.id % 0x100 == 5){
-				switch(this.id){
-					case "0x0005":
+			//This is cursed
+			//Future system:
+			//Each building class stores the range of valid metas
+			//All valid textures are loaded at runtime
+			//Each meta stores the correct display size
+			if(this._id == "0x05"){
+				switch(this._meta){
+					case 0:
 						_ctx.drawImage(texture, pixelX, pixelY, consts.DISPLAY_TILE_SIZE * 2, consts.DISPLAY_TILE_SIZE); break;
-					case "0x0105":
+					case 1:
 						_ctx.drawImage(texture, pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE * 2); break;
-					case "0x0205":
+					case 2:
 						_ctx.drawImage(texture, pixelX - consts.DISPLAY_TILE_SIZE, pixelY, consts.DISPLAY_TILE_SIZE * 2, consts.DISPLAY_TILE_SIZE); break;
-					case "0x0305":
+					case 3:
 						_ctx.drawImage(texture, pixelX, pixelY - consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE * 2); break;
-					case "0x0405":
+					case 4:
 						_ctx.drawImage(texture, pixelX, pixelY, consts.DISPLAY_TILE_SIZE * 3, consts.DISPLAY_TILE_SIZE); break;
-					case "0x0505":
+					case 5:
 						_ctx.drawImage(texture, pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE * 3); break;
-					case "0x0605":
+					case 6:
 						_ctx.drawImage(texture, pixelX - consts.DISPLAY_TILE_SIZE * 2, pixelY, consts.DISPLAY_TILE_SIZE * 3, consts.DISPLAY_TILE_SIZE); break;
-					case "0x0705":
+					case 7:
 						_ctx.drawImage(texture, pixelX, pixelY - consts.DISPLAY_TILE_SIZE * 2, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE * 3); break;
-					case "0x0805":
+					case 8:
 						_ctx.drawImage(texture, pixelX, pixelY, consts.DISPLAY_TILE_SIZE * 4, consts.DISPLAY_TILE_SIZE); break;
-					case "0x0905":
+					case 9:
 						_ctx.drawImage(texture, pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE * 4); break;
-					case "0x0A05":
+					case 10:
 						_ctx.drawImage(texture, pixelX - consts.DISPLAY_TILE_SIZE * 3, pixelY, consts.DISPLAY_TILE_SIZE * 4, consts.DISPLAY_TILE_SIZE); break;
-					case "0x0B05":
+					case 11:
 						_ctx.drawImage(texture, pixelX, pixelY - consts.DISPLAY_TILE_SIZE * 3, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE * 4); break;
 				}
-			} else if((+this.id & 0x00F0) == 0x10){
+			} else if(this instanceof MultiBlockController){
+				const block = (this.constructor as typeof MultiBlockController);
 				//Multiblock
-				_ctx.drawImage(texture, pixelX, pixelY, consts.DISPLAY_TILE_SIZE * 2, consts.DISPLAY_TILE_SIZE * 2);
+				_ctx.drawImage(texture, pixelX, pixelY, consts.DISPLAY_TILE_SIZE * block.multiblockSize[0], consts.DISPLAY_TILE_SIZE * block.multiblockSize[1]);
 			} else {
 				_ctx.drawImage(texture, pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
 				if((this.constructor as typeof Building).animated){
@@ -1015,7 +1026,7 @@ class Building {
 			rect(pixelX, pixelY + consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
 			_ctx.font = "15px sans-serif";
 			_ctx.fillStyle = "#00FF00";
-			_ctx.fillText(this.id.toString(), pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY + consts.DISPLAY_TILE_SIZE / 2);
+			_ctx.fillText(names.building[this._id], pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY + consts.DISPLAY_TILE_SIZE / 2);
 		}
 	}
 	hasItem():Item | null {
@@ -1090,6 +1101,7 @@ class Building {
 		}
 	}
 	export():BuildingData {
+		//TODO! BuildingData needs to include id and meta
 		return {
 			x: this.pos.tileX,
 			y: this.pos.tileY,
@@ -1103,16 +1115,14 @@ class Building {
 
 
 class BuildingWithRecipe extends Building {
-	timer: number;
+	timer: number = -1;
 	recipe: Recipe | null = null;
-	items: Item[];
+	items: Item[] = [];
 	static outputsItems = true;
 	static recipeType: {recipes: Recipe[]};
 	constructor(tileX:number, tileY:number, id:BuildingID, level:Level){
 		super(tileX, tileY, id, level);
 		if(this.constructor === BuildingWithRecipe) throw new Error("Cannot initialize abstract class BuildingWithRecipe");
-		this.timer = -1;
-		this.items = [];
 	}
 	acceptItem(item:Item):boolean {
 		for(let i = 0; i < consts.recipeMaxInputs; i ++){
@@ -1245,7 +1255,7 @@ class Conveyor extends Building {
 				}
 				return;
 			}
-			switch(+this.id >> 8){//bit masks ftw, this just grabs the first byte
+			switch(this._meta){//bit masks ftw, this just grabs the first byte
 				//yes I know there's no need to write the ids in hex but why the heck not
 				case 0x00:
 					if(this.item.pos.tileOffsetYCentered){
@@ -1515,66 +1525,54 @@ class Extractor extends OverlayBuild {
 				throw new InvalidStateError("Item somehow grabbed or deleted from an extractor.");
 			}
 
-			switch(this.id){
-				case "0x0005":
-					if(this.item.pos.tileXExact >= this.pos.tileX + 1.5){return this.dropItem();} else {
-						this.item.pos.pixelX ++;
-					}
+			switch(this._meta){
+				case 0x00:
+					if(this.item.pos.tileXExact >= this.pos.tileX + 1.5) return this.dropItem();
+					else this.item.pos.pixelX ++;
 					break;
-				case "0x0105":
-					if(this.item.pos.tileYExact >= this.pos.tileY + 1.5){return this.dropItem();} else {
-						this.item.pos.pixelY ++;
-					}
+				case 0x01:
+					if(this.item.pos.tileYExact >= this.pos.tileY + 1.5) return this.dropItem();
+					else this.item.pos.pixelY ++;
 					break;
-				case "0x0205":
-					if(this.item.pos.tileXExact <= this.pos.tileX - 0.5){return this.dropItem();} else {
-						this.item.pos.pixelX --;
-					}
+				case 0x02:
+					if(this.item.pos.tileXExact <= this.pos.tileX - 0.5) return this.dropItem();
+					else this.item.pos.pixelX --;
 					break;
-				case "0x0305":
-					if(this.item.pos.tileYExact <= this.pos.tileY - 0.5){return this.dropItem();} else {
-						this.item.pos.pixelY --;
-					}
+				case 0x03:
+					if(this.item.pos.tileYExact <= this.pos.tileY - 0.5) return this.dropItem();
+					else this.item.pos.pixelY --;
 					break;
-				case "0x0405":
-					if(this.item.pos.tileXExact >= this.pos.tileX + 2.5){return this.dropItem();} else {
-						this.item.pos.pixelX ++;
-					}
+				case 0x04:
+					if(this.item.pos.tileXExact >= this.pos.tileX + 2.5) return this.dropItem();
+					else this.item.pos.pixelX ++;
 					break;
-				case "0x0505":
-					if(this.item.pos.tileYExact >= this.pos.tileY + 2.5){return this.dropItem();} else {
-						this.item.pos.pixelY ++;
-					}
+				case 0x05:
+					if(this.item.pos.tileYExact >= this.pos.tileY + 2.5) return this.dropItem();
+					else this.item.pos.pixelY ++;
 					break;
-				case "0x0605":
-					if(this.item.pos.tileXExact <= this.pos.tileX - 1.5){return this.dropItem();} else {
-						this.item.pos.pixelX --;
-					}
+				case 0x06:
+					if(this.item.pos.tileXExact <= this.pos.tileX - 1.5) return this.dropItem();
+					else this.item.pos.pixelX --;
 					break;
-				case "0x0705":
-					if(this.item.pos.tileYExact <= this.pos.tileY - 1.5){return this.dropItem();} else {
-						this.item.pos.pixelY --;
-					}
+				case 0x07:
+					if(this.item.pos.tileYExact <= this.pos.tileY - 1.5) return this.dropItem();
+					else this.item.pos.pixelY --;
 					break;
-				case "0x0805":
-					if(this.item.pos.tileXExact >= this.pos.tileX + 3.5){return this.dropItem();} else {
-						this.item.pos.pixelX ++;
-					}
+				case 0x08:
+					if(this.item.pos.tileXExact >= this.pos.tileX + 3.5) return this.dropItem();
+					else this.item.pos.pixelX ++;
 					break;
-				case "0x0905":
-					if(this.item.pos.tileYExact >= this.pos.tileY + 3.5){return this.dropItem();} else {
-						this.item.pos.pixelY ++;
-					}
+				case 0x09:
+					if(this.item.pos.tileYExact >= this.pos.tileY + 3.5) return this.dropItem();
+					else this.item.pos.pixelY ++;
 					break;
-				case "0x0A05":
-					if(this.item.pos.tileXExact <= this.pos.tileX - 2.5){return this.dropItem();} else {
-						this.item.pos.pixelX --;
-					}
+				case 0x0A:
+					if(this.item.pos.tileXExact <= this.pos.tileX - 2.5) return this.dropItem();
+					else this.item.pos.pixelX --;
 					break;
-				case "0x0B05":
-					if(this.item.pos.tileYExact <= this.pos.tileY - 2.5){return this.dropItem();} else {
-						this.item.pos.pixelY --;
-					}
+				case 0x0B:
+					if(this.item.pos.tileYExact <= this.pos.tileY - 2.5) return this.dropItem();
+					else this.item.pos.pixelY --;
 					break;
 			}
 		} else {
@@ -1590,13 +1588,7 @@ interface StorageInventory extends Array<Item> {
 	MAX_LENGTH: number;
 }
 class StorageBuilding extends Building {
-	inventory: StorageInventory;
-	constructor(tileX:number, tileY: number, id:BuildingID, level:Level){
-		super(tileX, tileY, id, level);
-		let temp:any = [];
-		temp.MAX_LENGTH = 64;
-		this.inventory = temp;
-	}
+	inventory: StorageInventory = Object.assign([], { MAX_LENGTH: 64 });
 	break(){
 		if(this.inventory){
 			for(let item of this.inventory){
@@ -1672,20 +1664,16 @@ class Lathe extends BuildingWithRecipe {
 
 
 class MultiBlockController extends BuildingWithRecipe {
-	secondaries: MultiBlockSecondary[];
-	static size = [1, 1];
+	secondaries: MultiBlockSecondary[] = [];
+	static multiblockSize = [2, 2];
 	static outputsItems = true;
-	constructor(tileX:number, tileY:number, id:BuildingID, level:Level){
-		super(tileX, tileY, id, level);
-		this.secondaries = [];
-	}
 	break(){
 		this.secondaries.forEach(secondary => secondary.break(true));
 		this.secondaries = [];
 		super.break();
 	}
 	update(): void {
-		if(this.secondaries.length != (this.constructor as typeof MultiBlockController).size[0] * (this.constructor as typeof MultiBlockController).size[1] - 1){
+		if(this.secondaries.length != (this.constructor as typeof MultiBlockController).multiblockSize[0] * (this.constructor as typeof MultiBlockController).multiblockSize[1] - 1){
 			if(!this.resetSecondaries()) this.break();
 			console.warn("Multiblock disconnected from secondaries. If you just loaded a save, this is fine.");
 		}
@@ -1750,7 +1738,7 @@ class MultiBlockSecondary extends Building {
 
 class Assembler extends MultiBlockController {
 	static recipeType = registry.recipes.base_assembling;
-	static size = [2, 2];
+	static multiblockSize = [2, 2];
 }
 
 

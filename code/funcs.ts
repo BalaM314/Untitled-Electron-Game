@@ -112,7 +112,7 @@ function parseError(err:unknown){
 	} else return err;
 }
 
-//Yes I know this is a class. There's nothing you can do about it.
+//Yes I know this is a class.
 class Button {
 	declare x: number;
 	declare y: number;
