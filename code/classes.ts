@@ -1102,7 +1102,7 @@ class Building {
 
 
 
-abstract class BuildingWithRecipe extends Building {
+class BuildingWithRecipe extends Building {
 	timer: number;
 	recipe: Recipe | null = null;
 	items: Item[];
@@ -1206,6 +1206,10 @@ class Furnace extends BuildingWithRecipe {
 	static recipeType = registry.recipes.base_smelting;
 	static animated = true;
 }
+// const Furnace = Buildings.register("0x04", BuildingWithRecipe, {
+// 	recipeType: registry.recipes.base_smelting,
+// 	animated: true
+// });
 
 class Conveyor extends Building {
 	display(currentFrame:CurrentFrame){
