@@ -73,61 +73,6 @@ enum ItemID {
 	base_motor = "base_motor"
 }
 
-enum BuildingID { 
-	//0x0000 is invalid
-	"0x0001"="0x0001",	//Conveyor Belt Facing Right
-	"0x0101"="0x0101",	//Conveyor Belt Facing Down
-	"0x0201"="0x0201",	//Conveyor Belt Facing Left
-	"0x0301"="0x0301",	//Conveyor Belt Facing Up
-	"0x0401"="0x0401",	//Conveyor Belt Facing Down->Right
-	"0x0501"="0x0501",	//Conveyor Belt Facing Up->Right
-	"0x0601"="0x0601",	//Conveyor Belt Facing Right->Down
-	"0x0701"="0x0701",	//Conveyor Belt Facing Left->Down
-	"0x0801"="0x0801",	//Conveyor Belt Facing Down->Left
-	"0x0901"="0x0901",	//Conveyor Belt Facing Up->Left
-	"0x0A01"="0x0A01",	//Conveyor Belt Facing Right->Up
-	"0x0B01"="0x0B01",	//Conveyor Belt Facing Left->Up
-	"0x0C01"="0x0C01",	//Conveyor Belt Facing Left+Down->Right
-	"0x0D01"="0x0D01",	//Conveyor Belt Facing Left+Up->Right
-	"0x0E01"="0x0E01",	//Conveyor Belt Facing Up+Right->Down
-	"0x0F01"="0x0F01",	//Conveyor Belt Facing Up+Left->Down
-	"0x1001"="0x1001",	//Conveyor Belt Facing Right+Down->Left
-	"0x1101"="0x1101",	//Conveyor Belt Facing Right+Up->Left
-	"0x1201"="0x1201",	//Conveyor Belt Facing Down+Right->Up
-	"0x1301"="0x1301",	//Conveyor Belt Facing Down+Left->Up
-	"0x1401"="0x1401",	//Conveyor Belt Facing Down+Up->Right
-	"0x1501"="0x1501",	//Conveyor Belt Facing Right+Left->Down
-	"0x1601"="0x1601",	//Conveyor Belt Facing Down+Up->Left
-	"0x1701"="0x1701",	//Conveyor Belt Facing Right+Left->Up
-	"0x1801"="0x1801",	//Conveyor Belt Facing Up+Left+Down->Right
-	"0x1901"="0x1901",	//Conveyor Belt Facing Left+Up+Right->Down
-	"0x1A01"="0x1A01",	//Conveyor Belt Facing Down+Right+Up->Left
-	"0x1B01"="0x1B01",	//Conveyor Belt Facing Right+Down+Left->Up
-	"0x0002"="0x0002",	//Miner
-	"0x0003"="0x0003",	//Trash Can
-	"0x0004"="0x0004",	//Furnace
-	"0x0005"="0x0005",	//Extractor Facing Right
-	"0x0105"="0x0105",	//Extractor Facing Down
-	"0x0205"="0x0205",	//Extractor Facing Left
-	"0x0305"="0x0305",	//Extractor Facing Up
-	"0x0405"="0x0405",	//Long Extractor Facing Right
-	"0x0505"="0x0505",	//Long Extractor Facing Down
-	"0x0605"="0x0605",	//Long Extractor Facing Left
-	"0x0705"="0x0705",	//Long Extractor Facing Up
-	"0x0805"="0x0805",	//Longer Extractor Facing Right
-	"0x0905"="0x0905",	//Longer Extractor Facing Down
-	"0x0A05"="0x0A05",	//Longer Extractor Facing Left
-	"0x0B05"="0x0B05",	//Longer Extractor Facing Up
-	"0x0006"="0x0006",	//Chest
-	"0x0007"="0x0007",	//Alloy Smelter
-	"0x0008"="0x0008",	//Resource Acceptor
-	"0x0009"="0x0009",	//Wiremill
-	"0x000A"="0x000A",	//Compressor
-	"0x000B"="0x000B",	//Lathe
-	"0x0010"="0x0010",	//Multiblock secondary
-	"0x0011"="0x0011",	//Assembler
-	"0xFFFF"="0xFFFF",	//Unset
-}
 
 enum Direction {
 	right, down, left, up
@@ -308,9 +253,9 @@ const registry:Registry = {
 	/**Contains a mapping from building IDs to classes. */
 	buildings: null!,//Initialized at the end of classes.ts.
 	/**List of building IDs. */
-	buildingIDs: BuildingID,
+	buildingIDs: ["0x0001", "0x0101", "0x0201", "0x0301", "0x0401", "0x0501", "0x0601", "0x0701", "0x0801", "0x0901", "0x0A01", "0x0B01", "0x0C01", "0x0D01", "0x0E01", "0x0F01", "0x1001", "0x1101", "0x1201", "0x1301", "0x1401", "0x1501", "0x1601", "0x1701", "0x1801", "0x1901", "0x1A01", "0x1B01", "0x0002", "0x0003", "0x0004", "0x0005", "0x0105", "0x0205", "0x0305", "0x0405", "0x0505", "0x0605", "0x0705", "0x0805", "0x0905", "0x0A05", "0x0B05", "0x0006", "0x0007", "0x0008", "0x0009", "0x000A", "0x000B", "0x0010", "0x0011", "0xFFFF"],
 	/**List of item IDs. */
-	itemIDs: ItemID,
+	itemIDs: Object.values(ItemID),
 	/**List of tile IDs. */
 	tileIDs: ["base_grass","base_stone","base_water","base_ore_coal","base_ore_iron","base_ore_copper","base_null"],
 	/**List of miscellanous texture IDs. */

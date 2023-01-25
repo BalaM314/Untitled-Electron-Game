@@ -63,61 +63,6 @@ var ItemID;
     ItemID["base_rotor"] = "base_rotor";
     ItemID["base_motor"] = "base_motor";
 })(ItemID || (ItemID = {}));
-var BuildingID;
-(function (BuildingID) {
-    BuildingID["0x0001"] = "0x0001";
-    BuildingID["0x0101"] = "0x0101";
-    BuildingID["0x0201"] = "0x0201";
-    BuildingID["0x0301"] = "0x0301";
-    BuildingID["0x0401"] = "0x0401";
-    BuildingID["0x0501"] = "0x0501";
-    BuildingID["0x0601"] = "0x0601";
-    BuildingID["0x0701"] = "0x0701";
-    BuildingID["0x0801"] = "0x0801";
-    BuildingID["0x0901"] = "0x0901";
-    BuildingID["0x0A01"] = "0x0A01";
-    BuildingID["0x0B01"] = "0x0B01";
-    BuildingID["0x0C01"] = "0x0C01";
-    BuildingID["0x0D01"] = "0x0D01";
-    BuildingID["0x0E01"] = "0x0E01";
-    BuildingID["0x0F01"] = "0x0F01";
-    BuildingID["0x1001"] = "0x1001";
-    BuildingID["0x1101"] = "0x1101";
-    BuildingID["0x1201"] = "0x1201";
-    BuildingID["0x1301"] = "0x1301";
-    BuildingID["0x1401"] = "0x1401";
-    BuildingID["0x1501"] = "0x1501";
-    BuildingID["0x1601"] = "0x1601";
-    BuildingID["0x1701"] = "0x1701";
-    BuildingID["0x1801"] = "0x1801";
-    BuildingID["0x1901"] = "0x1901";
-    BuildingID["0x1A01"] = "0x1A01";
-    BuildingID["0x1B01"] = "0x1B01";
-    BuildingID["0x0002"] = "0x0002";
-    BuildingID["0x0003"] = "0x0003";
-    BuildingID["0x0004"] = "0x0004";
-    BuildingID["0x0005"] = "0x0005";
-    BuildingID["0x0105"] = "0x0105";
-    BuildingID["0x0205"] = "0x0205";
-    BuildingID["0x0305"] = "0x0305";
-    BuildingID["0x0405"] = "0x0405";
-    BuildingID["0x0505"] = "0x0505";
-    BuildingID["0x0605"] = "0x0605";
-    BuildingID["0x0705"] = "0x0705";
-    BuildingID["0x0805"] = "0x0805";
-    BuildingID["0x0905"] = "0x0905";
-    BuildingID["0x0A05"] = "0x0A05";
-    BuildingID["0x0B05"] = "0x0B05";
-    BuildingID["0x0006"] = "0x0006";
-    BuildingID["0x0007"] = "0x0007";
-    BuildingID["0x0008"] = "0x0008";
-    BuildingID["0x0009"] = "0x0009";
-    BuildingID["0x000A"] = "0x000A";
-    BuildingID["0x000B"] = "0x000B";
-    BuildingID["0x0010"] = "0x0010";
-    BuildingID["0x0011"] = "0x0011";
-    BuildingID["0xFFFF"] = "0xFFFF";
-})(BuildingID || (BuildingID = {}));
 var Direction;
 (function (Direction) {
     Direction[Direction["right"] = 0] = "right";
@@ -278,8 +223,8 @@ const registry = {
         }
     },
     buildings: null,
-    buildingIDs: BuildingID,
-    itemIDs: ItemID,
+    buildingIDs: ["0x0001", "0x0101", "0x0201", "0x0301", "0x0401", "0x0501", "0x0601", "0x0701", "0x0801", "0x0901", "0x0A01", "0x0B01", "0x0C01", "0x0D01", "0x0E01", "0x0F01", "0x1001", "0x1101", "0x1201", "0x1301", "0x1401", "0x1501", "0x1601", "0x1701", "0x1801", "0x1901", "0x1A01", "0x1B01", "0x0002", "0x0003", "0x0004", "0x0005", "0x0105", "0x0205", "0x0305", "0x0405", "0x0505", "0x0605", "0x0705", "0x0805", "0x0905", "0x0A05", "0x0B05", "0x0006", "0x0007", "0x0008", "0x0009", "0x000A", "0x000B", "0x0010", "0x0011", "0xFFFF"],
+    itemIDs: Object.values(ItemID),
     tileIDs: ["base_grass", "base_stone", "base_water", "base_ore_coal", "base_ore_iron", "base_ore_copper", "base_null"],
     miscTextures: ["invalidunderlay", "ghostunderlay"],
     textures: {

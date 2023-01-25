@@ -485,7 +485,7 @@ let state: {
 				level1.buildBuilding(
 					Math.floor((mouse.x - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE),
 					Math.floor((mouse.y - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE),
-					BuildingID["0xFFFF"]
+					"0xFFFF"
 				);
 			}
 		}

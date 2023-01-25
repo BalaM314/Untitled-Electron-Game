@@ -241,7 +241,7 @@ function loadTexturesIntoMemory() {
     return true;
 }
 function loadTexturesIntoPage() {
-    for (let buildingID of Object.values(registry.buildingIDs)) {
+    for (let buildingID of registry.buildingIDs) {
         let img = document.createElement("img");
         img.setAttribute("src", `assets/textures/building/${buildingID}.png`);
         img.addEventListener("load", () => {
@@ -291,7 +291,7 @@ function loadTexturesIntoPage() {
     }
 }
 function getTotalTextures() {
-    return Object.values(registry.buildingIDs).length + Object.values(registry.itemIDs).length + registry.tileIDs.length + registry.miscTextures.length;
+    return registry.buildingIDs.length + registry.itemIDs.length + registry.tileIDs.length + registry.miscTextures.length;
 }
 function hex(num, length) {
     return `0x${(Array(length).fill("0").join("") + num.toString(16)).toUpperCase().slice(-length)}`;
