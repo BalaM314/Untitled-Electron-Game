@@ -154,7 +154,8 @@ class Level {
             this.overlayBuildAtTile(tileX, tileY)?.break();
             return true;
         }
-        if (registry.buildings[buildingID[0]].isOverlay) {
+        const block = registry.buildings[buildingID[0]];
+        if (block.isOverlay) {
             if (this.overlayBuildAtTile(tileX, tileY)?.block.id == buildingID[0] && this.overlayBuildAtTile(tileX, tileY)?.meta == buildingID[1]) {
                 if (!canOverwriteBuilding)
                     return false;
@@ -171,8 +172,7 @@ class Level {
             this.buildingAtTile(tileX, tileY)?.break();
         }
         let tempBuilding;
-        if (buildingID[0] == "base_assembler") {
-            const block = registry.buildings[buildingID[0]];
+        if (block.prototype instanceof MultiBlockController) {
             this.buildingAtTile(tileX + 1, tileY)?.break();
             this.buildingAtTile(tileX, tileY + 1)?.break();
             this.buildingAtTile(tileX + 1, tileY + 1)?.break();
@@ -194,9 +194,9 @@ class Level {
             }
             return true;
         }
-        if (registry.buildings[buildingID[0]]?.canBuildAt(tileX, tileY, this)) {
+        if (block.canBuildAt(tileX, tileY, this)) {
             trigger(triggerType.placeBuilding, buildingID[0]);
-            tempBuilding = new registry.buildings[buildingID[0]](tileX, tileY, registry.buildings[buildingID[0]].changeMeta(buildingID[1], tileX, tileY, this), this);
+            tempBuilding = new block(tileX, tileY, block.changeMeta(buildingID[1], tileX, tileY, this), this);
         }
         else {
             trigger(triggerType.placeBuildingFail, buildingID[0]);

@@ -201,10 +201,11 @@ class Level {
 			this.overlayBuildAtTile(tileX, tileY)?.break();
 			return true;
 		}
+		const block = registry.buildings[buildingID[0]];
 
 		//Only overwrite the same building once per build attempt.
 		//Otherwise, you could constantly overwrite a building on every frame you tried to build, which is not good.
-		if(registry.buildings[buildingID[0]].isOverlay){
+		if(block.isOverlay){
 			if(this.overlayBuildAtTile(tileX, tileY)?.block.id == buildingID[0] && this.overlayBuildAtTile(tileX, tileY)?.meta == buildingID[1]){
 				if(!canOverwriteBuilding) return false;
 				canOverwriteBuilding = false;
@@ -219,10 +220,8 @@ class Level {
 		}
 
 		let tempBuilding:Building;
-		if(buildingID[0] == "base_assembler"){
-			//HARDCODED: uses "id == assembler", should be if(class extends MultiblockController)
+		if(block.prototype instanceof MultiBlockController){
 			//Multiblock handling
-			const block = registry.buildings[buildingID[0]] as typeof MultiBlockController;
 			
 			//Break all the buildings under
 			//TODO use the size thing
@@ -232,7 +231,7 @@ class Level {
 
 			switch(buildingID[0]){
 				case "base_assembler":
-					let controller = new block(tileX, tileY, buildingID[1], this);
+					let controller = new block(tileX, tileY, buildingID[1], this) as MultiBlockController;
 					let secondary1 = new MultiBlockSecondary(tileX + 1, tileY, 0, this);
 					let secondary2 = new MultiBlockSecondary(tileX, tileY + 1, 0, this);
 					let secondary3 = new MultiBlockSecondary(tileX+1, tileY+1, 0, this);
@@ -248,11 +247,11 @@ class Level {
 			}
 			return true;
 		}
-		if(registry.buildings[buildingID[0]]?.canBuildAt(tileX, tileY, this)){
+		if(block.canBuildAt(tileX, tileY, this)){
 			trigger(triggerType.placeBuilding, buildingID[0]);
-			tempBuilding = new registry.buildings[buildingID[0]](
+			tempBuilding = new block(
 				tileX, tileY,
-				registry.buildings[buildingID[0]].changeMeta(buildingID[1], tileX, tileY, this), this
+				block.changeMeta(buildingID[1], tileX, tileY, this), this
 			);
 		} else {
 			trigger(triggerType.placeBuildingFail, buildingID[0]);
