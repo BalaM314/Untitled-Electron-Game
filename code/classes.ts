@@ -155,11 +155,7 @@ class Level {
 		if(!this.hasChunk(tileX, tileY)) return;
 		if(buildingID[0] == "base_null") return;
 		let changedID:BuildingIDWithMeta = [buildingID[0], buildingID[1]];
-
-		//HARDCODED
-		if(changedID[0] == "base_conveyor" && [0, 1, 2, 3].includes(buildingID[1])){
-			changedID[1] = this.getTurnedConveyor(tileX, tileY, buildingID[1] as 0 | 1 | 2 | 3);
-		}
+		changedID[1] = registry.buildings[buildingID[0]].changeMeta(changedID[1], tileX, tileY, this);
 
 		let pixelX = tileX * consts.DISPLAY_TILE_SIZE + (Game.scroll.x * consts.DISPLAY_SCALE);
 		let pixelY = tileY * consts.DISPLAY_TILE_SIZE + (Game.scroll.y * consts.DISPLAY_SCALE);
@@ -197,72 +193,6 @@ class Level {
 			stringID: Building.prototype.stringID
 		})(currentframe, ctx1);
 		_ctx.globalAlpha = 1.0;
-	}
-	getTurnedConveyor(tileX:number, tileY:number, meta:BuildingMeta):BuildingMeta {
-		//TODO this should be Conveyor., not (instance Level).
-		//Returns how a conveyor should be turned based on nearby buildings.
-		if(registry.keybinds.placement.force_straight_conveyor.isHeld()){
-			return meta;
-			//If holding shift, just return a straight conveyor.
-		}
-		tileX = Math.floor(tileX);
-		tileY = Math.floor(tileY);
-		let hasLeftBuilding = this.buildingAtTile(tileX - 1, tileY)?.outputsItemToSide(Direction.right) ?? false;
-		let hasTopBuilding = this.buildingAtTile(tileX, tileY - 1)?.outputsItemToSide(Direction.down) ?? false;
-		let hasRightBuilding = this.buildingAtTile(tileX + 1, tileY)?.outputsItemToSide(Direction.left) ?? false;
-		let hasBottomBuilding = this.buildingAtTile(tileX, tileY + 1)?.outputsItemToSide(Direction.up) ?? false;
-		
-		switch(meta){
-			case 0:
-				if(hasLeftBuilding){
-					if(hasTopBuilding && hasBottomBuilding) return 0x18;
-					else if(hasTopBuilding) return 0x0D;
-					else if(hasBottomBuilding) return 0x0C;
-					else return 0x00;
-				} else {
-					if(hasTopBuilding && hasBottomBuilding) return 0x14;
-					else if(hasTopBuilding) return 0x05;
-					else if(hasBottomBuilding) return 0x04;
-					else return 0x00;
-				}
-			case 1:
-				if(hasTopBuilding){
-					if(hasLeftBuilding && hasRightBuilding) return 0x19;
-					else if(hasLeftBuilding) return 0x0F;
-					else if(hasRightBuilding) return 0x0E;
-					else return 0x01;
-				} else {
-					if(hasLeftBuilding && hasRightBuilding) return 0x15;
-					else if(hasLeftBuilding) return 0x07;
-					else if(hasRightBuilding) return 0x06;
-					else return 0x01;
-				}
-			case 2:
-				if(hasRightBuilding){
-					if(hasTopBuilding && hasBottomBuilding) return 0x1A;
-					else if(hasTopBuilding) return 0x11;
-					else if(hasBottomBuilding) return 0x10;
-					else return 0x02;
-				} else {
-					if(hasTopBuilding && hasBottomBuilding) return 0x16;
-					else if(hasTopBuilding) return 0x09;
-					else if(hasBottomBuilding) return 0x08;
-					else return 0x02;
-				}
-			case 3:
-				if(hasBottomBuilding){
-					if(hasLeftBuilding && hasRightBuilding) return 0x1B;
-					else if(hasLeftBuilding) return 0x13;
-					else if(hasRightBuilding) return 0x12;
-					else return 0x03;
-				} else {
-					if(hasLeftBuilding && hasRightBuilding) return 0x17;
-					else if(hasLeftBuilding) return 0x0B;
-					else if(hasRightBuilding) return 0x0A;
-					else return 0x03;
-				}
-			default: return meta;
-		}
 	}
 	buildBuilding(tileX:number, tileY:number, buildingID:BuildingIDWithMeta):boolean {
 		if(this.buildingAtTile(tileX, tileY) instanceof ResourceAcceptor) return false;
@@ -325,8 +255,7 @@ class Level {
 			trigger(triggerType.placeBuilding, buildingID[0]);
 			tempBuilding = new registry.buildings[buildingID[0]](
 				tileX, tileY,
-				buildingID[0] == "base_conveyor" ?
-				this.getTurnedConveyor(tileX, tileY, buildingID[1] as 0 | 1 | 2 | 3) : buildingID[1], this
+				registry.buildings[buildingID[0]].changeMeta(buildingID[1], tileX, tileY, this)
 			);
 		} else {
 			trigger(triggerType.placeBuildingFail, buildingID[0]);
@@ -859,6 +788,9 @@ class Building {
 	constructor(x:number, y:number, public meta:BuildingMeta, public level:Level){
 		this.pos = Pos.fromTileCoords(x, y, false);
 	}
+	static changeMeta(meta:BuildingMeta, tileX:number, tileY:number, level:Level):BuildingMeta {
+		return meta;
+	}
 	static canBuildAt(tileX:number, tileY:number, level:Level){
 		//By default, buildings cant be built on water
 		return level.tileAtByTile(tileX, tileY) != "base_water";
@@ -1181,6 +1113,69 @@ class Conveyor extends Building {
 			case Direction.down: return [
 				1, 6, 7, 14, 15, 21, 25
 			].includes(this.meta);
+		}
+	}
+	static changeMeta(tileX:number, tileY:number, meta:BuildingMeta, level:Level):BuildingMeta {
+		if(registry.keybinds.placement.force_straight_conveyor.isHeld()){
+			return meta;
+			//If holding shift, just return a straight conveyor.
+		}
+
+		let hasLeftBuilding = level.buildingAtTile(tileX - 1, tileY)?.outputsItemToSide(Direction.right) ?? false;
+		let hasTopBuilding = level.buildingAtTile(tileX, tileY - 1)?.outputsItemToSide(Direction.down) ?? false;
+		let hasRightBuilding = level.buildingAtTile(tileX + 1, tileY)?.outputsItemToSide(Direction.left) ?? false;
+		let hasBottomBuilding = level.buildingAtTile(tileX, tileY + 1)?.outputsItemToSide(Direction.up) ?? false;
+		
+		switch(meta){
+			case 0:
+				if(hasLeftBuilding){
+					if(hasTopBuilding && hasBottomBuilding) return 0x18;
+					else if(hasTopBuilding) return 0x0D;
+					else if(hasBottomBuilding) return 0x0C;
+					else return 0x00;
+				} else {
+					if(hasTopBuilding && hasBottomBuilding) return 0x14;
+					else if(hasTopBuilding) return 0x05;
+					else if(hasBottomBuilding) return 0x04;
+					else return 0x00;
+				}
+			case 1:
+				if(hasTopBuilding){
+					if(hasLeftBuilding && hasRightBuilding) return 0x19;
+					else if(hasLeftBuilding) return 0x0F;
+					else if(hasRightBuilding) return 0x0E;
+					else return 0x01;
+				} else {
+					if(hasLeftBuilding && hasRightBuilding) return 0x15;
+					else if(hasLeftBuilding) return 0x07;
+					else if(hasRightBuilding) return 0x06;
+					else return 0x01;
+				}
+			case 2:
+				if(hasRightBuilding){
+					if(hasTopBuilding && hasBottomBuilding) return 0x1A;
+					else if(hasTopBuilding) return 0x11;
+					else if(hasBottomBuilding) return 0x10;
+					else return 0x02;
+				} else {
+					if(hasTopBuilding && hasBottomBuilding) return 0x16;
+					else if(hasTopBuilding) return 0x09;
+					else if(hasBottomBuilding) return 0x08;
+					else return 0x02;
+				}
+			case 3:
+				if(hasBottomBuilding){
+					if(hasLeftBuilding && hasRightBuilding) return 0x1B;
+					else if(hasLeftBuilding) return 0x13;
+					else if(hasRightBuilding) return 0x12;
+					else return 0x03;
+				} else {
+					if(hasLeftBuilding && hasRightBuilding) return 0x17;
+					else if(hasLeftBuilding) return 0x0B;
+					else if(hasRightBuilding) return 0x0A;
+					else return 0x03;
+				}
+			default: return meta;
 		}
 	}
 	update(){
