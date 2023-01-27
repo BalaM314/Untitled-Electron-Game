@@ -113,10 +113,6 @@ class Level {
     displayGhostBuilding(tileX, tileY, buildingID, currentframe) {
         if (!this.hasChunk(tileX, tileY))
             return;
-        if (buildingID[0] == "base_null")
-            return;
-        let changedID = [buildingID[0], buildingID[1]];
-        changedID[1] = registry.buildings[buildingID[0]].changeMeta(changedID[1], tileX, tileY, this);
         let pixelX = tileX * consts.DISPLAY_TILE_SIZE + (Game.scroll.x * consts.DISPLAY_SCALE);
         let pixelY = tileY * consts.DISPLAY_TILE_SIZE + (Game.scroll.y * consts.DISPLAY_SCALE);
         let _ctx = ctx1;
@@ -126,20 +122,18 @@ class Level {
             _ctx.globalAlpha = 1.0;
             return;
         }
+        if (buildingID[0] == "base_null")
+            return;
+        let changedID = [buildingID[0], buildingID[1]];
+        changedID[1] = registry.buildings[buildingID[0]].changeMeta(changedID[1], tileX, tileY, this);
+        let textureSize = registry.buildings[buildingID[0]].textureSize(buildingID[1]);
         _ctx.globalAlpha = 0.9;
         let isError = !registry.buildings[changedID[0]]?.canBuildAt(tileX, tileY, this);
-        if (isError) {
-            _ctx.drawImage(registry.textures.misc["invalidunderlay"], pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
-        }
-        else {
-            if ((+buildingID & 0x00F0) == 0x10) {
-                _ctx.drawImage(registry.textures.misc["ghostunderlay"], pixelX, pixelY, consts.DISPLAY_TILE_SIZE * 2, consts.DISPLAY_TILE_SIZE * 2);
-            }
-            else {
-                _ctx.drawImage(registry.textures.misc["ghostunderlay"], pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
-            }
-        }
-        _ctx.globalAlpha = +buildingID % 0x100 == 0x01 ? 0.3 : 0.7;
+        if (textureSize[0][0] == textureSize[0][1])
+            _ctx.drawImage(registry.textures.misc[isError ? "invalidunderlay" : "ghostunderlay"], pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
+        else
+            _ctx.drawImage(registry.textures.misc[isError ? "invalidunderlay" : "ghostunderlay"], pixelX + textureSize[1][0] * consts.DISPLAY_TILE_SIZE, pixelY + textureSize[1][1] * consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE * textureSize[0][0], consts.DISPLAY_TILE_SIZE * textureSize[0][1]);
+        _ctx.globalAlpha = buildingID[0] == "base_conveyor" ? 0.3 : 0.7;
         Building.prototype.display.bind({
             pos: Pos.fromTileCoords(tileX, tileY, false),
             meta: changedID[1],
@@ -669,6 +663,9 @@ class Building {
     static canBuildAt(tileX, tileY, level) {
         return level.tileAtByTile(tileX, tileY) != "base_water";
     }
+    static textureSize(meta) {
+        return [[1, 1], [0, 0]];
+    }
     break() {
         if (this.item) {
             this.item.grabbedBy = null;
@@ -682,60 +679,13 @@ class Building {
         return stringifyMeta(this.block.id, this.meta);
     }
     display(currentFrame, ctx) {
-        let pixelX = this.pos.tileX * consts.DISPLAY_TILE_SIZE + Game.scroll.x * consts.DISPLAY_SCALE;
-        let pixelY = this.pos.tileY * consts.DISPLAY_TILE_SIZE + Game.scroll.y * consts.DISPLAY_SCALE;
+        const textureSize = registry.buildings[this.block.id].textureSize(this.meta);
+        let pixelX = (this.pos.tileX + textureSize[1][0]) * consts.DISPLAY_TILE_SIZE + Game.scroll.x * consts.DISPLAY_SCALE;
+        let pixelY = (this.pos.tileY + textureSize[1][1]) * consts.DISPLAY_TILE_SIZE + Game.scroll.y * consts.DISPLAY_SCALE;
         let _ctx = ctx ?? ctx2;
         let texture = registry.textures.building[this.stringID()];
         if (texture) {
-            if (this.block.id == "base_extractor") {
-                switch (this.meta) {
-                    case 0:
-                        _ctx.drawImage(texture, pixelX, pixelY, consts.DISPLAY_TILE_SIZE * 2, consts.DISPLAY_TILE_SIZE);
-                        break;
-                    case 1:
-                        _ctx.drawImage(texture, pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE * 2);
-                        break;
-                    case 2:
-                        _ctx.drawImage(texture, pixelX - consts.DISPLAY_TILE_SIZE, pixelY, consts.DISPLAY_TILE_SIZE * 2, consts.DISPLAY_TILE_SIZE);
-                        break;
-                    case 3:
-                        _ctx.drawImage(texture, pixelX, pixelY - consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE * 2);
-                        break;
-                    case 4:
-                        _ctx.drawImage(texture, pixelX, pixelY, consts.DISPLAY_TILE_SIZE * 3, consts.DISPLAY_TILE_SIZE);
-                        break;
-                    case 5:
-                        _ctx.drawImage(texture, pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE * 3);
-                        break;
-                    case 6:
-                        _ctx.drawImage(texture, pixelX - consts.DISPLAY_TILE_SIZE * 2, pixelY, consts.DISPLAY_TILE_SIZE * 3, consts.DISPLAY_TILE_SIZE);
-                        break;
-                    case 7:
-                        _ctx.drawImage(texture, pixelX, pixelY - consts.DISPLAY_TILE_SIZE * 2, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE * 3);
-                        break;
-                    case 8:
-                        _ctx.drawImage(texture, pixelX, pixelY, consts.DISPLAY_TILE_SIZE * 4, consts.DISPLAY_TILE_SIZE);
-                        break;
-                    case 9:
-                        _ctx.drawImage(texture, pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE * 4);
-                        break;
-                    case 10:
-                        _ctx.drawImage(texture, pixelX - consts.DISPLAY_TILE_SIZE * 3, pixelY, consts.DISPLAY_TILE_SIZE * 4, consts.DISPLAY_TILE_SIZE);
-                        break;
-                    case 11:
-                        _ctx.drawImage(texture, pixelX, pixelY - consts.DISPLAY_TILE_SIZE * 3, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE * 4);
-                        break;
-                }
-            }
-            else if (registry.buildings[this.block.id]?.prototype instanceof MultiBlockController) {
-                const block = registry.buildings[this.block.id];
-                _ctx.drawImage(texture, pixelX, pixelY, consts.DISPLAY_TILE_SIZE * block.multiblockSize[0], consts.DISPLAY_TILE_SIZE * block.multiblockSize[1]);
-            }
-            else {
-                _ctx.drawImage(texture, pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
-                if (this.block.animated) {
-                }
-            }
+            _ctx.drawImage(texture, pixelX, pixelY, consts.DISPLAY_TILE_SIZE * textureSize[0][0], consts.DISPLAY_TILE_SIZE * textureSize[0][1]);
         }
         else {
             _ctx.fillStyle = "#FF00FF";
@@ -1316,6 +1266,23 @@ class OverlayBuild extends Building {
     }
 }
 class Extractor extends OverlayBuild {
+    static textureSize(meta) {
+        switch (meta) {
+            case 0: return [[2, 1], [0, 0]];
+            case 1: return [[1, 2], [0, 0]];
+            case 2: return [[2, 1], [-1, 0]];
+            case 3: return [[1, 2], [0, -1]];
+            case 4: return [[3, 1], [0, 0]];
+            case 5: return [[1, 3], [0, 0]];
+            case 6: return [[3, 1], [-2, 0]];
+            case 7: return [[1, 3], [0, -2]];
+            case 8: return [[4, 1], [0, 0]];
+            case 9: return [[1, 4], [0, 0]];
+            case 10: return [[4, 1], [-3, 0]];
+            case 11: return [[1, 4], [0, -3]];
+            default: return [[1, 1], [0, 0]];
+        }
+    }
     display(currentFrame) {
         super.display(currentFrame);
         if (this.item instanceof Item) {
@@ -1523,6 +1490,9 @@ class MultiBlockController extends BuildingWithRecipe {
     constructor() {
         super(...arguments);
         this.secondaries = [];
+    }
+    static textureSize(meta) {
+        return [this.multiblockSize, [0, 0]];
     }
     break() {
         this.secondaries.forEach(secondary => secondary.break(true));

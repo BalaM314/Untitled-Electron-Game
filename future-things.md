@@ -42,8 +42,8 @@ probably rickroll you
 
 rename ctxes
 
-building id is very cursed
-
-conveyor item handling is bad
+building.display should have an option to display item
 
 make ghost buildings display on top of normal buildings
+
+properly fix ghost building underlay texture being thicc with extractors

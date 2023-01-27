@@ -153,10 +153,6 @@ class Level {
 	displayGhostBuilding(tileX:number, tileY:number, buildingID:BuildingIDWithMeta, currentframe:CurrentFrame){
 		
 		if(!this.hasChunk(tileX, tileY)) return;
-		if(buildingID[0] == "base_null") return;
-		let changedID:BuildingIDWithMeta = [buildingID[0], buildingID[1]];
-		changedID[1] = registry.buildings[buildingID[0]].changeMeta(changedID[1], tileX, tileY, this);
-
 		let pixelX = tileX * consts.DISPLAY_TILE_SIZE + (Game.scroll.x * consts.DISPLAY_SCALE);
 		let pixelY = tileY * consts.DISPLAY_TILE_SIZE + (Game.scroll.y * consts.DISPLAY_SCALE);
 		let _ctx = ctx1;
@@ -168,18 +164,21 @@ class Level {
 			return;
 		}
 
+		if(buildingID[0] == "base_null") return;
+		let changedID:BuildingIDWithMeta = [buildingID[0], buildingID[1]];
+		changedID[1] = registry.buildings[buildingID[0]].changeMeta(changedID[1], tileX, tileY, this);
+
+		let textureSize = registry.buildings[buildingID[0]].textureSize(buildingID[1]);
+		
 		_ctx.globalAlpha = 0.9;
 		let isError = !registry.buildings[changedID[0]]?.canBuildAt(tileX, tileY, this);
-		if(isError){
-			_ctx.drawImage(registry.textures.misc["invalidunderlay"], pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
-		} else {
-			if((+buildingID & 0x00F0) == 0x10){
-				_ctx.drawImage(registry.textures.misc["ghostunderlay"], pixelX, pixelY, consts.DISPLAY_TILE_SIZE * 2, consts.DISPLAY_TILE_SIZE * 2);
-			} else {
-				_ctx.drawImage(registry.textures.misc["ghostunderlay"], pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
-			}
-		}
-		_ctx.globalAlpha = +buildingID % 0x100 == 0x01 ? 0.3 : 0.7;
+		
+		if(textureSize[0][0] == textureSize[0][1])
+			_ctx.drawImage(registry.textures.misc[isError ? "invalidunderlay" : "ghostunderlay"], pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
+		else	
+			_ctx.drawImage(registry.textures.misc[isError ? "invalidunderlay" : "ghostunderlay"], pixelX + textureSize[1][0] * consts.DISPLAY_TILE_SIZE, pixelY + textureSize[1][1] * consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE * textureSize[0][0], consts.DISPLAY_TILE_SIZE * textureSize[0][1]);
+
+		_ctx.globalAlpha = buildingID[0] == "base_conveyor" ? 0.3 : 0.7;
 		
 		//TODO this is rather bodgy and could cause bugs
 		Building.prototype.display.bind({
@@ -797,6 +796,10 @@ class Building {
 		//By default, buildings cant be built on water
 		return level.tileAtByTile(tileX, tileY) != "base_water";
 	}
+	/**Returns texture size and offset given meta. */
+	static textureSize(meta:number):[size:[number, number], offset:[number, number]] {
+		return [[1, 1], [0, 0]];
+	}
 	/**Called to destroy the building. Should remove all references to it. */
 	break(){
 		if(this.item){
@@ -811,8 +814,10 @@ class Building {
 		return stringifyMeta(this.block.id, this.meta);
 	}
 	display(currentFrame:CurrentFrame, ctx?: CanvasRenderingContext2D){
-		let pixelX = this.pos.tileX * consts.DISPLAY_TILE_SIZE + Game.scroll.x * consts.DISPLAY_SCALE;
-		let pixelY = this.pos.tileY * consts.DISPLAY_TILE_SIZE + Game.scroll.y * consts.DISPLAY_SCALE;
+		const textureSize = registry.buildings[this.block.id].textureSize(this.meta);
+		
+		let pixelX = (this.pos.tileX + textureSize[1][0]) * consts.DISPLAY_TILE_SIZE + Game.scroll.x * consts.DISPLAY_SCALE;
+		let pixelY = (this.pos.tileY + textureSize[1][1]) * consts.DISPLAY_TILE_SIZE + Game.scroll.y * consts.DISPLAY_SCALE;
 		let _ctx = ctx ?? ctx2;
 		let texture = registry.textures.building[this.stringID()];
 		if(texture){
@@ -822,45 +827,7 @@ class Building {
 			//All valid textures are loaded at runtime
 			//Each meta stores the correct display size
 			//TODO! replace with this.block.size(this.meta) stuff
-			if(this.block.id == "base_extractor"){
-				switch(this.meta){
-					case 0:
-						_ctx.drawImage(texture, pixelX, pixelY, consts.DISPLAY_TILE_SIZE * 2, consts.DISPLAY_TILE_SIZE); break;
-					case 1:
-						_ctx.drawImage(texture, pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE * 2); break;
-					case 2:
-						_ctx.drawImage(texture, pixelX - consts.DISPLAY_TILE_SIZE, pixelY, consts.DISPLAY_TILE_SIZE * 2, consts.DISPLAY_TILE_SIZE); break;
-					case 3:
-						_ctx.drawImage(texture, pixelX, pixelY - consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE * 2); break;
-					case 4:
-						_ctx.drawImage(texture, pixelX, pixelY, consts.DISPLAY_TILE_SIZE * 3, consts.DISPLAY_TILE_SIZE); break;
-					case 5:
-						_ctx.drawImage(texture, pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE * 3); break;
-					case 6:
-						_ctx.drawImage(texture, pixelX - consts.DISPLAY_TILE_SIZE * 2, pixelY, consts.DISPLAY_TILE_SIZE * 3, consts.DISPLAY_TILE_SIZE); break;
-					case 7:
-						_ctx.drawImage(texture, pixelX, pixelY - consts.DISPLAY_TILE_SIZE * 2, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE * 3); break;
-					case 8:
-						_ctx.drawImage(texture, pixelX, pixelY, consts.DISPLAY_TILE_SIZE * 4, consts.DISPLAY_TILE_SIZE); break;
-					case 9:
-						_ctx.drawImage(texture, pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE * 4); break;
-					case 10:
-						_ctx.drawImage(texture, pixelX - consts.DISPLAY_TILE_SIZE * 3, pixelY, consts.DISPLAY_TILE_SIZE * 4, consts.DISPLAY_TILE_SIZE); break;
-					case 11:
-						_ctx.drawImage(texture, pixelX, pixelY - consts.DISPLAY_TILE_SIZE * 3, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE * 4); break;
-				}
-			} else if(registry.buildings[this.block.id]?.prototype instanceof MultiBlockController){
-				//TODO aaaaaaa that is bad
-				//this is temporary right? only until I get around to fixing the texture system right? 1/27/2023
-				const block = registry.buildings[this.block.id] as typeof MultiBlockController;
-				//Multiblock
-				_ctx.drawImage(texture, pixelX, pixelY, consts.DISPLAY_TILE_SIZE * block.multiblockSize[0], consts.DISPLAY_TILE_SIZE * block.multiblockSize[1]);
-			} else {
-				_ctx.drawImage(texture, pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
-				if(this.block.animated){
-					//do animations
-				}
-			}
+			_ctx.drawImage(texture, pixelX, pixelY, consts.DISPLAY_TILE_SIZE * textureSize[0][0], consts.DISPLAY_TILE_SIZE * textureSize[0][1]);
 		} else {
 			_ctx.fillStyle = "#FF00FF";
 			rect(pixelX, pixelY, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
@@ -1419,6 +1386,24 @@ class OverlayBuild extends Building {
 class Extractor extends OverlayBuild {
 	static id:RawBuildingID = "base_extractor";//TEMP
 
+	static textureSize(meta:BuildingMeta){
+		switch(meta){
+			case 0: return [[2, 1], [0, 0]] as [size:[number, number], offset:[number, number]];
+			case 1: return [[1, 2], [0, 0]] as [size:[number, number], offset:[number, number]];
+			case 2: return [[2, 1], [-1, 0]] as [size:[number, number], offset:[number, number]];
+			case 3: return [[1, 2], [0, -1]] as [size:[number, number], offset:[number, number]];
+			case 4: return [[3, 1], [0, 0]] as [size:[number, number], offset:[number, number]];
+			case 5: return [[1, 3], [0, 0]] as [size:[number, number], offset:[number, number]];
+			case 6: return [[3, 1], [-2, 0]] as [size:[number, number], offset:[number, number]];
+			case 7: return [[1, 3], [0, -2]] as [size:[number, number], offset:[number, number]];
+			case 8: return [[4, 1], [0, 0]] as [size:[number, number], offset:[number, number]];
+			case 9: return [[1, 4], [0, 0]] as [size:[number, number], offset:[number, number]];
+			case 10: return [[4, 1], [-3, 0]] as [size:[number, number], offset:[number, number]];
+			case 11: return [[1, 4], [0, -3]] as [size:[number, number], offset:[number, number]];
+			default: return [[1, 1], [0, 0]] as [size:[number, number], offset:[number, number]];
+		}
+	}
+
 	display(currentFrame:CurrentFrame){
 		super.display(currentFrame);
 		if(this.item instanceof Item){
@@ -1611,8 +1596,11 @@ class Lathe extends BuildingWithRecipe {
 class MultiBlockController extends BuildingWithRecipe {
 	block!: typeof MultiBlockController;
 	secondaries: MultiBlockSecondary[] = [];
-	static multiblockSize = [2, 2];
+	static multiblockSize = [2, 2] as [number, number];
 	static outputsItems = true;
+	static textureSize(meta: number) {
+		return [this.multiblockSize, [0, 0]] as [size: [number, number], offset: [number, number]];
+	}
 	break(){
 		this.secondaries.forEach(secondary => secondary.break(true));
 		this.secondaries = [];
@@ -1685,7 +1673,7 @@ class MultiBlockSecondary extends Building {
 
 class Assembler extends MultiBlockController {
 	static recipeType = registry.recipes.base_assembling;
-	static multiblockSize = [2, 2];
+	static multiblockSize:[number, number] = [2, 2];
 	static id:RawBuildingID = "base_assembler";//TEMP
 }
 
