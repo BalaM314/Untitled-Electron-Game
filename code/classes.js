@@ -1469,6 +1469,7 @@ class ResourceAcceptor extends Building {
     }
 }
 ResourceAcceptor.id = "base_resource_acceptor";
+ResourceAcceptor.immutable = true;
 class AlloySmelter extends BuildingWithRecipe {
 }
 AlloySmelter.animated = true;

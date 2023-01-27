@@ -1559,6 +1559,7 @@ class StorageBuilding extends Building {
 
 class ResourceAcceptor extends Building {
 	static id:RawBuildingID = "base_resource_acceptor";//TEMP
+	static immutable = true;
 	acceptItem(item:Item){
 		item.deleted = true;
 		item.grabbedBy = null;
