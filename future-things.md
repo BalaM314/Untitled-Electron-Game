@@ -46,3 +46,4 @@ building id is very cursed
 
 conveyor item handling is bad
 
+make ghost buildings display on top of normal buildings
