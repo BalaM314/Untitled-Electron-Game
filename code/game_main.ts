@@ -668,14 +668,8 @@ let placedBuilding: {
 	direction: Direction.right,
 	modifier: 0,
 	get ID(){
-		//TODO refactor this into a static method
-		if(this.type == "base_extractor"){
-			return [this.type, (this.modifier * 4) + this.direction] as BuildingIDWithMeta;
-		} else if(this.type == "base_conveyor"){
-			return [this.type, this.direction] as BuildingIDWithMeta;
-		} else {
-			return [this.type, 0] as BuildingIDWithMeta;
-		}
+		if(this.type == "base_null") return ["base_null", 0] as BuildingIDWithMeta;
+		return registry.buildings[this.type].getID(this.type, this.direction, this.modifier);
 	}
 };
 

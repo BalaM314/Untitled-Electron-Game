@@ -792,6 +792,9 @@ class Building {
 	static changeMeta(meta:BuildingMeta, tileX:number, tileY:number, level:Level):BuildingMeta {
 		return meta;
 	}
+	static getID(type:RawBuildingID, direction:Direction, modifier:number):BuildingIDWithMeta {
+		return [type, 0];
+	}
 	static canBuildAt(tileX:number, tileY:number, level:Level){
 		//By default, buildings cant be built on water
 		return level.tileAtByTile(tileX, tileY) != "base_water";
@@ -1075,6 +1078,9 @@ class Conveyor extends Building {
 				1, 6, 7, 14, 15, 21, 25
 			].includes(this.meta);
 		}
+	}
+	static getID(type:RawBuildingID, direction:Direction, modifier:number):BuildingIDWithMeta {
+		return [type, direction] as BuildingIDWithMeta;
 	}
 	static changeMeta(meta:BuildingMeta, tileX:number, tileY:number, level:Level):BuildingMeta {
 		if(registry.keybinds.placement.force_straight_conveyor.isHeld()){
@@ -1362,6 +1368,9 @@ class Extractor extends OverlayBuild {
 			case 11: return [[1, 4], [0, -3]] as [size:[number, number], offset:[number, number]];
 			default: return [[1, 1], [0, 0]] as [size:[number, number], offset:[number, number]];
 		}
+	}
+	static getID(type:RawBuildingID, direction:Direction, modifier:number):BuildingIDWithMeta {
+		return [type, (modifier * 4) + direction] as BuildingIDWithMeta;
 	}
 
 	display(currentFrame:CurrentFrame){

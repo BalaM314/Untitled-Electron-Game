@@ -660,6 +660,9 @@ class Building {
     static changeMeta(meta, tileX, tileY, level) {
         return meta;
     }
+    static getID(type, direction, modifier) {
+        return [type, 0];
+    }
     static canBuildAt(tileX, tileY, level) {
         return level.tileAtByTile(tileX, tileY) != "base_water";
     }
@@ -912,6 +915,9 @@ class Conveyor extends Building {
                 1, 6, 7, 14, 15, 21, 25
             ].includes(this.meta);
         }
+    }
+    static getID(type, direction, modifier) {
+        return [type, direction];
     }
     static changeMeta(meta, tileX, tileY, level) {
         if (registry.keybinds.placement.force_straight_conveyor.isHeld()) {
@@ -1230,6 +1236,9 @@ class Extractor extends OverlayBuild {
             case 11: return [[1, 4], [0, -3]];
             default: return [[1, 1], [0, 0]];
         }
+    }
+    static getID(type, direction, modifier) {
+        return [type, (modifier * 4) + direction];
     }
     display(currentFrame) {
         super.display(currentFrame);

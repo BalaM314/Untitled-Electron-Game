@@ -542,15 +542,9 @@ let placedBuilding = {
     direction: Direction.right,
     modifier: 0,
     get ID() {
-        if (this.type == "base_extractor") {
-            return [this.type, (this.modifier * 4) + this.direction];
-        }
-        else if (this.type == "base_conveyor") {
-            return [this.type, this.direction];
-        }
-        else {
-            return [this.type, 0];
-        }
+        if (this.type == "base_null")
+            return ["base_null", 0];
+        return registry.buildings[this.type].getID(this.type, this.direction, this.modifier);
     }
 };
 let canOverwriteBuilding = true;
