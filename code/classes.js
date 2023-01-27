@@ -125,10 +125,10 @@ class Level {
         if (buildingID[0] == "base_null")
             return;
         let changedID = [buildingID[0], buildingID[1]];
-        changedID[1] = registry.buildings[buildingID[0]].changeMeta(changedID[1], tileX, tileY, this);
-        let textureSize = registry.buildings[buildingID[0]].textureSize(buildingID[1]);
+        changedID[1] = Buildings.get(buildingID[0]).changeMeta(changedID[1], tileX, tileY, this);
+        let textureSize = Buildings.get(buildingID[0]).textureSize(buildingID[1]);
         _ctx.globalAlpha = 0.9;
-        let isError = !registry.buildings[changedID[0]]?.canBuildAt(tileX, tileY, this);
+        let isError = !Buildings.get(changedID[0]).canBuildAt(tileX, tileY, this);
         if (textureSize[0][0] == textureSize[0][1])
             _ctx.drawImage(registry.textures.misc[isError ? "invalidunderlay" : "ghostunderlay"], pixelX + textureSize[1][0] * consts.DISPLAY_TILE_SIZE, pixelY + textureSize[1][1] * consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE * textureSize[0][0], consts.DISPLAY_TILE_SIZE * textureSize[0][1]);
         else
@@ -154,7 +154,7 @@ class Level {
             this.overlayBuildAtTile(tileX, tileY)?.break();
             return true;
         }
-        const block = registry.buildings[buildingID[0]];
+        const block = Buildings.get(buildingID[0]);
         if (block.isOverlay) {
             if (this.overlayBuildAtTile(tileX, tileY)?.block.id == buildingID[0] && this.overlayBuildAtTile(tileX, tileY)?.meta == buildingID[1]) {
                 if (!canOverwriteBuilding)
@@ -333,7 +333,7 @@ class Chunk {
                         buildingData = _buildingData;
                     let tempBuilding;
                     try {
-                        tempBuilding = new registry.buildings[buildingData.id](parseInt(x) + (consts.CHUNK_SIZE * this.x), parseInt(y) + (consts.CHUNK_SIZE * this.y), buildingData.meta, this.parent);
+                        tempBuilding = new (Buildings.get(buildingData.id))(parseInt(x) + (consts.CHUNK_SIZE * this.x), parseInt(y) + (consts.CHUNK_SIZE * this.y), buildingData.meta, this.parent);
                     }
                     catch (err) {
                         console.error(err);
@@ -372,7 +372,7 @@ class Chunk {
                     }
                     else
                         buildingData = _buildingData;
-                    let tempBuilding = new registry.buildings[buildingData.id](parseInt(x) + (consts.CHUNK_SIZE * this.x), parseInt(y) + (consts.CHUNK_SIZE * this.y), buildingData.meta, this.parent);
+                    let tempBuilding = new (Buildings.get(buildingData.id))(parseInt(x) + (consts.CHUNK_SIZE * this.x), parseInt(y) + (consts.CHUNK_SIZE * this.y), buildingData.meta, this.parent);
                     if (buildingData.item && +data.version.split(" ")[1].replaceAll(".", "") >= 130) {
                         tempBuilding.item = new Item(buildingData.item.x, buildingData.item.y, buildingData.item.id);
                         tempBuilding.item.grabbedBy = tempBuilding;
@@ -674,7 +674,10 @@ class Building {
         if (this.item) {
             this.item.grabbedBy = null;
         }
-        (this.block.isOverlay ? this.level.writeOverlayBuild : this.level.writeBuilding)(this.pos.tileX, this.pos.tileY, null);
+        if (this.block.isOverlay)
+            this.level.writeOverlayBuild(this.pos.tileX, this.pos.tileY, null);
+        else
+            this.level.writeBuilding(this.pos.tileX, this.pos.tileY, null);
     }
     update(currentFrame) {
         this.item?.update(currentFrame);
@@ -683,7 +686,7 @@ class Building {
         return stringifyMeta(this.block.id, this.meta);
     }
     display(currentFrame, ctx = this.block.isOverlay ? ctx25 : ctx2) {
-        const textureSize = registry.buildings[this.block.id].textureSize(this.meta);
+        const textureSize = Buildings.get(this.block.id).textureSize(this.meta);
         let pixelX = (this.pos.tileX + textureSize[1][0]) * consts.DISPLAY_TILE_SIZE + Game.scroll.x * consts.DISPLAY_SCALE;
         let pixelY = (this.pos.tileY + textureSize[1][1]) * consts.DISPLAY_TILE_SIZE + Game.scroll.y * consts.DISPLAY_SCALE;
         let texture = registry.textures.building[this.stringID()];
@@ -870,18 +873,11 @@ class Miner extends Building {
     }
 }
 Miner.outputsItems = true;
-Miner.id = "base_miner";
 class TrashCan extends Building {
     acceptItem(item) {
         return true;
     }
 }
-TrashCan.id = "base_trash_can";
-class Furnace extends BuildingWithRecipe {
-}
-Furnace.recipeType = registry.recipes.base_smelting;
-Furnace.animated = true;
-Furnace.id = "base_furnace";
 class Conveyor extends Building {
     acceptsItemFromSide(side) {
         switch (side) {
@@ -1203,7 +1199,6 @@ class Conveyor extends Building {
             return false;
     }
 }
-Conveyor.id = "base_conveyor";
 Conveyor.displaysItem = true;
 class OverlayBuild extends Building {
     buildingUnder() {
@@ -1347,7 +1342,6 @@ class Extractor extends OverlayBuild {
     acceptsItemFromSide(side) { return false; }
     acceptItem(item) { return false; }
 }
-Extractor.id = "base_extractor";
 Extractor.displaysItem = true;
 class StorageBuilding extends Building {
     constructor() {
@@ -1400,7 +1394,6 @@ class StorageBuilding extends Building {
         };
     }
 }
-StorageBuilding.id = "base_chest";
 class ResourceAcceptor extends Building {
     acceptItem(item) {
         item.deleted = true;
@@ -1412,25 +1405,7 @@ class ResourceAcceptor extends Building {
         return true;
     }
 }
-ResourceAcceptor.id = "base_resource_acceptor";
 ResourceAcceptor.immutable = true;
-class AlloySmelter extends BuildingWithRecipe {
-}
-AlloySmelter.animated = true;
-AlloySmelter.recipeType = registry.recipes.base_alloying;
-AlloySmelter.id = "base_alloy_smelter";
-class Wiremill extends BuildingWithRecipe {
-}
-Wiremill.recipeType = registry.recipes.base_wiremilling;
-Wiremill.id = "base_wiremill";
-class Compressor extends BuildingWithRecipe {
-}
-Compressor.recipeType = registry.recipes.base_compressing;
-Compressor.id = "base_compressor";
-class Lathe extends BuildingWithRecipe {
-}
-Lathe.recipeType = registry.recipes.base_lathing;
-Lathe.id = "base_lathe";
 class MultiBlockController extends BuildingWithRecipe {
     constructor() {
         super(...arguments);
@@ -1510,24 +1485,3 @@ class MultiBlockSecondary extends Building {
 }
 MultiBlockSecondary.outputsItems = true;
 MultiBlockSecondary.id = "base_multiblock_secondary";
-class Assembler extends MultiBlockController {
-}
-Assembler.recipeType = registry.recipes.base_assembling;
-Assembler.multiblockSize = [2, 2];
-Assembler.id = "base_assembler";
-registry.buildings = {
-    "base_conveyor": Conveyor,
-    "base_miner": Miner,
-    "base_trash_can": TrashCan,
-    "base_furnace": Furnace,
-    "base_extractor": Extractor,
-    "base_chest": StorageBuilding,
-    "base_alloy_smelter": AlloySmelter,
-    "base_resource_acceptor": ResourceAcceptor,
-    "base_wiremill": Wiremill,
-    "base_compressor": Compressor,
-    "base_lathe": Lathe,
-    "base_multiblock_secondary": MultiBlockSecondary,
-    "base_assembler": Assembler,
-    "base_null": null
-};

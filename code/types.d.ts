@@ -85,9 +85,6 @@ interface Recipes {
 
 interface Registry {
 	recipes: Recipes;
-	buildings: {
-		[ID in RawBuildingID]: typeof Building;
-	}
 	buildingIDs: StringBuildingID[];
 	itemIDs: ItemID[];
 	tileIDs: TileID[];

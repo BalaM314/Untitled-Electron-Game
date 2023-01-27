@@ -166,12 +166,12 @@ class Level {
 
 		if(buildingID[0] == "base_null") return;
 		let changedID:BuildingIDWithMeta = [buildingID[0], buildingID[1]];
-		changedID[1] = registry.buildings[buildingID[0]].changeMeta(changedID[1], tileX, tileY, this);
+		changedID[1] = Buildings.get(buildingID[0]).changeMeta(changedID[1], tileX, tileY, this);
 
-		let textureSize = registry.buildings[buildingID[0]].textureSize(buildingID[1]);
+		let textureSize = Buildings.get(buildingID[0]).textureSize(buildingID[1]);
 		
 		_ctx.globalAlpha = 0.9;
-		let isError = !registry.buildings[changedID[0]]?.canBuildAt(tileX, tileY, this);
+		let isError = !Buildings.get(changedID[0]).canBuildAt(tileX, tileY, this);
 		
 		if(textureSize[0][0] == textureSize[0][1])
 			_ctx.drawImage(registry.textures.misc[isError ? "invalidunderlay" : "ghostunderlay"], pixelX + textureSize[1][0] * consts.DISPLAY_TILE_SIZE, pixelY + textureSize[1][1] * consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE * textureSize[0][0], consts.DISPLAY_TILE_SIZE * textureSize[0][1]);
@@ -201,7 +201,7 @@ class Level {
 			this.overlayBuildAtTile(tileX, tileY)?.break();
 			return true;
 		}
-		const block = registry.buildings[buildingID[0]];
+		const block = Buildings.get(buildingID[0]);
 
 		//Only overwrite the same building once per build attempt.
 		//Otherwise, you could constantly overwrite a building on every frame you tried to build, which is not good.
@@ -420,7 +420,7 @@ class Chunk {
 					} else buildingData = _buildingData as BuildingData;
 					let tempBuilding:Building;
 					try {
-						tempBuilding = new registry.buildings[buildingData.id](
+						tempBuilding = new (Buildings.get(buildingData.id))(
 							parseInt(x) + (consts.CHUNK_SIZE * this.x),
 							parseInt(y) + (consts.CHUNK_SIZE * this.y),
 							buildingData.meta, this.parent
@@ -464,7 +464,7 @@ class Chunk {
 						}
 						//aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa I am still looking forward to beta when I can throw out these garbage formats
 					} else buildingData = _buildingData as BuildingData;
-					let tempBuilding = new registry.buildings[buildingData.id](
+					let tempBuilding = new (Buildings.get(buildingData.id))(
 						parseInt(x) + (consts.CHUNK_SIZE * this.x),
 						parseInt(y) + (consts.CHUNK_SIZE * this.y),
 						buildingData.meta, this.parent
@@ -808,7 +808,8 @@ class Building {
 		if(this.item){
 			this.item.grabbedBy = null;
 		}
-		(this.block.isOverlay ? this.level.writeOverlayBuild : this.level.writeBuilding)(this.pos.tileX, this.pos.tileY, null);
+		if(this.block.isOverlay) this.level.writeOverlayBuild(this.pos.tileX, this.pos.tileY, null);
+		else this.level.writeBuilding(this.pos.tileX, this.pos.tileY, null);
 	}
 	update(currentFrame:CurrentFrame){
 		this.item?.update(currentFrame);
@@ -817,7 +818,7 @@ class Building {
 		return stringifyMeta(this.block.id, this.meta);
 	}
 	display(currentFrame:CurrentFrame, ctx:CanvasRenderingContext2D = this.block.isOverlay ? ctx25 : ctx2){
-		const textureSize = registry.buildings[this.block.id].textureSize(this.meta);
+		const textureSize = Buildings.get(this.block.id).textureSize(this.meta);
 		
 		let pixelX = (this.pos.tileX + textureSize[1][0]) * consts.DISPLAY_TILE_SIZE + Game.scroll.x * consts.DISPLAY_SCALE;
 		let pixelY = (this.pos.tileY + textureSize[1][1]) * consts.DISPLAY_TILE_SIZE + Game.scroll.y * consts.DISPLAY_SCALE;
@@ -991,7 +992,6 @@ class Miner extends Building {
 	timer: number;
 	miningItem: ItemID | null = null;
 	static outputsItems = true;
-	static id:RawBuildingID = "base_miner";//TEMP
 	constructor(tileX:number, tileY:number, meta:BuildingMeta, level:Level){
 		super(tileX, tileY, meta, level);
 		this.timer = 61;
@@ -1022,25 +1022,13 @@ class Miner extends Building {
 
 
 class TrashCan extends Building {
-	static id:RawBuildingID = "base_trash_can";//TEMP
 	acceptItem(item:Item){
 		return true;
 	}
 }
 
 
-class Furnace extends BuildingWithRecipe {
-	static recipeType = registry.recipes.base_smelting;
-	static animated = true;
-	static id:RawBuildingID = "base_furnace";//TEMP
-}
-// const Furnace = Buildings.register("0x04", BuildingWithRecipe, {
-// 	recipeType: registry.recipes.base_smelting,
-// 	animated: true
-// });
-
 class Conveyor extends Building {
-	static id:RawBuildingID = "base_conveyor";//TEMP
 	static displaysItem = true;
 	acceptsItemFromSide(side:Direction):boolean {
 		//Bit cursed, but far better than what it used to be
@@ -1339,9 +1327,8 @@ class OverlayBuild extends Building {
 }
 
 class Extractor extends OverlayBuild {
-	static id:RawBuildingID = "base_extractor";//TEMP
 	static displaysItem = true;
-
+	
 	static textureSize(meta:BuildingMeta){
 		switch(meta){
 			case 0: return [[2, 1], [0, 0]] as [size:[number, number], offset:[number, number]];
@@ -1463,7 +1450,6 @@ interface StorageInventory extends Array<Item> {
 	MAX_LENGTH: number;
 }
 class StorageBuilding extends Building {
-	static id:RawBuildingID = "base_chest";//TEMP
 	inventory: StorageInventory = Object.assign([], { MAX_LENGTH: 64 });
 	break(){
 		if(this.inventory){
@@ -1510,7 +1496,6 @@ class StorageBuilding extends Building {
 
 
 class ResourceAcceptor extends Building {
-	static id:RawBuildingID = "base_resource_acceptor";//TEMP
 	static immutable = true;
 	acceptItem(item:Item){
 		item.deleted = true;
@@ -1522,29 +1507,6 @@ class ResourceAcceptor extends Building {
 		return true;
 	}
 }
-
-//I love abstraction
-class AlloySmelter extends BuildingWithRecipe {
-	static animated = true;
-	static recipeType = registry.recipes.base_alloying;
-	static id:RawBuildingID = "base_alloy_smelter";//TEMP
-}
-
-class Wiremill extends BuildingWithRecipe {
-	static recipeType = registry.recipes.base_wiremilling;
-	static id:RawBuildingID = "base_wiremill";//TEMP
-}
-
-class Compressor extends BuildingWithRecipe {
-	static recipeType = registry.recipes.base_compressing;
-	static id:RawBuildingID = "base_compressor";//TEMP
-}
-
-class Lathe extends BuildingWithRecipe {
-	static recipeType = registry.recipes.base_lathing;
-	static id:RawBuildingID = "base_lathe";//TEMP
-}
-
 
 class MultiBlockController extends BuildingWithRecipe {
 	block!: typeof MultiBlockController;
@@ -1604,6 +1566,7 @@ class MultiBlockSecondary extends Building {
 	/**Assigned in buildBuilding */
 	controller: MultiBlockController | null = null;
 	static outputsItems = true;
+	//TODO is this fine?
 	static id:RawBuildingID = "base_multiblock_secondary";
 	acceptItem(item: Item):boolean {
 		return this.controller?.acceptItem(item) ?? false;
@@ -1623,27 +1586,3 @@ class MultiBlockSecondary extends Building {
 		}
 	}
 }
-
-class Assembler extends MultiBlockController {
-	static recipeType = registry.recipes.base_assembling;
-	static multiblockSize:[number, number] = [2, 2];
-	static id:RawBuildingID = "base_assembler";//TEMP
-}
-
-
-registry.buildings = {
-	"base_conveyor": Conveyor,
-	"base_miner": Miner,
-	"base_trash_can": TrashCan,
-	"base_furnace": Furnace,
-	"base_extractor": Extractor,
-	"base_chest": StorageBuilding,
-	"base_alloy_smelter": AlloySmelter,
-	"base_resource_acceptor": ResourceAcceptor,
-	"base_wiremill": Wiremill,
-	"base_compressor": Compressor,
-	"base_lathe": Lathe,
-	"base_multiblock_secondary": MultiBlockSecondary,
-	"base_assembler": Assembler,
-	"base_null": null!
-};

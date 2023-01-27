@@ -544,7 +544,7 @@ let placedBuilding = {
     get ID() {
         if (this.type == "base_null")
             return ["base_null", 0];
-        return registry.buildings[this.type].getID(this.type, this.direction, this.modifier);
+        return Buildings.get(this.type).getID(this.type, this.direction, this.modifier);
     }
 };
 let canOverwriteBuilding = true;

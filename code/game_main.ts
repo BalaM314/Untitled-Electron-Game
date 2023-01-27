@@ -669,7 +669,7 @@ let placedBuilding: {
 	modifier: 0,
 	get ID(){
 		if(this.type == "base_null") return ["base_null", 0] as BuildingIDWithMeta;
-		return registry.buildings[this.type].getID(this.type, this.direction, this.modifier);
+		return Buildings.get(this.type).getID(this.type, this.direction, this.modifier);
 	}
 };
 

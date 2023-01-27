@@ -250,8 +250,6 @@ const registry:Registry = {
 			]
 		}
 	},
-	/**Contains a mapping from building IDs to classes. */
-	buildings: null!,//Initialized at the end of classes.ts.
 	/**List of building IDs. */
 	buildingIDs: ["base_conveyor:0", "base_conveyor:1", "base_conveyor:2", "base_conveyor:3", "base_conveyor:4", "base_conveyor:5", "base_conveyor:6", "base_conveyor:7", "base_conveyor:8", "base_conveyor:9", "base_conveyor:10", "base_conveyor:11", "base_conveyor:12", "base_conveyor:13", "base_conveyor:14", "base_conveyor:15", "base_conveyor:16", "base_conveyor:17", "base_conveyor:18", "base_conveyor:19", "base_conveyor:20", "base_conveyor:21", "base_conveyor:22", "base_conveyor:23", "base_conveyor:24", "base_conveyor:25", "base_conveyor:26", "base_conveyor:27", "base_miner:0", "base_trash_can:0", "base_furnace:0", "base_extractor:0", "base_extractor:1", "base_extractor:2", "base_extractor:3", "base_extractor:4", "base_extractor:5", "base_extractor:6", "base_extractor:7", "base_extractor:8", "base_extractor:9", "base_extractor:10", "base_extractor:11", "base_chest:0", "base_alloy_smelter:0", "base_resource_acceptor:0", "base_wiremill:0", "base_compressor:0", "base_lathe:0", "base_multiblock_secondary:0", "base_assembler:0", "base_null:0"],
 	/**List of item IDs. */
