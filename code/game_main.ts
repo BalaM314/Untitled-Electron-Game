@@ -454,7 +454,7 @@ let state: {
 		onmouseheld(){
 			if(Game.paused) return;
 			if(!mouse.latestEvent) return;
-			if(!(keysHeld.includes("control") || registry.keybinds.placement.break_building.isHeld()) && placedBuilding.ID != "0xFFFF"){
+			if(!(keysHeld.includes("control") || registry.keybinds.placement.break_building.isHeld()) && placedBuilding.ID[0] != "base_null"){
 				level1.buildBuilding(
 					Math.floor((mouse.latestEvent.x - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE),
 					Math.floor((mouse.latestEvent.y - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE),
@@ -485,7 +485,7 @@ let state: {
 				level1.buildBuilding(
 					Math.floor((mouse.x - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE),
 					Math.floor((mouse.y - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE),
-					"0xFFFF"
+					["base_null", 0]
 				);
 			}
 		}
@@ -660,22 +660,21 @@ function importData(rawData:string){
 /**An object to store the type, direction, and modifier of placed buildings. */
 let placedBuilding: {
 	type: RawBuildingID
-	direction: 0x000 | 0x100 | 0x200 | 0x300;
-	ID: BuildingID;
-	modifier: 0x000 | 0x400 | 0x800
+	direction: Direction;
+	ID: BuildingIDWithMeta;
+	modifier: 0 | 1 | 2;
 } = {
-	type: "0x01",
-	direction: 0x100,
-	modifier: 0x000,
+	type: "base_null",
+	direction: Direction.right,
+	modifier: 0,
 	get ID(){
-		if(this.type == "0x05"){
-			return hex(+this.type + this.direction + this.modifier, 4) as BuildingID;
-		} else if(this.type == "0x01"){
-			return hex(+this.type + this.direction, 4) as BuildingID;
-		} else if(this.type == "0xFF"){
-			return hex(0xFFFF, 4) as BuildingID;
+		//TODO refactor this into a static method
+		if(this.type == "base_extractor"){
+			return [this.type, (this.modifier * 4) + this.direction] as BuildingIDWithMeta;
+		} else if(this.type == "base_conveyor"){
+			return [this.type, this.direction] as BuildingIDWithMeta;
 		} else {
-			return hex(+this.type, 4) as BuildingID;
+			return [this.type, 0] as BuildingIDWithMeta;
 		}
 	}
 };

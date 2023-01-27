@@ -380,7 +380,7 @@ let state = {
                 return;
             if (!mouse.latestEvent)
                 return;
-            if (!(keysHeld.includes("control") || registry.keybinds.placement.break_building.isHeld()) && placedBuilding.ID != "0xFFFF") {
+            if (!(keysHeld.includes("control") || registry.keybinds.placement.break_building.isHeld()) && placedBuilding.ID[0] != "base_null") {
                 level1.buildBuilding(Math.floor((mouse.latestEvent.x - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE), Math.floor((mouse.latestEvent.y - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE), placedBuilding.ID);
             }
         },
@@ -403,7 +403,7 @@ let state = {
             }
             if (registry.keybinds.placement.break_building.isHeld()) {
                 currentframe.redraw = true;
-                level1.buildBuilding(Math.floor((mouse.x - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE), Math.floor((mouse.y - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE), "0xFFFF");
+                level1.buildBuilding(Math.floor((mouse.x - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE), Math.floor((mouse.y - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE), ["base_null", 0]);
             }
         }
     }
@@ -538,21 +538,18 @@ function importData(rawData) {
     }
 }
 let placedBuilding = {
-    type: "0x01",
-    direction: 0x100,
-    modifier: 0x000,
+    type: "base_null",
+    direction: Direction.right,
+    modifier: 0,
     get ID() {
-        if (this.type == "0x05") {
-            return hex(+this.type + this.direction + this.modifier, 4);
+        if (this.type == "base_extractor") {
+            return [this.type, (this.modifier * 4) + this.direction];
         }
-        else if (this.type == "0x01") {
-            return hex(+this.type + this.direction, 4);
-        }
-        else if (this.type == "0xFF") {
-            return hex(0xFFFF, 4);
+        else if (this.type == "base_conveyor") {
+            return [this.type, this.direction];
         }
         else {
-            return hex(+this.type, 4);
+            return [this.type, 0];
         }
     }
 };

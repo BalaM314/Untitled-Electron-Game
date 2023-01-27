@@ -8,10 +8,10 @@ class Level {
             this.seed = data ?? 0;
             this.uuid = Math.random().toString().substring(2);
             this.generateNecessaryChunks();
-            this.buildBuilding(0, 0, "0x0008");
-            this.buildBuilding(0, -1, "0x0008");
-            this.buildBuilding(-1, 0, "0x0008");
-            this.buildBuilding(-1, -1, "0x0008");
+            this.buildBuilding(0, 0, ["base_resource_acceptor", 0]);
+            this.buildBuilding(0, -1, ["base_resource_acceptor", 0]);
+            this.buildBuilding(-1, 0, ["base_resource_acceptor", 0]);
+            this.buildBuilding(-1, -1, ["base_resource_acceptor", 0]);
         }
         else {
             let { chunks, resources, seed, version, uuid } = data;
@@ -113,12 +113,11 @@ class Level {
     displayGhostBuilding(tileX, tileY, buildingID, currentframe) {
         if (!this.hasChunk(tileX, tileY))
             return;
-        if (buildingID == "0xFFFF")
+        if (buildingID[0] == "base_null")
             return;
-        let id = buildingID;
-        const meta = +buildingID >> 8;
-        if (getRawBuildingID(buildingID) == "0x01" && [0, 1, 2, 3].includes(meta)) {
-            id = this.getTurnedConveyor(tileX, tileY, meta);
+        let changedID = [buildingID[0], buildingID[1]];
+        if (changedID[0] == "base_conveyor" && [0, 1, 2, 3].includes(buildingID[1])) {
+            changedID[1] = this.getTurnedConveyor(tileX, tileY, buildingID[1]);
         }
         let pixelX = tileX * consts.DISPLAY_TILE_SIZE + (Game.scroll.x * consts.DISPLAY_SCALE);
         let pixelY = tileY * consts.DISPLAY_TILE_SIZE + (Game.scroll.y * consts.DISPLAY_SCALE);
@@ -130,7 +129,7 @@ class Level {
             return;
         }
         _ctx.globalAlpha = 0.9;
-        let isError = !registry.buildings[getRawBuildingID(buildingID)]?.canBuildAt(tileX, tileY, this);
+        let isError = !registry.buildings[changedID[0]]?.canBuildAt(tileX, tileY, this);
         if (isError) {
             _ctx.drawImage(registry.textures.misc["invalidunderlay"], pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
         }
@@ -145,19 +144,19 @@ class Level {
         _ctx.globalAlpha = +buildingID % 0x100 == 0x01 ? 0.3 : 0.7;
         Building.prototype.display.bind({
             pos: Pos.fromTileCoords(tileX, tileY, false),
-            id: buildingID,
-            _meta: meta,
-            _id: getRawBuildingID(buildingID),
+            meta: changedID[1],
             level: this,
             block: {
-                animated: false
-            }
+                animated: false,
+                id: changedID[0]
+            },
+            stringID: Building.prototype.stringID
         })(currentframe, ctx1);
         _ctx.globalAlpha = 1.0;
     }
-    getTurnedConveyor(tileX, tileY, conveyorType) {
+    getTurnedConveyor(tileX, tileY, meta) {
         if (registry.keybinds.placement.force_straight_conveyor.isHeld()) {
-            return hex((conveyorType * 0x100) + 1, 4);
+            return meta;
         }
         tileX = Math.floor(tileX);
         tileY = Math.floor(tileY);
@@ -165,134 +164,104 @@ class Level {
         let hasTopBuilding = this.buildingAtTile(tileX, tileY - 1)?.outputsItemToSide(Direction.down) ?? false;
         let hasRightBuilding = this.buildingAtTile(tileX + 1, tileY)?.outputsItemToSide(Direction.left) ?? false;
         let hasBottomBuilding = this.buildingAtTile(tileX, tileY + 1)?.outputsItemToSide(Direction.up) ?? false;
-        switch (conveyorType) {
+        switch (meta) {
             case 0:
                 if (hasLeftBuilding) {
-                    if (hasTopBuilding && hasBottomBuilding) {
-                        return "0x1801";
-                    }
-                    else if (hasTopBuilding) {
-                        return "0x0D01";
-                    }
-                    else if (hasBottomBuilding) {
-                        return "0x0C01";
-                    }
-                    else {
-                        return "0x0001";
-                    }
+                    if (hasTopBuilding && hasBottomBuilding)
+                        return 0x18;
+                    else if (hasTopBuilding)
+                        return 0x0D;
+                    else if (hasBottomBuilding)
+                        return 0x0C;
+                    else
+                        return 0x00;
                 }
                 else {
-                    if (hasTopBuilding && hasBottomBuilding) {
-                        return "0x1401";
-                    }
-                    else if (hasTopBuilding) {
-                        return "0x0501";
-                    }
-                    else if (hasBottomBuilding) {
-                        return "0x0401";
-                    }
-                    else {
-                        return "0x0001";
-                    }
+                    if (hasTopBuilding && hasBottomBuilding)
+                        return 0x14;
+                    else if (hasTopBuilding)
+                        return 0x05;
+                    else if (hasBottomBuilding)
+                        return 0x04;
+                    else
+                        return 0x00;
                 }
-                break;
             case 1:
                 if (hasTopBuilding) {
-                    if (hasLeftBuilding && hasRightBuilding) {
-                        return "0x1901";
-                    }
-                    else if (hasLeftBuilding) {
-                        return "0x0F01";
-                    }
-                    else if (hasRightBuilding) {
-                        return "0x0E01";
-                    }
-                    else {
-                        return "0x0101";
-                    }
+                    if (hasLeftBuilding && hasRightBuilding)
+                        return 0x19;
+                    else if (hasLeftBuilding)
+                        return 0x0F;
+                    else if (hasRightBuilding)
+                        return 0x0E;
+                    else
+                        return 0x01;
                 }
                 else {
-                    if (hasLeftBuilding && hasRightBuilding) {
-                        return "0x1501";
-                    }
-                    else if (hasLeftBuilding) {
-                        return "0x0701";
-                    }
-                    else if (hasRightBuilding) {
-                        return "0x0601";
-                    }
-                    else {
-                        return "0x0101";
-                    }
+                    if (hasLeftBuilding && hasRightBuilding)
+                        return 0x15;
+                    else if (hasLeftBuilding)
+                        return 0x07;
+                    else if (hasRightBuilding)
+                        return 0x06;
+                    else
+                        return 0x01;
                 }
-                break;
             case 2:
                 if (hasRightBuilding) {
-                    if (hasTopBuilding && hasBottomBuilding) {
-                        return "0x1A01";
-                    }
-                    else if (hasTopBuilding) {
-                        return "0x1101";
-                    }
-                    else if (hasBottomBuilding) {
-                        return "0x1001";
-                    }
-                    else {
-                        return "0x0201";
-                    }
+                    if (hasTopBuilding && hasBottomBuilding)
+                        return 0x1A;
+                    else if (hasTopBuilding)
+                        return 0x11;
+                    else if (hasBottomBuilding)
+                        return 0x10;
+                    else
+                        return 0x02;
                 }
                 else {
-                    if (hasTopBuilding && hasBottomBuilding) {
-                        return "0x1601";
-                    }
-                    else if (hasTopBuilding) {
-                        return "0x0901";
-                    }
-                    else if (hasBottomBuilding) {
-                        return "0x0801";
-                    }
-                    else {
-                        return "0x0201";
-                    }
+                    if (hasTopBuilding && hasBottomBuilding)
+                        return 0x16;
+                    else if (hasTopBuilding)
+                        return 0x09;
+                    else if (hasBottomBuilding)
+                        return 0x08;
+                    else
+                        return 0x02;
                 }
-                break;
             case 3:
                 if (hasBottomBuilding) {
-                    if (hasLeftBuilding && hasRightBuilding) {
-                        return "0x1B01";
-                    }
-                    else if (hasLeftBuilding) {
-                        return "0x1301";
-                    }
-                    else if (hasRightBuilding) {
-                        return "0x1201";
-                    }
-                    else {
-                        return "0x0301";
-                    }
+                    if (hasLeftBuilding && hasRightBuilding)
+                        return 0x1B;
+                    else if (hasLeftBuilding)
+                        return 0x13;
+                    else if (hasRightBuilding)
+                        return 0x12;
+                    else
+                        return 0x03;
                 }
                 else {
-                    if (hasLeftBuilding && hasRightBuilding) {
-                        return "0x1701";
-                    }
-                    else if (hasLeftBuilding) {
-                        return "0x0B01";
-                    }
-                    else if (hasRightBuilding) {
-                        return "0x0A01";
-                    }
-                    else {
-                        return "0x0301";
-                    }
+                    if (hasLeftBuilding && hasRightBuilding)
+                        return 0x17;
+                    else if (hasLeftBuilding)
+                        return 0x0B;
+                    else if (hasRightBuilding)
+                        return 0x0A;
+                    else
+                        return 0x03;
                 }
-                break;
+            default: return meta;
         }
     }
     buildBuilding(tileX, tileY, buildingID) {
         if (this.buildingAtTile(tileX, tileY) instanceof ResourceAcceptor)
             return false;
-        if (getRawBuildingID(buildingID) == "0x05") {
-            if (this.overlayBuildAtTile(tileX, tileY)?.id == buildingID) {
+        if (buildingID[0] == "base_null") {
+            this.buildingAtTile(tileX, tileY)?.break();
+            this.overlayBuildAtTile(tileX, tileY)?.break();
+            return true;
+        }
+        if (buildingID[0] == "base_extractor") {
+            if (this.overlayBuildAtTile(tileX, tileY)?.block.id == buildingID[0] && this.overlayBuildAtTile(tileX, tileY)?.meta == buildingID[1]) {
                 if (!canOverwriteBuilding)
                     return false;
                 canOverwriteBuilding = false;
@@ -300,29 +269,25 @@ class Level {
             this.overlayBuildAtTile(tileX, tileY)?.break();
         }
         else {
-            if (this.buildingAtTile(tileX, tileY)?.id == buildingID) {
+            if (this.buildingAtTile(tileX, tileY)?.block.id == buildingID[0] && this.buildingAtTile(tileX, tileY)?.meta == buildingID[1]) {
                 if (!canOverwriteBuilding)
                     return false;
                 canOverwriteBuilding = false;
             }
             this.buildingAtTile(tileX, tileY)?.break();
-            this.overlayBuildAtTile(tileX, tileY)?.break();
         }
         let tempBuilding;
-        if (buildingID == "0xFFFF") {
-            return true;
-        }
-        if (((+buildingID) & 0x00F0) == 0x10) {
-            const block = registry.buildings[getRawBuildingID(buildingID)];
+        if (buildingID[0] == "base_assembler") {
+            const block = registry.buildings[buildingID[0]];
             this.buildingAtTile(tileX + 1, tileY)?.break();
             this.buildingAtTile(tileX, tileY + 1)?.break();
             this.buildingAtTile(tileX + 1, tileY + 1)?.break();
-            switch (getRawBuildingID(buildingID)) {
-                case "0x11":
-                    let controller = new block(tileX, tileY, buildingID, this);
-                    let secondary1 = new MultiBlockSecondary(tileX + 1, tileY, "0x0010", this);
-                    let secondary2 = new MultiBlockSecondary(tileX, tileY + 1, "0x0010", this);
-                    let secondary3 = new MultiBlockSecondary(tileX + 1, tileY + 1, "0x0010", this);
+            switch (buildingID[0]) {
+                case "base_assembler":
+                    let controller = new block(tileX, tileY, buildingID[1], this);
+                    let secondary1 = new MultiBlockSecondary(tileX + 1, tileY, 0, this);
+                    let secondary2 = new MultiBlockSecondary(tileX, tileY + 1, 0, this);
+                    let secondary3 = new MultiBlockSecondary(tileX + 1, tileY + 1, 0, this);
                     controller.secondaries = [secondary1, secondary2, secondary3];
                     [secondary1, secondary2, secondary3].forEach(secondary => secondary.controller = controller);
                     this.writeBuilding(tileX, tileY, controller);
@@ -335,13 +300,13 @@ class Level {
             }
             return true;
         }
-        if (registry.buildings[getRawBuildingID(buildingID)]?.canBuildAt(tileX, tileY, this)) {
-            trigger(triggerType.placeBuilding, getRawBuildingID(buildingID));
-            tempBuilding = new registry.buildings[getRawBuildingID(buildingID)](tileX, tileY, getRawBuildingID(buildingID) == "0x01" ?
-                this.getTurnedConveyor(tileX, tileY, +buildingID >> 8) : buildingID, this);
+        if (registry.buildings[buildingID[0]]?.canBuildAt(tileX, tileY, this)) {
+            trigger(triggerType.placeBuilding, buildingID[0]);
+            tempBuilding = new registry.buildings[buildingID[0]](tileX, tileY, buildingID[0] == "base_conveyor" ?
+                this.getTurnedConveyor(tileX, tileY, buildingID[1]) : buildingID[1], this);
         }
         else {
-            trigger(triggerType.placeBuildingFail, getRawBuildingID(buildingID));
+            trigger(triggerType.placeBuildingFail, buildingID[0]);
             return false;
         }
         if (tempBuilding instanceof OverlayBuild) {
@@ -369,8 +334,8 @@ class Level {
         let y = (mousey - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_SCALE;
         ctx4.font = "16px monospace";
         if (this.buildingAtPixel(x, y) instanceof Building) {
-            let buildingID = this.buildingAtPixel(x, y)._id;
-            if (buildingID == "0x01" && this.buildingAtPixel(x, y).item) {
+            let buildingID = this.buildingAtPixel(x, y).block.id;
+            if (buildingID == "base_conveyor" && this.buildingAtPixel(x, y).item) {
                 let item = this.buildingAtPixel(x, y).item;
                 if (item && (Math.abs(item.pos.pixelX - x) < 8) && Math.abs(item.pos.pixelY - y) < 8) {
                     ctx4.fillStyle = "#0033CC";
@@ -455,20 +420,30 @@ class Chunk {
             }
             for (let y in data.layers[0]) {
                 for (let x in data.layers[0][y]) {
-                    let buildingData = data.layers[0][y][x];
-                    if (!buildingData)
+                    let _buildingData = data.layers[0][y][x];
+                    if (!_buildingData)
                         continue;
                     this.hasBuildings = true;
+                    let buildingData;
                     if (+data.version.split(" ")[1].replaceAll(".", "") <= 200) {
-                        buildingData.id = hex(buildingData.id, 4);
+                        _buildingData.id = hex(_buildingData.id, 4);
                     }
+                    if (+data.version.split(" ")[1].replaceAll(".", "") < 300) {
+                        buildingData = {
+                            ..._buildingData,
+                            id: mapLegacyRawBuildingID(getLegacyRawBuildingID(_buildingData.id)),
+                            meta: +_buildingData.id >> 8
+                        };
+                    }
+                    else
+                        buildingData = _buildingData;
                     let tempBuilding;
                     try {
-                        tempBuilding = new registry.buildings[getRawBuildingID(buildingData.id)](parseInt(x) + (consts.CHUNK_SIZE * this.x), parseInt(y) + (consts.CHUNK_SIZE * this.y), buildingData.id, this.parent);
+                        tempBuilding = new registry.buildings[buildingData.id](parseInt(x) + (consts.CHUNK_SIZE * this.x), parseInt(y) + (consts.CHUNK_SIZE * this.y), buildingData.meta, this.parent);
                     }
                     catch (err) {
                         console.error(err);
-                        throw new Error(`Failed to import building id ${buildingData.id} at position ${x},${y} in chunk ${this.x},${this.y}. See console for more details.`);
+                        throw new Error(`Failed to import building id ${stringifyMeta(buildingData.id, buildingData.meta)} at position ${x},${y} in chunk ${this.x},${this.y}. See console for more details.`);
                     }
                     if (buildingData.item) {
                         tempBuilding.item = new Item(buildingData.item.x, buildingData.item.y, buildingData.item.id);
@@ -486,14 +461,24 @@ class Chunk {
             }
             for (let y in data.layers[1]) {
                 for (let x in data.layers[1][y]) {
-                    let buildingData = data.layers[1][y][x];
-                    if (!buildingData)
+                    let _buildingData = data.layers[1][y][x];
+                    if (!_buildingData)
                         continue;
                     this.hasBuildings = true;
+                    let buildingData;
                     if (+data.version.split(" ")[1].replaceAll(".", "") <= 200) {
-                        buildingData.id = hex(buildingData.id, 4);
+                        _buildingData.id = hex(_buildingData.id, 4);
                     }
-                    let tempBuilding = new registry.buildings[getRawBuildingID(buildingData.id)](parseInt(x) + Pos.chunkToTile(this.x), parseInt(y) + Pos.chunkToTile(this.y), buildingData.id, this.parent);
+                    if (+data.version.split(" ")[1].replaceAll(".", "") < 300) {
+                        buildingData = {
+                            ..._buildingData,
+                            id: mapLegacyRawBuildingID(getLegacyRawBuildingID(_buildingData.id)),
+                            meta: +_buildingData.id >> 8
+                        };
+                    }
+                    else
+                        buildingData = _buildingData;
+                    let tempBuilding = new registry.buildings[buildingData.id](parseInt(x) + (consts.CHUNK_SIZE * this.x), parseInt(y) + (consts.CHUNK_SIZE * this.y), buildingData.meta, this.parent);
                     if (buildingData.item && +data.version.split(" ")[1].replaceAll(".", "") >= 130) {
                         tempBuilding.item = new Item(buildingData.item.x, buildingData.item.y, buildingData.item.id);
                         tempBuilding.item.grabbedBy = tempBuilding;
@@ -665,17 +650,12 @@ class Chunk {
         }
         for (let y = 0; y < this.layers[1].length; y++) {
             for (let x = 0; x < this.layers[1][y].length; x++) {
-                if (this.layers[1][y][x] instanceof Building) {
-                    this.layers[1][y][x].display(currentframe);
-                }
+                this.layers[1][y][x]?.display(currentframe);
             }
         }
         for (let y = 0; y < this.layers[2].length; y++) {
             for (let x = 0; x < this.layers[2][y].length; x++) {
-                if (this.layers[2][y][x]) {
-                    this.displayL3(x, y, this.layers[2][y][x].id);
-                    this.layers[2][y][x].display(currentframe);
-                }
+                this.layers[2][y][x]?.display(currentframe);
             }
         }
         if (currentframe.debug) {
@@ -710,53 +690,6 @@ class Chunk {
         }
         if (currentframe.debug)
             ctx.strokeRect(pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
-    }
-    displayL3(x, y, buildingID, isGhost) {
-        if (buildingID == "0xFFFF") {
-            return;
-        }
-        let pixelX = ((this.x * consts.CHUNK_SIZE) + x) * consts.DISPLAY_TILE_SIZE + (Game.scroll.x * consts.DISPLAY_SCALE);
-        let pixelY = ((this.y * consts.CHUNK_SIZE) + y) * consts.DISPLAY_TILE_SIZE + (Game.scroll.y * consts.DISPLAY_SCALE);
-        let _ctx = ctx25;
-        if (registry.textures.building[buildingID]) {
-            switch (buildingID) {
-                case "0x0005":
-                    return _ctx.drawImage(registry.textures.building[buildingID], pixelX, pixelY, consts.DISPLAY_TILE_SIZE * 2, consts.DISPLAY_TILE_SIZE);
-                case "0x0105":
-                    return _ctx.drawImage(registry.textures.building[buildingID], pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE * 2);
-                case "0x0205":
-                    return _ctx.drawImage(registry.textures.building[buildingID], pixelX - consts.DISPLAY_TILE_SIZE, pixelY, consts.DISPLAY_TILE_SIZE * 2, consts.DISPLAY_TILE_SIZE);
-                case "0x0305":
-                    return _ctx.drawImage(registry.textures.building[buildingID], pixelX, pixelY - consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE * 2);
-                case "0x0405":
-                    return _ctx.drawImage(registry.textures.building[buildingID], pixelX, pixelY, consts.DISPLAY_TILE_SIZE * 3, consts.DISPLAY_TILE_SIZE);
-                case "0x0505":
-                    return _ctx.drawImage(registry.textures.building[buildingID], pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE * 3);
-                case "0x0605":
-                    return _ctx.drawImage(registry.textures.building[buildingID], pixelX - consts.DISPLAY_TILE_SIZE * 2, pixelY, consts.DISPLAY_TILE_SIZE * 3, consts.DISPLAY_TILE_SIZE);
-                case "0x0705":
-                    return _ctx.drawImage(registry.textures.building[buildingID], pixelX, pixelY - consts.DISPLAY_TILE_SIZE * 2, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE * 3);
-                case "0x0805":
-                    return _ctx.drawImage(registry.textures.building[buildingID], pixelX, pixelY, consts.DISPLAY_TILE_SIZE * 4, consts.DISPLAY_TILE_SIZE);
-                case "0x0905":
-                    return _ctx.drawImage(registry.textures.building[buildingID], pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE * 4);
-                case "0x0A05":
-                    return _ctx.drawImage(registry.textures.building[buildingID], pixelX - consts.DISPLAY_TILE_SIZE * 3, pixelY, consts.DISPLAY_TILE_SIZE * 4, consts.DISPLAY_TILE_SIZE);
-                case "0x0B05":
-                    return _ctx.drawImage(registry.textures.building[buildingID], pixelX, pixelY - consts.DISPLAY_TILE_SIZE * 3, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE * 4);
-            }
-        }
-        else {
-            _ctx.fillStyle = "#FF00FF";
-            rect(pixelX, pixelY, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
-            rect(pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY + consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
-            _ctx.fillStyle = "#000000";
-            rect(pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
-            rect(pixelX, pixelY + consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
-            _ctx.font = "15px sans-serif";
-            _ctx.fillStyle = "#00FF00";
-            _ctx.fillText(buildingID, pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY + consts.DISPLAY_TILE_SIZE / 2);
-        }
     }
     export() {
         let exportDataL1 = [];
@@ -824,13 +757,11 @@ class Item {
     }
 }
 class Building {
-    constructor(x, y, id, level) {
-        this.id = id;
+    constructor(x, y, meta, level) {
+        this.meta = meta;
         this.level = level;
         this.item = null;
         this.block = this.constructor;
-        this._id = getRawBuildingID(id);
-        this._meta = +id >> 8;
         this.pos = Pos.fromTileCoords(x, y, false);
     }
     static canBuildAt(tileX, tileY, level) {
@@ -845,14 +776,17 @@ class Building {
     update(currentFrame) {
         this.item?.update(currentFrame);
     }
+    stringID() {
+        return stringifyMeta(this.block.id, this.meta);
+    }
     display(currentFrame, ctx) {
         let pixelX = this.pos.tileX * consts.DISPLAY_TILE_SIZE + Game.scroll.x * consts.DISPLAY_SCALE;
         let pixelY = this.pos.tileY * consts.DISPLAY_TILE_SIZE + Game.scroll.y * consts.DISPLAY_SCALE;
         let _ctx = ctx ?? ctx2;
-        let texture = registry.textures.building[this.id];
+        let texture = registry.textures.building[this.stringID()];
         if (texture) {
-            if (this._id == "0x05") {
-                switch (this._meta) {
+            if (this.block.id == "base_extractor") {
+                switch (this.meta) {
                     case 0:
                         _ctx.drawImage(texture, pixelX, pixelY, consts.DISPLAY_TILE_SIZE * 2, consts.DISPLAY_TILE_SIZE);
                         break;
@@ -891,8 +825,8 @@ class Building {
                         break;
                 }
             }
-            else if (registry.buildings[this._id]?.prototype instanceof MultiBlockController) {
-                const block = registry.buildings[this._id];
+            else if (registry.buildings[this.block.id]?.prototype instanceof MultiBlockController) {
+                const block = registry.buildings[this.block.id];
                 _ctx.drawImage(texture, pixelX, pixelY, consts.DISPLAY_TILE_SIZE * block.multiblockSize[0], consts.DISPLAY_TILE_SIZE * block.multiblockSize[1]);
             }
             else {
@@ -910,7 +844,7 @@ class Building {
             rect(pixelX, pixelY + consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
             _ctx.font = "15px sans-serif";
             _ctx.fillStyle = "#00FF00";
-            _ctx.fillText(names.building[this._id], pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY + consts.DISPLAY_TILE_SIZE / 2);
+            _ctx.fillText(names.building[this.block.id], pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY + consts.DISPLAY_TILE_SIZE / 2);
         }
     }
     hasItem() {
@@ -980,7 +914,8 @@ class Building {
         return {
             x: this.pos.tileX,
             y: this.pos.tileY,
-            id: this.id,
+            id: this.block.id,
+            meta: this.meta,
             item: this.item?.export() ?? null,
             inv: []
         };
@@ -989,8 +924,8 @@ class Building {
 Building.animated = false;
 Building.outputsItems = false;
 class BuildingWithRecipe extends Building {
-    constructor(tileX, tileY, id, level) {
-        super(tileX, tileY, id, level);
+    constructor(tileX, tileY, meta, level) {
+        super(tileX, tileY, meta, level);
         this.timer = -1;
         this.recipe = null;
         this.items = [];
@@ -1044,8 +979,8 @@ class BuildingWithRecipe extends Building {
 }
 BuildingWithRecipe.outputsItems = true;
 class Miner extends Building {
-    constructor(tileX, tileY, id, level) {
-        super(tileX, tileY, id, level);
+    constructor(tileX, tileY, meta, level) {
+        super(tileX, tileY, meta, level);
         this.miningItem = null;
         this.timer = 61;
         for (let recipe of registry.recipes.base_mining.recipes) {
@@ -1068,21 +1003,24 @@ class Miner extends Building {
         else {
             if (this.spawnItem(this.miningItem)) {
                 this.timer = 61;
-                trigger(triggerType.buildingRun, getRawBuildingID(this.id), this.miningItem);
+                trigger(triggerType.buildingRun, this.block.id, this.miningItem);
             }
         }
     }
 }
 Miner.outputsItems = true;
+Miner.id = "base_miner";
 class TrashCan extends Building {
     acceptItem(item) {
         return true;
     }
 }
+TrashCan.id = "base_trash_can";
 class Furnace extends BuildingWithRecipe {
 }
 Furnace.recipeType = registry.recipes.base_smelting;
 Furnace.animated = true;
+Furnace.id = "base_furnace";
 class Conveyor extends Building {
     display(currentFrame) {
         super.display(currentFrame);
@@ -1094,32 +1032,32 @@ class Conveyor extends Building {
         switch (side) {
             case Direction.left: return [
                 0x00, 0x07, 0x0B, 0x0C, 0x0D, 0x0F, 0x13, 0x15, 0x17, 0x18, 0x19, 0x1B,
-            ].includes(+this.id >> 8);
+            ].includes(this.meta);
             case Direction.up: return [
                 0x01, 0x05, 0x09, 0x0D, 0x0E, 0x0F, 0x11, 0x14, 0x16, 0x18, 0x19, 0x1A,
-            ].includes(+this.id >> 8);
+            ].includes(this.meta);
             case Direction.right: return [
                 0x02, 0x06, 0x0A, 0x0E, 0x10, 0x11, 0x12, 0x15, 0x17, 0x19, 0x1A, 0x1B,
-            ].includes(+this.id >> 8);
+            ].includes(this.meta);
             case Direction.down: return [
                 0x03, 0x08, 0x04, 0x0C, 0x10, 0x12, 0x13, 0x14, 0x16, 0x18, 0x1A, 0x1B,
-            ].includes(+this.id >> 8);
+            ].includes(this.meta);
         }
     }
     outputsItemToSide(side) {
         switch (side) {
             case Direction.left: return [
                 2, 8, 9, 16, 17, 22, 26
-            ].includes(this._meta);
+            ].includes(this.meta);
             case Direction.up: return [
                 3, 10, 11, 18, 19, 23, 27
-            ].includes(this._meta);
+            ].includes(this.meta);
             case Direction.right: return [
                 0, 4, 5, 12, 13, 20, 24
-            ].includes(this._meta);
+            ].includes(this.meta);
             case Direction.down: return [
                 1, 6, 7, 14, 15, 21, 25
-            ].includes(this._meta);
+            ].includes(this.meta);
         }
     }
     update() {
@@ -1133,7 +1071,7 @@ class Conveyor extends Building {
                 }
                 return;
             }
-            switch (this._meta) {
+            switch (this.meta) {
                 case 0x00:
                     if (this.item.pos.tileOffsetYCentered) {
                         this.item.pos.pixelX += consts.buildings.conveyor.SPEED;
@@ -1363,6 +1301,7 @@ class Conveyor extends Building {
             return false;
     }
 }
+Conveyor.id = "base_conveyor";
 class OverlayBuild extends Building {
     buildingUnder() {
         return this.level.buildingAtPos(this.pos);
@@ -1373,6 +1312,9 @@ class OverlayBuild extends Building {
         }
         this.level.writeOverlayBuild(this.pos.tileX, this.pos.tileY, null);
     }
+    display(currentFrame, ctx = ctx25) {
+        super.display(currentFrame, ctx);
+    }
 }
 class Extractor extends OverlayBuild {
     display(currentFrame) {
@@ -1381,9 +1323,7 @@ class Extractor extends OverlayBuild {
             this.item.display(currentFrame);
         }
     }
-    grabItemFromTile(filter, callback, remove, grabDistance) {
-        filter ?? (filter = (item) => { return item instanceof Item; });
-        callback ?? (callback = () => { });
+    grabItemFromTile(filter = item => item instanceof Item) {
         if (this.buildingUnder() instanceof Building &&
             this.buildingUnder().hasItem() &&
             filter(this.buildingUnder().hasItem())) {
@@ -1416,7 +1356,7 @@ class Extractor extends OverlayBuild {
                 console.error(this);
                 throw new InvalidStateError("Item somehow grabbed or deleted from an extractor.");
             }
-            switch (this._meta) {
+            switch (this.meta) {
                 case 0x00:
                     if (this.item.pos.tileXExact >= this.pos.tileX + 1.5)
                         return this.dropItem();
@@ -1498,6 +1438,7 @@ class Extractor extends OverlayBuild {
     acceptsItemFromSide(side) { return false; }
     acceptItem(item) { return false; }
 }
+Extractor.id = "base_extractor";
 class StorageBuilding extends Building {
     constructor() {
         super(...arguments);
@@ -1542,12 +1483,14 @@ class StorageBuilding extends Building {
         return {
             x: this.pos.tileX,
             y: this.pos.tileY,
-            id: this.id,
+            id: this.block.id,
+            meta: this.meta,
             item: this.item?.export() ?? null,
             inv: inv
         };
     }
 }
+StorageBuilding.id = "base_chest";
 class ResourceAcceptor extends Building {
     acceptItem(item) {
         item.deleted = true;
@@ -1559,19 +1502,24 @@ class ResourceAcceptor extends Building {
         return true;
     }
 }
+ResourceAcceptor.id = "base_resource_acceptor";
 class AlloySmelter extends BuildingWithRecipe {
 }
 AlloySmelter.animated = true;
 AlloySmelter.recipeType = registry.recipes.base_alloying;
+AlloySmelter.id = "base_alloy_smelter";
 class Wiremill extends BuildingWithRecipe {
 }
 Wiremill.recipeType = registry.recipes.base_wiremilling;
+Wiremill.id = "base_wiremill";
 class Compressor extends BuildingWithRecipe {
 }
 Compressor.recipeType = registry.recipes.base_compressing;
+Compressor.id = "base_compressor";
 class Lathe extends BuildingWithRecipe {
 }
 Lathe.recipeType = registry.recipes.base_lathing;
+Lathe.id = "base_lathe";
 class MultiBlockController extends BuildingWithRecipe {
     constructor() {
         super(...arguments);
@@ -1583,7 +1531,7 @@ class MultiBlockController extends BuildingWithRecipe {
         super.break();
     }
     update() {
-        if (this.secondaries.length != this.constructor.multiblockSize[0] * this.constructor.multiblockSize[1] - 1) {
+        if (this.secondaries.length != this.block.multiblockSize[0] * this.block.multiblockSize[1] - 1) {
             if (!this.resetSecondaries())
                 this.break();
             console.warn("Multiblock disconnected from secondaries. If you just loaded a save, this is fine.");
@@ -1647,23 +1595,25 @@ class MultiBlockSecondary extends Building {
     }
 }
 MultiBlockSecondary.outputsItems = true;
+MultiBlockSecondary.id = "base_multiblock_secondary";
 class Assembler extends MultiBlockController {
 }
 Assembler.recipeType = registry.recipes.base_assembling;
 Assembler.multiblockSize = [2, 2];
+Assembler.id = "base_assembler";
 registry.buildings = {
-    "0x01": Conveyor,
-    "0x02": Miner,
-    "0x03": TrashCan,
-    "0x04": Furnace,
-    "0x05": Extractor,
-    "0x06": StorageBuilding,
-    "0x07": AlloySmelter,
-    "0x08": ResourceAcceptor,
-    "0x09": Wiremill,
-    "0x0A": Compressor,
-    "0x0B": Lathe,
-    "0x10": MultiBlockSecondary,
-    "0x11": Assembler,
-    "0xFF": null
+    "base_conveyor": Conveyor,
+    "base_miner": Miner,
+    "base_trash_can": TrashCan,
+    "base_furnace": Furnace,
+    "base_extractor": Extractor,
+    "base_chest": StorageBuilding,
+    "base_alloy_smelter": AlloySmelter,
+    "base_resource_acceptor": ResourceAcceptor,
+    "base_wiremill": Wiremill,
+    "base_compressor": Compressor,
+    "base_lathe": Lathe,
+    "base_multiblock_secondary": MultiBlockSecondary,
+    "base_assembler": Assembler,
+    "base_null": null
 };

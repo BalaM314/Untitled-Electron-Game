@@ -7,7 +7,7 @@ type TileID =
 "base_ore_copper" |	//copper ore
 "base_null" ;  //Unset
 
-type BuildingID = 
+type LegacyBuildingID = 
 //0x0000 is invalid
 "0x0001" |	//Conveyor Belt Facing Right
 "0x0101" |	//Conveyor Belt Facing Down
@@ -62,8 +62,11 @@ type BuildingID =
 "0x0011" |	//Assembler
 "0xFFFF" ;	//Null
 
-type RawBuildingID = "0x01" | "0x02" | "0x03" | "0x04" | "0x05" | "0x06" | "0x07" | "0x08" | "0x09" | "0x0A" | "0x0B" | "0x10" | "0x11" | "0xFF";
-
+type LegacyRawBuildingID = "0x01" | "0x02" | "0x03" | "0x04" | "0x05" | "0x06" | "0x07" | "0x08" | "0x09" | "0x0A" | "0x0B" | "0x10" | "0x11" | "0xFF";
+type RawBuildingID = "base_conveyor" | "base_miner" | "base_trash_can" | "base_furnace" | "base_extractor" | "base_chest" | "base_alloy_smelter" | "base_resource_acceptor" | "base_wiremill" | "base_compressor" | "base_lathe" | "base_multiblock_secondary" | "base_assembler" | "base_null";
+type BuildingIDWithMeta = [buildingID:RawBuildingID, meta:BuildingMeta];
+type BuildingMeta = number;
+type StringBuildingID = `${RawBuildingID}:${BuildingMeta}`;
 type RecipeType = "1-1" | "2-1" | "t-1";
 
 interface Recipe {
@@ -85,7 +88,7 @@ interface Registry {
 	buildings: {
 		[ID in RawBuildingID]: typeof Building;
 	}
-	buildingIDs: BuildingID[];
+	buildingIDs: StringBuildingID[];
 	itemIDs: ItemID[];
 	tileIDs: TileID[];
 	miscTextures: string[];
@@ -94,7 +97,7 @@ interface Registry {
 			[ID in ItemID]: HTMLImageElement
 		};
 		building: {
-			[ID in BuildingID]: HTMLImageElement
+			[ID in StringBuildingID]: HTMLImageElement
 		};
 		tile: {
 			[ID in TileID]: HTMLImageElement
@@ -142,10 +145,19 @@ interface ChunkData {
 }
 	
 
+interface LegacyBuildingData {
+	x: number;
+	y: number;
+	id: LegacyBuildingID;
+	item: ItemData | null;
+	inv: ItemData[];
+}
+
 interface BuildingData {
 	x: number;
 	y: number;
-	id: BuildingID;
+	id: RawBuildingID;
+	meta: BuildingMeta;
 	item: ItemData | null;
 	inv: ItemData[];
 }

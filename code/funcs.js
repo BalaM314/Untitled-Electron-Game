@@ -203,7 +203,7 @@ function getElement(id, type) {
     const element = document.getElementById(id);
     if (element instanceof type)
         return element;
-    else if (element != null)
+    else if (element instanceof HTMLElement)
         throw new Error(`Element with id was fetched as type ${type}, but was of type ${element.constructor.name}`);
     else
         throw new Error(`Element with id ${id} does not exist`);
@@ -224,7 +224,7 @@ function loadTexturesIntoMemory() {
         if (!imageElement.complete) {
             return false;
         }
-        registry.textures.building[imageElement.src.match(/(?<=assets\/textures\/building\/).*(?=\.png)/)[0]] = imageElement;
+        registry.textures.building[imageElement.src.match(/(?<=assets\/textures\/building\/).*(?=\.png)/)[0].replace("%23", ":")] = imageElement;
     }
     for (let imageElement of Array.from(texturesDivs.tile.children)) {
         if (!imageElement.complete) {
@@ -243,7 +243,7 @@ function loadTexturesIntoMemory() {
 function loadTexturesIntoPage() {
     for (let buildingID of registry.buildingIDs) {
         let img = document.createElement("img");
-        img.setAttribute("src", `assets/textures/building/${buildingID}.png`);
+        img.setAttribute("src", `assets/textures/building/${buildingID.replace(":", "%23")}.png`);
         img.addEventListener("load", () => {
             Game.loadedTextures++;
         });
@@ -295,6 +295,30 @@ function getTotalTextures() {
 }
 function hex(num, length) {
     return `0x${(Array(length).fill("0").join("") + num.toString(16)).toUpperCase().slice(-length)}`;
+}
+function stringifyMeta(buildingID, buildingMeta) {
+    return `${buildingID}:${buildingMeta}`;
+}
+function mapLegacyRawBuildingID(id) {
+    switch (id) {
+        case "0x01": return "base_conveyor";
+        case "0x02": return "base_miner";
+        case "0x03": return "base_trash_can";
+        case "0x04": return "base_furnace";
+        case "0x05": return "base_extractor";
+        case "0x06": return "base_chest";
+        case "0x07": return "base_alloy_smelter";
+        case "0x08": return "base_resource_acceptor";
+        case "0x09": return "base_wiremill";
+        case "0x0A": return "base_compressor";
+        case "0x0B": return "base_lathe";
+        case "0x10": return "base_multiblock_secondary";
+        case "0x11": return "base_assembler";
+        case "0xFF": return "base_null";
+    }
+}
+function getLegacyRawBuildingID(buildingID) {
+    return hex(+buildingID, 2);
 }
 function zoom(scaleFactor) {
     scaleFactor = constrain(scaleFactor, 0.9, 1.1);
@@ -404,9 +428,6 @@ class Pos {
         tileCoord = Math.floor(tileCoord) % consts.CHUNK_SIZE;
         return tileCoord + (tileCoord < 0 ? consts.CHUNK_SIZE : 0);
     }
-}
-function getRawBuildingID(buildingID) {
-    return hex(+buildingID, 2);
 }
 class Keybind {
     constructor(mainKey, modifiers, action) {

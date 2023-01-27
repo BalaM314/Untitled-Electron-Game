@@ -20,10 +20,10 @@ class Level {
 			this.seed = data ?? 0;
 			this.uuid = Math.random().toString().substring(2);
 			this.generateNecessaryChunks();
-			this.buildBuilding(0, 0, "0x0008");
-			this.buildBuilding(0, -1, "0x0008");
-			this.buildBuilding(-1, 0, "0x0008");
-			this.buildBuilding(-1, -1, "0x0008");
+			this.buildBuilding(0, 0, ["base_resource_acceptor", 0]);
+			this.buildBuilding(0, -1, ["base_resource_acceptor", 0]);
+			this.buildBuilding(-1, 0, ["base_resource_acceptor", 0]);
+			this.buildBuilding(-1, -1, ["base_resource_acceptor", 0]);
 		} else {
 			// Generate a level from JSON
 			let {chunks, resources, seed, version, uuid} = data;
@@ -150,15 +150,17 @@ class Level {
 	}
 	
 	
-	displayGhostBuilding(tileX:number, tileY:number, buildingID:BuildingID, currentframe:CurrentFrame){
+	displayGhostBuilding(tileX:number, tileY:number, buildingID:BuildingIDWithMeta, currentframe:CurrentFrame){
 		
 		if(!this.hasChunk(tileX, tileY)) return;
-		if(buildingID == "0xFFFF") return;
-		let id:BuildingID = buildingID;
-		const meta = +buildingID >> 8;
-		if(getRawBuildingID(buildingID) == "0x01" && [0, 1, 2, 3].includes(meta)){
-			id = this.getTurnedConveyor(tileX, tileY, meta as 0 | 1 | 2 | 3);
+		if(buildingID[0] == "base_null") return;
+		let changedID:BuildingIDWithMeta = [buildingID[0], buildingID[1]];
+
+		//HARDCODED
+		if(changedID[0] == "base_conveyor" && [0, 1, 2, 3].includes(buildingID[1])){
+			changedID[1] = this.getTurnedConveyor(tileX, tileY, buildingID[1] as 0 | 1 | 2 | 3);
 		}
+
 		let pixelX = tileX * consts.DISPLAY_TILE_SIZE + (Game.scroll.x * consts.DISPLAY_SCALE);
 		let pixelY = tileY * consts.DISPLAY_TILE_SIZE + (Game.scroll.y * consts.DISPLAY_SCALE);
 		let _ctx = ctx1;
@@ -171,7 +173,7 @@ class Level {
 		}
 
 		_ctx.globalAlpha = 0.9;
-		let isError = !registry.buildings[getRawBuildingID(buildingID)]?.canBuildAt(tileX, tileY, this);
+		let isError = !registry.buildings[changedID[0]]?.canBuildAt(tileX, tileY, this);
 		if(isError){
 			_ctx.drawImage(registry.textures.misc["invalidunderlay"], pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
 		} else {
@@ -186,20 +188,21 @@ class Level {
 		//TODO this is rather bodgy and could cause bugs
 		Building.prototype.display.bind({
 			pos: Pos.fromTileCoords(tileX, tileY, false),
-			id: buildingID,
-			_meta: meta,
-			_id: getRawBuildingID(buildingID),
+			meta: changedID[1],
 			level: this,
 			block: {
-				animated: false
-			}
+				animated: false,
+				id: changedID[0]
+			},
+			stringID: Building.prototype.stringID
 		})(currentframe, ctx1);
 		_ctx.globalAlpha = 1.0;
 	}
-	getTurnedConveyor(tileX:number, tileY:number, conveyorType:0 | 1 | 2 | 3):BuildingID {
+	getTurnedConveyor(tileX:number, tileY:number, meta:BuildingMeta):BuildingMeta {
+		//TODO this should be Conveyor., not (instance Level).
 		//Returns how a conveyor should be turned based on nearby buildings.
 		if(registry.keybinds.placement.force_straight_conveyor.isHeld()){
-			return hex((conveyorType * 0x100) + 1, 4) as BuildingID;
+			return meta;
 			//If holding shift, just return a straight conveyor.
 		}
 		tileX = Math.floor(tileX);
@@ -209,130 +212,90 @@ class Level {
 		let hasRightBuilding = this.buildingAtTile(tileX + 1, tileY)?.outputsItemToSide(Direction.left) ?? false;
 		let hasBottomBuilding = this.buildingAtTile(tileX, tileY + 1)?.outputsItemToSide(Direction.up) ?? false;
 		
-		switch(conveyorType){
+		switch(meta){
 			case 0:
 				if(hasLeftBuilding){
-					if(hasTopBuilding && hasBottomBuilding){
-						return "0x1801";
-					} else if(hasTopBuilding){
-						return "0x0D01";
-					} else if(hasBottomBuilding){
-						return "0x0C01";
-					} else {
-						return "0x0001";
-					}
+					if(hasTopBuilding && hasBottomBuilding) return 0x18;
+					else if(hasTopBuilding) return 0x0D;
+					else if(hasBottomBuilding) return 0x0C;
+					else return 0x00;
 				} else {
-					if(hasTopBuilding && hasBottomBuilding){
-						return "0x1401";
-					} else if(hasTopBuilding){
-						return "0x0501";
-					} else if(hasBottomBuilding){
-						return "0x0401";
-					} else {
-						return "0x0001";
-					}
+					if(hasTopBuilding && hasBottomBuilding) return 0x14;
+					else if(hasTopBuilding) return 0x05;
+					else if(hasBottomBuilding) return 0x04;
+					else return 0x00;
 				}
-				break;
 			case 1:
 				if(hasTopBuilding){
-					if(hasLeftBuilding && hasRightBuilding){
-						return "0x1901";
-					} else if(hasLeftBuilding){
-						return "0x0F01";
-					} else if(hasRightBuilding){
-						return "0x0E01";
-					} else {
-						return "0x0101";
-					}
+					if(hasLeftBuilding && hasRightBuilding) return 0x19;
+					else if(hasLeftBuilding) return 0x0F;
+					else if(hasRightBuilding) return 0x0E;
+					else return 0x01;
 				} else {
-					if(hasLeftBuilding && hasRightBuilding){
-						return "0x1501";
-					} else if(hasLeftBuilding){
-						return "0x0701";
-					} else if(hasRightBuilding){
-						return "0x0601";
-					} else {
-						return "0x0101";
-					}
+					if(hasLeftBuilding && hasRightBuilding) return 0x15;
+					else if(hasLeftBuilding) return 0x07;
+					else if(hasRightBuilding) return 0x06;
+					else return 0x01;
 				}
-				break;
 			case 2:
 				if(hasRightBuilding){
-					if(hasTopBuilding && hasBottomBuilding){
-						return "0x1A01";
-					} else if(hasTopBuilding){
-						return "0x1101";
-					} else if(hasBottomBuilding){
-						return "0x1001";
-					} else {
-						return "0x0201";
-					}
+					if(hasTopBuilding && hasBottomBuilding) return 0x1A;
+					else if(hasTopBuilding) return 0x11;
+					else if(hasBottomBuilding) return 0x10;
+					else return 0x02;
 				} else {
-					if(hasTopBuilding && hasBottomBuilding){
-						return "0x1601";
-					} else if(hasTopBuilding){
-						return "0x0901";
-					} else if(hasBottomBuilding){
-						return "0x0801";
-					} else {
-						return "0x0201";
-					}
+					if(hasTopBuilding && hasBottomBuilding) return 0x16;
+					else if(hasTopBuilding) return 0x09;
+					else if(hasBottomBuilding) return 0x08;
+					else return 0x02;
 				}
-				break;
 			case 3:
 				if(hasBottomBuilding){
-					if(hasLeftBuilding && hasRightBuilding){
-						return "0x1B01";
-					} else if(hasLeftBuilding){
-						return "0x1301";
-					} else if(hasRightBuilding){
-						return "0x1201";
-					} else {
-						return "0x0301";
-					}
+					if(hasLeftBuilding && hasRightBuilding) return 0x1B;
+					else if(hasLeftBuilding) return 0x13;
+					else if(hasRightBuilding) return 0x12;
+					else return 0x03;
 				} else {
-					if(hasLeftBuilding && hasRightBuilding){
-						return "0x1701";
-					} else if(hasLeftBuilding){
-						return "0x0B01";
-					} else if(hasRightBuilding){
-						return "0x0A01";
-					} else {
-						return "0x0301";
-					}
+					if(hasLeftBuilding && hasRightBuilding) return 0x17;
+					else if(hasLeftBuilding) return 0x0B;
+					else if(hasRightBuilding) return 0x0A;
+					else return 0x03;
 				}
-				break;
+			default: return meta;
 		}
 	}
-	buildBuilding(tileX:number, tileY:number, buildingID:BuildingID):boolean {
+	buildBuilding(tileX:number, tileY:number, buildingID:BuildingIDWithMeta):boolean {
 		if(this.buildingAtTile(tileX, tileY) instanceof ResourceAcceptor) return false;
 		//TODO add Build.immovable
 
+		if(buildingID[0] == "base_null"){
+			this.buildingAtTile(tileX, tileY)?.break();
+			this.overlayBuildAtTile(tileX, tileY)?.break();
+			return true;
+		}
+
 		//Only overwrite the same building once per build attempt.
 		//Otherwise, you could constantly overwrite a building on every frame you tried to build, which is not good.
-		if(getRawBuildingID(buildingID) == "0x05"){
-			if(this.overlayBuildAtTile(tileX, tileY)?.id == buildingID){
+		//HARDCODED: uses "id == extractor", should be if (class extends OverlayBuild)
+		if(buildingID[0] == "base_extractor"){
+			if(this.overlayBuildAtTile(tileX, tileY)?.block.id == buildingID[0] && this.overlayBuildAtTile(tileX, tileY)?.meta == buildingID[1]){
 				if(!canOverwriteBuilding) return false;
 				canOverwriteBuilding = false;
 			}
 			this.overlayBuildAtTile(tileX, tileY)?.break();
 		} else {
-			if(this.buildingAtTile(tileX, tileY)?.id == buildingID){
+			if(this.buildingAtTile(tileX, tileY)?.block.id == buildingID[0] && this.buildingAtTile(tileX, tileY)?.meta == buildingID[1]){
 				if(!canOverwriteBuilding) return false;
 				canOverwriteBuilding = false;
 			}
 			this.buildingAtTile(tileX, tileY)?.break();
-			this.overlayBuildAtTile(tileX, tileY)?.break();
 		}
 
 		let tempBuilding:Building;
-		
-		if(buildingID == "0xFFFF"){
-			return true;
-		}
-		if(((+buildingID) & 0x00F0) == 0x10){
+		if(buildingID[0] == "base_assembler"){
+			//HARDCODED: uses "id == assembler", should be if(class extends MultiblockController)
 			//Multiblock handling
-			const block = registry.buildings[getRawBuildingID(buildingID)] as typeof MultiBlockController;
+			const block = registry.buildings[buildingID[0]] as typeof MultiBlockController;
 			
 			//Break all the buildings under
 			//TODO use the size thing
@@ -340,12 +303,12 @@ class Level {
 			this.buildingAtTile(tileX, tileY + 1)?.break();
 			this.buildingAtTile(tileX+1, tileY+1)?.break();
 
-			switch(getRawBuildingID(buildingID)){
-				case "0x11":
-					let controller = new block(tileX, tileY, buildingID, this);
-					let secondary1 = new MultiBlockSecondary(tileX + 1, tileY, "0x0010", this);
-					let secondary2 = new MultiBlockSecondary(tileX, tileY + 1, "0x0010", this);
-					let secondary3 = new MultiBlockSecondary(tileX+1, tileY+1, "0x0010", this);
+			switch(buildingID[0]){
+				case "base_assembler":
+					let controller = new block(tileX, tileY, buildingID[1], this);
+					let secondary1 = new MultiBlockSecondary(tileX + 1, tileY, 0, this);
+					let secondary2 = new MultiBlockSecondary(tileX, tileY + 1, 0, this);
+					let secondary3 = new MultiBlockSecondary(tileX+1, tileY+1, 0, this);
 					controller.secondaries = [secondary1, secondary2, secondary3];
 					[secondary1, secondary2, secondary3].forEach(secondary => secondary.controller = controller);
 					this.writeBuilding(tileX, tileY, controller);
@@ -358,15 +321,15 @@ class Level {
 			}
 			return true;
 		}
-		if(registry.buildings[getRawBuildingID(buildingID)]?.canBuildAt(tileX, tileY, this)){
-			trigger(triggerType.placeBuilding, getRawBuildingID(buildingID));
-			tempBuilding = new registry.buildings[getRawBuildingID(buildingID)](
+		if(registry.buildings[buildingID[0]]?.canBuildAt(tileX, tileY, this)){
+			trigger(triggerType.placeBuilding, buildingID[0]);
+			tempBuilding = new registry.buildings[buildingID[0]](
 				tileX, tileY,
-				getRawBuildingID(buildingID) == "0x01" ?
-				this.getTurnedConveyor(tileX, tileY, +buildingID >> 8 as 0 | 1 | 2 | 3) : buildingID, this
+				buildingID[0] == "base_conveyor" ?
+				this.getTurnedConveyor(tileX, tileY, buildingID[1] as 0 | 1 | 2 | 3) : buildingID[1], this
 			);
 		} else {
-			trigger(triggerType.placeBuildingFail, getRawBuildingID(buildingID));
+			trigger(triggerType.placeBuildingFail, buildingID[0]);
 			return false;
 		}
 		if(tempBuilding instanceof OverlayBuild){
@@ -395,9 +358,9 @@ class Level {
 		let y = (mousey - (Game.scroll.y * consts.DISPLAY_SCALE))/consts.DISPLAY_SCALE;
 		ctx4.font = "16px monospace";
 		if(this.buildingAtPixel(x, y) instanceof Building){
-			let buildingID = this.buildingAtPixel(x, y)!._id;
-			//TODO add an option to building for displaysItem, because extractors should also show item tooltips
-			if(buildingID == "0x01" && this.buildingAtPixel(x, y)!.item){
+			let buildingID = this.buildingAtPixel(x, y)!.block.id;
+			//HARDCODED add an option to building for displaysItem, because extractors should also show item tooltips
+			if(buildingID == "base_conveyor" && this.buildingAtPixel(x, y)!.item){
 				let item = this.buildingAtPixel(x, y)!.item;
 				if(item && (Math.abs(item.pos.pixelX - x) < 8) && Math.abs(item.pos.pixelY - y) < 8){
 					//If the item is within 8 pixels of the cursor
@@ -515,23 +478,31 @@ class Chunk {
 			}
 			for(let y in data.layers[0]){
 				for(let x in data.layers[0][y]){
-					let buildingData = data.layers[0][y][x];
-					if(!buildingData) continue;
+					let _buildingData = data.layers[0][y][x] as BuildingData | LegacyBuildingData | null;
+					if(!_buildingData) continue;
 					this.hasBuildings = true;
+					let buildingData:BuildingData;
 					if(+data.version.split(" ")[1].replaceAll(".", "") <= 200){
-						buildingData.id = hex(buildingData.id as any as number, 4) as BuildingID;
-						//aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa I am looking forward to beta when I can throw out these garbage formats
+						_buildingData.id = hex(_buildingData.id as any as number, 4) as LegacyBuildingID;
 					}
+					if(+data.version.split(" ")[1].replaceAll(".", "") < 300){
+						buildingData = {
+							..._buildingData,
+							id: mapLegacyRawBuildingID(getLegacyRawBuildingID((_buildingData as LegacyBuildingData).id)),
+							meta: +(_buildingData as LegacyBuildingData).id >> 8
+						}
+						//aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa I am still looking forward to beta when I can throw out these garbage formats
+					} else buildingData = _buildingData as BuildingData;
 					let tempBuilding:Building;
 					try {
-						tempBuilding = new registry.buildings[getRawBuildingID(buildingData.id)](
+						tempBuilding = new registry.buildings[buildingData.id](
 							parseInt(x) + (consts.CHUNK_SIZE * this.x),
 							parseInt(y) + (consts.CHUNK_SIZE * this.y),
-							buildingData.id, this.parent
+							buildingData.meta, this.parent
 						);
 					} catch(err){
 						console.error(err);
-						throw new Error(`Failed to import building id ${buildingData.id} at position ${x},${y} in chunk ${this.x},${this.y}. See console for more details.`);
+						throw new Error(`Failed to import building id ${stringifyMeta(buildingData.id, buildingData.meta)} at position ${x},${y} in chunk ${this.x},${this.y}. See console for more details.`);
 					}
 					if(buildingData.item){
 						//If the building has an item, spawn it in.
@@ -553,16 +524,25 @@ class Chunk {
 			//Same as above but for overlay builds.
 			for(let y in data.layers[1]){
 				for(let x in data.layers[1][y]){
-					let buildingData = data.layers[1][y][x];
-					if(!buildingData) continue;
+					let _buildingData = data.layers[1][y][x] as BuildingData | LegacyBuildingData | null;
+					if(!_buildingData) continue;
 					this.hasBuildings = true;
+					let buildingData:BuildingData;
 					if(+data.version.split(" ")[1].replaceAll(".", "") <= 200){
-						buildingData.id = hex(buildingData.id as any as number, 4) as BuildingID;
+						_buildingData.id = hex(_buildingData.id as any as number, 4) as LegacyBuildingID;
 					}
-					let tempBuilding = new registry.buildings[getRawBuildingID(buildingData.id)](
-						parseInt(x) + Pos.chunkToTile(this.x),
-						parseInt(y) + Pos.chunkToTile(this.y),
-						buildingData.id, this.parent
+					if(+data.version.split(" ")[1].replaceAll(".", "") < 300){
+						buildingData = {
+							..._buildingData,
+							id: mapLegacyRawBuildingID(getLegacyRawBuildingID((_buildingData as LegacyBuildingData).id)),
+							meta: +(_buildingData as LegacyBuildingData).id >> 8
+						}
+						//aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa I am still looking forward to beta when I can throw out these garbage formats
+					} else buildingData = _buildingData as BuildingData;
+					let tempBuilding = new registry.buildings[buildingData.id](
+						parseInt(x) + (consts.CHUNK_SIZE * this.x),
+						parseInt(y) + (consts.CHUNK_SIZE * this.y),
+						buildingData.meta, this.parent
 					) as OverlayBuild;
 					if(buildingData.item && +data.version.split(" ")[1].replaceAll(".", "") >= 130){
 						//AAAAAAAAAAAAAAaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaAAA
@@ -754,17 +734,12 @@ class Chunk {
 		}
 		for(let y = 0; y < this.layers[1].length; y ++){
 			for(let x = 0; x < this.layers[1][y].length; x ++){
-				if(this.layers[1][y][x] instanceof Building){
-					this.layers[1][y][x]!.display(currentframe);
-				}
+				this.layers[1][y][x]?.display(currentframe);
 			}
 		}
 		for(let y = 0; y < this.layers[2].length; y ++){
 			for(let x = 0; x < this.layers[2][y].length; x ++){
-				if(this.layers[2][y][x]){
-					this.displayL3(x, y, this.layers[2][y][x]!.id);
-					this.layers[2][y][x]!.display(currentframe);
-				}
+				this.layers[2][y][x]?.display(currentframe);
 			}
 		}
 		if(currentframe.debug){
@@ -800,50 +775,6 @@ class Chunk {
 			rect(pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
 		}
 		if(currentframe.debug) ctx.strokeRect(pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
-	}
-	displayL3(x:number, y:number, buildingID:BuildingID, isGhost?:number){
-		if(buildingID == "0xFFFF"){return;}
-		let pixelX = ((this.x * consts.CHUNK_SIZE) + x) * consts.DISPLAY_TILE_SIZE + (Game.scroll.x * consts.DISPLAY_SCALE);
-		let pixelY = ((this.y * consts.CHUNK_SIZE) + y) * consts.DISPLAY_TILE_SIZE + (Game.scroll.y * consts.DISPLAY_SCALE);
-		let _ctx = ctx25;
-		if(registry.textures.building[buildingID]){
-			switch(buildingID){
-				case "0x0005":
-					return _ctx.drawImage(registry.textures.building[buildingID], pixelX, pixelY, consts.DISPLAY_TILE_SIZE * 2, consts.DISPLAY_TILE_SIZE);
-				case "0x0105":
-					return _ctx.drawImage(registry.textures.building[buildingID], pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE * 2);
-				case "0x0205":
-					return _ctx.drawImage(registry.textures.building[buildingID], pixelX - consts.DISPLAY_TILE_SIZE, pixelY, consts.DISPLAY_TILE_SIZE * 2, consts.DISPLAY_TILE_SIZE);
-				case "0x0305":
-					return _ctx.drawImage(registry.textures.building[buildingID], pixelX, pixelY - consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE * 2);
-				case "0x0405":
-					return _ctx.drawImage(registry.textures.building[buildingID], pixelX, pixelY, consts.DISPLAY_TILE_SIZE * 3, consts.DISPLAY_TILE_SIZE);
-				case "0x0505":
-					return _ctx.drawImage(registry.textures.building[buildingID], pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE * 3);
-				case "0x0605":
-					return _ctx.drawImage(registry.textures.building[buildingID], pixelX - consts.DISPLAY_TILE_SIZE * 2, pixelY, consts.DISPLAY_TILE_SIZE * 3, consts.DISPLAY_TILE_SIZE);
-				case "0x0705":
-					return _ctx.drawImage(registry.textures.building[buildingID], pixelX, pixelY - consts.DISPLAY_TILE_SIZE * 2, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE * 3);
-				case "0x0805":
-					return _ctx.drawImage(registry.textures.building[buildingID], pixelX, pixelY, consts.DISPLAY_TILE_SIZE * 4, consts.DISPLAY_TILE_SIZE);
-				case "0x0905":
-					return _ctx.drawImage(registry.textures.building[buildingID], pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE * 4);
-				case "0x0A05":
-					return _ctx.drawImage(registry.textures.building[buildingID], pixelX - consts.DISPLAY_TILE_SIZE * 3, pixelY, consts.DISPLAY_TILE_SIZE * 4, consts.DISPLAY_TILE_SIZE);
-				case "0x0B05":
-					return _ctx.drawImage(registry.textures.building[buildingID], pixelX, pixelY - consts.DISPLAY_TILE_SIZE * 3, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE * 4);
-			}
-		} else {
-			_ctx.fillStyle = "#FF00FF";
-			rect(pixelX, pixelY, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
-			rect(pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY + consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
-			_ctx.fillStyle = "#000000";
-			rect(pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
-			rect(pixelX, pixelY + consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
-			_ctx.font = "15px sans-serif";
-			_ctx.fillStyle = "#00FF00";
-			_ctx.fillText(buildingID, pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY + consts.DISPLAY_TILE_SIZE / 2);
-		}
 	}
 	export():ChunkData | null {
 		let exportDataL1:(BuildingData | null)[][] = [];
@@ -922,13 +853,10 @@ class Building {
 	item: Item | null = null;
 	static animated = false;
 	static outputsItems = false;
+	static id:RawBuildingID;
 	pos:Pos;
-	_id: RawBuildingID;
-	_meta: number;
 	block = this.constructor as typeof Building;
-	constructor(x:number, y:number, public id:BuildingID, public level:Level){
-		this._id = getRawBuildingID(id);
-		this._meta = +id >> 8;
+	constructor(x:number, y:number, public meta:BuildingMeta, public level:Level){
 		this.pos = Pos.fromTileCoords(x, y, false);
 	}
 	static canBuildAt(tileX:number, tileY:number, level:Level){
@@ -945,19 +873,23 @@ class Building {
 	update(currentFrame:CurrentFrame){
 		this.item?.update(currentFrame);
 	}
+	stringID(){
+		return stringifyMeta(this.block.id, this.meta);
+	}
 	display(currentFrame:CurrentFrame, ctx?: CanvasRenderingContext2D){
 		let pixelX = this.pos.tileX * consts.DISPLAY_TILE_SIZE + Game.scroll.x * consts.DISPLAY_SCALE;
 		let pixelY = this.pos.tileY * consts.DISPLAY_TILE_SIZE + Game.scroll.y * consts.DISPLAY_SCALE;
 		let _ctx = ctx ?? ctx2;
-		let texture = registry.textures.building[this.id];
+		let texture = registry.textures.building[this.stringID()];
 		if(texture){
 			//This is cursed
 			//Future system:
 			//Each building class stores the range of valid metas
 			//All valid textures are loaded at runtime
 			//Each meta stores the correct display size
-			if(this._id == "0x05"){
-				switch(this._meta){
+			//TODO! replace with this.block.size(this.meta) stuff
+			if(this.block.id == "base_extractor"){
+				switch(this.meta){
 					case 0:
 						_ctx.drawImage(texture, pixelX, pixelY, consts.DISPLAY_TILE_SIZE * 2, consts.DISPLAY_TILE_SIZE); break;
 					case 1:
@@ -983,10 +915,10 @@ class Building {
 					case 11:
 						_ctx.drawImage(texture, pixelX, pixelY - consts.DISPLAY_TILE_SIZE * 3, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE * 4); break;
 				}
-			} else if(registry.buildings[this._id]?.prototype instanceof MultiBlockController){
+			} else if(registry.buildings[this.block.id]?.prototype instanceof MultiBlockController){
 				//TODO aaaaaaa that is bad
 				//this is temporary right? only until I get around to fixing the texture system right? 1/27/2023
-				const block = registry.buildings[this._id] as typeof MultiBlockController;
+				const block = registry.buildings[this.block.id] as typeof MultiBlockController;
 				//Multiblock
 				_ctx.drawImage(texture, pixelX, pixelY, consts.DISPLAY_TILE_SIZE * block.multiblockSize[0], consts.DISPLAY_TILE_SIZE * block.multiblockSize[1]);
 			} else {
@@ -1004,7 +936,7 @@ class Building {
 			rect(pixelX, pixelY + consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
 			_ctx.font = "15px sans-serif";
 			_ctx.fillStyle = "#00FF00";
-			_ctx.fillText(names.building[this._id], pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY + consts.DISPLAY_TILE_SIZE / 2);
+			_ctx.fillText(names.building[this.block.id], pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY + consts.DISPLAY_TILE_SIZE / 2);
 		}
 	}
 	hasItem():Item | null {
@@ -1087,7 +1019,8 @@ class Building {
 		return {
 			x: this.pos.tileX,
 			y: this.pos.tileY,
-			id: this.id,
+			id: this.block.id,
+			meta: this.meta,
 			item: this.item?.export() ?? null,
 			inv: []
 		};
@@ -1103,8 +1036,8 @@ class BuildingWithRecipe extends Building {
 	static outputsItems = true;
 	static recipeType: {recipes: Recipe[]};
 	block!:typeof BuildingWithRecipe;
-	constructor(tileX:number, tileY:number, id:BuildingID, level:Level){
-		super(tileX, tileY, id, level);
+	constructor(tileX:number, tileY:number, meta:BuildingMeta, level:Level){
+		super(tileX, tileY, meta, level);
 		if(this.constructor === BuildingWithRecipe) throw new Error("Cannot initialize abstract class BuildingWithRecipe");
 	}
 	acceptItem(item:Item):boolean {
@@ -1159,8 +1092,9 @@ class Miner extends Building {
 	timer: number;
 	miningItem: ItemID | null = null;
 	static outputsItems = true;
-	constructor(tileX:number, tileY:number, id:BuildingID, level:Level){
-		super(tileX, tileY, id, level);
+	static id:RawBuildingID = "base_miner";//TEMP
+	constructor(tileX:number, tileY:number, meta:BuildingMeta, level:Level){
+		super(tileX, tileY, meta, level);
 		this.timer = 61;
 		for(let recipe of registry.recipes.base_mining.recipes){
 			if(recipe.tile == level.tileAtByTile(tileX, tileY)){
@@ -1180,7 +1114,7 @@ class Miner extends Building {
 		} else {
 			if(this.spawnItem(this.miningItem)){
 				this.timer = 61;
-				trigger(triggerType.buildingRun, getRawBuildingID(this.id), this.miningItem);
+				trigger(triggerType.buildingRun, this.block.id, this.miningItem);
 			}
 		}
 	}
@@ -1189,6 +1123,7 @@ class Miner extends Building {
 
 
 class TrashCan extends Building {
+	static id:RawBuildingID = "base_trash_can";//TEMP
 	acceptItem(item:Item){
 		return true;
 	}
@@ -1198,6 +1133,7 @@ class TrashCan extends Building {
 class Furnace extends BuildingWithRecipe {
 	static recipeType = registry.recipes.base_smelting;
 	static animated = true;
+	static id:RawBuildingID = "base_furnace";//TEMP
 }
 // const Furnace = Buildings.register("0x04", BuildingWithRecipe, {
 // 	recipeType: registry.recipes.base_smelting,
@@ -1205,6 +1141,7 @@ class Furnace extends BuildingWithRecipe {
 // });
 
 class Conveyor extends Building {
+	static id:RawBuildingID = "base_conveyor";//TEMP
 	display(currentFrame:CurrentFrame){
 		super.display(currentFrame);
 		if(this.item instanceof Item){
@@ -1213,19 +1150,20 @@ class Conveyor extends Building {
 	}
 	acceptsItemFromSide(side:Direction):boolean {
 		//Bit cursed, but far better than what it used to be
+		//TODO remove hex values
 		switch(side){
 			case Direction.left: return [
 				0x00, 0x07, 0x0B, 0x0C, 0x0D, 0x0F, 0x13, 0x15, 0x17, 0x18, 0x19, 0x1B,
-			].includes(+this.id >> 8);
+			].includes(this.meta);
 			case Direction.up: return [
 				0x01, 0x05, 0x09, 0x0D, 0x0E, 0x0F, 0x11, 0x14, 0x16, 0x18, 0x19, 0x1A,
-			].includes(+this.id >> 8);
+			].includes(this.meta);
 			case Direction.right: return [
 				0x02, 0x06, 0x0A, 0x0E, 0x10, 0x11, 0x12, 0x15, 0x17, 0x19, 0x1A, 0x1B,
-			].includes(+this.id >> 8);
+			].includes(this.meta);
 			case Direction.down: return [
 				0x03, 0x08, 0x04, 0x0C, 0x10, 0x12, 0x13, 0x14, 0x16, 0x18, 0x1A, 0x1B,
-			].includes(+this.id >> 8);
+			].includes(this.meta);
 		}
 	}
 	outputsItemToSide(side:Direction):boolean {
@@ -1233,16 +1171,16 @@ class Conveyor extends Building {
 		switch(side){
 			case Direction.left: return [
 				2, 8, 9, 16, 17, 22, 26
-			].includes(this._meta);
+			].includes(this.meta);
 			case Direction.up: return [
 				3, 10, 11, 18, 19, 23, 27
-			].includes(this._meta);
+			].includes(this.meta);
 			case Direction.right: return [
 				0, 4, 5, 12, 13, 20, 24
-			].includes(this._meta);
+			].includes(this.meta);
 			case Direction.down: return [
 				1, 6, 7, 14, 15, 21, 25
-			].includes(this._meta);
+			].includes(this.meta);
 		}
 	}
 	update(){
@@ -1255,7 +1193,8 @@ class Conveyor extends Building {
 				}
 				return;
 			}
-			switch(this._meta){//bit masks ftw, this just grabs the first byte
+			switch(this.meta){
+				//TODO remove brace lines
 				//yes I know there's no need to write the ids in hex but why the heck not
 				case 0x00:
 					if(this.item.pos.tileOffsetYCentered){
@@ -1475,9 +1414,13 @@ class OverlayBuild extends Building {
 		}
 		this.level.writeOverlayBuild(this.pos.tileX, this.pos.tileY, null);
 	}
+	display(currentFrame:CurrentFrame, ctx:CanvasRenderingContext2D = ctx25){
+		super.display(currentFrame, ctx)
+	}
 }
 
 class Extractor extends OverlayBuild {
+	static id:RawBuildingID = "base_extractor";//TEMP
 
 	display(currentFrame:CurrentFrame){
 		super.display(currentFrame);
@@ -1486,9 +1429,7 @@ class Extractor extends OverlayBuild {
 		}
 	}
 
-	grabItemFromTile(filter?:(item:Item) => any, callback?:(item:Item) => void, remove?:boolean, grabDistance?:number){
-		filter ??= (item) => {return item instanceof Item;};
-		callback ??= () => {};
+	grabItemFromTile(filter:(item:Item) => boolean = item => item instanceof Item){
 
 		if(
 			this.buildingUnder() instanceof Building &&
@@ -1525,7 +1466,7 @@ class Extractor extends OverlayBuild {
 				throw new InvalidStateError("Item somehow grabbed or deleted from an extractor.");
 			}
 
-			switch(this._meta){
+			switch(this.meta){
 				case 0x00:
 					if(this.item.pos.tileXExact >= this.pos.tileX + 1.5) return this.dropItem();
 					else this.item.pos.pixelX ++;
@@ -1588,6 +1529,7 @@ interface StorageInventory extends Array<Item> {
 	MAX_LENGTH: number;
 }
 class StorageBuilding extends Building {
+	static id:RawBuildingID = "base_chest";//TEMP
 	inventory: StorageInventory = Object.assign([], { MAX_LENGTH: 64 });
 	break(){
 		if(this.inventory){
@@ -1624,7 +1566,8 @@ class StorageBuilding extends Building {
 		return {
 			x: this.pos.tileX,
 			y: this.pos.tileY,
-			id: this.id,
+			id: this.block.id,
+			meta: this.meta,
 			item: this.item?.export() ?? null,
 			inv: inv
 		};
@@ -1633,6 +1576,7 @@ class StorageBuilding extends Building {
 
 
 class ResourceAcceptor extends Building {
+	static id:RawBuildingID = "base_resource_acceptor";//TEMP
 	acceptItem(item:Item){
 		item.deleted = true;
 		item.grabbedBy = null;
@@ -1648,18 +1592,22 @@ class ResourceAcceptor extends Building {
 class AlloySmelter extends BuildingWithRecipe {
 	static animated = true;
 	static recipeType = registry.recipes.base_alloying;
+	static id:RawBuildingID = "base_alloy_smelter";//TEMP
 }
 
 class Wiremill extends BuildingWithRecipe {
 	static recipeType = registry.recipes.base_wiremilling;
+	static id:RawBuildingID = "base_wiremill";//TEMP
 }
 
 class Compressor extends BuildingWithRecipe {
 	static recipeType = registry.recipes.base_compressing;
+	static id:RawBuildingID = "base_compressor";//TEMP
 }
 
 class Lathe extends BuildingWithRecipe {
 	static recipeType = registry.recipes.base_lathing;
+	static id:RawBuildingID = "base_lathe";//TEMP
 }
 
 
@@ -1673,8 +1621,8 @@ class MultiBlockController extends BuildingWithRecipe {
 		this.secondaries = [];
 		super.break();
 	}
-	update(): void {
-		if(this.secondaries.length != (this.constructor as typeof MultiBlockController).multiblockSize[0] * (this.constructor as typeof MultiBlockController).multiblockSize[1] - 1){
+	update(){
+		if(this.secondaries.length != this.block.multiblockSize[0] * this.block.multiblockSize[1] - 1){
 			if(!this.resetSecondaries()) this.break();
 			console.warn("Multiblock disconnected from secondaries. If you just loaded a save, this is fine.");
 		}
@@ -1718,6 +1666,7 @@ class MultiBlockSecondary extends Building {
 	/**Assigned in buildBuilding */
 	controller: MultiBlockController | null = null;
 	static outputsItems = true;
+	static id:RawBuildingID = "base_multiblock_secondary";
 	acceptItem(item: Item):boolean {
 		return this.controller?.acceptItem(item) ?? false;
 	}
@@ -1740,22 +1689,23 @@ class MultiBlockSecondary extends Building {
 class Assembler extends MultiBlockController {
 	static recipeType = registry.recipes.base_assembling;
 	static multiblockSize = [2, 2];
+	static id:RawBuildingID = "base_assembler";//TEMP
 }
 
 
 registry.buildings = {
-	"0x01": Conveyor,
-	"0x02": Miner,
-	"0x03": TrashCan,
-	"0x04": Furnace,
-	"0x05": Extractor,
-	"0x06": StorageBuilding,
-	"0x07": AlloySmelter,
-	"0x08": ResourceAcceptor,
-	"0x09": Wiremill,
-	"0x0A": Compressor,
-	"0x0B": Lathe,
-	"0x10": MultiBlockSecondary,
-	"0x11": Assembler,
-	"0xFF": null!
+	"base_conveyor": Conveyor,
+	"base_miner": Miner,
+	"base_trash_can": TrashCan,
+	"base_furnace": Furnace,
+	"base_extractor": Extractor,
+	"base_chest": StorageBuilding,
+	"base_alloy_smelter": AlloySmelter,
+	"base_resource_acceptor": ResourceAcceptor,
+	"base_wiremill": Wiremill,
+	"base_compressor": Compressor,
+	"base_lathe": Lathe,
+	"base_multiblock_secondary": MultiBlockSecondary,
+	"base_assembler": Assembler,
+	"base_null": null!
 };

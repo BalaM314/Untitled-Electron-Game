@@ -245,7 +245,7 @@ function* pseudoRandom(seed:number) {
 function getElement<T extends typeof HTMLElement>(id:string, type:T){
 	const element = <unknown>document.getElementById(id);
 	if(element instanceof type) return element as T["prototype"];
-	else if(element != null) throw new Error(`Element with id was fetched as type ${type}, but was of type ${element.constructor.name}`);
+	else if(element instanceof HTMLElement) throw new Error(`Element with id was fetched as type ${type}, but was of type ${element.constructor.name}`);
 	else throw new Error(`Element with id ${id} does not exist`);
 }
 
@@ -261,6 +261,7 @@ function _alert(x:string){
 	alerts.list.push(x);
 }
 function loadTexturesIntoMemory():boolean {
+	//TODO this is getting super cursed, really need to do that texture system overhaul
 	for(let imageElement of Array.from(texturesDivs.item.children) as HTMLImageElement[]){
 		if(!imageElement.complete){
 			return false;
@@ -271,7 +272,7 @@ function loadTexturesIntoMemory():boolean {
 		if(!imageElement.complete){
 			return false;
 		}
-		(registry.textures.building as any)[imageElement.src.match(/(?<=assets\/textures\/building\/).*(?=\.png)/)![0]] = imageElement;
+		(registry.textures.building as any)[imageElement.src.match(/(?<=assets\/textures\/building\/).*(?=\.png)/)![0].replace("%23", ":")] = imageElement;
 	}
 	for(let imageElement of Array.from(texturesDivs.tile.children) as HTMLImageElement[]){
 		if(!imageElement.complete){
@@ -290,7 +291,7 @@ function loadTexturesIntoMemory():boolean {
 function loadTexturesIntoPage(){
 	for(let buildingID of registry.buildingIDs){
 		let img = document.createElement("img");
-		img.setAttribute("src", `assets/textures/building/${buildingID}.png`);
+		img.setAttribute("src", `assets/textures/building/${buildingID.replace(":", "%23")}.png`);
 		img.addEventListener("load", () => {
 			Game.loadedTextures ++;
 		});
@@ -345,6 +346,32 @@ function getTotalTextures(){
 function hex(num:number, length:number){
 	return `0x${(Array(length).fill("0").join("") + num.toString(16)).toUpperCase().slice(-length)}`;
 	//it just works
+}
+
+function stringifyMeta(buildingID:RawBuildingID, buildingMeta:BuildingMeta):StringBuildingID {
+	return `${buildingID}:${buildingMeta}`
+}
+
+function mapLegacyRawBuildingID(id:LegacyRawBuildingID):RawBuildingID {
+	switch(id){
+		case "0x01": return "base_conveyor";
+		case "0x02": return "base_miner";
+		case "0x03": return "base_trash_can";
+		case "0x04": return "base_furnace";
+		case "0x05": return "base_extractor";
+		case "0x06": return "base_chest";
+		case "0x07": return "base_alloy_smelter";
+		case "0x08": return "base_resource_acceptor";
+		case "0x09": return "base_wiremill";
+		case "0x0A": return "base_compressor";
+		case "0x0B": return "base_lathe";
+		case "0x10": return "base_multiblock_secondary";
+		case "0x11": return "base_assembler";
+		case "0xFF": return "base_null";
+	}
+}
+function getLegacyRawBuildingID(buildingID:LegacyBuildingID):LegacyRawBuildingID {
+	return hex(+buildingID, 2) as LegacyRawBuildingID;
 }
 
 function zoom(scaleFactor:number){
@@ -454,10 +481,6 @@ class Pos {
 		tileCoord = Math.floor(tileCoord) % consts.CHUNK_SIZE;
 		return tileCoord + (tileCoord < 0 ? consts.CHUNK_SIZE : 0);
 	}
-}
-
-function getRawBuildingID(buildingID: BuildingID):RawBuildingID {
-	return hex(+buildingID, 2) as RawBuildingID;
 }
 
 class Keybind {
