@@ -153,7 +153,7 @@ class Level {
         _ctx.globalAlpha = 1.0;
     }
     buildBuilding(tileX, tileY, buildingID) {
-        if (this.buildingAtTile(tileX, tileY) instanceof ResourceAcceptor)
+        if (this.buildingAtTile(tileX, tileY)?.block.immutable)
             return false;
         if (buildingID[0] == "base_null") {
             this.buildingAtTile(tileX, tileY)?.break();
@@ -202,7 +202,7 @@ class Level {
         }
         if (registry.buildings[buildingID[0]]?.canBuildAt(tileX, tileY, this)) {
             trigger(triggerType.placeBuilding, buildingID[0]);
-            tempBuilding = new registry.buildings[buildingID[0]](tileX, tileY, registry.buildings[buildingID[0]].changeMeta(buildingID[1], tileX, tileY, this));
+            tempBuilding = new registry.buildings[buildingID[0]](tileX, tileY, registry.buildings[buildingID[0]].changeMeta(buildingID[1], tileX, tileY, this), this);
         }
         else {
             trigger(triggerType.placeBuildingFail, buildingID[0]);
@@ -825,6 +825,7 @@ class Building {
 }
 Building.animated = false;
 Building.outputsItems = false;
+Building.immutable = false;
 class BuildingWithRecipe extends Building {
     constructor(tileX, tileY, meta, level) {
         super(tileX, tileY, meta, level);

@@ -195,8 +195,7 @@ class Level {
 		_ctx.globalAlpha = 1.0;
 	}
 	buildBuilding(tileX:number, tileY:number, buildingID:BuildingIDWithMeta):boolean {
-		if(this.buildingAtTile(tileX, tileY) instanceof ResourceAcceptor) return false;
-		//TODO add Build.immovable
+		if(this.buildingAtTile(tileX, tileY)?.block.immutable) return false;
 
 		if(buildingID[0] == "base_null"){
 			this.buildingAtTile(tileX, tileY)?.break();
@@ -255,7 +254,7 @@ class Level {
 			trigger(triggerType.placeBuilding, buildingID[0]);
 			tempBuilding = new registry.buildings[buildingID[0]](
 				tileX, tileY,
-				registry.buildings[buildingID[0]].changeMeta(buildingID[1], tileX, tileY, this)
+				registry.buildings[buildingID[0]].changeMeta(buildingID[1], tileX, tileY, this), this
 			);
 		} else {
 			trigger(triggerType.placeBuildingFail, buildingID[0]);
@@ -779,10 +778,13 @@ class Item {
 }
 
 class Building {
-	item: Item | null = null;
 	static animated = false;
 	static outputsItems = false;
 	static id:RawBuildingID;
+	/**Whether this building cannot be placed or broken.*/
+	static immutable = false;
+
+	item: Item | null = null;
 	pos:Pos;
 	block = this.constructor as typeof Building;
 	constructor(x:number, y:number, public meta:BuildingMeta, public level:Level){
