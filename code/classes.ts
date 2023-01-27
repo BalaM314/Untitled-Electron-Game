@@ -102,18 +102,6 @@ class Level {
 		Game.forceRedraw = true;
 		return true;
 	}
-	buildingIDAtPixel(pixelX:number, pixelY:number):BuildingID {
-		return this.getChunk(
-			Pos.pixelToTile(pixelX),
-			Pos.pixelToTile(pixelY)
-		).buildingAt(Pos.chunkOffsetInTiles(Pos.pixelToTile(pixelX)), Pos.chunkOffsetInTiles(Pos.pixelToTile(pixelY)))?.id ?? BuildingID["0xFFFF"];
-	}
-	buildingIDAtTile(tileX:number, tileY:number):BuildingID {
-		return this.getChunk(
-			tileX,
-			tileY
-		).buildingAt(Pos.chunkOffsetInTiles(tileX), Pos.chunkOffsetInTiles(tileY))?.id ?? BuildingID["0xFFFF"];
-	}
 	buildingAtTile(tileX:number, tileY:number):Building | null {
 		return this.getChunk(
 			tileX,
@@ -188,22 +176,10 @@ class Level {
 		}
 		tileX = Math.floor(tileX);
 		tileY = Math.floor(tileY);
-		//🍝👨‍💻 is delicious
-		function isOutputBuilding(buildingid:BuildingID):boolean {
-			return ["0x0002", "0x0004", "0x0007", "0x0009", "0x000A", "0x000B", "0x0011"].includes(buildingid);
-		}
-		let leftBuilding:BuildingID = this.buildingIDAtTile(tileX - 1, tileY);
-		let hasLeftBuilding = ["0x0001", "0x0401", "0x0501", "0x0C01", "0x0D01"].includes(leftBuilding)
-			|| isOutputBuilding(leftBuilding);
-		let topBuilding:BuildingID = this.buildingIDAtTile(tileX, tileY - 1);
-		let hasTopBuilding = ["0x0101", "0x0601", "0x0701", "0x0E01", "0x0F01"].includes(topBuilding)
-			|| isOutputBuilding(topBuilding);
-		let rightBuilding:BuildingID = this.buildingIDAtTile(tileX + 1, tileY);
-		let hasRightBuilding = ["0x0201", "0x0801", "0x0901", "0x1001", "0x1101"].includes(rightBuilding)
-			|| isOutputBuilding(rightBuilding);
-		let bottomBuilding:BuildingID = this.buildingIDAtTile(tileX, tileY + 1);
-		let hasBottomBuilding = ["0x0301", "0x0A01", "0x0B01", "0x1201", "0x1301"].includes(bottomBuilding)
-			|| isOutputBuilding(bottomBuilding);
+		let hasLeftBuilding = this.buildingAtTile(tileX - 1, tileY)?.outputsItemToSide(Direction.right) ?? false;
+		let hasTopBuilding = this.buildingAtTile(tileX, tileY - 1)?.outputsItemToSide(Direction.down) ?? false;
+		let hasRightBuilding = this.buildingAtTile(tileX + 1, tileY)?.outputsItemToSide(Direction.left) ?? false;
+		let hasBottomBuilding = this.buildingAtTile(tileX, tileY + 1)?.outputsItemToSide(Direction.up) ?? false;
 		
 		switch(conveyorType){
 			case 0:
@@ -301,7 +277,8 @@ class Level {
 		}
 	}
 	buildBuilding(tileX:number, tileY:number, buildingID:BuildingID):boolean {
-		if(this.buildingIDAtTile(tileX, tileY) == "0x0008") return false;
+		if(this.buildingAtTile(tileX, tileY) instanceof ResourceAcceptor) return false;
+		//TODO add Build.immovable
 
 		//Only overwrite the same building once per build attempt.
 		//Otherwise, you could constantly overwrite a building on every frame you tried to build, which is not good.
@@ -390,7 +367,8 @@ class Level {
 		let y = (mousey - (Game.scroll.y * consts.DISPLAY_SCALE))/consts.DISPLAY_SCALE;
 		ctx4.font = "16px monospace";
 		if(this.buildingAtPixel(x, y) instanceof Building){
-			let buildingID = getRawBuildingID(this.buildingIDAtPixel(x, y));
+			let buildingID = this.buildingAtPixel(x, y)!._id;
+			//TODO add an option to building for displaysItem, because extractors should also show item tooltips
 			if(buildingID == "0x01" && this.buildingAtPixel(x, y)!.item){
 				let item = this.buildingAtPixel(x, y)!.item;
 				if(item && (Math.abs(item.pos.pixelX - x) < 8) && Math.abs(item.pos.pixelY - y) < 8){
@@ -1045,6 +1023,10 @@ class Building {
 	acceptsItemFromSide(side:Direction):boolean {
 		return true;
 	}
+	/**Whether a building can ever output items to a particular side. */
+	outputsItemToSide(side:Direction):boolean {
+		return true;
+	}
 	buildAt(direction:Direction){
 		switch(direction){
 			case Direction.right: return this.level.buildingAtTile(this.pos.tileX + 1, this.pos.tileY);
@@ -1243,6 +1225,23 @@ class Conveyor extends Building {
 			case Direction.down: return [
 				0x03, 0x08, 0x04, 0x0C, 0x10, 0x12, 0x13, 0x14, 0x16, 0x18, 0x1A, 0x1B,
 			].includes(+this.id >> 8);
+		}
+	}
+	outputsItemToSide(side:Direction):boolean {
+		//Bit cursed, but far better than what it used to be
+		switch(side){
+			case Direction.left: return [
+				2, 8, 9, 16, 17, 22, 26
+			].includes(this._meta);
+			case Direction.up: return [
+				3, 10, 11, 18, 19, 23, 27
+			].includes(this._meta);
+			case Direction.right: return [
+				0, 4, 5, 12, 13, 20, 24
+			].includes(this._meta);
+			case Direction.down: return [
+				1, 6, 7, 14, 15, 21, 25
+			].includes(this._meta);
 		}
 	}
 	update(){
