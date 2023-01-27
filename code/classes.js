@@ -130,9 +130,9 @@ class Level {
         _ctx.globalAlpha = 0.9;
         let isError = !registry.buildings[changedID[0]]?.canBuildAt(tileX, tileY, this);
         if (textureSize[0][0] == textureSize[0][1])
-            _ctx.drawImage(registry.textures.misc[isError ? "invalidunderlay" : "ghostunderlay"], pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
-        else
             _ctx.drawImage(registry.textures.misc[isError ? "invalidunderlay" : "ghostunderlay"], pixelX + textureSize[1][0] * consts.DISPLAY_TILE_SIZE, pixelY + textureSize[1][1] * consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE * textureSize[0][0], consts.DISPLAY_TILE_SIZE * textureSize[0][1]);
+        else
+            _ctx.drawImage(registry.textures.misc[isError ? "invalidunderlay" : "ghostunderlay"], pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
         _ctx.globalAlpha = buildingID[0] == "base_conveyor" ? 0.3 : 0.7;
         Building.prototype.display.bind({
             pos: Pos.fromTileCoords(tileX, tileY, false),
