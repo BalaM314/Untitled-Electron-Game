@@ -204,8 +204,7 @@ class Level {
 
 		//Only overwrite the same building once per build attempt.
 		//Otherwise, you could constantly overwrite a building on every frame you tried to build, which is not good.
-		//HARDCODED: uses "id == extractor", should be if (class extends OverlayBuild)
-		if(buildingID[0] == "base_extractor"){
+		if(registry.buildings[buildingID[0]].isOverlay){
 			if(this.overlayBuildAtTile(tileX, tileY)?.block.id == buildingID[0] && this.overlayBuildAtTile(tileX, tileY)?.meta == buildingID[1]){
 				if(!canOverwriteBuilding) return false;
 				canOverwriteBuilding = false;
@@ -782,6 +781,7 @@ class Building {
 	static id:RawBuildingID;
 	/**Whether this building cannot be placed or broken.*/
 	static immutable = false;
+	static isOverlay = false;
 
 	item: Item | null = null;
 	pos:Pos;
@@ -808,7 +808,7 @@ class Building {
 		if(this.item){
 			this.item.grabbedBy = null;
 		}
-		this.level.writeBuilding(this.pos.tileX, this.pos.tileY, null);
+		(this.block.isOverlay ? this.level.writeOverlayBuild : this.level.writeBuilding)(this.pos.tileX, this.pos.tileY, null);
 	}
 	update(currentFrame:CurrentFrame){
 		this.item?.update(currentFrame);
@@ -816,25 +816,24 @@ class Building {
 	stringID(){
 		return stringifyMeta(this.block.id, this.meta);
 	}
-	display(currentFrame:CurrentFrame, ctx?: CanvasRenderingContext2D){
+	display(currentFrame:CurrentFrame, ctx:CanvasRenderingContext2D = this.block.isOverlay ? ctx25 : ctx2){
 		const textureSize = registry.buildings[this.block.id].textureSize(this.meta);
 		
 		let pixelX = (this.pos.tileX + textureSize[1][0]) * consts.DISPLAY_TILE_SIZE + Game.scroll.x * consts.DISPLAY_SCALE;
 		let pixelY = (this.pos.tileY + textureSize[1][1]) * consts.DISPLAY_TILE_SIZE + Game.scroll.y * consts.DISPLAY_SCALE;
-		let _ctx = ctx ?? ctx2;
 		let texture = registry.textures.building[this.stringID()];
 		if(texture){
-			_ctx.drawImage(texture, pixelX, pixelY, consts.DISPLAY_TILE_SIZE * textureSize[0][0], consts.DISPLAY_TILE_SIZE * textureSize[0][1]);
+			ctx.drawImage(texture, pixelX, pixelY, consts.DISPLAY_TILE_SIZE * textureSize[0][0], consts.DISPLAY_TILE_SIZE * textureSize[0][1]);
 		} else {
-			_ctx.fillStyle = "#FF00FF";
-			rect(pixelX, pixelY, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
-			rect(pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY + consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
-			_ctx.fillStyle = "#000000";
-			rect(pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
-			rect(pixelX, pixelY + consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, _ctx);
-			_ctx.font = "15px sans-serif";
-			_ctx.fillStyle = "#00FF00";
-			_ctx.fillText(names.building[this.block.id], pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY + consts.DISPLAY_TILE_SIZE / 2);
+			ctx.fillStyle = "#FF00FF";
+			rect(pixelX, pixelY, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, ctx);
+			rect(pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY + consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, ctx);
+			ctx.fillStyle = "#000000";
+			rect(pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, ctx);
+			rect(pixelX, pixelY + consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, ctx);
+			ctx.font = "15px sans-serif";
+			ctx.fillStyle = "#00FF00";
+			ctx.fillText(names.building[this.block.id], pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY + consts.DISPLAY_TILE_SIZE / 2);
 		}
 	}
 	hasItem():Item | null {
@@ -1335,17 +1334,9 @@ class Conveyor extends Building {
 }
 
 class OverlayBuild extends Building {
+	static isOverlay = true;
 	buildingUnder(){
 		return this.level.buildingAtPos(this.pos);
-	}
-	break(){
-		if(this.item){
-			this.item.grabbedBy = null;
-		}
-		this.level.writeOverlayBuild(this.pos.tileX, this.pos.tileY, null);
-	}
-	display(currentFrame:CurrentFrame, ctx:CanvasRenderingContext2D = ctx25){
-		super.display(currentFrame, ctx)
 	}
 }
 
