@@ -151,22 +151,50 @@ class Level {
 	
 	
 	displayGhostBuilding(tileX:number, tileY:number, buildingID:BuildingID, currentframe:CurrentFrame){
-		tileX = Math.floor(tileX);
-		tileY = Math.floor(tileY);
-		//Tells a chunk to display a ghost building.
-		//TODO Why does Chunk.displayGhostBuilding exist? Why can't it be moved here?
-		if(!this.hasChunk(tileX, tileY)){
-			return;
-		}
-		let id = buildingID;
+		
+		if(!this.hasChunk(tileX, tileY)) return;
+		if(buildingID == "0xFFFF") return;
+		let id:BuildingID = buildingID;
 		const meta = +buildingID >> 8;
 		if(getRawBuildingID(buildingID) == "0x01" && [0, 1, 2, 3].includes(meta)){
 			id = this.getTurnedConveyor(tileX, tileY, meta as 0 | 1 | 2 | 3);
 		}
-		this.getChunk(tileX, tileY).displayGhostBuilding(
-			Pos.chunkOffsetInTiles(tileX), Pos.chunkOffsetInTiles(tileY), id,
-			!registry.buildings[getRawBuildingID(buildingID)]?.canBuildAt(tileX, tileY, this), currentframe
-		);
+		let pixelX = tileX * consts.DISPLAY_TILE_SIZE + (Game.scroll.x * consts.DISPLAY_SCALE);
+		let pixelY = tileY * consts.DISPLAY_TILE_SIZE + (Game.scroll.y * consts.DISPLAY_SCALE);
+		let _ctx = ctx1;
+
+		if(registry.keybinds.placement.break_building.isHeld()){
+			_ctx.globalAlpha = 0.9;
+			_ctx.drawImage(registry.textures.misc["invalidunderlay"], pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
+			_ctx.globalAlpha = 1.0;
+			return;
+		}
+
+		_ctx.globalAlpha = 0.9;
+		let isError = !registry.buildings[getRawBuildingID(buildingID)]?.canBuildAt(tileX, tileY, this);
+		if(isError){
+			_ctx.drawImage(registry.textures.misc["invalidunderlay"], pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
+		} else {
+			if((+buildingID & 0x00F0) == 0x10){
+				_ctx.drawImage(registry.textures.misc["ghostunderlay"], pixelX, pixelY, consts.DISPLAY_TILE_SIZE * 2, consts.DISPLAY_TILE_SIZE * 2);
+			} else {
+				_ctx.drawImage(registry.textures.misc["ghostunderlay"], pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
+			}
+		}
+		_ctx.globalAlpha = +buildingID % 0x100 == 0x01 ? 0.3 : 0.7;
+		
+		//TODO this is rather bodgy and could cause bugs
+		Building.prototype.display.bind({
+			pos: Pos.fromTileCoords(tileX, tileY, false),
+			id: buildingID,
+			_meta: meta,
+			_id: getRawBuildingID(buildingID),
+			level: this,
+			block: {
+				animated: false
+			}
+		})(currentframe, ctx1);
+		_ctx.globalAlpha = 1.0;
 	}
 	getTurnedConveyor(tileX:number, tileY:number, conveyorType:0 | 1 | 2 | 3):BuildingID {
 		//Returns how a conveyor should be turned based on nearby buildings.
@@ -773,37 +801,6 @@ class Chunk {
 		}
 		if(currentframe.debug) ctx.strokeRect(pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
 	}
-	displayGhostBuilding(x:number, y:number, buildingID:BuildingID, isError:boolean, currentframe:CurrentFrame){
-		let pixelX = ((this.x * consts.CHUNK_SIZE) + x) * consts.DISPLAY_TILE_SIZE + (Game.scroll.x * consts.DISPLAY_SCALE);
-		let pixelY = ((this.y * consts.CHUNK_SIZE) + y) * consts.DISPLAY_TILE_SIZE + (Game.scroll.y * consts.DISPLAY_SCALE);
-		let _ctx = ctx1;
-		if(registry.keybinds.placement.break_building.isHeld()){
-			_ctx.globalAlpha = 0.9;
-			_ctx.drawImage(registry.textures.misc["invalidunderlay"], pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
-			_ctx.globalAlpha = 1.0;
-			return;
-		}
-		if(buildingID == "0xFFFF") return;
-
-		_ctx.globalAlpha = 0.9;
-		if(isError){
-			_ctx.drawImage(registry.textures.misc["invalidunderlay"], pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
-		} else {
-			if((+buildingID & 0x00F0) == 0x10){
-				_ctx.drawImage(registry.textures.misc["ghostunderlay"], pixelX, pixelY, consts.DISPLAY_TILE_SIZE * 2, consts.DISPLAY_TILE_SIZE * 2);
-			} else {
-				_ctx.drawImage(registry.textures.misc["ghostunderlay"], pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
-			}
-		}
-		_ctx.globalAlpha = +buildingID % 0x100 == 0x01 ? 0.3 : 0.7;
-		
-		Building.prototype.display.bind({
-			pos: Pos.fromTileCoords((this.x * consts.CHUNK_SIZE) + x, (this.y * consts.CHUNK_SIZE) + y, false),
-			id: buildingID,
-			level: this
-		})(currentframe, ctx1);
-		_ctx.globalAlpha = 1.0;
-	}
 	displayL3(x:number, y:number, buildingID:BuildingID, isGhost?:number){
 		if(buildingID == "0xFFFF"){return;}
 		let pixelX = ((this.x * consts.CHUNK_SIZE) + x) * consts.DISPLAY_TILE_SIZE + (Game.scroll.x * consts.DISPLAY_SCALE);
@@ -986,8 +983,10 @@ class Building {
 					case 11:
 						_ctx.drawImage(texture, pixelX, pixelY - consts.DISPLAY_TILE_SIZE * 3, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE * 4); break;
 				}
-			} else if(this instanceof MultiBlockController){
-				const block = (this.constructor as typeof MultiBlockController);
+			} else if(registry.buildings[this._id]?.prototype instanceof MultiBlockController){
+				//TODO aaaaaaa that is bad
+				//this is temporary right? only until I get around to fixing the texture system right? 1/27/2023
+				const block = registry.buildings[this._id] as typeof MultiBlockController;
 				//Multiblock
 				_ctx.drawImage(texture, pixelX, pixelY, consts.DISPLAY_TILE_SIZE * block.multiblockSize[0], consts.DISPLAY_TILE_SIZE * block.multiblockSize[1]);
 			} else {
