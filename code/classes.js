@@ -963,7 +963,7 @@ class Conveyor extends Building {
             ].includes(this.meta);
         }
     }
-    static changeMeta(tileX, tileY, meta, level) {
+    static changeMeta(meta, tileX, tileY, level) {
         if (registry.keybinds.placement.force_straight_conveyor.isHeld()) {
             return meta;
         }

@@ -1117,7 +1117,7 @@ class Conveyor extends Building {
 			].includes(this.meta);
 		}
 	}
-	static changeMeta(tileX:number, tileY:number, meta:BuildingMeta, level:Level):BuildingMeta {
+	static changeMeta(meta:BuildingMeta, tileX:number, tileY:number, level:Level):BuildingMeta {
 		if(registry.keybinds.placement.force_straight_conveyor.isHeld()){
 			return meta;
 			//If holding shift, just return a straight conveyor.
