@@ -226,9 +226,10 @@ class Level {
         let x = (mousex - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_SCALE;
         let y = (mousey - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_SCALE;
         ctx4.font = "16px monospace";
-        if (this.buildingAtPixel(x, y) instanceof Building) {
-            let buildingID = this.buildingAtPixel(x, y).block.id;
-            if (buildingID == "base_conveyor" && this.buildingAtPixel(x, y).item) {
+        let building = this.buildingAtPixel(x, y);
+        if (building instanceof Building) {
+            let buildingID = building.block.id;
+            if (building.block.displaysItem && building.item) {
                 let item = this.buildingAtPixel(x, y).item;
                 if (item && (Math.abs(item.pos.pixelX - x) < 8) && Math.abs(item.pos.pixelY - y) < 8) {
                     ctx4.fillStyle = "#0033CC";
@@ -700,6 +701,9 @@ class Building {
             ctx.fillStyle = "#00FF00";
             ctx.fillText(names.building[this.block.id], pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY + consts.DISPLAY_TILE_SIZE / 2);
         }
+        if (this.item instanceof Item && this.block.displaysItem) {
+            this.item.display(currentFrame);
+        }
     }
     hasItem() {
         if (this.item)
@@ -779,6 +783,7 @@ Building.animated = false;
 Building.outputsItems = false;
 Building.immutable = false;
 Building.isOverlay = false;
+Building.displaysItem = false;
 class BuildingWithRecipe extends Building {
     constructor(tileX, tileY, meta, level) {
         super(tileX, tileY, meta, level);
@@ -878,12 +883,6 @@ Furnace.recipeType = registry.recipes.base_smelting;
 Furnace.animated = true;
 Furnace.id = "base_furnace";
 class Conveyor extends Building {
-    display(currentFrame) {
-        super.display(currentFrame);
-        if (this.item instanceof Item) {
-            this.item.display(currentFrame);
-        }
-    }
     acceptsItemFromSide(side) {
         switch (side) {
             case Direction.left: return [
@@ -1205,6 +1204,7 @@ class Conveyor extends Building {
     }
 }
 Conveyor.id = "base_conveyor";
+Conveyor.displaysItem = true;
 class OverlayBuild extends Building {
     buildingUnder() {
         return this.level.buildingAtPos(this.pos);
@@ -1231,12 +1231,6 @@ class Extractor extends OverlayBuild {
     }
     static getID(type, direction, modifier) {
         return [type, (modifier * 4) + direction];
-    }
-    display(currentFrame) {
-        super.display(currentFrame);
-        if (this.item instanceof Item) {
-            this.item.display(currentFrame);
-        }
     }
     grabItemFromTile(filter = item => item instanceof Item) {
         if (this.buildingUnder() instanceof Building &&
@@ -1354,6 +1348,7 @@ class Extractor extends OverlayBuild {
     acceptItem(item) { return false; }
 }
 Extractor.id = "base_extractor";
+Extractor.displaysItem = true;
 class StorageBuilding extends Building {
     constructor() {
         super(...arguments);

@@ -283,10 +283,10 @@ class Level {
 		let x = (mousex - (Game.scroll.x * consts.DISPLAY_SCALE))/consts.DISPLAY_SCALE;
 		let y = (mousey - (Game.scroll.y * consts.DISPLAY_SCALE))/consts.DISPLAY_SCALE;
 		ctx4.font = "16px monospace";
-		if(this.buildingAtPixel(x, y) instanceof Building){
-			let buildingID = this.buildingAtPixel(x, y)!.block.id;
-			//HARDCODED add an option to building for displaysItem, because extractors should also show item tooltips
-			if(buildingID == "base_conveyor" && this.buildingAtPixel(x, y)!.item){
+		let building = this.buildingAtPixel(x, y);
+		if(building instanceof Building){
+			let buildingID = building.block.id;
+			if(building.block.displaysItem && building.item){
 				let item = this.buildingAtPixel(x, y)!.item;
 				if(item && (Math.abs(item.pos.pixelX - x) < 8) && Math.abs(item.pos.pixelY - y) < 8){
 					//If the item is within 8 pixels of the cursor
@@ -782,6 +782,7 @@ class Building {
 	/**Whether this building cannot be placed or broken.*/
 	static immutable = false;
 	static isOverlay = false;
+	static displaysItem = false;
 
 	item: Item | null = null;
 	pos:Pos;
@@ -834,6 +835,9 @@ class Building {
 			ctx.font = "15px sans-serif";
 			ctx.fillStyle = "#00FF00";
 			ctx.fillText(names.building[this.block.id], pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY + consts.DISPLAY_TILE_SIZE / 2);
+		}
+		if(this.item instanceof Item && this.block.displaysItem){
+			this.item.display(currentFrame);
 		}
 	}
 	hasItem():Item | null {
@@ -1038,12 +1042,7 @@ class Furnace extends BuildingWithRecipe {
 
 class Conveyor extends Building {
 	static id:RawBuildingID = "base_conveyor";//TEMP
-	display(currentFrame:CurrentFrame){
-		super.display(currentFrame);
-		if(this.item instanceof Item){
-			this.item.display(currentFrame);
-		}
-	}
+	static displaysItem = true;
 	acceptsItemFromSide(side:Direction):boolean {
 		//Bit cursed, but far better than what it used to be
 		switch(side){
@@ -1342,6 +1341,7 @@ class OverlayBuild extends Building {
 
 class Extractor extends OverlayBuild {
 	static id:RawBuildingID = "base_extractor";//TEMP
+	static displaysItem = true;
 
 	static textureSize(meta:BuildingMeta){
 		switch(meta){
@@ -1362,13 +1362,6 @@ class Extractor extends OverlayBuild {
 	}
 	static getID(type:RawBuildingID, direction:Direction, modifier:number):BuildingIDWithMeta {
 		return [type, (modifier * 4) + direction] as BuildingIDWithMeta;
-	}
-
-	display(currentFrame:CurrentFrame){
-		super.display(currentFrame);
-		if(this.item instanceof Item){
-			this.item.display(currentFrame);
-		}
 	}
 
 	grabItemFromTile(filter:(item:Item) => boolean = item => item instanceof Item){
