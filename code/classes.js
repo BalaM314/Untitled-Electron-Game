@@ -1022,216 +1022,164 @@ class Conveyor extends Building {
             }
             switch (this.meta) {
                 case 0x00:
-                    if (this.item.pos.tileOffsetYCentered) {
+                    if (this.item.pos.tileOffsetYCentered)
                         this.item.pos.pixelX += consts.buildings.conveyor.SPEED;
-                    }
                     break;
                 case 0x01:
-                    if (this.item.pos.tileOffsetXCentered) {
+                    if (this.item.pos.tileOffsetXCentered)
                         this.item.pos.pixelY += consts.buildings.conveyor.SPEED;
-                    }
                     break;
                 case 0x02:
-                    if (this.item.pos.tileOffsetYCentered) {
+                    if (this.item.pos.tileOffsetYCentered)
                         this.item.pos.pixelX -= consts.buildings.conveyor.SPEED;
-                    }
                     break;
                 case 0x03:
-                    if (this.item.pos.tileOffsetXCentered) {
+                    if (this.item.pos.tileOffsetXCentered)
                         this.item.pos.pixelY -= consts.buildings.conveyor.SPEED;
-                    }
                     break;
                 case 0x04:
-                    if (this.item.pos.tileOffsetXInTiles >= 0.5 && this.item.pos.tileOffsetYCentered) {
+                    if (this.item.pos.tileOffsetXInTiles >= 0.5 && this.item.pos.tileOffsetYCentered)
                         this.item.pos.pixelX++;
-                    }
-                    else if (this.item.pos.tileOffsetXCentered && this.item.pos.tileOffsetYInTiles > 0.5) {
+                    else if (this.item.pos.tileOffsetXCentered && this.item.pos.tileOffsetYInTiles > 0.5)
                         this.item.pos.pixelY--;
-                    }
                     break;
                 case 0x05:
-                    if (this.item.pos.tileOffsetXInTiles >= 0.5 && this.item.pos.tileOffsetYCentered) {
+                    if (this.item.pos.tileOffsetXInTiles >= 0.5 && this.item.pos.tileOffsetYCentered)
                         this.item.pos.pixelX++;
-                    }
-                    else if (this.item.pos.tileOffsetXCentered && this.item.pos.tileOffsetYInTiles < 0.5) {
+                    else if (this.item.pos.tileOffsetXCentered && this.item.pos.tileOffsetYInTiles < 0.5)
                         this.item.pos.pixelY++;
-                    }
                     break;
                 case 0x06:
-                    if (this.item.pos.tileOffsetXCentered && this.item.pos.tileOffsetYInTiles >= 0.5) {
+                    if (this.item.pos.tileOffsetXCentered && this.item.pos.tileOffsetYInTiles >= 0.5)
                         this.item.pos.pixelY++;
-                    }
-                    else if (this.item.pos.tileOffsetXInTiles > 0.5 && this.item.pos.tileOffsetYCentered) {
+                    else if (this.item.pos.tileOffsetXInTiles > 0.5 && this.item.pos.tileOffsetYCentered)
                         this.item.pos.pixelX--;
-                    }
                     break;
                 case 0x07:
-                    if (this.item.pos.tileOffsetXCentered && this.item.pos.tileOffsetYInTiles >= 0.5) {
+                    if (this.item.pos.tileOffsetXCentered && this.item.pos.tileOffsetYInTiles >= 0.5)
                         this.item.pos.pixelY++;
-                    }
-                    else if (this.item.pos.tileOffsetXInTiles < 0.5 && this.item.pos.tileOffsetYCentered) {
+                    else if (this.item.pos.tileOffsetXInTiles < 0.5 && this.item.pos.tileOffsetYCentered)
                         this.item.pos.pixelX++;
-                    }
                     break;
                 case 0x08:
-                    if (this.item.pos.tileOffsetXInTiles <= 0.5 && this.item.pos.tileOffsetYCentered) {
+                    if (this.item.pos.tileOffsetXInTiles <= 0.5 && this.item.pos.tileOffsetYCentered)
                         this.item.pos.pixelX--;
-                    }
-                    else if (this.item.pos.tileOffsetXCentered && this.item.pos.tileOffsetYInTiles >= 0.5) {
+                    else if (this.item.pos.tileOffsetXCentered && this.item.pos.tileOffsetYInTiles >= 0.5)
                         this.item.pos.pixelY--;
-                    }
                     break;
                 case 0x09:
-                    if (this.item.pos.tileOffsetXInTiles <= 0.5 && this.item.pos.tileOffsetYCentered) {
+                    if (this.item.pos.tileOffsetXInTiles <= 0.5 && this.item.pos.tileOffsetYCentered)
                         this.item.pos.pixelX--;
-                    }
-                    else if (this.item.pos.tileOffsetXCentered && this.item.pos.tileOffsetYInTiles <= 0.5) {
+                    else if (this.item.pos.tileOffsetXCentered && this.item.pos.tileOffsetYInTiles <= 0.5)
                         this.item.pos.pixelY++;
-                    }
                     break;
                 case 0x0A:
-                    if (this.item.pos.tileOffsetXCentered && this.item.pos.tileOffsetYInTiles <= 0.5) {
+                    if (this.item.pos.tileOffsetXCentered && this.item.pos.tileOffsetYInTiles <= 0.5)
                         this.item.pos.pixelY--;
-                    }
-                    else if (this.item.pos.tileOffsetXInTiles > 0.5 && this.item.pos.tileOffsetYCentered) {
+                    else if (this.item.pos.tileOffsetXInTiles > 0.5 && this.item.pos.tileOffsetYCentered)
                         this.item.pos.pixelX--;
-                    }
                     break;
                 case 0x0B:
-                    if (this.item.pos.tileOffsetXCentered && this.item.pos.tileOffsetYInTiles <= 0.5) {
+                    if (this.item.pos.tileOffsetXCentered && this.item.pos.tileOffsetYInTiles <= 0.5)
                         this.item.pos.pixelY--;
-                    }
-                    else if (this.item.pos.tileOffsetXInTiles < 0.5 && this.item.pos.tileOffsetYCentered) {
+                    else if (this.item.pos.tileOffsetXInTiles < 0.5 && this.item.pos.tileOffsetYCentered)
                         this.item.pos.pixelX++;
-                    }
                     break;
                 case 0x0C:
-                    if (this.item.pos.tileOffsetYCentered) {
+                    if (this.item.pos.tileOffsetYCentered)
                         this.item.pos.pixelX++;
-                    }
-                    else if (this.item.pos.tileOffsetXCentered && this.item.pos.tileOffsetYInTiles >= 0.5) {
+                    else if (this.item.pos.tileOffsetXCentered && this.item.pos.tileOffsetYInTiles >= 0.5)
                         this.item.pos.pixelY--;
-                    }
                     break;
                 case 0x0D:
-                    if (this.item.pos.tileOffsetYCentered) {
+                    if (this.item.pos.tileOffsetYCentered)
                         this.item.pos.pixelX++;
-                    }
-                    else if (this.item.pos.tileOffsetXCentered && this.item.pos.tileOffsetYInTiles <= 0.5) {
+                    else if (this.item.pos.tileOffsetXCentered && this.item.pos.tileOffsetYInTiles <= 0.5)
                         this.item.pos.pixelY++;
-                    }
                     break;
                 case 0x0E:
-                    if (this.item.pos.tileOffsetXCentered) {
+                    if (this.item.pos.tileOffsetXCentered)
                         this.item.pos.pixelY++;
-                    }
-                    else if (this.item.pos.tileOffsetXInTiles > 0.5 && this.item.pos.tileOffsetYCentered) {
+                    else if (this.item.pos.tileOffsetXInTiles > 0.5 && this.item.pos.tileOffsetYCentered)
                         this.item.pos.pixelX--;
-                    }
                     break;
                 case 0x0F:
-                    if (this.item.pos.tileOffsetXCentered) {
+                    if (this.item.pos.tileOffsetXCentered)
                         this.item.pos.pixelY++;
-                    }
-                    else if (this.item.pos.tileOffsetXInTiles < 0.5 && this.item.pos.tileOffsetYCentered) {
+                    else if (this.item.pos.tileOffsetXInTiles < 0.5 && this.item.pos.tileOffsetYCentered)
                         this.item.pos.pixelX++;
-                    }
                     break;
                 case 0x10:
-                    if (this.item.pos.tileOffsetYCentered) {
+                    if (this.item.pos.tileOffsetYCentered)
                         this.item.pos.pixelX--;
-                    }
-                    else if (this.item.pos.tileOffsetXCentered && this.item.pos.tileOffsetYInTiles >= 0.5) {
+                    else if (this.item.pos.tileOffsetXCentered && this.item.pos.tileOffsetYInTiles >= 0.5)
                         this.item.pos.pixelY--;
-                    }
                     break;
                 case 0x11:
-                    if (this.item.pos.tileOffsetYCentered) {
+                    if (this.item.pos.tileOffsetYCentered)
                         this.item.pos.pixelX--;
-                    }
-                    else if (this.item.pos.tileOffsetXCentered && this.item.pos.tileOffsetYInTiles <= 0.5) {
+                    else if (this.item.pos.tileOffsetXCentered && this.item.pos.tileOffsetYInTiles <= 0.5)
                         this.item.pos.pixelY++;
-                    }
                     break;
                 case 0x12:
-                    if (this.item.pos.tileOffsetXCentered) {
+                    if (this.item.pos.tileOffsetXCentered)
                         this.item.pos.pixelY--;
-                    }
-                    else if (this.item.pos.tileOffsetXInTiles > 0.5 && this.item.pos.tileOffsetYCentered) {
+                    else if (this.item.pos.tileOffsetXInTiles > 0.5 && this.item.pos.tileOffsetYCentered)
                         this.item.pos.pixelX--;
-                    }
                     break;
                 case 0x13:
-                    if (this.item.pos.tileOffsetXCentered) {
+                    if (this.item.pos.tileOffsetXCentered)
                         this.item.pos.pixelY--;
-                    }
-                    else if (this.item.pos.tileOffsetXInTiles < 0.5 && this.item.pos.tileOffsetYCentered) {
+                    else if (this.item.pos.tileOffsetXInTiles < 0.5 && this.item.pos.tileOffsetYCentered)
                         this.item.pos.pixelX++;
-                    }
                     break;
                 case 0x14:
-                    if (this.item.pos.tileOffsetXInTiles >= 0.5 && this.item.pos.tileOffsetYCentered) {
+                    if (this.item.pos.tileOffsetXInTiles >= 0.5 && this.item.pos.tileOffsetYCentered)
                         this.item.pos.pixelX++;
-                    }
-                    else if (this.item.pos.tileOffsetXCentered) {
+                    else if (this.item.pos.tileOffsetXCentered)
                         this.item.pos.pixelY += this.item.pos.tileOffsetYInTiles > 0.5 ? -1 : 1;
-                    }
                     break;
                 case 0x15:
-                    if (this.item.pos.tileOffsetXCentered && this.item.pos.tileOffsetYInTiles >= 0.5) {
+                    if (this.item.pos.tileOffsetXCentered && this.item.pos.tileOffsetYInTiles >= 0.5)
                         this.item.pos.pixelY++;
-                    }
-                    else if (this.item.pos.tileOffsetYCentered) {
+                    else if (this.item.pos.tileOffsetYCentered)
                         this.item.pos.pixelX += this.item.pos.tileOffsetXInTiles > 0.5 ? -1 : 1;
-                    }
                     break;
                 case 0x16:
-                    if (this.item.pos.tileOffsetXInTiles <= 0.5 && this.item.pos.tileOffsetYCentered) {
+                    if (this.item.pos.tileOffsetXInTiles <= 0.5 && this.item.pos.tileOffsetYCentered)
                         this.item.pos.pixelX--;
-                    }
-                    else if (this.item.pos.tileOffsetXCentered) {
+                    else if (this.item.pos.tileOffsetXCentered)
                         this.item.pos.pixelY += this.item.pos.tileOffsetYInTiles > 0.5 ? -1 : 1;
-                    }
                     break;
                 case 0x17:
-                    if (this.item.pos.tileOffsetXCentered && this.item.pos.tileOffsetYInTiles <= 0.5) {
+                    if (this.item.pos.tileOffsetXCentered && this.item.pos.tileOffsetYInTiles <= 0.5)
                         this.item.pos.pixelY--;
-                    }
-                    else if (this.item.pos.tileOffsetYCentered) {
+                    else if (this.item.pos.tileOffsetYCentered)
                         this.item.pos.pixelX += this.item.pos.tileOffsetXInTiles > 0.5 ? -1 : 1;
-                    }
                     break;
                 case 0x18:
-                    if (this.item.pos.tileOffsetYCentered) {
+                    if (this.item.pos.tileOffsetYCentered)
                         this.item.pos.pixelX++;
-                    }
-                    else if (this.item.pos.tileOffsetXCentered) {
+                    else if (this.item.pos.tileOffsetXCentered)
                         this.item.pos.pixelY += this.item.pos.tileOffsetYInTiles > 0.5 ? -1 : 1;
-                    }
                     break;
                 case 0x19:
-                    if (this.item.pos.tileOffsetXCentered) {
+                    if (this.item.pos.tileOffsetXCentered)
                         this.item.pos.pixelY++;
-                    }
-                    else if (this.item.pos.tileOffsetYCentered) {
+                    else if (this.item.pos.tileOffsetYCentered)
                         this.item.pos.pixelX += this.item.pos.tileOffsetXInTiles > 0.5 ? -1 : 1;
-                    }
                     break;
                 case 0x1A:
-                    if (this.item.pos.tileOffsetYCentered) {
+                    if (this.item.pos.tileOffsetYCentered)
                         this.item.pos.pixelX--;
-                    }
-                    else if (this.item.pos.tileOffsetXCentered) {
+                    else if (this.item.pos.tileOffsetXCentered)
                         this.item.pos.pixelY += this.item.pos.tileOffsetYInTiles > 0.5 ? -1 : 1;
-                    }
                     break;
                 case 0x1B:
-                    if (this.item.pos.tileOffsetXCentered) {
+                    if (this.item.pos.tileOffsetXCentered)
                         this.item.pos.pixelY--;
-                    }
-                    else if (this.item.pos.tileOffsetYCentered) {
+                    else if (this.item.pos.tileOffsetYCentered)
                         this.item.pos.pixelX += this.item.pos.tileOffsetXInTiles > 0.5 ? -1 : 1;
-                    }
                     break;
             }
         }
