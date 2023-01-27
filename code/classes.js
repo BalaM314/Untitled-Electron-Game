@@ -828,6 +828,7 @@ class Building {
         this.id = id;
         this.level = level;
         this.item = null;
+        this.block = this.constructor;
         this._id = getRawBuildingID(id);
         this._meta = +id >> 8;
         this.pos = Pos.fromTileCoords(x, y, false);
@@ -896,7 +897,7 @@ class Building {
             }
             else {
                 _ctx.drawImage(texture, pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
-                if (this.constructor.animated) {
+                if (this.block.animated) {
                 }
             }
         }
@@ -999,7 +1000,7 @@ class BuildingWithRecipe extends Building {
     acceptItem(item) {
         for (let i = 0; i < consts.recipeMaxInputs; i++) {
             if (!this.items[i] && !this.items.map(item => item.id).includes(item.id)) {
-                for (let recipe of this.constructor.recipeType.recipes) {
+                for (let recipe of this.block.recipeType.recipes) {
                     if (!recipe.inputs)
                         continue;
                     if (!this.items.map(item => recipe.inputs.includes(item.id)).includes(false) && recipe.inputs.includes(item.id)) {

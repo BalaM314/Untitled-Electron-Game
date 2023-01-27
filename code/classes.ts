@@ -928,6 +928,7 @@ class Building {
 	pos:Pos;
 	_id: RawBuildingID;
 	_meta: number;
+	block = this.constructor as typeof Building;
 	constructor(x:number, y:number, public id:BuildingID, public level:Level){
 		this._id = getRawBuildingID(id);
 		this._meta = +id >> 8;
@@ -991,7 +992,7 @@ class Building {
 				_ctx.drawImage(texture, pixelX, pixelY, consts.DISPLAY_TILE_SIZE * block.multiblockSize[0], consts.DISPLAY_TILE_SIZE * block.multiblockSize[1]);
 			} else {
 				_ctx.drawImage(texture, pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
-				if((this.constructor as typeof Building).animated){
+				if(this.block.animated){
 					//do animations
 				}
 			}
@@ -1102,6 +1103,7 @@ class BuildingWithRecipe extends Building {
 	items: Item[] = [];
 	static outputsItems = true;
 	static recipeType: {recipes: Recipe[]};
+	block!:typeof BuildingWithRecipe;
 	constructor(tileX:number, tileY:number, id:BuildingID, level:Level){
 		super(tileX, tileY, id, level);
 		if(this.constructor === BuildingWithRecipe) throw new Error("Cannot initialize abstract class BuildingWithRecipe");
@@ -1111,7 +1113,7 @@ class BuildingWithRecipe extends Building {
 			//repeat recipeMaxInputs times
 			if(!this.items[i] && !this.items.map(item => item.id).includes(item.id)){
 				//if there is nothing in this item slot and the new item's id is not in the list of current items' ids
-				for(let recipe of (this.constructor as typeof BuildingWithRecipe).recipeType.recipes){
+				for(let recipe of this.block.recipeType.recipes){
 					//for each recipe this building can do
 					if(!recipe.inputs) continue;//If the recipe has no inputs, it cant be the right one
 					if(!this.items.map(item => recipe.inputs!.includes(item.id)).includes(false) && recipe.inputs.includes(item.id)){
@@ -1663,6 +1665,7 @@ class Lathe extends BuildingWithRecipe {
 
 
 class MultiBlockController extends BuildingWithRecipe {
+	block!: typeof MultiBlockController;
 	secondaries: MultiBlockSecondary[] = [];
 	static multiblockSize = [2, 2];
 	static outputsItems = true;
