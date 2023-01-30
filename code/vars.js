@@ -410,22 +410,19 @@ let raresplashes = [
     "notched apple",
     "Diamonds never were actually forever",
     "\"Now you can eat sunlight!\" - bill wurtz",
-    "WAAAAAAAARRR!!",
     "undefined!",
     "null!",
     "Uncaught TypeError: undefined!",
     "Uncaught ball!",
     "Unhandled exception in thread main!",
     "RARE SPLASH?!?! 🤣😂😉😗🙃😁😛🤔😲🤯🙀‼",
-    "pee pee poo poo",
     "🔴🟢\\n🔵🟡",
-    "§6§kMM§r§2lBalaM314 is awesome!§r§6§kMM",
     "Never gonna give you up!",
     "Never gonna let you down!",
     "§b§o[Enchanted Renamed Item!]§r",
     "",
     "amoGUS",
-    "declare let splashes"
+    "declare let raresplashes:"
 ];
 function makeError(name) {
     return class extends Error {

@@ -1,22 +1,45 @@
 
 
 interface UnloadedTexture {
-	source: string;
+	src: string;
 	pixelWidth: number;
 	pixelHeight: number;
 	pixelXOffset: number;
 	pixelYOffset: number;
+	id: string;
 }
 
 interface Texture extends UnloadedTexture {
 	image: CanvasImageSource;
 }
 
-// async function loadTextures(textures:UnloadedTexture[]):Promise<{
-// 	[id:string]: Texture;
-// }>{
-// 	textures.map(t => loadTextureIntoPage(t));
-// }
+function loadTexture(t:UnloadedTexture, texturesDiv:HTMLDivElement){
+	return new Promise<Texture>((resolve, reject) => {
+		let img = document.createElement("img");
+		img.setAttribute("src", `assets/textures/${t.src}`.replace(":", "%23"));
+		img.addEventListener("load", () => {
+			Game.loadedTextures ++;
+			resolve({
+				...t,
+				image: img
+			});
+		});
+		img.addEventListener("error", (err) => {
+			alert(`Failed to load texture "${t.src}"`);
+			reject();
+		});
+		texturesDiv.appendChild(img);
+	});
+}
+
+async function loadTextures(textures:UnloadedTexture[], texturesDiv:HTMLDivElement):Promise<{
+	[id:string]: Texture;
+}>{
+	return Object.fromEntries(
+		(await Promise.all(textures.map(t => loadTexture(t, texturesDiv))))
+		.map(t => [t.id, t])
+	);
+}
 
 class Gfx {
 	static layers = {

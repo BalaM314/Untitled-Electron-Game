@@ -1,5 +1,27 @@
 "use strict";
 var _a;
+function loadTexture(t, texturesDiv) {
+    return new Promise((resolve, reject) => {
+        let img = document.createElement("img");
+        img.setAttribute("src", `assets/textures/${t.src}`.replace(":", "%23"));
+        img.addEventListener("load", () => {
+            Game.loadedTextures++;
+            resolve({
+                ...t,
+                image: img
+            });
+        });
+        img.addEventListener("error", (err) => {
+            alert(`Failed to load texture "${t.src}"`);
+            reject();
+        });
+        texturesDiv.appendChild(img);
+    });
+}
+async function loadTextures(textures, texturesDiv) {
+    return Object.fromEntries((await Promise.all(textures.map(t => loadTexture(t, texturesDiv))))
+        .map(t => [t.id, t]));
+}
 class Gfx {
     static layer(k) {
         this.ctx = this.layers[k];

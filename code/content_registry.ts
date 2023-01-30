@@ -1,6 +1,6 @@
 class ContentRegistry<K, T extends new (...args:any[]) => {}> {
 	private contentMap = new Map<K, T>();
-	constructor(clazz:T, keys:K){}
+	constructor(clazz:T, keys:K){} //Bizzare hack
 	register<B extends T>(id:K, ctor:B, props:{
 		[P in keyof B]?: B[P];
 	} = {}) {
@@ -16,8 +16,7 @@ class ContentRegistry<K, T extends new (...args:any[]) => {}> {
 }
 
 
-//this is a colossal bodge
-let rawBuildingID = null! as RawBuildingID;
+let rawBuildingID = null! as RawBuildingID;//yes it really is bizzare
 const Buildings = new ContentRegistry(Building, rawBuildingID);
 Buildings.register("base_conveyor", Conveyor);
 Buildings.register("base_miner", Miner);
