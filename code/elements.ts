@@ -1,10 +1,10 @@
-const ctx = getElement("canvas", HTMLCanvasElement).getContext("2d")!;//Tiles
-const ctx1 = getElement("canvas1", HTMLCanvasElement).getContext("2d")!;//Ghost buildings
-const ctx2 = getElement("canvas2", HTMLCanvasElement).getContext("2d")!;//Buildings
-const ctx25 = getElement("canvas25", HTMLCanvasElement).getContext("2d")!;//Overlay builds
-const ctx3 = getElement("canvas3", HTMLCanvasElement).getContext("2d")!;//Items
-const ctx4 = getElement("canvas4", HTMLCanvasElement).getContext("2d")!;//Overlays
-const ctxs = [ctx, ctx1, ctx2, ctx25, ctx3, ctx4];
+const ctxTiles = getElement("canvas", HTMLCanvasElement).getContext("2d")!;//Tiles
+const ctxGBuilds = getElement("canvas1", HTMLCanvasElement).getContext("2d")!;//Ghost buildings
+const ctxBuilds = getElement("canvas2", HTMLCanvasElement).getContext("2d")!;//Buildings
+const ctxOBuilds = getElement("canvas25", HTMLCanvasElement).getContext("2d")!;//Overlay builds
+const ctxItems = getElement("canvas3", HTMLCanvasElement).getContext("2d")!;//Items
+const ctxOverlays = getElement("canvas4", HTMLCanvasElement).getContext("2d")!;//Overlays
+const ctxs = [ctxTiles, ctxGBuilds, ctxBuilds, ctxOBuilds, ctxItems, ctxOverlays];
 const uploadButton = getElement('uploadButton', HTMLInputElement);
 let alertmessage = getElement("alertmessage", HTMLDivElement);
 let alertexit = getElement("alertexit", HTMLDivElement);

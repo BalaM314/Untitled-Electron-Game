@@ -181,13 +181,13 @@ class Button {
 		}
 		_ctx.lineWidth = 1;
 		_ctx.globalAlpha = 1.0;
-		ctx.font = this.font;
-		ctx.textAlign = "center";
-		let tempBaseline = ctx.textBaseline;
-		ctx.textBaseline = "middle";
-		ctx.fillStyle = "#FFFFFF";
-		ctx.fillText(this.label,this.x + this.width/2,this.y + this.height/2);
-		ctx.textBaseline = tempBaseline;
+		ctxTiles.font = this.font;
+		ctxTiles.textAlign = "center";
+		let tempBaseline = ctxTiles.textBaseline;
+		ctxTiles.textBaseline = "middle";
+		ctxTiles.fillStyle = "#FFFFFF";
+		ctxTiles.fillText(this.label,this.x + this.width/2,this.y + this.height/2);
+		ctxTiles.textBaseline = tempBaseline;
   };
   isMouseInside(){
 		return mouse.x > this.x &&
@@ -208,24 +208,9 @@ class Button {
  * 
  */
 
-enum rectMode {
+enum RectMode {
 	CENTER,
 	CORNER
-}
-
-function rect(x:number, y:number, w:number, h:number, mode?:rectMode, _ctx?:CanvasRenderingContext2D){
-	_ctx ??= ctx;
-	if(mode == rectMode.CENTER){
-		_ctx.fillRect(x - w/2, y - w/2, w, h);
-	} else {
-		_ctx.fillRect(x, y, w, h);
-	}
-}
-
-function ellipse(x:number, y:number, w:number, h:number){
-	ctx.beginPath();
-	ctx.ellipse(x, y, w, h, 0, 0, Math.PI * 2);
-	ctx.fill();
 }
 
 function* pseudoRandom(seed:number) {

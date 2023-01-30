@@ -115,7 +115,7 @@ class Level {
             return;
         let pixelX = tileX * consts.DISPLAY_TILE_SIZE + (Game.scroll.x * consts.DISPLAY_SCALE);
         let pixelY = tileY * consts.DISPLAY_TILE_SIZE + (Game.scroll.y * consts.DISPLAY_SCALE);
-        let _ctx = ctx1;
+        let _ctx = ctxGBuilds;
         if (registry.keybinds.placement.break_building.isHeld()) {
             _ctx.globalAlpha = 0.9;
             _ctx.drawImage(registry.textures.misc["invalidunderlay"], pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
@@ -143,7 +143,7 @@ class Level {
                 id: changedID[0]
             },
             stringID: Building.prototype.stringID
-        })(currentframe, ctx1);
+        })(currentframe, ctxGBuilds);
         _ctx.globalAlpha = 1.0;
     }
     buildBuilding(tileX, tileY, buildingID) {
@@ -225,37 +225,37 @@ class Level {
         }
         let x = (mousex - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_SCALE;
         let y = (mousey - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_SCALE;
-        ctx4.font = "16px monospace";
+        ctxOverlays.font = "16px monospace";
         let building = this.buildingAtPixel(x, y);
         if (building instanceof Building) {
             let buildingID = building.block.id;
             if (building.block.displaysItem && building.item) {
                 let item = this.buildingAtPixel(x, y).item;
                 if (item && (Math.abs(item.pos.pixelX - x) < 8) && Math.abs(item.pos.pixelY - y) < 8) {
-                    ctx4.fillStyle = "#0033CC";
-                    ctx4.fillRect(mousex, mousey, (names.item[item.id] ?? item.id).length * 10, 16);
-                    ctx4.strokeStyle = "#000000";
-                    ctx4.strokeRect(mousex, mousey, (names.item[item.id] ?? item.id).length * 10, 16);
-                    ctx4.fillStyle = "#FFFFFF";
-                    ctx4.fillText((names.item[item.id] ?? item.id), mousex + 2, mousey + 10);
+                    ctxOverlays.fillStyle = "#0033CC";
+                    ctxOverlays.fillRect(mousex, mousey, (names.item[item.id] ?? item.id).length * 10, 16);
+                    ctxOverlays.strokeStyle = "#000000";
+                    ctxOverlays.strokeRect(mousex, mousey, (names.item[item.id] ?? item.id).length * 10, 16);
+                    ctxOverlays.fillStyle = "#FFFFFF";
+                    ctxOverlays.fillText((names.item[item.id] ?? item.id), mousex + 2, mousey + 10);
                     return;
                 }
             }
-            ctx4.fillStyle = "#0033CC";
-            ctx4.fillRect(mousex, mousey, (names.building[buildingID] ?? buildingID).length * 10, 16);
-            ctx4.strokeStyle = "#000000";
-            ctx4.strokeRect(mousex, mousey, (names.building[buildingID] ?? buildingID).length * 10, 16);
-            ctx4.fillStyle = "#FFFFFF";
-            ctx4.fillText((names.building[buildingID] ?? buildingID), mousex + 2, mousey + 10);
+            ctxOverlays.fillStyle = "#0033CC";
+            ctxOverlays.fillRect(mousex, mousey, (names.building[buildingID] ?? buildingID).length * 10, 16);
+            ctxOverlays.strokeStyle = "#000000";
+            ctxOverlays.strokeRect(mousex, mousey, (names.building[buildingID] ?? buildingID).length * 10, 16);
+            ctxOverlays.fillStyle = "#FFFFFF";
+            ctxOverlays.fillText((names.building[buildingID] ?? buildingID), mousex + 2, mousey + 10);
             return;
         }
         let tileID = this.tileAtByPixel(x, y);
-        ctx4.fillStyle = "#0033CC";
-        ctx4.fillRect(mousex, mousey, (names.tile[tileID] ?? tileID).length * 10, 16);
-        ctx4.strokeStyle = "#000000";
-        ctx4.strokeRect(mousex, mousey, (names.tile[tileID] ?? tileID).length * 10, 16);
-        ctx4.fillStyle = "#FFFFFF";
-        ctx4.fillText((names.tile[tileID] ?? tileID), mousex + 2, mousey + 10);
+        ctxOverlays.fillStyle = "#0033CC";
+        ctxOverlays.fillRect(mousex, mousey, (names.tile[tileID] ?? tileID).length * 10, 16);
+        ctxOverlays.strokeStyle = "#000000";
+        ctxOverlays.strokeRect(mousex, mousey, (names.tile[tileID] ?? tileID).length * 10, 16);
+        ctxOverlays.fillStyle = "#FFFFFF";
+        ctxOverlays.fillText((names.tile[tileID] ?? tileID), mousex + 2, mousey + 10);
         return;
     }
     export() {
@@ -533,8 +533,8 @@ class Chunk {
             (Game.scroll.y * consts.DISPLAY_SCALE) + this.y * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE < -1 - consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE)
             return;
         currentframe.cps++;
-        ctx.strokeStyle = "#000000";
-        ctx.lineWidth = 1;
+        ctxTiles.strokeStyle = "#000000";
+        ctxTiles.lineWidth = 1;
         if (currentframe.redraw) {
             for (let y = 0; y < this.layers[0].length; y++) {
                 for (let x = 0; x < this.layers[0][y].length; x++) {
@@ -553,8 +553,8 @@ class Chunk {
             }
         }
         if (currentframe.debug) {
-            ctx4.strokeStyle = "#0000FF";
-            ctx4.strokeRect(this.x * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE + (Game.scroll.x * consts.DISPLAY_SCALE), this.y * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE + (Game.scroll.y * consts.DISPLAY_SCALE), consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE, consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE);
+            ctxOverlays.strokeStyle = "#0000FF";
+            ctxOverlays.strokeRect(this.x * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE + (Game.scroll.x * consts.DISPLAY_SCALE), this.y * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE + (Game.scroll.y * consts.DISPLAY_SCALE), consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE, consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE);
         }
     }
     displayTile(x, y, currentframe) {
@@ -562,28 +562,29 @@ class Chunk {
         let pixelX = ((this.x * consts.CHUNK_SIZE) + x) * consts.DISPLAY_TILE_SIZE + (Game.scroll.x * consts.DISPLAY_SCALE);
         let pixelY = ((this.y * consts.CHUNK_SIZE) + y) * consts.DISPLAY_TILE_SIZE + (Game.scroll.y * consts.DISPLAY_SCALE);
         const tile = this.tileAt(x, y);
+        Gfx.layer("tile");
         if (settings.graphics_mode || (tile != "base_grass")) {
             if (registry.textures.tile[tile]) {
-                ctx.drawImage(registry.textures.tile[tile], pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
+                ctxTiles.drawImage(registry.textures.tile[tile], pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
             }
             else {
-                ctx.fillStyle = "#FF00FF";
-                rect(pixelX, pixelY, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2);
-                rect(pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY + consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2);
-                ctx.fillStyle = "#000000";
-                rect(pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2);
-                rect(pixelX, pixelY + consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2);
-                ctx.font = "15px sans-serif";
-                ctx.fillStyle = "#00FF00";
-                ctx.fillText(tile.toString(), pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY + consts.DISPLAY_TILE_SIZE / 2);
+                ctxTiles.fillStyle = "#FF00FF";
+                Gfx.rect(pixelX, pixelY, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2);
+                Gfx.rect(pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY + consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2);
+                ctxTiles.fillStyle = "#000000";
+                Gfx.rect(pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2);
+                Gfx.rect(pixelX, pixelY + consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2);
+                ctxTiles.font = "15px sans-serif";
+                ctxTiles.fillStyle = "#00FF00";
+                ctxTiles.fillText(tile.toString(), pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY + consts.DISPLAY_TILE_SIZE / 2);
             }
         }
         else {
-            ctx.fillStyle = "#00CC33";
-            rect(pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
+            ctxTiles.fillStyle = "#00CC33";
+            Gfx.rect(pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
         }
         if (currentframe.debug)
-            ctx.strokeRect(pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
+            ctxTiles.strokeRect(pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
     }
     export() {
         let exportDataL1 = [];
@@ -637,7 +638,7 @@ class Item {
             return;
         }
         currentframe.ips++;
-        ctx3.drawImage(registry.textures.item[this.id], this.pos.pixelX * consts.DISPLAY_SCALE + (Game.scroll.x * consts.DISPLAY_SCALE) - 8 * consts.DISPLAY_SCALE, this.pos.pixelY * consts.DISPLAY_SCALE + (Game.scroll.y * consts.DISPLAY_SCALE) - 8 * consts.DISPLAY_SCALE, 16 * consts.DISPLAY_SCALE, 16 * consts.DISPLAY_SCALE);
+        ctxItems.drawImage(registry.textures.item[this.id], this.pos.pixelX * consts.DISPLAY_SCALE + (Game.scroll.x * consts.DISPLAY_SCALE) - 8 * consts.DISPLAY_SCALE, this.pos.pixelY * consts.DISPLAY_SCALE + (Game.scroll.y * consts.DISPLAY_SCALE) - 8 * consts.DISPLAY_SCALE, 16 * consts.DISPLAY_SCALE, 16 * consts.DISPLAY_SCALE);
     }
     export() {
         if (this.deleted || !this.grabbedBy)
@@ -685,21 +686,22 @@ class Building {
     stringID() {
         return stringifyMeta(this.block.id, this.meta);
     }
-    display(currentFrame, ctx = this.block.isOverlay ? ctx25 : ctx2) {
+    display(currentFrame, ctx = this.block.isOverlay ? ctxOBuilds : ctxBuilds) {
         const textureSize = Buildings.get(this.block.id).textureSize(this.meta);
         let pixelX = (this.pos.tileX + textureSize[1][0]) * consts.DISPLAY_TILE_SIZE + Game.scroll.x * consts.DISPLAY_SCALE;
         let pixelY = (this.pos.tileY + textureSize[1][1]) * consts.DISPLAY_TILE_SIZE + Game.scroll.y * consts.DISPLAY_SCALE;
         let texture = registry.textures.building[this.stringID()];
+        Gfx.layer("buildings");
         if (texture) {
             ctx.drawImage(texture, pixelX, pixelY, consts.DISPLAY_TILE_SIZE * textureSize[0][0], consts.DISPLAY_TILE_SIZE * textureSize[0][1]);
         }
         else {
             ctx.fillStyle = "#FF00FF";
-            rect(pixelX, pixelY, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, ctx);
-            rect(pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY + consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, ctx);
+            Gfx.rect(pixelX, pixelY, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, RectMode.CORNER, ctx);
+            Gfx.rect(pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY + consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, RectMode.CORNER, ctx);
             ctx.fillStyle = "#000000";
-            rect(pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, ctx);
-            rect(pixelX, pixelY + consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, rectMode.CORNER, ctx);
+            Gfx.rect(pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, RectMode.CORNER, ctx);
+            Gfx.rect(pixelX, pixelY + consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, RectMode.CORNER, ctx);
             ctx.font = "15px sans-serif";
             ctx.fillStyle = "#00FF00";
             ctx.fillText(names.building[this.block.id], pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY + consts.DISPLAY_TILE_SIZE / 2);

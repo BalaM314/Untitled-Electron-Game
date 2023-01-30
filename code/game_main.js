@@ -135,17 +135,17 @@ let state = {
             }
         },
         display: function (currentFrame) {
-            ctx.clear();
-            ctx.fillStyle = "#0033CC";
-            ctx.fillRect(0, 0, innerWidth, innerHeight);
-            ctx.font = "70px sans-serif";
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            ctx.fillStyle = "#000000";
-            ctx.fillText("Untitled Electron Game", innerWidth / 2, innerHeight * 0.2);
-            ctx.fillStyle = "#000000";
-            ctx.font = `40px sans-serif`;
-            ctx.fillText(`Loading... ${Game.loadedTextures}/${getTotalTextures()}`, innerWidth / 2, innerHeight * 0.35);
+            ctxTiles.clear();
+            ctxTiles.fillStyle = "#0033CC";
+            ctxTiles.fillRect(0, 0, innerWidth, innerHeight);
+            ctxTiles.font = "70px sans-serif";
+            ctxTiles.textAlign = "center";
+            ctxTiles.textBaseline = "middle";
+            ctxTiles.fillStyle = "#000000";
+            ctxTiles.fillText("Untitled Electron Game", innerWidth / 2, innerHeight * 0.2);
+            ctxTiles.fillStyle = "#000000";
+            ctxTiles.font = `40px sans-serif`;
+            ctxTiles.fillText(`Loading... ${Game.loadedTextures}/${getTotalTextures()}`, innerWidth / 2, innerHeight * 0.35);
         }
     },
     title: {
@@ -183,18 +183,18 @@ let state = {
         ],
         update: function () { },
         display: function (currentFrame) {
-            ctx.clear();
-            ctx.fillStyle = "#0033CC";
-            ctx.fillRect(0, 0, innerWidth, innerHeight);
-            ctx.font = "70px sans-serif";
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            ctx.fillStyle = "#000000";
-            ctx.fillText("Untitled Electron Game", innerWidth / 2, innerHeight * 0.2);
-            ctx.fillStyle = "#cccc00";
-            ctx.font = `${20 + 5 * Game.title.splashbehavior(millis() / 400)}px sans-serif`;
-            ctx.fillText(Game.title.splashtext ?? "splash not found! this is actually an error pls report", innerWidth / 2, innerHeight * 0.35);
-            state.title.buttons.forEach(button => button.display(ctx));
+            ctxTiles.clear();
+            ctxTiles.fillStyle = "#0033CC";
+            ctxTiles.fillRect(0, 0, innerWidth, innerHeight);
+            ctxTiles.font = "70px sans-serif";
+            ctxTiles.textAlign = "center";
+            ctxTiles.textBaseline = "middle";
+            ctxTiles.fillStyle = "#000000";
+            ctxTiles.fillText("Untitled Electron Game", innerWidth / 2, innerHeight * 0.2);
+            ctxTiles.fillStyle = "#cccc00";
+            ctxTiles.font = `${20 + 5 * Game.title.splashbehavior(millis() / 400)}px sans-serif`;
+            ctxTiles.fillText(Game.title.splashtext ?? "splash not found! this is actually an error pls report", innerWidth / 2, innerHeight * 0.35);
+            state.title.buttons.forEach(button => button.display(ctxTiles));
         },
         onclick(e) {
             state.title.buttons.forEach(button => button.handleMouseClick(e));
@@ -255,15 +255,15 @@ let state = {
         ],
         update: function () { },
         display: function (currentFrame) {
-            ctx.clear();
-            ctx.fillStyle = "#0033CC";
-            ctx.fillRect(0, 0, innerWidth, innerHeight);
-            ctx.font = "70px sans-serif";
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            ctx.fillStyle = "#000000";
-            ctx.fillText("Settings", innerWidth / 2, innerHeight * 0.2);
-            state.settings.buttons.forEach(button => button.display(ctx));
+            ctxTiles.clear();
+            ctxTiles.fillStyle = "#0033CC";
+            ctxTiles.fillRect(0, 0, innerWidth, innerHeight);
+            ctxTiles.font = "70px sans-serif";
+            ctxTiles.textAlign = "center";
+            ctxTiles.textBaseline = "middle";
+            ctxTiles.fillStyle = "#000000";
+            ctxTiles.fillText("Settings", innerWidth / 2, innerHeight * 0.2);
+            state.settings.buttons.forEach(button => button.display(ctxTiles));
         },
         onclick: function (e) {
             state.settings.buttons.forEach(button => button.handleMouseClick(e));
@@ -295,15 +295,15 @@ let state = {
         ],
         update: function () { },
         display: function (currentFrame) {
-            ctx.clear();
-            ctx.fillStyle = "#0033CC";
-            ctx.fillRect(0, 0, innerWidth, innerHeight);
-            ctx.font = "60px sans-serif";
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            ctx.fillStyle = "#000000";
-            ctx.fillText("Keybinds", innerWidth / 2, innerHeight * 0.2);
-            state["settings.keybinds"].buttons.forEach(button => button.display(ctx));
+            ctxTiles.clear();
+            ctxTiles.fillStyle = "#0033CC";
+            ctxTiles.fillRect(0, 0, innerWidth, innerHeight);
+            ctxTiles.font = "60px sans-serif";
+            ctxTiles.textAlign = "center";
+            ctxTiles.textBaseline = "middle";
+            ctxTiles.fillStyle = "#000000";
+            ctxTiles.fillText("Keybinds", innerWidth / 2, innerHeight * 0.2);
+            state["settings.keybinds"].buttons.forEach(button => button.display(ctxTiles));
         },
         onclick: function (e) {
             state["settings.keybinds"].buttons.forEach(button => button.handleMouseClick(e));
@@ -333,36 +333,36 @@ let state = {
         display: function (currentFrame, level) {
             level ?? (level = level1);
             if (Game.paused) {
-                ctx4.font = "48px sans-serif";
-                ctx4.fillStyle = "#3333CC";
-                ctx4.textAlign = "center";
-                ctx4.fillText("Game paused", innerWidth * 0.5, innerHeight * 0.2);
-                ctx4.font = "24px sans-serif";
-                ctx4.fillText("Press esc to unpause", innerWidth * 0.5, innerHeight * 0.25);
+                ctxOverlays.font = "48px sans-serif";
+                ctxOverlays.fillStyle = "#3333CC";
+                ctxOverlays.textAlign = "center";
+                ctxOverlays.fillText("Game paused", innerWidth * 0.5, innerHeight * 0.2);
+                ctxOverlays.font = "24px sans-serif";
+                ctxOverlays.fillText("Press esc to unpause", innerWidth * 0.5, innerHeight * 0.25);
                 Game.forceRedraw = true;
                 return;
             }
             if (currentFrame.redraw) {
-                ctx.clear();
+                ctxTiles.clear();
             }
-            ctx1.clearRect(0, 0, innerWidth, innerHeight);
-            ctx2.clearRect(0, 0, innerWidth, innerHeight);
-            ctx25.clearRect(0, 0, innerWidth, innerHeight);
-            ctx3.clearRect(0, 0, innerWidth, innerHeight);
-            ctx4.clearRect(0, 0, innerWidth, innerHeight);
+            ctxGBuilds.clearRect(0, 0, innerWidth, innerHeight);
+            ctxBuilds.clearRect(0, 0, innerWidth, innerHeight);
+            ctxOBuilds.clearRect(0, 0, innerWidth, innerHeight);
+            ctxItems.clearRect(0, 0, innerWidth, innerHeight);
+            ctxOverlays.clearRect(0, 0, innerWidth, innerHeight);
             level.display(currentFrame);
             level.displayGhostBuilding(Math.floor((mouse.x - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE), Math.floor((mouse.y - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE), placedBuilding.ID, currentFrame);
             if (registry.keybinds.display.show_tooltip.isHeld()) {
                 level.displayTooltip(mouse.x, mouse.y, currentFrame);
             }
-            ctx4.font = "30px sans-serif";
-            ctx4.fillStyle = "#000000";
-            ctx4.textAlign = "left";
-            ctx4.fillText(Math.floor((mouse.x - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE).toString()
+            ctxOverlays.font = "30px sans-serif";
+            ctxOverlays.fillStyle = "#000000";
+            ctxOverlays.textAlign = "left";
+            ctxOverlays.fillText(Math.floor((mouse.x - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE).toString()
                 + ", " + Math.floor((mouse.y - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE).toString(), 10, 100);
             if (settings.debug) {
-                ctx4.fillText("C: " + currentFrame.cps, 10, 150);
-                ctx4.fillText("I: " + currentFrame.ips, 10, 200);
+                ctxOverlays.fillText("C: " + currentFrame.cps, 10, 150);
+                ctxOverlays.fillText("I: " + currentFrame.ips, 10, 200);
             }
             for (let item of (resourcesEl).children) {
                 item.innerText = (level1.resources[item.id] ?? 0).toString();
@@ -460,10 +460,10 @@ function main_loop() {
             fps.splice(0, 1);
             fps.push(frameMS);
             let avgFPS = Math.round(constrain(5000 / (fps[0] + fps[1] + fps[2] + fps[3] + fps[4]), 0, 60));
-            ctx4.fillStyle = "#000000";
-            ctx4.font = "30px sans-serif";
-            ctx4.textAlign = "left";
-            ctx4.fillText(avgFPS + " fps", 10, 50);
+            ctxOverlays.fillStyle = "#000000";
+            ctxOverlays.font = "30px sans-serif";
+            ctxOverlays.textAlign = "left";
+            ctxOverlays.fillText(avgFPS + " fps", 10, 50);
         }
         handleAlerts();
     }
