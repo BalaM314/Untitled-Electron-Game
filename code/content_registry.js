@@ -29,4 +29,4 @@ Buildings.register("base_wiremill", BuildingWithRecipe, { recipeType: registry.r
 Buildings.register("base_compressor", BuildingWithRecipe, { recipeType: registry.recipes.base_compressing });
 Buildings.register("base_lathe", BuildingWithRecipe, { recipeType: registry.recipes.base_lathing });
 Buildings.register("base_multiblock_secondary", MultiBlockSecondary);
-Buildings.register("base_assembler", MultiBlockController, { recipeType: registry.recipes.base_alloying, multiblockSize: [2, 2] });
+Buildings.register("base_assembler", MultiBlockController, { recipeType: registry.recipes.base_assembling, multiblockSize: [2, 2] });
