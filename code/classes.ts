@@ -229,9 +229,10 @@ class Level {
 			switch(buildingID[0]){
 				case "base_assembler":
 					let controller = new block(tileX, tileY, buildingID[1], this) as MultiBlockController;
-					let secondary1 = new MultiBlockSecondary(tileX + 1, tileY, 0, this);
-					let secondary2 = new MultiBlockSecondary(tileX, tileY + 1, 0, this);
-					let secondary3 = new MultiBlockSecondary(tileX+1, tileY+1, 0, this);
+					const multiblockSecondary = Buildings.get("base_multiblock_secondary") as typeof MultiBlockSecondary;
+					let secondary1 = new multiblockSecondary(tileX + 1, tileY, 0, this);
+					let secondary2 = new multiblockSecondary(tileX, tileY + 1, 0, this);
+					let secondary3 = new multiblockSecondary(tileX+1, tileY+1, 0, this);
 					controller.secondaries = [secondary1, secondary2, secondary3];
 					[secondary1, secondary2, secondary3].forEach(secondary => secondary.controller = controller);
 					this.writeBuilding(tileX, tileY, controller);
@@ -1537,8 +1538,6 @@ class MultiBlockSecondary extends Building {
 	/**Assigned in buildBuilding */
 	controller: MultiBlockController | null = null;
 	static outputsItems = true;
-	//TODO is this fine?
-	static id:RawBuildingID = "base_multiblock_secondary";
 	acceptItem(item: Item):boolean {
 		return this.controller?.acceptItem(item) ?? false;
 	}
@@ -1550,7 +1549,9 @@ class MultiBlockSecondary extends Building {
 			super.break();
 		}
 	}
-	display(currentFrame:CurrentFrame){}
+	display(currentFrame:CurrentFrame){
+		//Do nothing, the controller is responsible for displaying
+	}
 	update(){
 		if(!(this.controller instanceof MultiBlockController)){
 			this.break();
