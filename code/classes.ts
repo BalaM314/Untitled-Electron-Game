@@ -151,37 +151,26 @@ class Level {
 	
 	
 	displayGhostBuilding(tileX:number, tileY:number, buildingID:BuildingIDWithMeta, currentframe:CurrentFrame){
-		
 		if(!this.hasChunk(tileX, tileY)) return;
-		let pixelX = tileX * consts.DISPLAY_TILE_SIZE + (Game.scroll.x * consts.DISPLAY_SCALE);
-		let pixelY = tileY * consts.DISPLAY_TILE_SIZE + (Game.scroll.y * consts.DISPLAY_SCALE);
-		let _ctx = ctxGBuilds;
-
+		Gfx.layer("ghostBuilds");
+		//TODO this should probably be different method
 		if(registry.keybinds.placement.break_building.isHeld()){
-			// gfx.image(textures.get("invalidunderlay"), tileX, tileY);
-			_ctx.globalAlpha = 0.9;
-			_ctx.drawImage(registry.textures.misc["invalidunderlay"], pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
-			_ctx.globalAlpha = 1.0;
-			return;
+			Gfx.alpha(0.9);
+			Gfx.tImage(Gfx.texture("misc/invalidunderlay"), tileX, tileY, 1, 1);
+			Gfx.alpha(1);
 		}
-
 		if(buildingID[0] == "base_null") return;
+
 		let changedID:BuildingIDWithMeta = [buildingID[0], buildingID[1]];
 		changedID[1] = Buildings.get(buildingID[0]).changeMeta(changedID[1], tileX, tileY, this);
-
 		let textureSize = Buildings.get(buildingID[0]).textureSize(buildingID[1]);
-		
-		_ctx.globalAlpha = 0.9;
-		let isError = !Buildings.get(changedID[0]).canBuildAt(tileX, tileY, this);
-		
-		if(textureSize[0][0] == textureSize[0][1])
-			_ctx.drawImage(registry.textures.misc[isError ? "invalidunderlay" : "ghostunderlay"], pixelX + textureSize[1][0] * consts.DISPLAY_TILE_SIZE, pixelY + textureSize[1][1] * consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE * textureSize[0][0], consts.DISPLAY_TILE_SIZE * textureSize[0][1]);
-		else	
-			_ctx.drawImage(registry.textures.misc[isError ? "invalidunderlay" : "ghostunderlay"], pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
 
-		_ctx.globalAlpha = buildingID[0] == "base_conveyor" ? 0.3 : 0.7;
-		
-		//TODO this is rather bodgy and could cause bugs
+		//Draw underlay
+		let isError = !Buildings.get(changedID[0]).canBuildAt(tileX, tileY, this);
+		let underlayTextureSize = textureSize[0][0] == textureSize[0][1] ? textureSize : [[1, 1], [0, 0]];
+		Gfx.tImage(isError ? Gfx.texture("misc/invalidunderlay") : Gfx.texture("misc/ghostunderlay"), tileX + underlayTextureSize[1][0], tileY + underlayTextureSize[1][1], underlayTextureSize[0][0], underlayTextureSize[0][1]);
+
+		Gfx.alpha(0.7);
 		Building.prototype.display.bind({
 			pos: Pos.fromTileCoords(tileX, tileY, false),
 			meta: changedID[1],
@@ -191,9 +180,11 @@ class Level {
 				id: changedID[0]
 			},
 			stringID: Building.prototype.stringID
-		})(currentframe, ctxGBuilds);
-		_ctx.globalAlpha = 1.0;
+		})(currentframe, "ghostBuilds");
+		Gfx.alpha(1);
+
 	}
+
 	buildBuilding(tileX:number, tileY:number, buildingID:BuildingIDWithMeta):boolean {
 		if(this.buildingAtTile(tileX, tileY)?.block.immutable) return false;
 
@@ -282,38 +273,39 @@ class Level {
 		if(!currentframe.tooltip){return;}
 		let x = (mousex - (Game.scroll.x * consts.DISPLAY_SCALE))/consts.DISPLAY_SCALE;
 		let y = (mousey - (Game.scroll.y * consts.DISPLAY_SCALE))/consts.DISPLAY_SCALE;
-		ctxOverlays.font = "16px monospace";
+		Gfx.layer("overlay");
+		Gfx.font("16px monospace");
 		let building = this.buildingAtPixel(x, y);
 		if(building instanceof Building){
 			let buildingID = building.block.id;
 			if(building.block.displaysItem && building.item){
 				let item = this.buildingAtPixel(x, y)!.item;
-				if(item && (Math.abs(item.pos.pixelX - x) < 8) && Math.abs(item.pos.pixelY - y) < 8){
+				if(item && (Math.abs(item.pos.pixelX - x) < consts.ITEM_SIZE / 2) && Math.abs(item.pos.pixelY - y) < consts.ITEM_SIZE / 2){
 					//If the item is within 8 pixels of the cursor
-					ctxOverlays.fillStyle = "#0033CC";
-					ctxOverlays.fillRect(mousex, mousey, (names.item[item.id] ?? item.id).length * 10, 16);
-					ctxOverlays.strokeStyle = "#000000";
-					ctxOverlays.strokeRect(mousex, mousey, (names.item[item.id] ?? item.id).length * 10, 16);
-					ctxOverlays.fillStyle = "#FFFFFF";
-					ctxOverlays.fillText((names.item[item.id] ?? item.id), mousex + 2, mousey + 10);
+					Gfx.fillColor("#0033CC");
+					Gfx.rect(mousex, mousey, (names.item[item.id] ?? item.id).length * 10, 16);
+					Gfx.strokeColor("#000000");
+					Gfx.lineRect(mousex, mousey, (names.item[item.id] ?? item.id).length * 10, 16);
+					Gfx.fillColor("#FFFFFF");
+					Gfx.text((names.item[item.id] ?? item.id), mousex + 2, mousey + 10);
 					return;
 				}
 			}
-			ctxOverlays.fillStyle = "#0033CC";
-			ctxOverlays.fillRect(mousex, mousey, (names.building[buildingID] ?? buildingID).length * 10, 16);
-			ctxOverlays.strokeStyle = "#000000";
-			ctxOverlays.strokeRect(mousex, mousey, (names.building[buildingID] ?? buildingID).length * 10, 16);
-			ctxOverlays.fillStyle = "#FFFFFF";
-			ctxOverlays.fillText((names.building[buildingID] ?? buildingID), mousex + 2, mousey + 10);
+			Gfx.fillColor("#0033CC");
+			Gfx.rect(mousex, mousey, (names.building[buildingID] ?? buildingID).length * 10, 16);
+			Gfx.strokeColor("#000000");
+			Gfx.lineRect(mousex, mousey, (names.building[buildingID] ?? buildingID).length * 10, 16);
+			Gfx.fillColor("#FFFFFF");
+			Gfx.text((names.building[buildingID] ?? buildingID), mousex + 2, mousey + 10);
 			return;
 		}
 		let tileID = this.tileAtByPixel(x, y);
-		ctxOverlays.fillStyle = "#0033CC";
-		ctxOverlays.fillRect(mousex, mousey, (names.tile[tileID] ?? tileID).length * 10, 16);
-		ctxOverlays.strokeStyle = "#000000";
-		ctxOverlays.strokeRect(mousex, mousey, (names.tile[tileID] ?? tileID).length * 10, 16);
-		ctxOverlays.fillStyle = "#FFFFFF";
-		ctxOverlays.fillText((names.tile[tileID] ?? tileID), mousex + 2, mousey + 10);
+		Gfx.fillColor("#0033CC");
+		Gfx.rect(mousex, mousey, (names.tile[tileID] ?? tileID).length * 10, 16);
+		Gfx.strokeColor("#000000");
+		Gfx.lineRect(mousex, mousey, (names.tile[tileID] ?? tileID).length * 10, 16);
+		Gfx.fillColor("#FFFFFF");
+		Gfx.text((names.tile[tileID] ?? tileID), mousex + 2, mousey + 10);
 		return;
 	}
 	export():LevelData {
@@ -648,13 +640,20 @@ class Chunk {
 			(Game.scroll.y * consts.DISPLAY_SCALE) + this.y * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE < -1 - consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE
 		) return;//if offscreen return immediately
 		currentframe.cps ++;
-		ctxTiles.strokeStyle = "#000000";
-		ctxTiles.lineWidth = 1;
 		
 		if(currentframe.redraw){
+			Gfx.layer("tile");
+			Gfx.strokeColor("#000000");
+			Gfx.lineWidth(1);
+			Gfx.layer("tile");
 			for(let y = 0; y < this.layers[0].length; y ++){
 				for(let x = 0; x < this.layers[0][y].length; x ++){
-					this.displayTile(x, y, currentframe);
+					currentframe.tps ++;
+					let tileX = (this.x * consts.CHUNK_SIZE) + x;
+					let tileY = (this.y * consts.CHUNK_SIZE) + y;
+					const tile = this.layers[0][y][x];
+					Gfx.tImage(Gfx.texture(`tile/${tile}`), tileX, tileY, 1, 1);
+					if(currentframe.debug) Gfx.lineTRect(tileX, tileY, 1, 1);
 				}
 			}
 		}
@@ -669,39 +668,13 @@ class Chunk {
 			}
 		}
 		if(currentframe.debug){
-			ctxOverlays.strokeStyle = "#0000FF";
-			ctxOverlays.strokeRect(
-				this.x * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE + (Game.scroll.x * consts.DISPLAY_SCALE),
-				this.y * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE + (Game.scroll.y * consts.DISPLAY_SCALE),
-				consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE, consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE
+			Gfx.layer("overlay");
+			Gfx.strokeColor("#0000FF");
+			Gfx.lineTRect(
+				this.x * consts.CHUNK_SIZE, this.y * consts.CHUNK_SIZE,
+				consts.CHUNK_SIZE, consts.CHUNK_SIZE
 			);
 		}
-	}
-	displayTile(x:number, y:number, currentframe:CurrentFrame){
-		currentframe.tps ++;
-		let pixelX = ((this.x * consts.CHUNK_SIZE) + x) * consts.DISPLAY_TILE_SIZE + (Game.scroll.x * consts.DISPLAY_SCALE);
-		let pixelY = ((this.y * consts.CHUNK_SIZE) + y) * consts.DISPLAY_TILE_SIZE + (Game.scroll.y * consts.DISPLAY_SCALE);
-		const tile = this.tileAt(x,y);
-		Gfx.layer("tile");
-		if(settings.graphics_mode || (tile != "base_grass")){
-			if(registry.textures.tile[tile]){
-				ctxTiles.drawImage(registry.textures.tile[tile], pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
-			} else {
-				ctxTiles.fillStyle = "#FF00FF";
-				Gfx.rect(pixelX, pixelY, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2);
-				Gfx.rect(pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY + consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2);
-				ctxTiles.fillStyle = "#000000";
-				Gfx.rect(pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2);
-				Gfx.rect(pixelX, pixelY + consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2);
-				ctxTiles.font = "15px sans-serif";
-				ctxTiles.fillStyle = "#00FF00";
-				ctxTiles.fillText(tile.toString(), pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY + consts.DISPLAY_TILE_SIZE / 2);
-			}
-		} else {
-			ctxTiles.fillStyle = "#00CC33";
-			Gfx.rect(pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
-		}
-		if(currentframe.debug) ctxTiles.strokeRect(pixelX, pixelY, consts.DISPLAY_TILE_SIZE, consts.DISPLAY_TILE_SIZE);
 	}
 	export():ChunkData | null {
 		let exportDataL1:(BuildingData | null)[][] = [];
@@ -758,13 +731,8 @@ class Item {
 			consts.DISPLAY_SCALE * (this.pos.pixelY + Game.scroll.y - 8) > window.innerHeight
 		){return;}//if offscreen return immediately
 		currentframe.ips ++;
-		//gfx.pImage(registry.textures.item[this.id], this.pos.pixelX, this.pos.pixelY, 16, 16, RectMode.CENTER);
-		ctxItems.drawImage(
-			registry.textures.item[this.id],
-			this.pos.pixelX * consts.DISPLAY_SCALE + (Game.scroll.x * consts.DISPLAY_SCALE) - 8*consts.DISPLAY_SCALE,
-			this.pos.pixelY * consts.DISPLAY_SCALE + (Game.scroll.y * consts.DISPLAY_SCALE) - 8*consts.DISPLAY_SCALE,
-			16 * consts.DISPLAY_SCALE, 16 * consts.DISPLAY_SCALE
-		);
+		Gfx.layer("items");
+		Gfx.pImage(Gfx.texture(`item/${this.id}`), this.pos.pixelX, this.pos.pixelY, consts.ITEM_SIZE, consts.ITEM_SIZE, RectMode.CENTER);
 	}
 	export():ItemData | null {
 		if(this.deleted || !this.grabbedBy) return null;
@@ -820,28 +788,16 @@ class Building {
 	stringID(){
 		return stringifyMeta(this.block.id, this.meta);
 	}
-	display(currentFrame:CurrentFrame, ctx:CanvasRenderingContext2D = this.block.isOverlay ? ctxOBuilds : ctxBuilds){
+	display(currentFrame:CurrentFrame, layer:(keyof typeof Gfx.layers) = this.block.isOverlay ? "overlayBuilds" : "ghostBuilds"){
 		const textureSize = Buildings.get(this.block.id).textureSize(this.meta);
+		//do not edit, necessary due to the cursed .bind() shenanigans
 		
-		let pixelX = (this.pos.tileX + textureSize[1][0]) * consts.DISPLAY_TILE_SIZE + Game.scroll.x * consts.DISPLAY_SCALE;
-		let pixelY = (this.pos.tileY + textureSize[1][1]) * consts.DISPLAY_TILE_SIZE + Game.scroll.y * consts.DISPLAY_SCALE;
-		let texture = registry.textures.building[this.stringID()];
-		Gfx.layer("buildings")
-		if(texture){
-			//gfx.__(texture, this.pos)
-			//gfx.tImage(texture, this.pos.tileX + textureSize[1][0], this.pos.tileY + textureSize[1][1], textureSize[0][0], textureSize[0][1]);
-			ctx.drawImage(texture, pixelX, pixelY, consts.DISPLAY_TILE_SIZE * textureSize[0][0], consts.DISPLAY_TILE_SIZE * textureSize[0][1]);
-		} else {
-			ctx.fillStyle = "#FF00FF";
-			Gfx.rect(pixelX, pixelY, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, RectMode.CORNER, ctx);
-			Gfx.rect(pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY + consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, RectMode.CORNER, ctx);
-			ctx.fillStyle = "#000000";
-			Gfx.rect(pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, RectMode.CORNER, ctx);
-			Gfx.rect(pixelX, pixelY + consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, consts.DISPLAY_TILE_SIZE / 2, RectMode.CORNER, ctx);
-			ctx.font = "15px sans-serif";
-			ctx.fillStyle = "#00FF00";
-			ctx.fillText(names.building[this.block.id], pixelX + consts.DISPLAY_TILE_SIZE / 2, pixelY + consts.DISPLAY_TILE_SIZE / 2);
-		}
+		Gfx.tImage(
+			Gfx.texture(`building/${this.stringID()}`),
+			this.pos.tileX + textureSize[1][0], this.pos.tileY + textureSize[1][1],
+			...textureSize[0],
+			Gfx.layers[layer]
+		);
 		if(this.item instanceof Item && this.block.displaysItem){
 			this.item.display(currentFrame);
 		}

@@ -143,13 +143,13 @@ class Button {
         }
         _ctx.lineWidth = 1;
         _ctx.globalAlpha = 1.0;
-        ctxTiles.font = this.font;
-        ctxTiles.textAlign = "center";
-        let tempBaseline = ctxTiles.textBaseline;
-        ctxTiles.textBaseline = "middle";
-        ctxTiles.fillStyle = "#FFFFFF";
-        ctxTiles.fillText(this.label, this.x + this.width / 2, this.y + this.height / 2);
-        ctxTiles.textBaseline = tempBaseline;
+        _ctx.font = this.font;
+        _ctx.textAlign = "center";
+        let tempBaseline = _ctx.textBaseline;
+        _ctx.textBaseline = "middle";
+        _ctx.fillStyle = "#FFFFFF";
+        _ctx.fillText(this.label, this.x + this.width / 2, this.y + this.height / 2);
+        _ctx.textBaseline = tempBaseline;
     }
     ;
     isMouseInside() {
@@ -198,86 +198,6 @@ function trigger(type, buildingID, itemID) {
 }
 function _alert(x) {
     alerts.list.push(x);
-}
-function loadTexturesIntoMemory() {
-    for (let imageElement of Array.from(texturesDivs.item.children)) {
-        if (!imageElement.complete) {
-            return false;
-        }
-        registry.textures.item[imageElement.src.match(/(?<=assets\/textures\/item\/).*(?=\.png)/)[0]] = imageElement;
-    }
-    for (let imageElement of Array.from(texturesDivs.building.children)) {
-        if (!imageElement.complete) {
-            return false;
-        }
-        registry.textures.building[imageElement.src.match(/(?<=assets\/textures\/building\/).*(?=\.png)/)[0].replace("%23", ":")] = imageElement;
-    }
-    for (let imageElement of Array.from(texturesDivs.tile.children)) {
-        if (!imageElement.complete) {
-            return false;
-        }
-        registry.textures.tile[imageElement.src.match(/(?<=assets\/textures\/tile\/).*(?=\.png)/)[0]] = imageElement;
-    }
-    for (let imageElement of Array.from(texturesDivs.misc.children)) {
-        if (!imageElement.complete) {
-            return false;
-        }
-        registry.textures.misc[imageElement.src.match(/(?<=assets\/textures\/misc\/).*(?=\.png)/)[0]] = imageElement;
-    }
-    return true;
-}
-function loadTexturesIntoPage() {
-    for (let buildingID of registry.buildingIDs) {
-        let img = document.createElement("img");
-        img.setAttribute("src", `assets/textures/building/${buildingID.replace(":", "%23")}.png`);
-        img.addEventListener("load", () => {
-            Game.loadedTextures++;
-        });
-        img.addEventListener("error", (err) => {
-            alert("Failed to load texture " + err.target.src.split("assets/textures/")[1]);
-            throw err;
-        });
-        texturesDivs.building.appendChild(img);
-    }
-    for (let itemID of Object.values(registry.itemIDs)) {
-        let img = document.createElement("img");
-        img.setAttribute("src", `assets/textures/item/${itemID}.png`);
-        img.addEventListener("load", () => {
-            Game.loadedTextures++;
-        });
-        img.addEventListener("error", (err) => {
-            alert("Failed to load texture " + err.target.src.split("assets/textures/")[1]);
-            throw err;
-        });
-        texturesDivs.item.appendChild(img);
-    }
-    for (let tileID of registry.tileIDs) {
-        let img = document.createElement("img");
-        img.setAttribute("src", `assets/textures/tile/${tileID}.png`);
-        img.addEventListener("load", () => {
-            Game.loadedTextures++;
-        });
-        img.addEventListener("error", (err) => {
-            alert("Failed to load texture " + err.target.src.split("assets/textures/")[1]);
-            throw err;
-        });
-        texturesDivs.tile.appendChild(img);
-    }
-    for (let textureID of registry.miscTextures) {
-        let img = document.createElement("img");
-        img.setAttribute("src", `assets/textures/misc/${textureID}.png`);
-        img.addEventListener("load", () => {
-            Game.loadedTextures++;
-        });
-        img.addEventListener("error", (err) => {
-            alert("Failed to load texture " + err.target.src.split("assets/textures/")[1]);
-            throw err;
-        });
-        texturesDivs.misc.appendChild(img);
-    }
-}
-function getTotalTextures() {
-    return registry.buildingIDs.length + registry.itemIDs.length + registry.tileIDs.length + registry.miscTextures.length;
 }
 function hex(num, length) {
     return `0x${(Array(length).fill("0").join("") + num.toString(16)).toUpperCase().slice(-length)}`;

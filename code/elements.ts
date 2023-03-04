@@ -14,12 +14,7 @@ const clickcapture = getElement("clickcapture", HTMLDivElement);
 const errorBackground = getElement("error_background", HTMLDivElement);
 const loadingBackground = getElement("loading_background", HTMLDivElement);
 const resourcesEl = getElement("resources", HTMLDivElement);
-const texturesDivs = {
-	item: getElement("item", HTMLDivElement),
-	misc: getElement("misc", HTMLDivElement),
-	tile: getElement("tile", HTMLDivElement),
-	building: getElement("building", HTMLDivElement),
-}
+const texturesDiv = getElement("textures", HTMLDivElement);
 
 for(let element of toolbarEl.children){
 	element.addEventListener("click", (event) => {

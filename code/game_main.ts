@@ -184,24 +184,20 @@ let state: {
 	loading: {
 		buttons: [],
 		update: function(){
-			if(Game.loadedTextures == getTotalTextures()){
-				Game.state = "title";
-			} else if(Game.loadedTextures > getTotalTextures()){
-				throw new ShouldNotBePossibleError("Somehow loaded more textures than exist.");
-			}
+			if(Game.texturesReady) Game.state = "title";
 		},
 		display: function(currentFrame:CurrentFrame){
-			ctxTiles.clear();
-			ctxTiles.fillStyle = "#0033CC";
-			ctxTiles.fillRect(0, 0, innerWidth, innerHeight);
-			ctxTiles.font = "70px sans-serif";
-			ctxTiles.textAlign = "center";
-			ctxTiles.textBaseline = "middle";
-			ctxTiles.fillStyle = "#000000";
-			ctxTiles.fillText("Untitled Electron Game", innerWidth / 2, innerHeight * 0.2);
-			ctxTiles.fillStyle = "#000000";
-			ctxTiles.font = `40px sans-serif`;
-			ctxTiles.fillText(`Loading... ${Game.loadedTextures}/${getTotalTextures()}`, innerWidth / 2, innerHeight * 0.35);
+			ctxOverlays.clear();
+			ctxOverlays.fillStyle = "#0033CC";
+			ctxOverlays.fillRect(0, 0, innerWidth, innerHeight);
+			ctxOverlays.font = "70px sans-serif";
+			ctxOverlays.textAlign = "center";
+			ctxOverlays.textBaseline = "middle";
+			ctxOverlays.fillStyle = "#000000";
+			ctxOverlays.fillText("Untitled Electron Game", innerWidth / 2, innerHeight * 0.2);
+			ctxOverlays.fillStyle = "#000000";
+			ctxOverlays.font = `40px sans-serif`;
+			ctxOverlays.fillText(`Loading... ${Game.loadedTextures}/${textureIDs.length}`, innerWidth / 2, innerHeight * 0.35);
 		}
 	},
 	title: {
@@ -239,18 +235,18 @@ let state: {
 		],
 		update: function(){},
 		display: function(currentFrame:CurrentFrame){
-			ctxTiles.clear();
-			ctxTiles.fillStyle = "#0033CC";
-			ctxTiles.fillRect(0, 0, innerWidth, innerHeight);
-			ctxTiles.font = "70px sans-serif";
-			ctxTiles.textAlign = "center";
-			ctxTiles.textBaseline = "middle";
-			ctxTiles.fillStyle = "#000000";
-			ctxTiles.fillText("Untitled Electron Game", innerWidth / 2, innerHeight * 0.2);
-			ctxTiles.fillStyle = "#cccc00";
-			ctxTiles.font = `${20 + 5*Game.title.splashbehavior(millis() / 400)}px sans-serif`;
-			ctxTiles.fillText(Game.title.splashtext ?? "splash not found! this is actually an error pls report", innerWidth / 2, innerHeight * 0.35);
-			state.title.buttons.forEach(button => button.display(ctxTiles));
+			ctxOverlays.clear();
+			ctxOverlays.fillStyle = "#0033CC";
+			ctxOverlays.fillRect(0, 0, innerWidth, innerHeight);
+			ctxOverlays.font = "70px sans-serif";
+			ctxOverlays.textAlign = "center";
+			ctxOverlays.textBaseline = "middle";
+			ctxOverlays.fillStyle = "#000000";
+			ctxOverlays.fillText("Untitled Electron Game", innerWidth / 2, innerHeight * 0.2);
+			ctxOverlays.fillStyle = "#cccc00";
+			ctxOverlays.font = `${20 + 5*Game.title.splashbehavior(millis() / 400)}px sans-serif`;
+			ctxOverlays.fillText(Game.title.splashtext ?? "splash not found! this is actually an error pls report", innerWidth / 2, innerHeight * 0.35);
+			state.title.buttons.forEach(button => button.display(ctxOverlays));
 		},
 		onclick(e:MouseEvent){
 			state.title.buttons.forEach(button => button.handleMouseClick(e));
@@ -311,15 +307,15 @@ let state: {
 		],
 		update: function(){},
 		display: function(currentFrame:CurrentFrame){
-			ctxTiles.clear();
-			ctxTiles.fillStyle = "#0033CC";
-			ctxTiles.fillRect(0, 0, innerWidth, innerHeight);
-			ctxTiles.font = "70px sans-serif";
-			ctxTiles.textAlign = "center";
-			ctxTiles.textBaseline = "middle";
-			ctxTiles.fillStyle = "#000000";
-			ctxTiles.fillText("Settings", innerWidth / 2, innerHeight * 0.2);
-			state.settings.buttons.forEach(button => button.display(ctxTiles));
+			ctxOverlays.clear();
+			ctxOverlays.fillStyle = "#0033CC";
+			ctxOverlays.fillRect(0, 0, innerWidth, innerHeight);
+			ctxOverlays.font = "70px sans-serif";
+			ctxOverlays.textAlign = "center";
+			ctxOverlays.textBaseline = "middle";
+			ctxOverlays.fillStyle = "#000000";
+			ctxOverlays.fillText("Settings", innerWidth / 2, innerHeight * 0.2);
+			state.settings.buttons.forEach(button => button.display(ctxOverlays));
 		},
 		onclick: function(e:MouseEvent){
 			state.settings.buttons.forEach(button => button.handleMouseClick(e));
@@ -351,15 +347,15 @@ let state: {
 		],
 		update: function(){},
 		display: function(currentFrame:CurrentFrame){
-			ctxTiles.clear();
-			ctxTiles.fillStyle = "#0033CC";
-			ctxTiles.fillRect(0, 0, innerWidth, innerHeight);
-			ctxTiles.font = "60px sans-serif";
-			ctxTiles.textAlign = "center";
-			ctxTiles.textBaseline = "middle";
-			ctxTiles.fillStyle = "#000000";
-			ctxTiles.fillText("Keybinds", innerWidth / 2, innerHeight * 0.2);
-			state["settings.keybinds"].buttons.forEach(button => button.display(ctxTiles));
+			ctxOverlays.clear();
+			ctxOverlays.fillStyle = "#0033CC";
+			ctxOverlays.fillRect(0, 0, innerWidth, innerHeight);
+			ctxOverlays.font = "60px sans-serif";
+			ctxOverlays.textAlign = "center";
+			ctxOverlays.textBaseline = "middle";
+			ctxOverlays.fillStyle = "#000000";
+			ctxOverlays.fillText("Keybinds", innerWidth / 2, innerHeight * 0.2);
+			state["settings.keybinds"].buttons.forEach(button => button.display(ctxOverlays));
 		},
 		onclick: function(e:MouseEvent){
 			state["settings.keybinds"].buttons.forEach(button => button.handleMouseClick(e));
@@ -401,11 +397,11 @@ let state: {
 			if(currentFrame.redraw){
 				ctxTiles.clear();
 			}
-			ctxGBuilds.clearRect(0, 0, innerWidth, innerHeight);
-			ctxBuilds.clearRect(0, 0, innerWidth, innerHeight);
-			ctxOBuilds.clearRect(0, 0, innerWidth, innerHeight);
-			ctxItems.clearRect(0, 0, innerWidth, innerHeight);
-			ctxOverlays.clearRect(0, 0, innerWidth, innerHeight);
+			ctxGBuilds.clear();
+			ctxBuilds.clear();
+			ctxOBuilds.clear();
+			ctxItems.clear();
+			ctxOverlays.clear();
 		
 			level.display(currentFrame);
 		
@@ -575,10 +571,7 @@ function main_loop(){
 
 /**Called when switching to gamestate "game". */
 function load(){
-	if(!loadTexturesIntoMemory()){
-		alert("Not all textures have loaded yet somehow! This shouldn't be happening.");
-		return;
-	}
+	
 	level1 = new Level(314);
 
 	
@@ -689,7 +682,11 @@ function init(){
 	console.log("%c Hey there! It looks like you're checking out the console.\nIf you want to view the source code, *please do it at* https://github.com/BalaM314/Untitled-Electron-Game \n Make sure to view the .ts files as the .js files are compiled and thus look weird.", "color: blue; font-size: 30px;")
 	
 	noise.seed(1);
-	loadTexturesIntoPage();
+	loadTextures(textureIDs.map(id => ({id})), texturesDiv)
+		.then(loadedTextures => {
+			Gfx.textures = loadedTextures;
+			Game.texturesReady = true;
+		});
 	
 	
 	registerEventHandlers();

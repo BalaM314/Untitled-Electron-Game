@@ -181,13 +181,13 @@ class Button {
 		}
 		_ctx.lineWidth = 1;
 		_ctx.globalAlpha = 1.0;
-		ctxTiles.font = this.font;
-		ctxTiles.textAlign = "center";
-		let tempBaseline = ctxTiles.textBaseline;
-		ctxTiles.textBaseline = "middle";
-		ctxTiles.fillStyle = "#FFFFFF";
-		ctxTiles.fillText(this.label,this.x + this.width/2,this.y + this.height/2);
-		ctxTiles.textBaseline = tempBaseline;
+		_ctx.font = this.font;
+		_ctx.textAlign = "center";
+		let tempBaseline = _ctx.textBaseline;
+		_ctx.textBaseline = "middle";
+		_ctx.fillStyle = "#FFFFFF";
+		_ctx.fillText(this.label,this.x + this.width/2,this.y + this.height/2);
+		_ctx.textBaseline = tempBaseline;
   };
   isMouseInside(){
 		return mouse.x > this.x &&
@@ -245,88 +245,6 @@ function trigger(type:triggerType, buildingID?:RawBuildingID, itemID?:ItemID){
 function _alert(x:string){
 	alerts.list.push(x);
 }
-function loadTexturesIntoMemory():boolean {
-	//TODO this is getting super cursed, really need to do that texture system overhaul
-	for(let imageElement of Array.from(texturesDivs.item.children) as HTMLImageElement[]){
-		if(!imageElement.complete){
-			return false;
-		}
-		(registry.textures.item as any)[imageElement.src.match(/(?<=assets\/textures\/item\/).*(?=\.png)/)![0]] = imageElement;
-	}
-	for(let imageElement of Array.from(texturesDivs.building.children) as HTMLImageElement[]){
-		if(!imageElement.complete){
-			return false;
-		}
-		(registry.textures.building as any)[imageElement.src.match(/(?<=assets\/textures\/building\/).*(?=\.png)/)![0].replace("%23", ":")] = imageElement;
-	}
-	for(let imageElement of Array.from(texturesDivs.tile.children) as HTMLImageElement[]){
-		if(!imageElement.complete){
-			return false;
-		}
-		(registry.textures.tile as any)[imageElement.src.match(/(?<=assets\/textures\/tile\/).*(?=\.png)/)![0]] = imageElement;
-	}
-	for(let imageElement of Array.from(texturesDivs.misc.children) as HTMLImageElement[]){
-		if(!imageElement.complete){
-			return false;
-		}
-		(registry.textures.misc as any)[imageElement.src.match(/(?<=assets\/textures\/misc\/).*(?=\.png)/)![0]] = imageElement;
-	}
-	return true;
-}
-function loadTexturesIntoPage(){
-	for(let buildingID of registry.buildingIDs){
-		let img = document.createElement("img");
-		img.setAttribute("src", `assets/textures/building/${buildingID.replace(":", "%23")}.png`);
-		img.addEventListener("load", () => {
-			Game.loadedTextures ++;
-		});
-		img.addEventListener("error", (err) => {
-			alert("Failed to load texture " + (err.target as HTMLImageElement).src.split("assets/textures/")[1]);
-			throw err;
-		});
-		texturesDivs.building.appendChild(img);
-	}
-	for(let itemID of Object.values(registry.itemIDs)){
-		let img = document.createElement("img");
-		img.setAttribute("src", `assets/textures/item/${itemID}.png`);
-		img.addEventListener("load", () => {
-			Game.loadedTextures ++;
-		});
-		img.addEventListener("error", (err) => {
-			alert("Failed to load texture " + (err.target as HTMLImageElement).src.split("assets/textures/")[1]);
-			throw err;
-		});
-		texturesDivs.item.appendChild(img);
-	}
-	for(let tileID of registry.tileIDs){
-		let img = document.createElement("img");
-		img.setAttribute("src", `assets/textures/tile/${tileID}.png`);
-		img.addEventListener("load", () => {
-			Game.loadedTextures ++;
-		});
-		img.addEventListener("error", (err) => {
-			alert("Failed to load texture " + (err.target as HTMLImageElement).src.split("assets/textures/")[1]);
-			throw err;
-		});
-		texturesDivs.tile.appendChild(img);
-	}
-	for(let textureID of registry.miscTextures){
-		let img = document.createElement("img");
-		img.setAttribute("src", `assets/textures/misc/${textureID}.png`);
-		img.addEventListener("load", () => {
-			Game.loadedTextures ++;
-		});
-		img.addEventListener("error", (err) => {
-			alert("Failed to load texture " + (err.target as HTMLImageElement).src.split("assets/textures/")[1]);
-			throw err;
-		});
-		texturesDivs.misc.appendChild(img);
-	}
-}
-
-function getTotalTextures(){
-	return registry.buildingIDs.length + registry.itemIDs.length + registry.tileIDs.length + registry.miscTextures.length;
-}
 
 function hex(num:number, length:number){
 	return `0x${(Array(length).fill("0").join("") + num.toString(16)).toUpperCase().slice(-length)}`;
@@ -334,7 +252,7 @@ function hex(num:number, length:number){
 }
 
 function stringifyMeta(buildingID:RawBuildingID, buildingMeta:BuildingMeta):StringBuildingID {
-	return `${buildingID}:${buildingMeta}`
+	return `${buildingID}:${buildingMeta}`;
 }
 
 function mapLegacyRawBuildingID(id:LegacyRawBuildingID):RawBuildingID {

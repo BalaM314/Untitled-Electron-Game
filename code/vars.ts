@@ -123,6 +123,7 @@ const consts = {
 	/**Size of a tile in pixels. */
 	TILE_SIZE: 30,
 	DISPLAY_SCALE: 1,
+	ITEM_SIZE: 16,
 	//todo refactor to graphics
 	get DISPLAY_TILE_SIZE(){
 		return this.TILE_SIZE * this.DISPLAY_SCALE;
@@ -252,23 +253,6 @@ const registry:Registry = {
 			]
 		}
 	},
-	/**List of building textures. */
-	buildingIDs: ["base_conveyor:0", "base_conveyor:1", "base_conveyor:2", "base_conveyor:3", "base_conveyor:4", "base_conveyor:5", "base_conveyor:6", "base_conveyor:7", "base_conveyor:8", "base_conveyor:9", "base_conveyor:10", "base_conveyor:11", "base_conveyor:12", "base_conveyor:13", "base_conveyor:14", "base_conveyor:15", "base_conveyor:16", "base_conveyor:17", "base_conveyor:18", "base_conveyor:19", "base_conveyor:20", "base_conveyor:21", "base_conveyor:22", "base_conveyor:23", "base_conveyor:24", "base_conveyor:25", "base_conveyor:26", "base_conveyor:27", "base_miner:0", "base_trash_can:0", "base_furnace:0", "base_extractor:0", "base_extractor:1", "base_extractor:2", "base_extractor:3", "base_extractor:4", "base_extractor:5", "base_extractor:6", "base_extractor:7", "base_extractor:8", "base_extractor:9", "base_extractor:10", "base_extractor:11", "base_chest:0", "base_alloy_smelter:0", "base_resource_acceptor:0", "base_wiremill:0", "base_compressor:0", "base_lathe:0", "base_multiblock_secondary:0", "base_assembler:0", "base_null:0"],
-	/**List of item IDs. */
-	itemIDs: Object.values(ItemID),
-	/**List of tile IDs. */
-	tileIDs: ["base_grass","base_stone","base_water","base_ore_coal","base_ore_iron","base_ore_copper","base_null"],
-	/**List of miscellanous texture IDs. */
-	miscTextures: ["invalidunderlay", "ghostunderlay"],
-	/**Stores textures(as HTMLImageElements). */
-	//todo refactor to graphics
-	textures: {
-		item: {} as any,
-		building: {} as any,
-		tile: {} as any,
-		misc: {} as any
-		//Loaded in loadTexturesIntoMemory()
-	},
 	/**Contains all the keybindings for keyboard controls. */
 	keybinds: {
 		move: {
@@ -352,6 +336,7 @@ let settings = {
 	autoSave: true,
 };
 let Game: {
+	texturesReady: boolean;
 	scroll: {
 		x: number;
 		y: number;
@@ -372,6 +357,7 @@ let Game: {
 	loadedTextures: number;
 	animationFrame: number;
 } = {
+	texturesReady: false,
 	scroll: {
 		x: 300,
 		y: 300,

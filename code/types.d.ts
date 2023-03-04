@@ -85,24 +85,6 @@ interface Recipes {
 
 interface Registry {
 	recipes: Recipes;
-	buildingIDs: StringBuildingID[];
-	itemIDs: ItemID[];
-	tileIDs: TileID[];
-	miscTextures: string[];
-	textures: {
-		item: {
-			[ID in ItemID]: HTMLImageElement
-		};
-		building: {
-			[ID in StringBuildingID]: HTMLImageElement
-		};
-		tile: {
-			[ID in TileID]: HTMLImageElement
-		};
-		misc: {
-			[index: string]: HTMLImageElement
-		};
-	};
 	keybinds: {
 		[index: string]: {
 			[index: string]: Keybind

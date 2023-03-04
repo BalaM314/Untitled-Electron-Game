@@ -3,17 +3,20 @@ var _a;
 function loadTexture(t, texturesDiv) {
     return new Promise((resolve, reject) => {
         let img = document.createElement("img");
-        img.setAttribute("src", `assets/textures/${t.src}`.replace(":", "%23"));
+        img.setAttribute("src", `assets/textures/${t.id}.png`.replace(":", "%23"));
         img.addEventListener("load", () => {
             Game.loadedTextures++;
             resolve({
                 ...t,
-                image: img
+                image: img,
+                width: img.width,
+                height: img.height,
             });
         });
         img.addEventListener("error", (err) => {
-            alert(`Failed to load texture "${t.src}"`);
-            reject();
+            alert(`Failed to load texture "${t.id}": ${err.message}`);
+            console.error(err);
+            reject(`Failed to load texture "${t.id}": ${err.message}`);
         });
         texturesDiv.appendChild(img);
     });
@@ -25,6 +28,42 @@ async function loadTextures(textures, texturesDiv) {
 class Gfx {
     static layer(k) {
         this.ctx = this.layers[k];
+        this.alpha(1);
+    }
+    static alpha(a) {
+        this.ctx.globalAlpha = a;
+    }
+    static texture(id) {
+        return this.textures[id] ?? this.textures["error"];
+    }
+    static lineTRect(tileX, tileY, width, height, mode = this.rectMode, _ctx = this.ctx) {
+        if (mode == RectMode.CORNER)
+            _ctx.strokeRect((tileX * consts.TILE_SIZE + Game.scroll.x) * consts.DISPLAY_SCALE, (tileY * consts.TILE_SIZE + Game.scroll.y) * consts.DISPLAY_SCALE, width * consts.DISPLAY_SCALE * consts.TILE_SIZE, height * consts.DISPLAY_SCALE * consts.TILE_SIZE);
+        else
+            _ctx.strokeRect(((tileX - 0.5) * consts.TILE_SIZE + Game.scroll.x) * consts.DISPLAY_SCALE, ((tileY - 0.5) * consts.TILE_SIZE + Game.scroll.y) * consts.DISPLAY_SCALE, width * consts.DISPLAY_SCALE * consts.TILE_SIZE, height * consts.DISPLAY_SCALE * consts.TILE_SIZE);
+    }
+    static lineWidth(width) {
+        this.ctx.lineWidth = width;
+    }
+    static text(text, x, y) {
+        this.ctx.fillText(text, x, y);
+    }
+    static lineRect(x, y, w, h, mode = this.rectMode, _ctx = this.ctx) {
+        if (mode == RectMode.CENTER) {
+            _ctx.strokeRect(x - w / 2, y - w / 2, w, h);
+        }
+        else {
+            _ctx.strokeRect(x, y, w, h);
+        }
+    }
+    static strokeColor(color) {
+        this.ctx.strokeStyle = color;
+    }
+    static fillColor(color) {
+        this.ctx.fillStyle = color;
+    }
+    static font(font) {
+        this.ctx.font = font;
     }
     static rect(x, y, w, h, mode = this.rectMode, _ctx = this.ctx) {
         if (mode == RectMode.CENTER) {
@@ -40,14 +79,20 @@ class Gfx {
         else
             _ctx.fillRect(pixelX + ((Game.scroll.x - width / 2) * consts.DISPLAY_SCALE), pixelY + ((Game.scroll.y - height / 2) * consts.DISPLAY_SCALE), width * consts.DISPLAY_SCALE, height * consts.DISPLAY_SCALE);
     }
-    static tImage(texture, tileX, tileY, _ctx = this.ctx) {
-        _ctx.drawImage(texture.image, (texture.pixelXOffset + tileX * consts.TILE_SIZE + Game.scroll.x) * consts.DISPLAY_SCALE, (texture.pixelYOffset + tileY * consts.TILE_SIZE + Game.scroll.y) * consts.DISPLAY_SCALE, texture.pixelWidth * consts.DISPLAY_SCALE, texture.pixelHeight * consts.DISPLAY_SCALE);
-    }
-    static pImage(image, pixelX, pixelY, width = image.width, height = image.height, mode = this.rectMode, _ctx = this.ctx) {
+    static tRect(tileX, tileY, width, height, mode = this.rectMode, _ctx = this.ctx) {
         if (mode == RectMode.CORNER)
-            _ctx.drawImage(image, pixelX + (Game.scroll.x * consts.DISPLAY_SCALE), pixelY + (Game.scroll.y * consts.DISPLAY_SCALE), width * consts.DISPLAY_SCALE, height * consts.DISPLAY_SCALE);
+            _ctx.fillRect((tileX * consts.TILE_SIZE + Game.scroll.x) * consts.DISPLAY_SCALE, (tileY * consts.TILE_SIZE + Game.scroll.y) * consts.DISPLAY_SCALE, width * consts.DISPLAY_SCALE * consts.TILE_SIZE, height * consts.DISPLAY_SCALE * consts.TILE_SIZE);
         else
-            _ctx.drawImage(image, pixelX + ((Game.scroll.x - width / 2) * consts.DISPLAY_SCALE), pixelY + ((Game.scroll.y - height / 2) * consts.DISPLAY_SCALE), width * consts.DISPLAY_SCALE, height * consts.DISPLAY_SCALE);
+            _ctx.fillRect(((tileX - 0.5) * consts.TILE_SIZE + Game.scroll.x) * consts.DISPLAY_SCALE, ((tileY - 0.5) * consts.TILE_SIZE + Game.scroll.y) * consts.DISPLAY_SCALE, width * consts.DISPLAY_SCALE * consts.TILE_SIZE, height * consts.DISPLAY_SCALE * consts.TILE_SIZE);
+    }
+    static tImage(texture, tileX, tileY, width = 1, height = 1, _ctx = this.ctx) {
+        _ctx.drawImage(texture.image, (tileX * consts.TILE_SIZE + Game.scroll.x) * consts.DISPLAY_SCALE, (tileY * consts.TILE_SIZE + Game.scroll.y) * consts.DISPLAY_SCALE, width * consts.TILE_SIZE * consts.DISPLAY_SCALE, height * consts.TILE_SIZE * consts.DISPLAY_SCALE);
+    }
+    static pImage(texture, pixelX, pixelY, width = texture.width, height = texture.height, mode = this.rectMode, _ctx = this.ctx) {
+        if (mode == RectMode.CORNER)
+            _ctx.drawImage(texture.image, (pixelX + Game.scroll.x) * consts.DISPLAY_SCALE, (pixelY + Game.scroll.y) * consts.DISPLAY_SCALE, width * consts.DISPLAY_SCALE, height * consts.DISPLAY_SCALE);
+        else
+            _ctx.drawImage(texture.image, (pixelX - (width / 2) + Game.scroll.x) * consts.DISPLAY_SCALE, (pixelY - (width / 2) + Game.scroll.y) * consts.DISPLAY_SCALE, width * consts.DISPLAY_SCALE, height * consts.DISPLAY_SCALE);
     }
     static ellipse(x, y, w, h, _ctx = this.ctx) {
         _ctx.beginPath();
@@ -57,12 +102,13 @@ class Gfx {
 }
 _a = Gfx;
 Gfx.layers = {
-    tile: ctxGBuilds,
+    tile: ctxTiles,
     buildings: ctxBuilds,
     overlayBuilds: ctxOBuilds,
     ghostBuilds: ctxGBuilds,
     items: ctxItems,
     overlay: ctxOverlays,
 };
+Gfx.textures = {};
 Gfx.rectMode = RectMode.CORNER;
 Gfx.ctx = _a.layers.overlay;
