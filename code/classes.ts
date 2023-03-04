@@ -185,12 +185,17 @@ class Level {
 
 	}
 
+	breakBuilding(tileX:number, tileY:number){
+		function safeBreak(build:Building | null){
+			if(build && !build.block.immutable) build.break();
+		}
+		safeBreak(this.buildingAtTile(tileX, tileY));
+		safeBreak(this.overlayBuildAtTile(tileX, tileY));
+	}
 	buildBuilding(tileX:number, tileY:number, buildingID:BuildingIDWithMeta):boolean {
 		if(this.buildingAtTile(tileX, tileY)?.block.immutable) return false;
 
 		if(buildingID[0] == "base_null"){
-			this.buildingAtTile(tileX, tileY)?.break();
-			this.overlayBuildAtTile(tileX, tileY)?.break();
 			return true;
 		}
 		const block = Buildings.get(buildingID[0]);

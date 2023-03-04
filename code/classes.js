@@ -140,12 +140,18 @@ class Level {
         })(currentframe, "ghostBuilds");
         Gfx.alpha(1);
     }
+    breakBuilding(tileX, tileY) {
+        function safeBreak(build) {
+            if (build && !build.block.immutable)
+                build.break();
+        }
+        safeBreak(this.buildingAtTile(tileX, tileY));
+        safeBreak(this.overlayBuildAtTile(tileX, tileY));
+    }
     buildBuilding(tileX, tileY, buildingID) {
         if (this.buildingAtTile(tileX, tileY)?.block.immutable)
             return false;
         if (buildingID[0] == "base_null") {
-            this.buildingAtTile(tileX, tileY)?.break();
-            this.overlayBuildAtTile(tileX, tileY)?.break();
             return true;
         }
         const block = Buildings.get(buildingID[0]);
