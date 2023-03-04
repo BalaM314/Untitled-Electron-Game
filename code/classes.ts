@@ -367,29 +367,29 @@ class Chunk {
 
 		this._generator = pseudoRandom(this.chunkSeed);
 		this.layers = [
-			[],
-			[],
-			[]
+			new Array(consts.CHUNK_SIZE),
+			new Array(consts.CHUNK_SIZE),
+			new Array(consts.CHUNK_SIZE)
 		];
 
 		for(let x = 0; x < consts.CHUNK_SIZE; x ++){
-			this.layers[0][x] = [];
+			this.layers[0][x] = new Array(consts.CHUNK_SIZE);
 			for(let z = 0; z < consts.CHUNK_SIZE; z ++){
-				this.layers[0][x].push("base_null");
+				this.layers[0][x][z] = "base_null";
 			}
 		}
 
 		for(let x = 0; x < consts.CHUNK_SIZE; x ++){
-			this.layers[1][x] = [];
+			this.layers[1][x] = new Array(consts.CHUNK_SIZE);
 			for(let z = 0; z < consts.CHUNK_SIZE; z ++){
-				this.layers[1][x].push(null);
+				this.layers[1][x][z] = null;
 			}
 		}
 
 		for(let x = 0; x < consts.CHUNK_SIZE; x ++){
-			this.layers[2][x] = [];
+			this.layers[2][x] = new Array(consts.CHUNK_SIZE);
 			for(let z = 0; z < consts.CHUNK_SIZE; z ++){
-				this.layers[2][x].push(null);
+				this.layers[2][x][z] = null;
 			}
 		}
 
@@ -481,14 +481,18 @@ class Chunk {
 	}
 	update(currentFrame:CurrentFrame):Chunk {
 		if(!this.hasBuildings) return this;
-		for(let row of this.layers[1]){
-			for(let value of row){
-				value?.update?.(currentFrame);
+		for(let i = 0; i < consts.CHUNK_SIZE; i ++){
+			for(let j = 0; j < consts.CHUNK_SIZE; j ++){
+				if(this.layers[1][i][j]){
+					this.layers[1][i][j]!.update(currentFrame);
+				}
 			}
 		}
-		for(let row of this.layers[2]){
-			for(let value of row){
-				value?.update?.(currentFrame);
+		for(let i = 0; i < consts.CHUNK_SIZE; i ++){
+			for(let j = 0; j < consts.CHUNK_SIZE; j ++){
+				if(this.layers[2][i][j]){
+					this.layers[2][i][j]!.update(currentFrame);
+				}
 			}
 		}
 		return this;
