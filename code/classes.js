@@ -769,7 +769,7 @@ class BuildingWithRecipe extends Building {
             throw new Error("Cannot initialize abstract class BuildingWithRecipe");
     }
     acceptItem(item) {
-        for (let i = 0; i < consts.recipeMaxInputs; i++) {
+        for (let i = 0; i < this.block.recipeMaxInputs; i++) {
             if (!this.items[i] && !this.items.map(item => item.id).includes(item.id)) {
                 for (let recipe of this.block.recipeType.recipes) {
                     if (!recipe.inputs)
@@ -814,6 +814,7 @@ class BuildingWithRecipe extends Building {
     }
 }
 BuildingWithRecipe.outputsItems = true;
+BuildingWithRecipe.recipeMaxInputs = 3;
 class Miner extends Building {
     constructor(tileX, tileY, meta, level) {
         super(tileX, tileY, meta, level);
@@ -996,161 +997,161 @@ class Conveyor extends Building {
             switch (this.meta) {
                 case 0x00:
                     if (this.item.pos.tileOffsetYCentered)
-                        this.item.pos.pixelX += consts.buildings.conveyor.SPEED;
+                        this.item.pos.pixelX += this.block.speed;
                     break;
                 case 0x01:
                     if (this.item.pos.tileOffsetXCentered)
-                        this.item.pos.pixelY += consts.buildings.conveyor.SPEED;
+                        this.item.pos.pixelY += this.block.speed;
                     break;
                 case 0x02:
                     if (this.item.pos.tileOffsetYCentered)
-                        this.item.pos.pixelX -= consts.buildings.conveyor.SPEED;
+                        this.item.pos.pixelX -= this.block.speed;
                     break;
                 case 0x03:
                     if (this.item.pos.tileOffsetXCentered)
-                        this.item.pos.pixelY -= consts.buildings.conveyor.SPEED;
+                        this.item.pos.pixelY -= this.block.speed;
                     break;
                 case 0x04:
                     if (this.item.pos.tileOffsetXInTiles >= 0.5 && this.item.pos.tileOffsetYCentered)
-                        this.item.pos.pixelX++;
+                        this.item.pos.pixelX += this.block.speed;
                     else if (this.item.pos.tileOffsetXCentered && this.item.pos.tileOffsetYInTiles > 0.5)
-                        this.item.pos.pixelY--;
+                        this.item.pos.pixelY -= this.block.speed;
                     break;
                 case 0x05:
                     if (this.item.pos.tileOffsetXInTiles >= 0.5 && this.item.pos.tileOffsetYCentered)
-                        this.item.pos.pixelX++;
+                        this.item.pos.pixelX += this.block.speed;
                     else if (this.item.pos.tileOffsetXCentered && this.item.pos.tileOffsetYInTiles < 0.5)
-                        this.item.pos.pixelY++;
+                        this.item.pos.pixelY += this.block.speed;
                     break;
                 case 0x06:
                     if (this.item.pos.tileOffsetXCentered && this.item.pos.tileOffsetYInTiles >= 0.5)
-                        this.item.pos.pixelY++;
+                        this.item.pos.pixelY += this.block.speed;
                     else if (this.item.pos.tileOffsetXInTiles > 0.5 && this.item.pos.tileOffsetYCentered)
-                        this.item.pos.pixelX--;
+                        this.item.pos.pixelX -= this.block.speed;
                     break;
                 case 0x07:
                     if (this.item.pos.tileOffsetXCentered && this.item.pos.tileOffsetYInTiles >= 0.5)
-                        this.item.pos.pixelY++;
+                        this.item.pos.pixelY += this.block.speed;
                     else if (this.item.pos.tileOffsetXInTiles < 0.5 && this.item.pos.tileOffsetYCentered)
-                        this.item.pos.pixelX++;
+                        this.item.pos.pixelX += this.block.speed;
                     break;
                 case 0x08:
                     if (this.item.pos.tileOffsetXInTiles <= 0.5 && this.item.pos.tileOffsetYCentered)
-                        this.item.pos.pixelX--;
+                        this.item.pos.pixelX -= this.block.speed;
                     else if (this.item.pos.tileOffsetXCentered && this.item.pos.tileOffsetYInTiles >= 0.5)
-                        this.item.pos.pixelY--;
+                        this.item.pos.pixelY -= this.block.speed;
                     break;
                 case 0x09:
                     if (this.item.pos.tileOffsetXInTiles <= 0.5 && this.item.pos.tileOffsetYCentered)
-                        this.item.pos.pixelX--;
+                        this.item.pos.pixelX -= this.block.speed;
                     else if (this.item.pos.tileOffsetXCentered && this.item.pos.tileOffsetYInTiles <= 0.5)
-                        this.item.pos.pixelY++;
+                        this.item.pos.pixelY += this.block.speed;
                     break;
                 case 0x0A:
                     if (this.item.pos.tileOffsetXCentered && this.item.pos.tileOffsetYInTiles <= 0.5)
-                        this.item.pos.pixelY--;
+                        this.item.pos.pixelY -= this.block.speed;
                     else if (this.item.pos.tileOffsetXInTiles > 0.5 && this.item.pos.tileOffsetYCentered)
-                        this.item.pos.pixelX--;
+                        this.item.pos.pixelX -= this.block.speed;
                     break;
                 case 0x0B:
                     if (this.item.pos.tileOffsetXCentered && this.item.pos.tileOffsetYInTiles <= 0.5)
-                        this.item.pos.pixelY--;
+                        this.item.pos.pixelY -= this.block.speed;
                     else if (this.item.pos.tileOffsetXInTiles < 0.5 && this.item.pos.tileOffsetYCentered)
-                        this.item.pos.pixelX++;
+                        this.item.pos.pixelX += this.block.speed;
                     break;
                 case 0x0C:
                     if (this.item.pos.tileOffsetYCentered)
-                        this.item.pos.pixelX++;
+                        this.item.pos.pixelX += this.block.speed;
                     else if (this.item.pos.tileOffsetXCentered && this.item.pos.tileOffsetYInTiles >= 0.5)
-                        this.item.pos.pixelY--;
+                        this.item.pos.pixelY -= this.block.speed;
                     break;
                 case 0x0D:
                     if (this.item.pos.tileOffsetYCentered)
-                        this.item.pos.pixelX++;
+                        this.item.pos.pixelX += this.block.speed;
                     else if (this.item.pos.tileOffsetXCentered && this.item.pos.tileOffsetYInTiles <= 0.5)
-                        this.item.pos.pixelY++;
+                        this.item.pos.pixelY += this.block.speed;
                     break;
                 case 0x0E:
                     if (this.item.pos.tileOffsetXCentered)
-                        this.item.pos.pixelY++;
+                        this.item.pos.pixelY += this.block.speed;
                     else if (this.item.pos.tileOffsetXInTiles > 0.5 && this.item.pos.tileOffsetYCentered)
-                        this.item.pos.pixelX--;
+                        this.item.pos.pixelX -= this.block.speed;
                     break;
                 case 0x0F:
                     if (this.item.pos.tileOffsetXCentered)
-                        this.item.pos.pixelY++;
+                        this.item.pos.pixelY += this.block.speed;
                     else if (this.item.pos.tileOffsetXInTiles < 0.5 && this.item.pos.tileOffsetYCentered)
-                        this.item.pos.pixelX++;
+                        this.item.pos.pixelX += this.block.speed;
                     break;
                 case 0x10:
                     if (this.item.pos.tileOffsetYCentered)
-                        this.item.pos.pixelX--;
+                        this.item.pos.pixelX -= this.block.speed;
                     else if (this.item.pos.tileOffsetXCentered && this.item.pos.tileOffsetYInTiles >= 0.5)
-                        this.item.pos.pixelY--;
+                        this.item.pos.pixelY -= this.block.speed;
                     break;
                 case 0x11:
                     if (this.item.pos.tileOffsetYCentered)
-                        this.item.pos.pixelX--;
+                        this.item.pos.pixelX -= this.block.speed;
                     else if (this.item.pos.tileOffsetXCentered && this.item.pos.tileOffsetYInTiles <= 0.5)
-                        this.item.pos.pixelY++;
+                        this.item.pos.pixelY += this.block.speed;
                     break;
                 case 0x12:
                     if (this.item.pos.tileOffsetXCentered)
-                        this.item.pos.pixelY--;
+                        this.item.pos.pixelY -= this.block.speed;
                     else if (this.item.pos.tileOffsetXInTiles > 0.5 && this.item.pos.tileOffsetYCentered)
-                        this.item.pos.pixelX--;
+                        this.item.pos.pixelX -= this.block.speed;
                     break;
                 case 0x13:
                     if (this.item.pos.tileOffsetXCentered)
-                        this.item.pos.pixelY--;
+                        this.item.pos.pixelY -= this.block.speed;
                     else if (this.item.pos.tileOffsetXInTiles < 0.5 && this.item.pos.tileOffsetYCentered)
-                        this.item.pos.pixelX++;
+                        this.item.pos.pixelX += this.block.speed;
                     break;
                 case 0x14:
                     if (this.item.pos.tileOffsetXInTiles >= 0.5 && this.item.pos.tileOffsetYCentered)
-                        this.item.pos.pixelX++;
+                        this.item.pos.pixelX += this.block.speed;
                     else if (this.item.pos.tileOffsetXCentered)
                         this.item.pos.pixelY += this.item.pos.tileOffsetYInTiles > 0.5 ? -1 : 1;
                     break;
                 case 0x15:
                     if (this.item.pos.tileOffsetXCentered && this.item.pos.tileOffsetYInTiles >= 0.5)
-                        this.item.pos.pixelY++;
+                        this.item.pos.pixelY += this.block.speed;
                     else if (this.item.pos.tileOffsetYCentered)
                         this.item.pos.pixelX += this.item.pos.tileOffsetXInTiles > 0.5 ? -1 : 1;
                     break;
                 case 0x16:
                     if (this.item.pos.tileOffsetXInTiles <= 0.5 && this.item.pos.tileOffsetYCentered)
-                        this.item.pos.pixelX--;
+                        this.item.pos.pixelX -= this.block.speed;
                     else if (this.item.pos.tileOffsetXCentered)
                         this.item.pos.pixelY += this.item.pos.tileOffsetYInTiles > 0.5 ? -1 : 1;
                     break;
                 case 0x17:
                     if (this.item.pos.tileOffsetXCentered && this.item.pos.tileOffsetYInTiles <= 0.5)
-                        this.item.pos.pixelY--;
+                        this.item.pos.pixelY -= this.block.speed;
                     else if (this.item.pos.tileOffsetYCentered)
                         this.item.pos.pixelX += this.item.pos.tileOffsetXInTiles > 0.5 ? -1 : 1;
                     break;
                 case 0x18:
                     if (this.item.pos.tileOffsetYCentered)
-                        this.item.pos.pixelX++;
+                        this.item.pos.pixelX += this.block.speed;
                     else if (this.item.pos.tileOffsetXCentered)
                         this.item.pos.pixelY += this.item.pos.tileOffsetYInTiles > 0.5 ? -1 : 1;
                     break;
                 case 0x19:
                     if (this.item.pos.tileOffsetXCentered)
-                        this.item.pos.pixelY++;
+                        this.item.pos.pixelY += this.block.speed;
                     else if (this.item.pos.tileOffsetYCentered)
                         this.item.pos.pixelX += this.item.pos.tileOffsetXInTiles > 0.5 ? -1 : 1;
                     break;
                 case 0x1A:
                     if (this.item.pos.tileOffsetYCentered)
-                        this.item.pos.pixelX--;
+                        this.item.pos.pixelX -= this.block.speed;
                     else if (this.item.pos.tileOffsetXCentered)
                         this.item.pos.pixelY += this.item.pos.tileOffsetYInTiles > 0.5 ? -1 : 1;
                     break;
                 case 0x1B:
                     if (this.item.pos.tileOffsetXCentered)
-                        this.item.pos.pixelY--;
+                        this.item.pos.pixelY -= this.block.speed;
                     else if (this.item.pos.tileOffsetYCentered)
                         this.item.pos.pixelX += this.item.pos.tileOffsetXInTiles > 0.5 ? -1 : 1;
                     break;
@@ -1172,6 +1173,7 @@ class Conveyor extends Building {
     }
 }
 Conveyor.displaysItem = true;
+Conveyor.speed = 1;
 class OverlayBuild extends Building {
     buildingUnder() {
         return this.level.buildingAtPos(this.pos);
@@ -1237,73 +1239,73 @@ class Extractor extends OverlayBuild {
                     if (this.item.pos.tileXExact >= this.pos.tileX + 1.5)
                         return this.dropItem();
                     else
-                        this.item.pos.pixelX++;
+                        this.item.pos.pixelX += this.block.speed;
                     break;
                 case 0x01:
                     if (this.item.pos.tileYExact >= this.pos.tileY + 1.5)
                         return this.dropItem();
                     else
-                        this.item.pos.pixelY++;
+                        this.item.pos.pixelY += this.block.speed;
                     break;
                 case 0x02:
                     if (this.item.pos.tileXExact <= this.pos.tileX - 0.5)
                         return this.dropItem();
                     else
-                        this.item.pos.pixelX--;
+                        this.item.pos.pixelX -= this.block.speed;
                     break;
                 case 0x03:
                     if (this.item.pos.tileYExact <= this.pos.tileY - 0.5)
                         return this.dropItem();
                     else
-                        this.item.pos.pixelY--;
+                        this.item.pos.pixelY -= this.block.speed;
                     break;
                 case 0x04:
                     if (this.item.pos.tileXExact >= this.pos.tileX + 2.5)
                         return this.dropItem();
                     else
-                        this.item.pos.pixelX++;
+                        this.item.pos.pixelX += this.block.speed;
                     break;
                 case 0x05:
                     if (this.item.pos.tileYExact >= this.pos.tileY + 2.5)
                         return this.dropItem();
                     else
-                        this.item.pos.pixelY++;
+                        this.item.pos.pixelY += this.block.speed;
                     break;
                 case 0x06:
                     if (this.item.pos.tileXExact <= this.pos.tileX - 1.5)
                         return this.dropItem();
                     else
-                        this.item.pos.pixelX--;
+                        this.item.pos.pixelX -= this.block.speed;
                     break;
                 case 0x07:
                     if (this.item.pos.tileYExact <= this.pos.tileY - 1.5)
                         return this.dropItem();
                     else
-                        this.item.pos.pixelY--;
+                        this.item.pos.pixelY -= this.block.speed;
                     break;
                 case 0x08:
                     if (this.item.pos.tileXExact >= this.pos.tileX + 3.5)
                         return this.dropItem();
                     else
-                        this.item.pos.pixelX++;
+                        this.item.pos.pixelX += this.block.speed;
                     break;
                 case 0x09:
                     if (this.item.pos.tileYExact >= this.pos.tileY + 3.5)
                         return this.dropItem();
                     else
-                        this.item.pos.pixelY++;
+                        this.item.pos.pixelY += this.block.speed;
                     break;
                 case 0x0A:
                     if (this.item.pos.tileXExact <= this.pos.tileX - 2.5)
                         return this.dropItem();
                     else
-                        this.item.pos.pixelX--;
+                        this.item.pos.pixelX -= this.block.speed;
                     break;
                 case 0x0B:
                     if (this.item.pos.tileYExact <= this.pos.tileY - 2.5)
                         return this.dropItem();
                     else
-                        this.item.pos.pixelY--;
+                        this.item.pos.pixelY -= this.block.speed;
                     break;
             }
         }
@@ -1315,6 +1317,7 @@ class Extractor extends OverlayBuild {
     acceptItem(item) { return false; }
 }
 Extractor.displaysItem = true;
+Extractor.speed = 1;
 class StorageBuilding extends Building {
     constructor() {
         super(...arguments);

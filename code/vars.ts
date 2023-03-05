@@ -127,13 +127,6 @@ const consts = {
 	//todo refactor to graphics
 	get DISPLAY_TILE_SIZE(){
 		return this.TILE_SIZE * this.DISPLAY_SCALE;
-	},
-	recipeMaxInputs: 3,
-	//todo refactor to BuildingType.
-	buildings: {
-		conveyor: {
-			SPEED: 1//pixels per update
-		}
 	}
 };
 

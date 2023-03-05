@@ -102,12 +102,6 @@ const consts = {
     ITEM_SIZE: 16,
     get DISPLAY_TILE_SIZE() {
         return this.TILE_SIZE * this.DISPLAY_SCALE;
-    },
-    recipeMaxInputs: 3,
-    buildings: {
-        conveyor: {
-            SPEED: 1
-        }
     }
 };
 const keybinds = extend()({
