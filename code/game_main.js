@@ -67,7 +67,7 @@ function registerEventHandlers() {
         }
         lastKeysPressed.push(e.key);
         lastKeysPressed.splice(0, 1);
-        for (let section of Object.values(registry.keybinds)) {
+        for (let section of Object.values(keybinds)) {
             for (let keybind of Object.values(section)) {
                 keybind.check(e);
             }
@@ -312,7 +312,7 @@ let state = {
                 return;
             level ?? (level = level1);
             level.generateNecessaryChunks();
-            if (registry.keybinds.move.scroll_faster.isHeld()) {
+            if (keybinds.move.scroll_faster.isHeld()) {
                 Game.scroll.speed = 20;
             }
             else {
@@ -348,7 +348,7 @@ let state = {
             ctxOverlays.clear();
             level.display(currentFrame);
             level.displayGhostBuilding(Math.floor((mouse.x - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE), Math.floor((mouse.y - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE), placedBuilding.ID, currentFrame);
-            if (registry.keybinds.display.show_tooltip.isHeld()) {
+            if (keybinds.display.show_tooltip.isHeld()) {
                 level.displayTooltip(mouse.x, mouse.y, currentFrame);
             }
             ctxOverlays.font = "30px sans-serif";
@@ -376,28 +376,28 @@ let state = {
                 return;
             if (!mouse.latestEvent)
                 return;
-            if (!(keysHeld.includes("control") || registry.keybinds.placement.break_building.isHeld()) && placedBuilding.ID[0] != "base_null") {
+            if (!(keysHeld.includes("control") || keybinds.placement.break_building.isHeld()) && placedBuilding.ID[0] != "base_null") {
                 level1.buildBuilding(Math.floor((mouse.latestEvent.x - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE), Math.floor((mouse.latestEvent.y - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE), placedBuilding.ID);
             }
         },
         onkeyheld: function (currentframe) {
-            if (registry.keybinds.move.up.isHeld()) {
+            if (keybinds.move.up.isHeld()) {
                 Game.scroll.y += Game.scroll.speed;
                 currentframe.redraw = true;
             }
-            if (registry.keybinds.move.left.isHeld()) {
+            if (keybinds.move.left.isHeld()) {
                 Game.scroll.x += Game.scroll.speed;
                 currentframe.redraw = true;
             }
-            if (registry.keybinds.move.down.isHeld()) {
+            if (keybinds.move.down.isHeld()) {
                 Game.scroll.y -= Game.scroll.speed;
                 currentframe.redraw = true;
             }
-            if (registry.keybinds.move.right.isHeld()) {
+            if (keybinds.move.right.isHeld()) {
                 Game.scroll.x -= Game.scroll.speed;
                 currentframe.redraw = true;
             }
-            if (registry.keybinds.placement.break_building.isHeld()) {
+            if (keybinds.placement.break_building.isHeld()) {
                 currentframe.redraw = true;
                 level1.breakBuilding(Math.floor((mouse.x - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE), Math.floor((mouse.y - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE));
             }

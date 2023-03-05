@@ -114,7 +114,7 @@ class Level {
         if (!this.hasChunk(tileX, tileY))
             return;
         Gfx.layer("ghostBuilds");
-        if (registry.keybinds.placement.break_building.isHeld()) {
+        if (keybinds.placement.break_building.isHeld()) {
             Gfx.alpha(0.9);
             Gfx.tImage(Gfx.texture("misc/invalidunderlay"), tileX, tileY, 1, 1);
             Gfx.alpha(1);
@@ -819,7 +819,7 @@ class Miner extends Building {
         super(tileX, tileY, meta, level);
         this.miningItem = null;
         this.timer = 61;
-        for (let recipe of registry.recipes.base_mining.recipes) {
+        for (let recipe of recipes.base_mining.recipes) {
             if (recipe.tile == level.tileAtByTile(tileX, tileY)) {
                 this.miningItem = recipe.outputs[0];
                 return;
@@ -887,7 +887,7 @@ class Conveyor extends Building {
         return [type, direction];
     }
     static changeMeta(meta, tileX, tileY, level) {
-        if (registry.keybinds.placement.force_straight_conveyor.isHeld()) {
+        if (keybinds.placement.force_straight_conveyor.isHeld()) {
             return meta;
         }
         let hasLeftBuilding = level.buildingAtTile(tileX - 1, tileY)?.outputsItemToSide(Direction.right) ?? false;

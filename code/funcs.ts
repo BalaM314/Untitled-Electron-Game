@@ -426,7 +426,28 @@ class Keybind {
 	}
 }
 
+/**Returns if a thing is in an object. Useful to stop typescript complaining. */
+function isKey<T extends string>(obj:Record<T, unknown>, thing:unknown):thing is T;
+function isKey<T extends string>(obj:Map<T, unknown>, thing:unknown):thing is T;
+function isKey<T extends string>(obj:Record<T, unknown> | Map<T, unknown>, thing:unknown):thing is T {
+	if(obj instanceof Map)
+		return obj.has(thing as T);
+	else
+		return (thing as string) in obj;
+}
+
+/**Asserts that a variable is of a particular type. */
+function is<T>(input:unknown): asserts input is T {
+	//
+}
+
+function extend<Struct>() {
+	return <T extends Struct>(data:T) => data;
+}
+
 function makeRebindButton(y:number, buttonID: [string, string], buttonName:string, defaultKey: string){
+	const keybind = (<any>keybinds)[buttonID[0]]?.[buttonID[1]] as Keybind | null;
+	if(!keybind) throw new Error(`Invalid rebind button ${buttonID[0]}.${buttonID[1]}`);
 	return new Button({
 		x: () => innerWidth * 0.3,
 		y: () => innerHeight * y,
@@ -434,18 +455,18 @@ function makeRebindButton(y:number, buttonID: [string, string], buttonName:strin
 		height: () => innerHeight * 0.05,
 		label: () => 
 			`${buttonName}: ${
-				registry.keybinds[buttonID[0]][buttonID[1]].modifiers
+				keybind.modifiers
 					.filter(key => !key.startsWith("!"))
 					.map(el => el + " + ")
 					.join("")
 				//Get the list of modifiers, remove the ones that start with !, then add " + " to each one.
 			}${
-				registry.keybinds[buttonID[0]][buttonID[1]].mainKey
+				keybind.mainKey
 			}`,
 		color: "#0000FF",
 		font: "15px sans-serif",
 		onClick: () => {
-			registry.keybinds[buttonID[0]][buttonID[1]].mainKey =
+			keybind.mainKey =
 				(prompt(`Rebind ${buttonName.toLowerCase()} to:`) ?? defaultKey).toLowerCase().substring(0,1);
 		}
 	})

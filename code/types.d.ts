@@ -83,12 +83,9 @@ interface Recipes {
 	};
 }
 
-interface Registry {
-	recipes: Recipes;
-	keybinds: {
-		[index: string]: {
-			[index: string]: Keybind
-		}
+interface Keybinds {
+	[index: string]: {
+		[index: string]: Keybind
 	}
 }
 

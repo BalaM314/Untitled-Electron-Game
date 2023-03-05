@@ -139,185 +139,68 @@ const consts = {
 
 
 
-const registry:Registry = {
-	/**List of recipes. */
-	recipes: {
-		"base_mining": {
-			"type": "t-1",
-			"recipes": [
-				{
-					"outputs": [ItemID.base_coalOre],
-					"duration": 60,
-					"tile": "base_ore_coal"
-				},
-				{
-					"outputs": [ItemID.base_ironOre],
-					"duration": 60,
-					"tile": "base_ore_iron"
-				},
-				{
-					"outputs": [ItemID.base_copperOre],
-					"duration": 60,
-					"tile": "base_ore_copper"
-				},
-			]
-		},
-		"base_smelting": {
-			"type": "1-1",
-			"recipes": [
-				{
-					"inputs": [ItemID.base_coalOre],
-					"outputs": [ItemID.base_coal],
-					"duration": 60
-				},
-				{
-					"inputs": [ItemID.base_ironOre],
-					"outputs": [ItemID.base_ironIngot],
-					"duration": 60
-				},
-				{
-					"inputs": [ItemID.base_copperOre],
-					"outputs": [ItemID.base_copperIngot],
-					"duration": 60
-				}
-			]
-		},
-		"base_alloying": {
-			"type": "2-1",
-			"recipes": [
-				{
-					"inputs": [ItemID.base_coal, ItemID.base_ironIngot],
-					"outputs": [ItemID.base_steelIngot],
-					duration: 240
-				}
-			]
-		},
-		"base_wiremilling": {
-			"type": "1-1",
-			"recipes": [
-				{
-					"inputs": [ItemID.base_copperIngot],
-					"outputs": [ItemID.base_copperWire],
-					"duration": 120
-				}
-			]
-		},
-		"base_compressing": {
-			"type": "1-1",
-			"recipes": [
-				{
-					"inputs": [ItemID.base_ironIngot],
-					"outputs": [ItemID.base_ironPlate],
-					"duration": 60
-				},
-				{
-					"inputs": [ItemID.base_steelIngot],
-					"outputs": [ItemID.base_steelPlate],
-					"duration": 60
-				}
-			]
-		},
-		"base_lathing": {
-			"type": "1-1",
-			"recipes": [
-				{
-					"inputs": [ItemID.base_ironIngot],
-					"outputs": [ItemID.base_ironRod],
-					"duration": 60
-				},
-				{
-					"inputs": [ItemID.base_steelIngot],
-					"outputs": [ItemID.base_steelRod],
-					"duration": 60
-				}
-			]
-		},
-		"base_assembling": {
-			"type": "2-1",
-			recipes: [
-				{
-					"inputs": [ItemID.base_steelRod, ItemID.base_copperWire],
-					"outputs": [ItemID.base_rotor],
-					duration: 120
-				},
-				{
-					"inputs": [ItemID.base_ironPlate, ItemID.base_copperWire],
-					"outputs": [ItemID.base_stator],
-					duration: 120
-				},
-				{
-					"inputs": [ItemID.base_stator, ItemID.base_rotor],
-					"outputs": [ItemID.base_motor],
-					duration: 30
-				}
-			]
-		}
+/**Contains all the keybindings for keyboard controls. */
+const keybinds = extend<Keybinds>()({
+	move: {
+		up: new Keybind("w", ["!control", "!alt"]),
+		left: new Keybind("a", ["!control", "!alt"]),
+		down: new Keybind("s", ["!control", "!alt"]),
+		right: new Keybind("d", ["!control", "!alt"]),
+		scroll_faster: new Keybind("shift"),
 	},
-	/**Contains all the keybindings for keyboard controls. */
-	keybinds: {
-		move: {
-			up: new Keybind("w", ["!control", "!alt"]),
-			left: new Keybind("a", ["!control", "!alt"]),
-			down: new Keybind("s", ["!control", "!alt"]),
-			right: new Keybind("d", ["!control", "!alt"]),
-			scroll_faster: new Keybind("shift"),
-		},
-		saves: {
-			save_to_file: new Keybind("s", ["control", "alt", "!shift"], () => {
-				download("Untitled-Electron-Game-save.json", JSON.stringify(exportData()));
-			}),
-			save: new Keybind("s", ["control", "!alt", "!shift"], () => {
-				if(
-					(!localStorage.getItem("save1") 
-						|| (JSON.parse(localStorage.getItem("save1")!) as SaveData).UntitledElectronGame?.level1?.uuid == level1?.uuid)
-					|| confirm("Are you sure you want to save? This will overwrite your current saved world which seems to be different!")
-				){
-					try {
-						localStorage.setItem("save1", JSON.stringify(exportData()));
-						alert("Saved successfully!");
-						Game.lastSaved = millis();
-					} catch(err){
-						alert("Failed to save! " + parseError(err));
-					}
+	saves: {
+		save_to_file: new Keybind("s", ["control", "alt", "!shift"], () => {
+			download("Untitled-Electron-Game-save.json", JSON.stringify(exportData()));
+		}),
+		save: new Keybind("s", ["control", "!alt", "!shift"], () => {
+			if(
+				(!localStorage.getItem("save1") 
+					|| (JSON.parse(localStorage.getItem("save1")!) as SaveData).UntitledElectronGame?.level1?.uuid == level1?.uuid)
+				|| confirm("Are you sure you want to save? This will overwrite your current saved world which seems to be different!")
+			){
+				try {
+					localStorage.setItem("save1", JSON.stringify(exportData()));
+					alert("Saved successfully!");
+					Game.lastSaved = millis();
+				} catch(err){
+					alert("Failed to save! " + parseError(err));
 				}
-			}),
-			load_from_file: new Keybind("o", ["control"], () => {
-				uploadButton.click();
-			}),
-		},
-		placement: {
-			force_straight_conveyor: new Keybind("shift"),
-			break_building: new Keybind("backspace"),
-			modifier_1: new Keybind(",", [], () => {placedBuilding.modifier = 0;}),
-			modifier_2: new Keybind(".", [], () => {placedBuilding.modifier = 1;}),
-			modifier_3: new Keybind("/", [], () => {placedBuilding.modifier = 2;}),
-			direction_up: new Keybind("arrowup", [], () => {placedBuilding.direction = Direction.up;}),
-			direction_left: new Keybind("arrowleft", [], () => {placedBuilding.direction = Direction.left;}),
-			direction_down: new Keybind("arrowdown", [], () => {placedBuilding.direction = Direction.down;}),
-			direction_right: new Keybind("arrowright", [], () => {placedBuilding.direction = Direction.right;}),
-			type_1: new Keybind("1", [], () => {placedBuilding.type = "base_conveyor";}),
-			type_2: new Keybind("2", [], () => {placedBuilding.type = "base_miner";}),
-			type_3: new Keybind("3", [], () => {placedBuilding.type = "base_trash_can";}),
-			type_4: new Keybind("4", [], () => {placedBuilding.type = "base_furnace";}),
-			type_5: new Keybind("5", [], () => {placedBuilding.type = "base_extractor";}),
-			type_6: new Keybind("6", [], () => {placedBuilding.type = "base_chest";}),
-			type_7: new Keybind("7", [], () => {placedBuilding.type = "base_alloy_smelter";}),
-			type_9: new Keybind("8", [], () => {placedBuilding.type = "base_wiremill";}),
-			type_A: new Keybind("9", [], () => {placedBuilding.type = "base_compressor";}),
-			type_B: new Keybind("f1", [], () => {placedBuilding.type = "base_lathe";}),
-			type_11: new Keybind("f2", [], () => {placedBuilding.type = "base_assembler";}),
-			type_0: new Keybind("0", [], () => {placedBuilding.type = "base_null";}),
-		},
-		display: {
-			show_tooltip: new Keybind("shift"),
-		},
-		misc: {
-			pause: new Keybind("escape", [], () => {Game.paused = !Game.paused;}),
-		}
-
-		
+			}
+		}),
+		load_from_file: new Keybind("o", ["control"], () => {
+			uploadButton.click();
+		}),
+	},
+	placement: {
+		force_straight_conveyor: new Keybind("shift"),
+		break_building: new Keybind("backspace"),
+		modifier_1: new Keybind(",", [], () => {placedBuilding.modifier = 0;}),
+		modifier_2: new Keybind(".", [], () => {placedBuilding.modifier = 1;}),
+		modifier_3: new Keybind("/", [], () => {placedBuilding.modifier = 2;}),
+		direction_up: new Keybind("arrowup", [], () => {placedBuilding.direction = Direction.up;}),
+		direction_left: new Keybind("arrowleft", [], () => {placedBuilding.direction = Direction.left;}),
+		direction_down: new Keybind("arrowdown", [], () => {placedBuilding.direction = Direction.down;}),
+		direction_right: new Keybind("arrowright", [], () => {placedBuilding.direction = Direction.right;}),
+		type_1: new Keybind("1", [], () => {placedBuilding.type = "base_conveyor";}),
+		type_2: new Keybind("2", [], () => {placedBuilding.type = "base_miner";}),
+		type_3: new Keybind("3", [], () => {placedBuilding.type = "base_trash_can";}),
+		type_4: new Keybind("4", [], () => {placedBuilding.type = "base_furnace";}),
+		type_5: new Keybind("5", [], () => {placedBuilding.type = "base_extractor";}),
+		type_6: new Keybind("6", [], () => {placedBuilding.type = "base_chest";}),
+		type_7: new Keybind("7", [], () => {placedBuilding.type = "base_alloy_smelter";}),
+		type_9: new Keybind("8", [], () => {placedBuilding.type = "base_wiremill";}),
+		type_A: new Keybind("9", [], () => {placedBuilding.type = "base_compressor";}),
+		type_B: new Keybind("f1", [], () => {placedBuilding.type = "base_lathe";}),
+		type_11: new Keybind("f2", [], () => {placedBuilding.type = "base_assembler";}),
+		type_0: new Keybind("0", [], () => {placedBuilding.type = "base_null";}),
+	},
+	display: {
+		show_tooltip: new Keybind("shift"),
+	},
+	misc: {
+		pause: new Keybind("escape", [], () => {Game.paused = !Game.paused;}),
 	}
-};
+});
 
 let mouse = {
 	x: 0,

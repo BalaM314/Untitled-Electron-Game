@@ -154,7 +154,7 @@ class Level {
 		if(!this.hasChunk(tileX, tileY)) return;
 		Gfx.layer("ghostBuilds");
 		//TODO this should probably be different method
-		if(registry.keybinds.placement.break_building.isHeld()){
+		if(keybinds.placement.break_building.isHeld()){
 			Gfx.alpha(0.9);
 			Gfx.tImage(Gfx.texture("misc/invalidunderlay"), tileX, tileY, 1, 1);
 			Gfx.alpha(1);
@@ -967,7 +967,7 @@ class Miner extends Building {
 	constructor(tileX:number, tileY:number, meta:BuildingMeta, level:Level){
 		super(tileX, tileY, meta, level);
 		this.timer = 61;
-		for(let recipe of registry.recipes.base_mining.recipes){
+		for(let recipe of recipes.base_mining.recipes){
 			if(recipe.tile == level.tileAtByTile(tileX, tileY)){
 				this.miningItem = recipe.outputs[0];
 				return;
@@ -1040,7 +1040,7 @@ class Conveyor extends Building {
 		return [type, direction] as BuildingIDWithMeta;
 	}
 	static changeMeta(meta:BuildingMeta, tileX:number, tileY:number, level:Level):BuildingMeta {
-		if(registry.keybinds.placement.force_straight_conveyor.isHeld()){
+		if(keybinds.placement.force_straight_conveyor.isHeld()){
 			return meta;
 			//If holding shift, just return a straight conveyor.
 		}
