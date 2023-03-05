@@ -1,7 +1,7 @@
-Copyright (c) BalaM314, 2021
+Copyright (c) BalaM314, 2023
 All Rights Reserved except as stated below.
 
-* You may not use the code, or modified versions of the code of this project commercially.
+* Commercial use of the code, or modified versions of the code of this project is prohibited.
 * You may distribute the code of this project and modified versions of the code of this project, as long as this copyright notice is included.
 * You may create content featuring this project.
 
