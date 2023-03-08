@@ -1,6 +1,6 @@
 "use strict";
 class ContentRegistry {
-    constructor(clazz, keys) {
+    constructor() {
         this.contentMap = new Map();
     }
     register(id, ctor, props = {}) {
@@ -15,7 +15,6 @@ class ContentRegistry {
         return this.contentMap.get(id) ?? (() => { throw new Error(`Object with id ${id} does not exist.`); })();
     }
 }
-let __rawBuildingID = null;
 const recipes = {
     base_mining: {
         type: "t-1",
@@ -120,7 +119,7 @@ const recipes = {
         ]
     }
 };
-const Buildings = new ContentRegistry(Building, __rawBuildingID);
+const Buildings = new ContentRegistry();
 Buildings.register("base_conveyor", Conveyor);
 Buildings.register("base_miner", Miner);
 Buildings.register("base_trash_can", TrashCan);
