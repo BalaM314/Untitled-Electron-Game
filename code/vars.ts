@@ -193,16 +193,14 @@ const keybinds = extend<Keybinds>()({
 	}
 });
 
-let mouse = {
-	x: 0,
-	y: 0,
-	held: false,
-	latestEvent: null as MouseEvent | null
+const Input = {
+	mouseX: 0,
+	mouseY: 0,
+	mouseDown: false,
+	latestMouseEvent: null as MouseEvent | null,
+	keysHeld: new Set<string>(),
+	lastKeysPressed: new Array<string>(10).fill(""),
 };
-let keysHeld:string[] = [];
-//todo refactor this to input
-let lastKeysPressed:string[] = ["", "", "", "", "", "", "", "", "", ""];
-
 let settings = {
 	graphics_mode: 1,
 	debug: true,

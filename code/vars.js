@@ -142,14 +142,14 @@ const keybinds = extend()({
         pause: new Keybind("escape", [], () => { Game.paused = !Game.paused; }),
     }
 });
-let mouse = {
-    x: 0,
-    y: 0,
-    held: false,
-    latestEvent: null
+const Input = {
+    mouseX: 0,
+    mouseY: 0,
+    mouseDown: false,
+    latestMouseEvent: null,
+    keysHeld: new Set(),
+    lastKeysPressed: new Array(10).fill(""),
 };
-let keysHeld = [];
-let lastKeysPressed = ["", "", "", "", "", "", "", "", "", ""];
 let settings = {
     graphics_mode: 1,
     debug: true,

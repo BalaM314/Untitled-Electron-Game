@@ -4,23 +4,24 @@ function registerEventHandlers(){
 
 	//Update mouse position
 	window.onmousemove = (e:MouseEvent) => {
-		mouse.x = e.x;
-		mouse.y = e.y;
-		mouse.latestEvent = e;
+		Input.mouseX = e.x;
+		Input.mouseY = e.y;
+		Input.latestMouseEvent = e;
 	}
 
 	clickcapture.onmousedown = (e:MouseEvent) => {
 		if(e.button) return e.preventDefault();//right click bad
-		mouse.held = true;
-		mouse.latestEvent = e;
+		//TODO handle this in state, not here
+		Input.mouseDown = true;
+		Input.latestMouseEvent = e;
 		canOverwriteBuilding = true;
 		if(state[Game.state]){
 			state[Game.state]?.onclick?.(e);
 		}
 	}
 	clickcapture.onmouseup = (e:MouseEvent) => {
-		mouse.held = false;
-		mouse.latestEvent = e;
+		Input.mouseDown = false;
+		Input.latestMouseEvent = e;
 		canOverwriteBuilding = true;
 	}
 
@@ -34,7 +35,7 @@ function registerEventHandlers(){
 		//When the screen is tapped, touchend is fired immediately after touchstart, leaving no time for buildings to be placed.
 		//Delays by 500ms
 		setTimeout(() => {
-			mouse.held = false;
+			Input.mouseDown = false;
 			canOverwriteBuilding = true;
 		}, 500);
 	});
@@ -67,7 +68,7 @@ function registerEventHandlers(){
 		}
 
 		//Easter egg
-		if(e.key == "Enter" && lastKeysPressed.join(", ") == 
+		if(e.key == "Enter" && Input.lastKeysPressed.join(", ") == 
 			["ArrowUp", "ArrowUp", "ArrowDown", "ArrowDown", "ArrowLeft", "ArrowRight", "ArrowLeft", "ArrowRight", "b", "a"].join(", ")
 			){
 			window.open("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
@@ -81,14 +82,13 @@ function registerEventHandlers(){
 			//If you pressed one of these key combos, return
 		}
 
-		//Push key to keysHeld
-		if(!keysHeld.includes(e.key.toLowerCase())){
-			keysHeld.push(e.key.toLowerCase());
-		}
+		//Add key to keysHeld
+		Input.keysHeld.add(e.key.toLowerCase());
 
 		//Push key to lastKeysPressed
-		lastKeysPressed.push(e.key);
-		lastKeysPressed.splice(0,1);
+		Input.lastKeysPressed.push(e.key);
+		Input.lastKeysPressed.shift();
+		//Only the last 10 keypresses are logged
 
 		//Handle keybinds
 		for(let section of Object.values(keybinds)){
@@ -103,9 +103,7 @@ function registerEventHandlers(){
 	}
 	window.onkeyup = (e:KeyboardEvent) => {
 		//Remove key from list of held keys
-		if(keysHeld.includes(e.key.toLowerCase())){
-			keysHeld.splice(keysHeld.indexOf(e.key.toLowerCase()), 1);
-		}
+		Input.keysHeld.delete(e.key.toLowerCase());
 	}
 	
 
@@ -129,8 +127,8 @@ function registerEventHandlers(){
 
 	//When the window loses focus, clear the list of held keys and set mousePressed to false.
 	window.onblur = () => {
-		keysHeld = [];
-		mouse.held = false;
+		Input.keysHeld.clear();
+		Input.mouseDown = false;
 		//call pause here once I add it
 	}
 
@@ -210,7 +208,7 @@ let state: {
 				label: "Play",
 				color: "#0000FF",
 				font: "40px sans-serif",
-				onClick: () => {mouse.held = false;load();}
+				onClick: () => {Input.mouseDown = false;load();}
 			}),
 			new Button({
 				x: () => innerWidth/4,
@@ -402,11 +400,11 @@ let state: {
 		
 			
 			level.displayGhostBuilding(
-				...(Camera.unproject(mouse.x, mouse.y).map(Pos.pixelToTile) as [number, number]),
+				...(Camera.unproject(Input.mouseX, Input.mouseY).map(Pos.pixelToTile) as [number, number]),
 				placedBuilding.ID, currentFrame
 			);
 			if(keybinds.display.show_tooltip.isHeld()){
-				level.displayTooltip(mouse.x, mouse.y, currentFrame);
+				level.displayTooltip(Input.mouseX, Input.mouseY, currentFrame);
 			}
 			
 			//display overlays
@@ -414,7 +412,7 @@ let state: {
 			ctxOverlays.fillStyle = "#000000";
 			ctxOverlays.textAlign = "left";
 			ctxOverlays.fillText(
-				Camera.unproject(mouse.x, mouse.y).map(Pos.pixelToTile).join(","),
+				Camera.unproject(Input.mouseX, Input.mouseY).map(Pos.pixelToTile).join(","),
 				10, 100
 			);
 			
@@ -440,10 +438,10 @@ let state: {
 		},
 		onmouseheld(){
 			if(Game.paused) return;
-			if(!mouse.latestEvent) return;
-			if(!(keysHeld.includes("control") || keybinds.placement.break_building.isHeld()) && placedBuilding.ID[0] != "base_null"){
+			if(!Input.latestMouseEvent) return;
+			if(!(Input.keysHeld.has("control") || keybinds.placement.break_building.isHeld()) && placedBuilding.ID[0] != "base_null"){
 				level1.buildBuilding(
-					...(Camera.unproject(mouse.latestEvent.x, mouse.latestEvent.y).map(Pos.pixelToTile) as [number, number]),
+					...(Camera.unproject(Input.latestMouseEvent.x, Input.latestMouseEvent.y).map(Pos.pixelToTile) as [number, number]),
 					placedBuilding.ID
 				);
 			}
@@ -470,7 +468,7 @@ let state: {
 			if(keybinds.placement.break_building.isHeld()){
 				currentframe.redraw = true;
 				level1.breakBuilding(
-					...(Camera.unproject(mouse.x, mouse.y).map(Pos.pixelToTile) as [number, number])
+					...(Camera.unproject(Input.mouseX, Input.mouseY).map(Pos.pixelToTile) as [number, number])
 				);
 			}
 		}
@@ -496,7 +494,7 @@ function fixSizes(){
 
 function handleAlerts(){
 	if(alerts.list.length && alerts.active == false){
-		mouse.held = false;
+		Input.mouseDown = false;
 		alertmessage.innerHTML = alerts.list.shift()!;
 		alertmessage.style.setProperty("--text-length", alertmessage.innerText.length.toString());
 		alertbox.classList.add("active");
@@ -527,10 +525,10 @@ function main_loop(){
 			throw new InvalidStateError(`Invalid game state "${Game.state}"`);
 		}
 
-		if(mouse.held){
+		if(Input.mouseDown){
 			currentState.onmouseheld?.(currentFrame);
 		}
-		if(keysHeld.length != 0){
+		if(Input.keysHeld.size > 0){
 			currentState.onkeyheld?.(currentFrame);
 		}
 

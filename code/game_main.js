@@ -1,23 +1,23 @@
 "use strict";
 function registerEventHandlers() {
     window.onmousemove = (e) => {
-        mouse.x = e.x;
-        mouse.y = e.y;
-        mouse.latestEvent = e;
+        Input.mouseX = e.x;
+        Input.mouseY = e.y;
+        Input.latestMouseEvent = e;
     };
     clickcapture.onmousedown = (e) => {
         if (e.button)
             return e.preventDefault();
-        mouse.held = true;
-        mouse.latestEvent = e;
+        Input.mouseDown = true;
+        Input.latestMouseEvent = e;
         canOverwriteBuilding = true;
         if (state[Game.state]) {
             state[Game.state]?.onclick?.(e);
         }
     };
     clickcapture.onmouseup = (e) => {
-        mouse.held = false;
-        mouse.latestEvent = e;
+        Input.mouseDown = false;
+        Input.latestMouseEvent = e;
         canOverwriteBuilding = true;
     };
     clickcapture.addEventListener("touchstart", (e) => {
@@ -27,7 +27,7 @@ function registerEventHandlers() {
     });
     clickcapture.addEventListener("touchend", (e) => {
         setTimeout(() => {
-            mouse.held = false;
+            Input.mouseDown = false;
             canOverwriteBuilding = true;
         }, 500);
     });
@@ -52,7 +52,7 @@ function registerEventHandlers() {
             }
             toolbarEl.children[parseInt(e.key[1]) + 8]?.classList.add("selected");
         }
-        if (e.key == "Enter" && lastKeysPressed.join(", ") ==
+        if (e.key == "Enter" && Input.lastKeysPressed.join(", ") ==
             ["ArrowUp", "ArrowUp", "ArrowDown", "ArrowDown", "ArrowLeft", "ArrowRight", "ArrowLeft", "ArrowRight", "b", "a"].join(", ")) {
             window.open("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
             for (let [key, value] of Object.entries(level1.resources)) {
@@ -62,11 +62,9 @@ function registerEventHandlers() {
         if (e.ctrlKey && (e.key.match(/^[w]$/) || e.key.match(/^[ertuni1-9]$/i) || e.key.match(/^f[5]$/i))) {
             return;
         }
-        if (!keysHeld.includes(e.key.toLowerCase())) {
-            keysHeld.push(e.key.toLowerCase());
-        }
-        lastKeysPressed.push(e.key);
-        lastKeysPressed.splice(0, 1);
+        Input.keysHeld.add(e.key.toLowerCase());
+        Input.lastKeysPressed.push(e.key);
+        Input.lastKeysPressed.shift();
         for (let section of Object.values(keybinds)) {
             for (let keybind of Object.values(section)) {
                 keybind.check(e);
@@ -75,9 +73,7 @@ function registerEventHandlers() {
         e.preventDefault();
     };
     window.onkeyup = (e) => {
-        if (keysHeld.includes(e.key.toLowerCase())) {
-            keysHeld.splice(keysHeld.indexOf(e.key.toLowerCase()), 1);
-        }
+        Input.keysHeld.delete(e.key.toLowerCase());
     };
     uploadButton.onchange = (event) => {
         let file = (event.target?.files?.[0] ?? null);
@@ -96,8 +92,8 @@ function registerEventHandlers() {
         Camera.zoom(Math.pow(1.001, -e.deltaY));
     };
     window.onblur = () => {
-        keysHeld = [];
-        mouse.held = false;
+        Input.keysHeld.clear();
+        Input.mouseDown = false;
     };
     window.onbeforeunload = (e) => {
         if (Game.state != "game") {
@@ -154,7 +150,7 @@ let state = {
                 label: "Play",
                 color: "#0000FF",
                 font: "40px sans-serif",
-                onClick: () => { mouse.held = false; load(); }
+                onClick: () => { Input.mouseDown = false; load(); }
             }),
             new Button({
                 x: () => innerWidth / 4,
@@ -341,14 +337,14 @@ let state = {
             ctxItems.clear();
             ctxOverlays.clear();
             level.display(currentFrame);
-            level.displayGhostBuilding(...Camera.unproject(mouse.x, mouse.y).map(Pos.pixelToTile), placedBuilding.ID, currentFrame);
+            level.displayGhostBuilding(...Camera.unproject(Input.mouseX, Input.mouseY).map(Pos.pixelToTile), placedBuilding.ID, currentFrame);
             if (keybinds.display.show_tooltip.isHeld()) {
-                level.displayTooltip(mouse.x, mouse.y, currentFrame);
+                level.displayTooltip(Input.mouseX, Input.mouseY, currentFrame);
             }
             ctxOverlays.font = "30px sans-serif";
             ctxOverlays.fillStyle = "#000000";
             ctxOverlays.textAlign = "left";
-            ctxOverlays.fillText(Camera.unproject(mouse.x, mouse.y).map(Pos.pixelToTile).join(","), 10, 100);
+            ctxOverlays.fillText(Camera.unproject(Input.mouseX, Input.mouseY).map(Pos.pixelToTile).join(","), 10, 100);
             if (settings.debug) {
                 ctxOverlays.fillText("C: " + currentFrame.cps, 10, 150);
                 ctxOverlays.fillText("I: " + currentFrame.ips, 10, 200);
@@ -367,10 +363,10 @@ let state = {
         onmouseheld() {
             if (Game.paused)
                 return;
-            if (!mouse.latestEvent)
+            if (!Input.latestMouseEvent)
                 return;
-            if (!(keysHeld.includes("control") || keybinds.placement.break_building.isHeld()) && placedBuilding.ID[0] != "base_null") {
-                level1.buildBuilding(...Camera.unproject(mouse.latestEvent.x, mouse.latestEvent.y).map(Pos.pixelToTile), placedBuilding.ID);
+            if (!(Input.keysHeld.has("control") || keybinds.placement.break_building.isHeld()) && placedBuilding.ID[0] != "base_null") {
+                level1.buildBuilding(...Camera.unproject(Input.latestMouseEvent.x, Input.latestMouseEvent.y).map(Pos.pixelToTile), placedBuilding.ID);
             }
         },
         onkeyheld: function (currentframe) {
@@ -393,7 +389,7 @@ let state = {
             }
             if (keybinds.placement.break_building.isHeld()) {
                 currentframe.redraw = true;
-                level1.breakBuilding(...Camera.unproject(mouse.x, mouse.y).map(Pos.pixelToTile));
+                level1.breakBuilding(...Camera.unproject(Input.mouseX, Input.mouseY).map(Pos.pixelToTile));
             }
         }
     }
@@ -412,7 +408,7 @@ function fixSizes() {
 }
 function handleAlerts() {
     if (alerts.list.length && alerts.active == false) {
-        mouse.held = false;
+        Input.mouseDown = false;
         alertmessage.innerHTML = alerts.list.shift();
         alertmessage.style.setProperty("--text-length", alertmessage.innerText.length.toString());
         alertbox.classList.add("active");
@@ -437,10 +433,10 @@ function main_loop() {
         if (!currentState) {
             throw new InvalidStateError(`Invalid game state "${Game.state}"`);
         }
-        if (mouse.held) {
+        if (Input.mouseDown) {
             currentState.onmouseheld?.(currentFrame);
         }
-        if (keysHeld.length != 0) {
+        if (Input.keysHeld.size > 0) {
             currentState.onkeyheld?.(currentFrame);
         }
         currentState.update(currentFrame);

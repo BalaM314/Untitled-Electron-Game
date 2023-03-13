@@ -171,7 +171,7 @@ class Button {
 		_ctx.strokeRect(this.x, this.y, this.width, this.height);
 		if(this.isMouseInside()){
 			_ctx.fillStyle = "#FFFFFF";
-			if(mouse.held){
+			if(Input.mouseDown){
 				_ctx.globalAlpha = 0.4;
 			} else {
 				_ctx.globalAlpha = 0.2;
@@ -190,10 +190,7 @@ class Button {
 		_ctx.textBaseline = tempBaseline;
   };
   isMouseInside(){
-		return mouse.x > this.x &&
-			mouse.x < this.x + this.width &&
-			mouse.y > this.y &&
-			mouse.y < this.y + this.height;
+		return Intersector.pointInRect([Input.mouseX, Input.mouseY], [this.x, this.y, this.width, this.height]);
   };
   handleMouseClick(e:MouseEvent){
 		if(this.isMouseInside()) {
@@ -396,26 +393,26 @@ class Keybind {
 	isHeld(){
 		let modifiersHeld = this.modifiers
 			.filter(key => !key.startsWith("!"))
-			.filter(key => !keysHeld.includes(key))
+			.filter(key => !Input.keysHeld.has(key))
 			.length == 0;
 		let disallowedModifiersNotHeld = this.modifiers
 			.filter(key => key.startsWith("!"))
 			.map(key => key.split("!")[1])
-			.filter(key => keysHeld.includes(key))
+			.filter(key => Input.keysHeld.has(key))
 			.length == 0;
 		//Array.filter and Array.map ftw
 		//these functions have saved me so many for loops
-		return keysHeld.includes(this.mainKey) && modifiersHeld && disallowedModifiersNotHeld;
+		return Input.keysHeld.has(this.mainKey) && modifiersHeld && disallowedModifiersNotHeld;
 	}
 	check(e:KeyboardEvent){
 		let modifiersHeld = this.modifiers
 			.filter(key => !key.startsWith("!"))
-			.filter(key => !keysHeld.includes(key))
+			.filter(key => !Input.keysHeld.has(key))
 			.length == 0;
 		let disallowedModifiersNotHeld = this.modifiers
 			.filter(key => key.startsWith("!"))
 			.map(key => key.split("!")[1])
-			.filter(key => keysHeld.includes(key))
+			.filter(key => Input.keysHeld.has(key))
 			.length == 0;
 		if(this.mainKey == e.key.toLowerCase() && modifiersHeld && disallowedModifiersNotHeld){
 			e.preventDefault();
