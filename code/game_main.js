@@ -12,7 +12,7 @@ function registerEventHandlers() {
         Input.latestMouseEvent = e;
         canOverwriteBuilding = true;
         if (state[Game.state]) {
-            state[Game.state]?.onclick?.(e);
+            state[Game.state]?.onmousedown?.(e);
         }
     };
     clickcapture.onmouseup = (e) => {
@@ -188,7 +188,7 @@ let state = {
             ctxOverlays.fillText(Game.title.splashtext ?? "splash not found! this is actually an error pls report", innerWidth / 2, innerHeight * 0.35);
             state.title.buttons.forEach(button => button.display(ctxOverlays));
         },
-        onclick(e) {
+        onmousedown(e) {
             state.title.buttons.forEach(button => button.handleMouseClick(e));
         }
     },
@@ -257,7 +257,7 @@ let state = {
             ctxOverlays.fillText("Settings", innerWidth / 2, innerHeight * 0.2);
             state.settings.buttons.forEach(button => button.display(ctxOverlays));
         },
-        onclick: function (e) {
+        onmousedown: function (e) {
             state.settings.buttons.forEach(button => button.handleMouseClick(e));
         }
     },
@@ -297,27 +297,25 @@ let state = {
             ctxOverlays.fillText("Keybinds", innerWidth / 2, innerHeight * 0.2);
             state["settings.keybinds"].buttons.forEach(button => button.display(ctxOverlays));
         },
-        onclick: function (e) {
+        onmousedown: function (e) {
             state["settings.keybinds"].buttons.forEach(button => button.handleMouseClick(e));
         }
     },
     game: {
         buttons: [],
-        update: function (currentFrame, level) {
+        update: function (currentFrame) {
             if (Game.paused)
                 return;
-            level ?? (level = level1);
-            level.generateNecessaryChunks();
+            level1.generateNecessaryChunks();
             try {
-                level.update(currentFrame);
+                level1.update(currentFrame);
             }
             catch (err) {
                 console.error(err);
                 throw new Error(`Error updating world: ${parseError(err)}`);
             }
         },
-        display: function (currentFrame, level) {
-            level ?? (level = level1);
+        display: function (currentFrame) {
             if (Game.paused) {
                 ctxOverlays.font = "48px sans-serif";
                 ctxOverlays.fillStyle = "#3333CC";
@@ -336,10 +334,10 @@ let state = {
             ctxOBuilds.clear();
             ctxItems.clear();
             ctxOverlays.clear();
-            level.display(currentFrame);
-            level.displayGhostBuilding(...Camera.unproject(Input.mouseX, Input.mouseY).map(Pos.pixelToTile), placedBuilding.ID, currentFrame);
+            level1.display(currentFrame);
+            level1.displayGhostBuilding(...Camera.unproject(Input.mouseX, Input.mouseY).map(Pos.pixelToTile), placedBuilding.ID, currentFrame);
             if (keybinds.display.show_tooltip.isHeld()) {
-                level.displayTooltip(Input.mouseX, Input.mouseY, currentFrame);
+                level1.displayTooltip(Input.mouseX, Input.mouseY, currentFrame);
             }
             ctxOverlays.font = "30px sans-serif";
             ctxOverlays.fillStyle = "#000000";
@@ -353,7 +351,7 @@ let state = {
                 item.innerText = (level1.resources[item.id] ?? 0).toString();
             }
         },
-        onclick(e) {
+        onmousedown(e) {
             if (Game.paused)
                 return;
             if (e.ctrlKey) {
