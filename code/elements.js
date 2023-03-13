@@ -16,18 +16,6 @@ const errorBackground = getElement("error_background", HTMLDivElement);
 const loadingBackground = getElement("loading_background", HTMLDivElement);
 const resourcesEl = getElement("resources", HTMLDivElement);
 const texturesDiv = getElement("textures", HTMLDivElement);
-for (let element of toolbarEl.children) {
-    element.addEventListener("click", (event) => {
-        if (event.target instanceof HTMLImageElement) {
-            for (let x of toolbarEl.children) {
-                x.classList.remove("selected");
-            }
-            event.target.classList.add("selected");
-            placedBuilding.type = event.target.id;
-            mouse.held = false;
-        }
-    });
-}
 alertexit.onclick = (e) => {
     alertbox.classList.remove("active");
     alerts.active = false;

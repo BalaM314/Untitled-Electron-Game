@@ -142,6 +142,19 @@ function registerEventHandlers(){
 		}
 	}
 
+	for(let element of toolbarEl.children){
+		element.addEventListener("click", (event) => {
+			if(event.target instanceof HTMLImageElement){
+				for(let x of toolbarEl.children){
+					x.classList.remove("selected");
+				}
+				event.target.classList.add("selected");
+				placedBuilding.type = (event.target as HTMLImageElement).id as RawBuildingID;
+				Input.mouseDown = false;
+			}
+		});
+	}
+
 }
 
 
