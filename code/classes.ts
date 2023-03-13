@@ -743,6 +743,7 @@ class Building {
 	static immutable = false;
 	static isOverlay = false;
 	static displaysItem = false;
+	static outputsOnlyToConveyors = true;
 
 	item: Item | null = null;
 	pos:Pos;
@@ -763,6 +764,9 @@ class Building {
 	/**Returns texture size and offset given meta. */
 	static textureSize(meta:number):[size:[number, number], offset:[number, number]] {
 		return [[1, 1], [0, 0]];
+	}
+	static canOutputTo(building:Building | null){
+		return building instanceof Conveyor;
 	}
 	/**Called to destroy the building. Should remove all references to it. */
 	break(){
@@ -823,7 +827,7 @@ class Building {
 	spawnItem(id:ItemID){
 		id ??= "base_null";
 		if(
-			this.buildAt(Direction.right) instanceof Conveyor &&
+			this.block.canOutputTo(this.buildAt(Direction.right)) &&
 			this.buildAt(Direction.right)!.acceptsItemFromSide(Direction.left) &&
 			this.buildAt(Direction.right)!.acceptItem(
 				new Item((this.pos.tileX + 1.1) * consts.TILE_SIZE, (this.pos.tileY + 0.5) * consts.TILE_SIZE, id)
@@ -831,7 +835,7 @@ class Building {
 		){
 			return true;
 		} else if(
-			this.buildAt(Direction.down) instanceof Conveyor &&
+			this.block.canOutputTo(this.buildAt(Direction.down)) &&
 			this.buildAt(Direction.down)!.acceptsItemFromSide(Direction.up) &&
 			this.buildAt(Direction.down)!.acceptItem(
 				new Item((this.pos.tileX + 0.5) * consts.TILE_SIZE, (this.pos.tileY + 1.1) * consts.TILE_SIZE, id)
@@ -839,7 +843,7 @@ class Building {
 		){
 			return true;
 		} else if(
-			this.buildAt(Direction.left) instanceof Conveyor &&
+			this.block.canOutputTo(this.buildAt(Direction.left)) &&
 			this.buildAt(Direction.left)!.acceptsItemFromSide(Direction.right) &&
 			this.buildAt(Direction.left)!.acceptItem(
 				new Item((this.pos.tileX - 0.1) * consts.TILE_SIZE, (this.pos.tileY + 0.5) * consts.TILE_SIZE, id)
@@ -847,7 +851,7 @@ class Building {
 		){
 			return true;
 		} else if(
-			this.buildAt(Direction.up) instanceof Conveyor &&
+			this.block.canOutputTo(this.buildAt(Direction.up)) &&
 			this.buildAt(Direction.up)!.acceptsItemFromSide(Direction.down) &&
 			this.buildAt(Direction.up)!.acceptItem(
 				new Item((this.pos.tileX + 0.5) * consts.TILE_SIZE, (this.pos.tileY - 0.1) * consts.TILE_SIZE, id)

@@ -637,6 +637,9 @@ class Building {
     static textureSize(meta) {
         return [[1, 1], [0, 0]];
     }
+    static canOutputTo(building) {
+        return building instanceof Conveyor;
+    }
     break() {
         if (this.item) {
             this.item.grabbedBy = null;
@@ -688,22 +691,22 @@ class Building {
     }
     spawnItem(id) {
         id ?? (id = "base_null");
-        if (this.buildAt(Direction.right) instanceof Conveyor &&
+        if (this.block.canOutputTo(this.buildAt(Direction.right)) &&
             this.buildAt(Direction.right).acceptsItemFromSide(Direction.left) &&
             this.buildAt(Direction.right).acceptItem(new Item((this.pos.tileX + 1.1) * consts.TILE_SIZE, (this.pos.tileY + 0.5) * consts.TILE_SIZE, id))) {
             return true;
         }
-        else if (this.buildAt(Direction.down) instanceof Conveyor &&
+        else if (this.block.canOutputTo(this.buildAt(Direction.down)) &&
             this.buildAt(Direction.down).acceptsItemFromSide(Direction.up) &&
             this.buildAt(Direction.down).acceptItem(new Item((this.pos.tileX + 0.5) * consts.TILE_SIZE, (this.pos.tileY + 1.1) * consts.TILE_SIZE, id))) {
             return true;
         }
-        else if (this.buildAt(Direction.left) instanceof Conveyor &&
+        else if (this.block.canOutputTo(this.buildAt(Direction.left)) &&
             this.buildAt(Direction.left).acceptsItemFromSide(Direction.right) &&
             this.buildAt(Direction.left).acceptItem(new Item((this.pos.tileX - 0.1) * consts.TILE_SIZE, (this.pos.tileY + 0.5) * consts.TILE_SIZE, id))) {
             return true;
         }
-        else if (this.buildAt(Direction.up) instanceof Conveyor &&
+        else if (this.block.canOutputTo(this.buildAt(Direction.up)) &&
             this.buildAt(Direction.up).acceptsItemFromSide(Direction.down) &&
             this.buildAt(Direction.up).acceptItem(new Item((this.pos.tileX + 0.5) * consts.TILE_SIZE, (this.pos.tileY - 0.1) * consts.TILE_SIZE, id))) {
             return true;
@@ -738,6 +741,7 @@ Building.outputsItems = false;
 Building.immutable = false;
 Building.isOverlay = false;
 Building.displaysItem = false;
+Building.outputsOnlyToConveyors = true;
 class BuildingWithRecipe extends Building {
     constructor(tileX, tileY, meta, level) {
         super(tileX, tileY, meta, level);
