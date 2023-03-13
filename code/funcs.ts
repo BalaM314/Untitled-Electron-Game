@@ -234,6 +234,7 @@ function* pseudoRandom(seed:number) {
 			}
 		}
 	}
+	//cursed hack to manipulate the return type
 	return null! as never;
 }
 function getElement<T extends typeof HTMLElement>(id:string, type:T){

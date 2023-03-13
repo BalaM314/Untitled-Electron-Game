@@ -434,7 +434,7 @@ let state: {
 					...(Camera.unproject(e.x, e.y))
 				)?.acceptItem(new Item(
 					...(Camera.unproject(e.x, e.y).map(c => Pos.tileToPixel(Pos.pixelToTile(c), true)) as [number, number]),
-					ItemID.base_null
+					"base_null"
 				));
 			}
 		},

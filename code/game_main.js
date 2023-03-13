@@ -361,7 +361,7 @@ let state = {
             if (Game.paused)
                 return;
             if (e.ctrlKey) {
-                level1.buildingAtPixel(...(Camera.unproject(e.x, e.y)))?.acceptItem(new Item(...Camera.unproject(e.x, e.y).map(c => Pos.tileToPixel(Pos.pixelToTile(c), true)), ItemID.base_null));
+                level1.buildingAtPixel(...(Camera.unproject(e.x, e.y)))?.acceptItem(new Item(...Camera.unproject(e.x, e.y).map(c => Pos.tileToPixel(Pos.pixelToTile(c), true)), "base_null"));
             }
         },
         onmouseheld() {

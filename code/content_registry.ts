@@ -21,15 +21,15 @@ const recipes:Recipes = {
 		type: "t-1",
 		recipes: [
 			{
-				outputs: [ItemID.base_coalOre],
+				outputs: ["base_coalOre"],
 				duration: 60,
 				tile: "base_ore_coal"
 			},{
-				outputs: [ItemID.base_ironOre],
+				outputs: ["base_ironOre"],
 				duration: 60,
 				tile: "base_ore_iron"
 			},{
-				outputs: [ItemID.base_copperOre],
+				outputs: ["base_copperOre"],
 				duration: 60,
 				tile: "base_ore_copper"
 			},
@@ -39,16 +39,16 @@ const recipes:Recipes = {
 		type: "1-1",
 		recipes: [
 			{
-				inputs: [ItemID.base_coalOre],
-				outputs: [ItemID.base_coal],
+				inputs: ["base_coalOre"],
+				outputs: ["base_coal"],
 				duration: 60
 			},{
-				inputs: [ItemID.base_ironOre],
-				outputs: [ItemID.base_ironIngot],
+				inputs: ["base_ironOre"],
+				outputs: ["base_ironIngot"],
 				duration: 60
 			},{
-				inputs: [ItemID.base_copperOre],
-				outputs: [ItemID.base_copperIngot],
+				inputs: ["base_copperOre"],
+				outputs: ["base_copperIngot"],
 				duration: 60
 			}
 		]
@@ -57,8 +57,8 @@ const recipes:Recipes = {
 		type: "2-1",
 		recipes: [
 			{
-				inputs: [ItemID.base_coal, ItemID.base_ironIngot],
-				outputs: [ItemID.base_steelIngot],
+				inputs: ["base_coal", "base_ironIngot"],
+				outputs: ["base_steelIngot"],
 				duration: 240
 			}
 		]
@@ -67,8 +67,8 @@ const recipes:Recipes = {
 		type: "1-1",
 		recipes: [
 			{
-				inputs: [ItemID.base_copperIngot],
-				outputs: [ItemID.base_copperWire],
+				inputs: ["base_copperIngot"],
+				outputs: ["base_copperWire"],
 				duration: 120
 			}
 		]
@@ -77,12 +77,12 @@ const recipes:Recipes = {
 		type: "1-1",
 		recipes: [
 			{
-				inputs: [ItemID.base_ironIngot],
-				outputs: [ItemID.base_ironPlate],
+				inputs: ["base_ironIngot"],
+				outputs: ["base_ironPlate"],
 				duration: 60
 			},{
-				inputs: [ItemID.base_steelIngot],
-				outputs: [ItemID.base_steelPlate],
+				inputs: ["base_steelIngot"],
+				outputs: ["base_steelPlate"],
 				duration: 60
 			}
 		]
@@ -91,12 +91,12 @@ const recipes:Recipes = {
 		type: "1-1",
 		recipes: [
 			{
-				inputs: [ItemID.base_ironIngot],
-				outputs: [ItemID.base_ironRod],
+				inputs: ["base_ironIngot"],
+				outputs: ["base_ironRod"],
 				duration: 60
 			},{
-				inputs: [ItemID.base_steelIngot],
-				outputs: [ItemID.base_steelRod],
+				inputs: ["base_steelIngot"],
+				outputs: ["base_steelRod"],
 				duration: 60
 			}
 		]
@@ -105,16 +105,16 @@ const recipes:Recipes = {
 		type: "2-1",
 		recipes: [
 			{
-				inputs: [ItemID.base_steelRod, ItemID.base_copperWire],
-				outputs: [ItemID.base_rotor],
+				inputs: ["base_steelRod", "base_copperWire"],
+				outputs: ["base_rotor"],
 				duration: 120
 			},{
-				inputs: [ItemID.base_ironPlate, ItemID.base_copperWire],
-				outputs: [ItemID.base_stator],
+				inputs: ["base_ironPlate", "base_copperWire"],
+				outputs: ["base_stator"],
 				duration: 120
 			},{
-				inputs: [ItemID.base_stator, ItemID.base_rotor],
-				outputs: [ItemID.base_motor],
+				inputs: ["base_stator", "base_rotor"],
+				outputs: ["base_motor"],
 				duration: 30
 			}
 		]

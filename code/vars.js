@@ -44,25 +44,6 @@ const names = {
         "base_motor": "Motor"
     }
 };
-var ItemID;
-(function (ItemID) {
-    ItemID["base_null"] = "base_null";
-    ItemID["base_coalOre"] = "base_coalOre";
-    ItemID["base_coal"] = "base_coal";
-    ItemID["base_ironOre"] = "base_ironOre";
-    ItemID["base_ironIngot"] = "base_ironIngot";
-    ItemID["base_ironPlate"] = "base_ironPlate";
-    ItemID["base_ironRod"] = "base_ironRod";
-    ItemID["base_copperOre"] = "base_copperOre";
-    ItemID["base_copperIngot"] = "base_copperIngot";
-    ItemID["base_copperWire"] = "base_copperWire";
-    ItemID["base_steelIngot"] = "base_steelIngot";
-    ItemID["base_steelPlate"] = "base_steelPlate";
-    ItemID["base_steelRod"] = "base_steelRod";
-    ItemID["base_stator"] = "base_stator";
-    ItemID["base_rotor"] = "base_rotor";
-    ItemID["base_motor"] = "base_motor";
-})(ItemID || (ItemID = {}));
 var Direction;
 (function (Direction) {
     Direction[Direction["right"] = 0] = "right";
@@ -99,7 +80,7 @@ const consts = {
     CHUNK_SIZE: 16,
     TILE_SIZE: 30,
     ITEM_SIZE: 16,
-    cullingMargin: 120,
+    chunkCullingMargin: 120,
 };
 const keybinds = extend()({
     move: {

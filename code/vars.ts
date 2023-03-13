@@ -54,24 +54,24 @@ const names: {
 	}
 };
 
-enum ItemID {
-	base_null = "base_null",
-	base_coalOre = "base_coalOre",
-	base_coal = "base_coal",
-	base_ironOre = "base_ironOre",
-	base_ironIngot = "base_ironIngot",
-	base_ironPlate = "base_ironPlate",
-	base_ironRod = "base_ironRod",
-	base_copperOre = "base_copperOre",
-	base_copperIngot = "base_copperIngot",
-	base_copperWire = "base_copperWire",
-	base_steelIngot = "base_steelIngot",
-	base_steelPlate = "base_steelPlate",
-	base_steelRod = "base_steelRod",
-	base_stator = "base_stator",
-	base_rotor = "base_rotor",
-	base_motor = "base_motor"
-}
+type ItemID =
+	"base_null" |
+	"base_coalOre" |
+	"base_coal" |
+	"base_ironOre" |
+	"base_ironIngot" |
+	"base_ironPlate" |
+	"base_ironRod" |
+	"base_copperOre" |
+	"base_copperIngot" |
+	"base_copperWire" |
+	"base_steelIngot" |
+	"base_steelPlate" |
+	"base_steelRod" |
+	"base_stator" |
+	"base_rotor" |
+	"base_motor"
+;
 
 
 enum Direction {
@@ -125,7 +125,7 @@ const consts = {
 	/**Size of an item in pixels. */
 	ITEM_SIZE: 16,
 	/**Margin applied to chunk culling. */
-	cullingMargin: 120,
+	chunkCullingMargin: 120,
 };
 
 

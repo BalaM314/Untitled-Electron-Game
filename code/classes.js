@@ -526,7 +526,7 @@ class Chunk {
         if (!Camera.isVisible([
             Pos.chunkToPixel(this.x), Pos.chunkToPixel(this.y),
             Pos.chunkToPixel(1), Pos.chunkToPixel(1)
-        ], consts.cullingMargin))
+        ], consts.chunkCullingMargin))
             return;
         currentframe.cps++;
         if (currentframe.redraw) {
@@ -694,7 +694,7 @@ class Building {
         }
     }
     spawnItem(id) {
-        id ?? (id = ItemID.base_null);
+        id ?? (id = "base_null");
         if (this.buildAt(Direction.right) instanceof Conveyor &&
             this.buildAt(Direction.right).acceptsItemFromSide(Direction.left) &&
             this.buildAt(Direction.right).acceptItem(new Item((this.pos.tileX + 1.1) * consts.TILE_SIZE, (this.pos.tileY + 0.5) * consts.TILE_SIZE, id))) {

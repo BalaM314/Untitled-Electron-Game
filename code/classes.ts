@@ -636,7 +636,7 @@ class Chunk {
 		if(!Camera.isVisible([
 			Pos.chunkToPixel(this.x), Pos.chunkToPixel(this.y),
 			Pos.chunkToPixel(1), Pos.chunkToPixel(1)
-		], consts.cullingMargin)) return;//if offscreen return immediately
+		], consts.chunkCullingMargin)) return;//if offscreen return immediately
 		currentframe.cps ++;
 		
 		if(currentframe.redraw){
@@ -825,7 +825,7 @@ class Building {
 		}
 	}
 	spawnItem(id:ItemID){
-		id ??= ItemID.base_null;
+		id ??= "base_null";
 		if(
 			this.buildAt(Direction.right) instanceof Conveyor &&
 			this.buildAt(Direction.right)!.acceptsItemFromSide(Direction.left) &&
