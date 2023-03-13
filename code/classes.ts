@@ -207,49 +207,45 @@ class Level {
 			this.buildingAtTile(tileX, tileY)?.break();
 		}
 
-		let tempBuilding:Building;
-		if(block.prototype instanceof MultiBlockController){
-			//Multiblock handling
-			
-			//Break all the buildings under
-			//TODO use the size thing
-			this.buildingAtTile(tileX + 1, tileY)?.break();
-			this.buildingAtTile(tileX, tileY + 1)?.break();
-			this.buildingAtTile(tileX+1, tileY+1)?.break();
-
-			switch(buildingID[0]){
-				case "base_assembler":
-					let controller = new block(tileX, tileY, buildingID[1], this) as MultiBlockController;
-					const multiblockSecondary = Buildings.get("base_multiblock_secondary") as typeof MultiBlockSecondary;
-					let secondary1 = new multiblockSecondary(tileX + 1, tileY, 0, this);
-					let secondary2 = new multiblockSecondary(tileX, tileY + 1, 0, this);
-					let secondary3 = new multiblockSecondary(tileX+1, tileY+1, 0, this);
-					controller.secondaries = [secondary1, secondary2, secondary3];
-					[secondary1, secondary2, secondary3].forEach(secondary => secondary.controller = controller);
-					this.writeBuilding(tileX, tileY, controller);
-					this.writeBuilding(tileX + 1, tileY, secondary1);
-					this.writeBuilding(tileX, tileY + 1, secondary2);
-					this.writeBuilding(tileX+1, tileY+1, secondary3);
-				break;
-				default:
-					return false;
-			}
-			return true;
-		}
 		if(block.canBuildAt(tileX, tileY, this)){
 			trigger(triggerType.placeBuilding, buildingID[0]);
-			tempBuilding = new block(
-				tileX, tileY,
-				block.changeMeta(buildingID[1], tileX, tileY, this), this
-			);
+			if(block.prototype instanceof MultiBlockController){
+				//Multiblock handling
+				const _block = block as typeof MultiBlockController;
+				const offsets = MultiBlockController.getOffsetsForSize(..._block.multiblockSize);
+				//todo dubious
+				const multiblockSecondary = Buildings.get("base_multiblock_secondary") as typeof MultiBlockSecondary;
+				
+				//Break all the buildings under
+				for(const [xOffset, yOffset] of offsets){
+					const buildUnder = this.buildingAtTile(tileX + xOffset, tileY + yOffset);
+					//if(buildUnder?.block.immutable) return false;
+					buildUnder?.break();
+				}
+				
+				//Create buildings
+				let controller = new _block(tileX, tileY, buildingID[1], this);
+				controller.secondaries = offsets.map(([x, y]) => new multiblockSecondary(tileX + x, tileY + y, 0, this));
+				//Link buildings
+				controller.secondaries.forEach(secondary => secondary.controller = controller);
+				//Write buildings
+				this.writeBuilding(tileX, tileY, controller);
+				controller.secondaries.forEach(secondary => this.writeBuilding(secondary.pos.tileX, secondary.pos.tileY, secondary));
+				return true;
+			} else {
+				const building = new block(
+					tileX, tileY,
+					block.changeMeta(buildingID[1], tileX, tileY, this), this
+				);
+				if(building instanceof OverlayBuild){
+					return this.writeOverlayBuild(tileX, tileY, building);
+				} else {
+					return this.writeBuilding(tileX, tileY, building);
+				}
+			}
 		} else {
 			trigger(triggerType.placeBuildingFail, buildingID[0]);
 			return false;
-		}
-		if(tempBuilding instanceof OverlayBuild){
-			return this.writeOverlayBuild(tileX, tileY, tempBuilding);
-		} else {
-			return this.writeBuilding(tileX, tileY, tempBuilding);
 		}
 	}
 
@@ -1462,9 +1458,7 @@ class ResourceAcceptor extends Building {
 	acceptItem(item:Item){
 		item.deleted = true;
 		item.grabbedBy = null;
-		if(! this.level.resources[item.id]){
-			this.level.resources[item.id] = 0;
-		}
+		this.level.resources[item.id] ??= 0;
 		this.level.resources[item.id] ++;
 		return true;
 	}
@@ -1478,6 +1472,16 @@ class MultiBlockController extends BuildingWithRecipe {
 	static textureSize(meta: number) {
 		return [this.multiblockSize, [0, 0]] as [size: [number, number], offset: [number, number]];
 	}
+	static getOffsetsForSize(width:number, height:number){
+		let offsets = new Array<[x:number, y:number]>();
+		for(let i = 0; i < width; i ++){
+			for(let j = 0; j < height; j ++){
+				if(i == 0 && j == 0) continue;
+				offsets.push([i, j]);
+			}
+		}
+		return offsets;
+	}
 	break(){
 		this.secondaries.forEach(secondary => secondary.break(true));
 		this.secondaries = [];
@@ -1486,18 +1490,15 @@ class MultiBlockController extends BuildingWithRecipe {
 	update(){
 		if(this.secondaries.length != this.block.multiblockSize[0] * this.block.multiblockSize[1] - 1){
 			if(!this.resetSecondaries()) this.break();
-			console.warn("Multiblock disconnected from secondaries. If you just loaded a save, this is fine.");
 		}
 		super.update();
 	}
 	/**Attempts to reconnects to secondaries, returning if the attempt succeeded. */
 	resetSecondaries():boolean {
-		//This should be based on size
-		let possibleSecondaries = [
-			this.buildAt(Direction.right),
-			this.buildAt(Direction.down),
-			this.level.buildingAtTile(this.pos.tileX + 1, this.pos.tileY + 1)
-		];
+		let possibleSecondaries = MultiBlockController.getOffsetsForSize(...this.block.multiblockSize)
+		.map(([xOffset, yOffset]) =>
+			this.level.buildingAtTile(this.pos.tileX + xOffset, this.pos.tileY + yOffset)
+		);
 		for(let possibleSecondary of possibleSecondaries){
 			if(
 				possibleSecondary instanceof MultiBlockSecondary && 
