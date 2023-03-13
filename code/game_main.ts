@@ -124,7 +124,7 @@ function registerEventHandlers(){
 	}
 
 	window.onwheel = (e:WheelEvent) => {
-		zoom(Math.pow(1.001, -e.deltaY));
+		Camera.zoom(Math.pow(1.001, -e.deltaY));
 	}
 
 	//When the window loses focus, clear the list of held keys and set mousePressed to false.
@@ -367,11 +367,6 @@ let state: {
 			if(Game.paused) return;
 			level ??= level1;
 			level.generateNecessaryChunks();
-			if(keybinds.move.scroll_faster.isHeld()){
-				Game.scroll.speed = 20;
-			} else {
-				Game.scroll.speed = 5;
-			}
 			try {
 				level.update(currentFrame);
 			} catch(err){
@@ -407,8 +402,7 @@ let state: {
 		
 			
 			level.displayGhostBuilding(
-				Math.floor((mouse.x - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE),
-				Math.floor((mouse.y - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE),
+				...(Camera.unproject(mouse.x, mouse.y).map(Pos.pixelToTile) as [number, number]),
 				placedBuilding.ID, currentFrame
 			);
 			if(keybinds.display.show_tooltip.isHeld()){
@@ -420,9 +414,8 @@ let state: {
 			ctxOverlays.fillStyle = "#000000";
 			ctxOverlays.textAlign = "left";
 			ctxOverlays.fillText(
-				Math.floor((mouse.x - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE).toString()
-				+ ", " + Math.floor((mouse.y - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE).toString()
-				, 10, 100
+				Camera.unproject(mouse.x, mouse.y).map(Pos.pixelToTile).join(","),
+				10, 100
 			);
 			
 			if(settings.debug){
@@ -438,11 +431,9 @@ let state: {
 			if(Game.paused) return;
 			if(e.ctrlKey){
 				level1.buildingAtPixel(
-					(e.x  / consts.DISPLAY_SCALE - Game.scroll.x),
-					(e.y  / consts.DISPLAY_SCALE - Game.scroll.y)
+					...(Camera.unproject(e.x, e.y))
 				)?.acceptItem(new Item(
-					(Math.floor((e.x  / consts.DISPLAY_SCALE - Game.scroll.x) / consts.TILE_SIZE) + 0.5) * consts.TILE_SIZE,
-					(Math.floor((e.y  / consts.DISPLAY_SCALE - Game.scroll.y) / consts.TILE_SIZE) + 0.5) * consts.TILE_SIZE,
+					...(Camera.unproject(e.x, e.y).map(c => Pos.tileToPixel(Pos.pixelToTile(c), true)) as [number, number]),
 					ItemID.base_null
 				));
 			}
@@ -452,35 +443,34 @@ let state: {
 			if(!mouse.latestEvent) return;
 			if(!(keysHeld.includes("control") || keybinds.placement.break_building.isHeld()) && placedBuilding.ID[0] != "base_null"){
 				level1.buildBuilding(
-					Math.floor((mouse.latestEvent.x - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE),
-					Math.floor((mouse.latestEvent.y - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE),
+					...(Camera.unproject(mouse.latestEvent.x, mouse.latestEvent.y).map(Pos.pixelToTile) as [number, number]),
 					placedBuilding.ID
 				);
 			}
 		},
 		//Unlike the onkeydown function, this one needs to run based on keys being held.
 		onkeyheld: function(currentframe:CurrentFrame){
+			const scrollSpeed = keybinds.move.scroll_faster.isHeld() ? 20 : 5;
 			if(keybinds.move.up.isHeld()){
-				Game.scroll.y += Game.scroll.speed;
+				Camera.scrollY += scrollSpeed;
 				currentframe.redraw = true;
 			}
 			if(keybinds.move.left.isHeld()){
-				Game.scroll.x += Game.scroll.speed;
+				Camera.scrollX += scrollSpeed;
 				currentframe.redraw = true;
 			}
 			if(keybinds.move.down.isHeld()){
-				Game.scroll.y -= Game.scroll.speed;
+				Camera.scrollY -= scrollSpeed;
 				currentframe.redraw = true;
 			}
 			if(keybinds.move.right.isHeld()){
-				Game.scroll.x -= Game.scroll.speed;
+				Camera.scrollX -= scrollSpeed;
 				currentframe.redraw = true;
 			}
 			if(keybinds.placement.break_building.isHeld()){
 				currentframe.redraw = true;
 				level1.breakBuilding(
-					Math.floor((mouse.x - (Game.scroll.x * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE),
-					Math.floor((mouse.y - (Game.scroll.y * consts.DISPLAY_SCALE)) / consts.DISPLAY_TILE_SIZE),
+					...(Camera.unproject(mouse.x, mouse.y).map(Pos.pixelToTile) as [number, number])
 				);
 			}
 		}

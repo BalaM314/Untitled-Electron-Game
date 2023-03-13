@@ -89,7 +89,7 @@ interface Keybinds {
 	}
 }
 
-
+type Rect = [x:number, y:number, width:number, height:number];
 
 interface SaveData {
 	UntitledElectronGame: {

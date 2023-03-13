@@ -166,6 +166,14 @@ class Button {
     }
     ;
 }
+class Intersector {
+    static pointInRect([x, y], [rX, rY, rW, rH]) {
+        return x > rX && x < (rX + rW) && y > rY && y < (rY + rH);
+    }
+    static rectsIntersect([aX, aY, aW, aH], [bX, bY, bW, bH]) {
+        return bX < aX + aW && aX < bX + bW && bY < aY + aH && aY < bY + bH;
+    }
+}
 var RectMode;
 (function (RectMode) {
     RectMode[RectMode["CENTER"] = 0] = "CENTER";
@@ -225,22 +233,6 @@ function mapLegacyRawBuildingID(id) {
 }
 function getLegacyRawBuildingID(buildingID) {
     return hex(+buildingID, 2);
-}
-function zoom(scaleFactor) {
-    scaleFactor = constrain(scaleFactor, 0.9, 1.1);
-    if (consts.DISPLAY_SCALE * scaleFactor < 1) {
-        scaleFactor = 1 / consts.DISPLAY_SCALE;
-    }
-    else if (consts.DISPLAY_SCALE * scaleFactor > 5) {
-        scaleFactor = 5 / consts.DISPLAY_SCALE;
-    }
-    if ((consts.DISPLAY_SCALE <= 1 && scaleFactor <= 1) || (consts.DISPLAY_SCALE >= 5 && scaleFactor >= 1)) {
-        return;
-    }
-    Game.forceRedraw = true;
-    consts.DISPLAY_SCALE *= scaleFactor;
-    Game.scroll.x -= (innerWidth * 0.5 * (scaleFactor - 1)) / consts.DISPLAY_SCALE;
-    Game.scroll.y -= (innerHeight * 0.5 * (scaleFactor - 1)) / consts.DISPLAY_SCALE;
 }
 class Pos {
     constructor(pixelX, pixelY) {
@@ -321,6 +313,9 @@ class Pos {
     }
     static pixelToChunk(pixelCoord) {
         return Math.floor(pixelCoord / (consts.TILE_SIZE * consts.CHUNK_SIZE));
+    }
+    static chunkToPixel(chunkCoord) {
+        return chunkCoord * consts.CHUNK_SIZE * consts.TILE_SIZE;
     }
     static tileOffsetInPixels(pixelCoord) {
         pixelCoord = Math.floor(pixelCoord) % consts.TILE_SIZE;

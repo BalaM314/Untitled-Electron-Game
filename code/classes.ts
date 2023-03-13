@@ -65,23 +65,14 @@ class Level {
 		);
 	}
 	generateNecessaryChunks(){
-		let xOffset = - Math.floor((Game.scroll.x * consts.DISPLAY_SCALE) / (consts.DISPLAY_TILE_SIZE * consts.CHUNK_SIZE));
-		let yOffset = - Math.floor((Game.scroll.y * consts.DISPLAY_SCALE) / (consts.DISPLAY_TILE_SIZE * consts.CHUNK_SIZE));
-		this.generateChunk(xOffset - 1, yOffset - 1);
-		this.generateChunk(xOffset, yOffset - 1);
-		this.generateChunk(xOffset + 1, yOffset - 1);
-		this.generateChunk(xOffset - 1, yOffset);
-		this.generateChunk(xOffset, yOffset);
-		this.generateChunk(xOffset + 1, yOffset);
-		this.generateChunk(xOffset - 1, yOffset + 1);
-		this.generateChunk(xOffset, yOffset + 1);
-		this.generateChunk(xOffset + 1, yOffset + 1);
-		this.generateChunk(xOffset + 2, yOffset - 1);
-		this.generateChunk(xOffset + 2, yOffset);
-		this.generateChunk(xOffset + 2, yOffset + 1);
-		this.generateChunk(xOffset + 3, yOffset - 1);
-		this.generateChunk(xOffset + 3, yOffset);
-		this.generateChunk(xOffset + 3, yOffset + 1);
+		let [chunkX, chunkY] = Camera.unproject(0, 0).map(Pos.pixelToChunk) as [number, number]
+		const xOffsets = [0, 1, 2, 3, 4];
+		const yOffsets = [0, 1, 2];
+		for(const xOffset of xOffsets){
+			for(const yOffset of yOffsets){
+				this.generateChunk(chunkX + xOffset, chunkY + yOffset);
+			}
+		}
 		//good enough
 	}
 
@@ -277,8 +268,7 @@ class Level {
 	}
 	displayTooltip(mousex:number, mousey:number, currentframe:CurrentFrame){
 		if(!currentframe.tooltip){return;}
-		let x = (mousex - (Game.scroll.x * consts.DISPLAY_SCALE))/consts.DISPLAY_SCALE;
-		let y = (mousey - (Game.scroll.y * consts.DISPLAY_SCALE))/consts.DISPLAY_SCALE;
+		const [x, y] = Camera.unproject(mousex, mousey);
 		Gfx.layer("overlay");
 		Gfx.font("16px monospace");
 		let building = this.buildingAtPixel(x, y);
@@ -643,12 +633,10 @@ class Chunk {
 		return this;
 	}
 	display(currentframe:any){
-		if(
-			(Game.scroll.x * consts.DISPLAY_SCALE) + this.x * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE > window.innerWidth + 1 ||
-			(Game.scroll.x * consts.DISPLAY_SCALE) + this.x * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE < -1 - consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE ||
-			(Game.scroll.y * consts.DISPLAY_SCALE) + this.y * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE > window.innerHeight + 1 ||
-			(Game.scroll.y * consts.DISPLAY_SCALE) + this.y * consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE < -1 - consts.CHUNK_SIZE * consts.DISPLAY_TILE_SIZE
-		) return;//if offscreen return immediately
+		if(!Camera.isVisible([
+			Pos.chunkToPixel(this.x), Pos.chunkToPixel(this.y),
+			Pos.chunkToPixel(1), Pos.chunkToPixel(1)
+		], consts.cullingMargin)) return;//if offscreen return immediately
 		currentframe.cps ++;
 		
 		if(currentframe.redraw){
@@ -734,15 +722,11 @@ class Item {
 		//nothing necessary
 	}
 	display(currentframe:CurrentFrame){
-		if(
-			consts.DISPLAY_SCALE * (this.pos.pixelX + Game.scroll.x - 8) < 0 ||
-			consts.DISPLAY_SCALE * (this.pos.pixelX + Game.scroll.x - 8) > window.innerWidth ||
-			consts.DISPLAY_SCALE * (this.pos.pixelY + Game.scroll.y - 8) < 0 ||
-			consts.DISPLAY_SCALE * (this.pos.pixelY + Game.scroll.y - 8) > window.innerHeight
-		){return;}//if offscreen return immediately
-		currentframe.ips ++;
-		Gfx.layer("items");
-		Gfx.pImage(Gfx.texture(`item/${this.id}`), this.pos.pixelX, this.pos.pixelY, consts.ITEM_SIZE, consts.ITEM_SIZE, RectMode.CENTER);
+		if(Camera.isPointVisible([this.pos.pixelX, this.pos.pixelY], consts.ITEM_SIZE)){
+			currentframe.ips ++;
+			Gfx.layer("items");
+			Gfx.pImage(Gfx.texture(`item/${this.id}`), this.pos.pixelX, this.pos.pixelY, consts.ITEM_SIZE, consts.ITEM_SIZE, RectMode.CENTER);
+		}
 	}
 	export():ItemData | null {
 		if(this.deleted || !this.grabbedBy) return null;

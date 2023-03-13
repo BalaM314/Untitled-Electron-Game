@@ -98,11 +98,8 @@ const consts = {
     VERSION: "alpha 3.0.0",
     CHUNK_SIZE: 16,
     TILE_SIZE: 30,
-    DISPLAY_SCALE: 1,
     ITEM_SIZE: 16,
-    get DISPLAY_TILE_SIZE() {
-        return this.TILE_SIZE * this.DISPLAY_SCALE;
-    }
+    cullingMargin: 120,
 };
 const keybinds = extend()({
     move: {
@@ -180,11 +177,6 @@ let settings = {
 };
 let Game = {
     texturesReady: false,
-    scroll: {
-        x: 300,
-        y: 300,
-        speed: 5
-    },
     startTime: new Date().getTime(),
     lastSaved: 0,
     forceRedraw: true,

@@ -25,6 +25,56 @@ async function loadTextures(textures, texturesDiv) {
     return Object.fromEntries((await Promise.all(textures.map(t => loadTexture(t, texturesDiv))))
         .map(t => [t.id, t]));
 }
+class Camera {
+    static zoom(scaleFactor) {
+        scaleFactor = constrain(scaleFactor, 0.9, 1.1);
+        if (this.zoomLevel * scaleFactor < this.minZoom) {
+            scaleFactor = this.minZoom / this.zoomLevel;
+        }
+        else if (this.zoomLevel * scaleFactor > this.maxZoom) {
+            scaleFactor = this.maxZoom / this.zoomLevel;
+        }
+        if ((this.zoomLevel <= this.minZoom && scaleFactor <= 1) || (this.zoomLevel >= this.maxZoom && scaleFactor >= 1)) {
+            return;
+        }
+        Game.forceRedraw = true;
+        this.zoomLevel *= scaleFactor;
+    }
+    static visibleRect() {
+        return [
+            ...this.unproject(0, 0),
+            this.width / this.zoomLevel,
+            this.height / this.zoomLevel,
+        ];
+    }
+    static isVisible(rect, cullingMargin = 0) {
+        const [x, y, w, h] = this.visibleRect();
+        return Intersector.rectsIntersect(rect, [x - cullingMargin, y - cullingMargin, w + cullingMargin, h + cullingMargin]);
+    }
+    static isPointVisible(point, cullingMargin = 0) {
+        const [x, y, w, h] = this.visibleRect();
+        return Intersector.pointInRect(point, [x - cullingMargin, y - cullingMargin, w + cullingMargin, h + cullingMargin]);
+    }
+    static project(x, y) {
+        return [
+            ((x + this.scrollX) * this.zoomLevel) + this.width / 2,
+            ((y + this.scrollY) * this.zoomLevel) + this.height / 2
+        ];
+    }
+    static unproject(x, y) {
+        return [
+            (x - this.width / 2) / this.zoomLevel - this.scrollX,
+            (y - this.height / 2) / this.zoomLevel - this.scrollY
+        ];
+    }
+}
+Camera.zoomLevel = 1;
+Camera.minZoom = 1;
+Camera.maxZoom = 5;
+Camera.scrollX = 0;
+Camera.scrollY = 0;
+Camera.width = window.innerWidth;
+Camera.height = window.innerHeight;
 class Gfx {
     static layer(k) {
         this.ctx = this.layers[k];
@@ -38,9 +88,9 @@ class Gfx {
     }
     static lineTRect(tileX, tileY, width, height, mode = this.rectMode, _ctx = this.ctx) {
         if (mode == RectMode.CORNER)
-            _ctx.strokeRect((tileX * consts.TILE_SIZE + Game.scroll.x) * consts.DISPLAY_SCALE, (tileY * consts.TILE_SIZE + Game.scroll.y) * consts.DISPLAY_SCALE, width * consts.DISPLAY_SCALE * consts.TILE_SIZE, height * consts.DISPLAY_SCALE * consts.TILE_SIZE);
+            _ctx.strokeRect((tileX * consts.TILE_SIZE + Camera.scrollX) * Camera.zoomLevel + Camera.width / 2, (tileY * consts.TILE_SIZE + Camera.scrollY) * Camera.zoomLevel + Camera.height / 2, width * Camera.zoomLevel * consts.TILE_SIZE, height * Camera.zoomLevel * consts.TILE_SIZE);
         else
-            _ctx.strokeRect(((tileX - 0.5) * consts.TILE_SIZE + Game.scroll.x) * consts.DISPLAY_SCALE, ((tileY - 0.5) * consts.TILE_SIZE + Game.scroll.y) * consts.DISPLAY_SCALE, width * consts.DISPLAY_SCALE * consts.TILE_SIZE, height * consts.DISPLAY_SCALE * consts.TILE_SIZE);
+            _ctx.strokeRect(((tileX - 0.5) * consts.TILE_SIZE + Camera.scrollX) * Camera.zoomLevel + Camera.width / 2, ((tileY - 0.5) * consts.TILE_SIZE + Camera.scrollY) * Camera.zoomLevel + Camera.height / 2, width * Camera.zoomLevel * consts.TILE_SIZE, height * Camera.zoomLevel * consts.TILE_SIZE);
     }
     static lineWidth(width) {
         this.ctx.lineWidth = width;
@@ -75,24 +125,24 @@ class Gfx {
     }
     static pRect(pixelX, pixelY, width, height, mode = this.rectMode, _ctx = this.ctx) {
         if (mode == RectMode.CORNER)
-            _ctx.fillRect(pixelX + (Game.scroll.x * consts.DISPLAY_SCALE), pixelY + (Game.scroll.y * consts.DISPLAY_SCALE), width * consts.DISPLAY_SCALE, height * consts.DISPLAY_SCALE);
+            _ctx.fillRect((pixelX + Camera.scrollX) * Camera.zoomLevel + Camera.width / 2, (pixelY + Camera.scrollY) * Camera.zoomLevel + Camera.height / 2, width * Camera.zoomLevel, height * Camera.zoomLevel);
         else
-            _ctx.fillRect(pixelX + ((Game.scroll.x - width / 2) * consts.DISPLAY_SCALE), pixelY + ((Game.scroll.y - height / 2) * consts.DISPLAY_SCALE), width * consts.DISPLAY_SCALE, height * consts.DISPLAY_SCALE);
+            _ctx.fillRect(pixelX + ((Camera.scrollX - width / 2) * Camera.zoomLevel) + Camera.width / 2, pixelY + ((Camera.scrollY - height / 2) * Camera.zoomLevel) + Camera.height / 2, width * Camera.zoomLevel, height * Camera.zoomLevel);
     }
     static tRect(tileX, tileY, width, height, mode = this.rectMode, _ctx = this.ctx) {
         if (mode == RectMode.CORNER)
-            _ctx.fillRect((tileX * consts.TILE_SIZE + Game.scroll.x) * consts.DISPLAY_SCALE, (tileY * consts.TILE_SIZE + Game.scroll.y) * consts.DISPLAY_SCALE, width * consts.DISPLAY_SCALE * consts.TILE_SIZE, height * consts.DISPLAY_SCALE * consts.TILE_SIZE);
+            _ctx.fillRect((tileX * consts.TILE_SIZE + Camera.scrollX) * Camera.zoomLevel + Camera.width / 2, (tileY * consts.TILE_SIZE + Camera.scrollY) * Camera.zoomLevel + Camera.height / 2, width * Camera.zoomLevel * consts.TILE_SIZE, height * Camera.zoomLevel * consts.TILE_SIZE);
         else
-            _ctx.fillRect(((tileX - 0.5) * consts.TILE_SIZE + Game.scroll.x) * consts.DISPLAY_SCALE, ((tileY - 0.5) * consts.TILE_SIZE + Game.scroll.y) * consts.DISPLAY_SCALE, width * consts.DISPLAY_SCALE * consts.TILE_SIZE, height * consts.DISPLAY_SCALE * consts.TILE_SIZE);
+            _ctx.fillRect(((tileX - 0.5) * consts.TILE_SIZE + Camera.scrollX) * Camera.zoomLevel + Camera.width / 2, ((tileY - 0.5) * consts.TILE_SIZE + Camera.scrollY) * Camera.zoomLevel + Camera.height / 2, width * Camera.zoomLevel * consts.TILE_SIZE, height * Camera.zoomLevel * consts.TILE_SIZE);
     }
     static tImage(texture, tileX, tileY, width = 1, height = 1, _ctx = this.ctx) {
-        _ctx.drawImage(texture.image, (tileX * consts.TILE_SIZE + Game.scroll.x) * consts.DISPLAY_SCALE, (tileY * consts.TILE_SIZE + Game.scroll.y) * consts.DISPLAY_SCALE, width * consts.TILE_SIZE * consts.DISPLAY_SCALE, height * consts.TILE_SIZE * consts.DISPLAY_SCALE);
+        _ctx.drawImage(texture.image, (tileX * consts.TILE_SIZE + Camera.scrollX) * Camera.zoomLevel + Camera.width / 2, (tileY * consts.TILE_SIZE + Camera.scrollY) * Camera.zoomLevel + Camera.height / 2, width * consts.TILE_SIZE * Camera.zoomLevel, height * consts.TILE_SIZE * Camera.zoomLevel);
     }
     static pImage(texture, pixelX, pixelY, width = texture.width, height = texture.height, mode = this.rectMode, _ctx = this.ctx) {
         if (mode == RectMode.CORNER)
-            _ctx.drawImage(texture.image, (pixelX + Game.scroll.x) * consts.DISPLAY_SCALE, (pixelY + Game.scroll.y) * consts.DISPLAY_SCALE, width * consts.DISPLAY_SCALE, height * consts.DISPLAY_SCALE);
+            _ctx.drawImage(texture.image, (pixelX + Camera.scrollX) * Camera.zoomLevel + Camera.width / 2, (pixelY + Camera.scrollY) * Camera.zoomLevel + Camera.height / 2, width * Camera.zoomLevel, height * Camera.zoomLevel);
         else
-            _ctx.drawImage(texture.image, (pixelX - (width / 2) + Game.scroll.x) * consts.DISPLAY_SCALE, (pixelY - (width / 2) + Game.scroll.y) * consts.DISPLAY_SCALE, width * consts.DISPLAY_SCALE, height * consts.DISPLAY_SCALE);
+            _ctx.drawImage(texture.image, (pixelX - (width / 2) + Camera.scrollX) * Camera.zoomLevel + Camera.width / 2, (pixelY - (width / 2) + Camera.scrollY) * Camera.zoomLevel + Camera.height / 2, width * Camera.zoomLevel, height * Camera.zoomLevel);
     }
     static ellipse(x, y, w, h, _ctx = this.ctx) {
         _ctx.beginPath();

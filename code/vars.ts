@@ -122,12 +122,10 @@ const consts = {
 	CHUNK_SIZE: 16,
 	/**Size of a tile in pixels. */
 	TILE_SIZE: 30,
-	DISPLAY_SCALE: 1,
+	/**Size of an item in pixels. */
 	ITEM_SIZE: 16,
-	//todo refactor to graphics
-	get DISPLAY_TILE_SIZE(){
-		return this.TILE_SIZE * this.DISPLAY_SCALE;
-	}
+	/**Margin applied to chunk culling. */
+	cullingMargin: 120,
 };
 
 
@@ -213,11 +211,6 @@ let settings = {
 };
 let Game: {
 	texturesReady: boolean;
-	scroll: {
-		x: number;
-		y: number;
-		speed: number;
-	}//todo refactor to graphics
 	startTime: number;
 	lastSaved: number;
 	forceRedraw: boolean;
@@ -234,11 +227,6 @@ let Game: {
 	animationFrame: number;
 } = {
 	texturesReady: false,
-	scroll: {
-		x: 300,
-		y: 300,
-		speed: 5
-	},
 	startTime: new Date().getTime(),
 	lastSaved: 0,
 	forceRedraw: true,
