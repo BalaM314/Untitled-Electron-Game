@@ -193,7 +193,7 @@ class Button {
 		return Intersector.pointInRect([Input.mouseX, Input.mouseY], [this.x, this.y, this.width, this.height]);
   };
   handleMouseClick(e:MouseEvent){
-		if(this.isMouseInside()) {
+		if(this.isMouseInside() && e.button == 0){
 			this.onClick(e);
 		}
   };

@@ -7,8 +7,10 @@ function registerEventHandlers() {
     };
     clickcapture.onmousedown = (e) => {
         if (e.button)
-            return e.preventDefault();
-        Input.mouseDown = true;
+            e.preventDefault();
+        if (e.button == 0) {
+            Input.mouseDown = true;
+        }
         Input.latestMouseEvent = e;
         canOverwriteBuilding = true;
         if (state[Game.state]) {
@@ -16,7 +18,9 @@ function registerEventHandlers() {
         }
     };
     clickcapture.onmouseup = (e) => {
-        Input.mouseDown = false;
+        if (e.button == 0) {
+            Input.mouseDown = false;
+        }
         Input.latestMouseEvent = e;
         canOverwriteBuilding = true;
     };
@@ -40,28 +44,10 @@ function registerEventHandlers() {
         e.preventDefault();
     };
     window.onkeydown = (e) => {
-        if (!isNaN(parseInt(e.key))) {
-            for (let x of toolbarEl.children) {
-                x.classList.remove("selected");
-            }
-            toolbarEl.children[parseInt(e.key) - 1]?.classList.add("selected");
-        }
-        if (!isNaN(parseInt(e.key[1]))) {
-            for (let x of toolbarEl.children) {
-                x.classList.remove("selected");
-            }
-            toolbarEl.children[parseInt(e.key[1]) + 8]?.classList.add("selected");
-        }
-        if (e.key == "Enter" && Input.lastKeysPressed.join(", ") ==
-            ["ArrowUp", "ArrowUp", "ArrowDown", "ArrowDown", "ArrowLeft", "ArrowRight", "ArrowLeft", "ArrowRight", "b", "a"].join(", ")) {
-            window.open("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
-            for (let [key, value] of Object.entries(level1.resources)) {
-                level1.resources[key] = Infinity;
-            }
-        }
-        if (e.ctrlKey && (e.key.match(/^[w]$/) || e.key.match(/^[ertuni1-9]$/i) || e.key.match(/^f[5]$/i))) {
+        if (e.ctrlKey && (e.key.match(/^[w]$/) || e.key.match(/^[ertuni1-9]$/i)) || e.key.match(/^f[5]$/i)) {
             return;
         }
+        e.preventDefault();
         Input.keysHeld.add(e.key.toLowerCase());
         Input.lastKeysPressed.push(e.key);
         Input.lastKeysPressed.shift();
@@ -70,7 +56,9 @@ function registerEventHandlers() {
                 keybind.check(e);
             }
         }
-        e.preventDefault();
+        if (state[Game.state]) {
+            state[Game.state]?.onkeydown?.(e);
+        }
     };
     window.onkeyup = (e) => {
         Input.keysHeld.delete(e.key.toLowerCase());
@@ -295,10 +283,10 @@ let state = {
             ctxOverlays.textBaseline = "middle";
             ctxOverlays.fillStyle = "#000000";
             ctxOverlays.fillText("Keybinds", innerWidth / 2, innerHeight * 0.2);
-            state["settings.keybinds"].buttons.forEach(button => button.display(ctxOverlays));
+            this.buttons.forEach(button => button.display(ctxOverlays));
         },
         onmousedown: function (e) {
-            state["settings.keybinds"].buttons.forEach(button => button.handleMouseClick(e));
+            this.buttons.forEach(button => button.handleMouseClick(e));
         }
     },
     game: {
@@ -354,7 +342,7 @@ let state = {
         onmousedown(e) {
             if (Game.paused)
                 return;
-            if (e.ctrlKey) {
+            if (e.ctrlKey && e.button == 0) {
                 level1.buildingAtPixel(...(Camera.unproject(e.x, e.y)))?.acceptItem(new Item(...Camera.unproject(e.x, e.y).map(c => Pos.tileToPixel(Pos.pixelToTile(c), true)), "base_null"));
             }
         },
@@ -388,6 +376,27 @@ let state = {
             if (keybinds.placement.break_building.isHeld()) {
                 currentframe.redraw = true;
                 level1.breakBuilding(...Camera.unproject(Input.mouseX, Input.mouseY).map(Pos.pixelToTile));
+            }
+        },
+        onkeydown(e) {
+            if (!isNaN(parseInt(e.key))) {
+                for (let x of toolbarEl.children) {
+                    x.classList.remove("selected");
+                }
+                toolbarEl.children[parseInt(e.key) - 1]?.classList.add("selected");
+            }
+            if (!isNaN(parseInt(e.key[1]))) {
+                for (let x of toolbarEl.children) {
+                    x.classList.remove("selected");
+                }
+                toolbarEl.children[parseInt(e.key[1]) + 8]?.classList.add("selected");
+            }
+            if (e.key == "Enter" && Input.lastKeysPressed.join(", ") ==
+                ["ArrowUp", "ArrowUp", "ArrowDown", "ArrowDown", "ArrowLeft", "ArrowRight", "ArrowLeft", "ArrowRight", "b", "a", "Enter"].join(", ")) {
+                window.open("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
+                for (let [key, value] of Object.entries(level1.resources)) {
+                    level1.resources[key] = Infinity;
+                }
             }
         }
     }

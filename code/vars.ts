@@ -199,7 +199,7 @@ const Input = {
 	mouseDown: false,
 	latestMouseEvent: null as MouseEvent | null,
 	keysHeld: new Set<string>(),
-	lastKeysPressed: new Array<string>(10).fill(""),
+	lastKeysPressed: new Array<string>(11).fill(""),
 };
 let settings = {
 	graphics_mode: 1,

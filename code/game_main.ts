@@ -10,9 +10,11 @@ function registerEventHandlers(){
 	}
 
 	clickcapture.onmousedown = (e:MouseEvent) => {
-		if(e.button) return e.preventDefault();//right click bad
-		//TODO handle this in state, not here
-		Input.mouseDown = true;
+		//The default action is to bring up a context menu or the scroller thing, not desirable
+		if(e.button) e.preventDefault();
+		if(e.button == 0){
+			Input.mouseDown = true;
+		}
 		Input.latestMouseEvent = e;
 		canOverwriteBuilding = true;
 		if(state[Game.state]){
@@ -20,7 +22,9 @@ function registerEventHandlers(){
 		}
 	}
 	clickcapture.onmouseup = (e:MouseEvent) => {
-		Input.mouseDown = false;
+		if(e.button == 0){
+			Input.mouseDown = false;
+		}
 		Input.latestMouseEvent = e;
 		canOverwriteBuilding = true;
 	}
@@ -46,41 +50,18 @@ function registerEventHandlers(){
 	});
 
 	clickcapture.oncontextmenu = (e) => {
-		//right click bad
+		//Prevent the menu from showing
 		e.preventDefault();
 	}
 
 	//Do stuff when a key is pressed(not held).
 	window.onkeydown = (e:KeyboardEvent) => {
 
-		//If you pressed a number or function key, draw a box around the building you selected.
-		if(!isNaN(parseInt(e.key))){
-			for(let x of toolbarEl.children){
-				x.classList.remove("selected");
-			}
-			(toolbarEl.children[parseInt(e.key) - 1] as HTMLElement)?.classList.add("selected");
-		}
-		if(!isNaN(parseInt(e.key[1]))){
-			for(let x of toolbarEl.children){
-				x.classList.remove("selected");
-			}
-			(toolbarEl.children[parseInt(e.key[1]) + 8] as HTMLElement)?.classList.add("selected");
-		}
-
-		//Easter egg
-		if(e.key == "Enter" && Input.lastKeysPressed.join(", ") == 
-			["ArrowUp", "ArrowUp", "ArrowDown", "ArrowDown", "ArrowLeft", "ArrowRight", "ArrowLeft", "ArrowRight", "b", "a"].join(", ")
-			){
-			window.open("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
-			for(let [key, value] of Object.entries(level1.resources)){
-				level1.resources[key] = Infinity;
-			}
-		}
-
-		if(e.ctrlKey && (e.key.match(/^[w]$/) || e.key.match(/^[ertuni1-9]$/i) || e.key.match(/^f[5]$/i) )){
+		if(e.ctrlKey && (e.key.match(/^[w]$/) || e.key.match(/^[ertuni1-9]$/i)) || e.key.match(/^f[5]$/i) ){
 			return;
 			//If you pressed one of these key combos, return
 		}
+		e.preventDefault();
 
 		//Add key to keysHeld
 		Input.keysHeld.add(e.key.toLowerCase());
@@ -97,8 +78,11 @@ function registerEventHandlers(){
 			}
 		}
 
+		if(state[Game.state]){
+			state[Game.state]?.onkeydown?.(e);
+		}
+
 		//Otherwise prevent default
-		e.preventDefault();
 
 	}
 	window.onkeyup = (e:KeyboardEvent) => {
@@ -176,6 +160,7 @@ let state: {
 		display: (currentFrame:CurrentFrame) => void;
 		onmousedown?: (e:MouseEvent) => void;
 		onmouseheld?: (currentFrame:CurrentFrame) => void;
+		onkeydown?: (e:KeyboardEvent) => void;
 		onkeyheld?: (currentFrame:CurrentFrame) => void;
 	}
 } = {
@@ -353,10 +338,10 @@ let state: {
 			ctxOverlays.textBaseline = "middle";
 			ctxOverlays.fillStyle = "#000000";
 			ctxOverlays.fillText("Keybinds", innerWidth / 2, innerHeight * 0.2);
-			state["settings.keybinds"].buttons.forEach(button => button.display(ctxOverlays));
+			this.buttons.forEach(button => button.display(ctxOverlays));
 		},
 		onmousedown: function(e:MouseEvent){
-			state["settings.keybinds"].buttons.forEach(button => button.handleMouseClick(e));
+			this.buttons.forEach(button => button.handleMouseClick(e));
 		}
 	},
 	game: {
@@ -425,7 +410,7 @@ let state: {
 		},
 		onmousedown(e:MouseEvent){
 			if(Game.paused) return;
-			if(e.ctrlKey){
+			if(e.ctrlKey && e.button == 0){
 				level1.buildingAtPixel(
 					...(Camera.unproject(e.x, e.y))
 				)?.acceptItem(new Item(
@@ -468,6 +453,31 @@ let state: {
 				level1.breakBuilding(
 					...(Camera.unproject(Input.mouseX, Input.mouseY).map(Pos.pixelToTile) as [number, number])
 				);
+			}
+		},
+		onkeydown(e){
+			//If you pressed a number or function key, draw a box around the building you selected.
+			if(!isNaN(parseInt(e.key))){
+				for(let x of toolbarEl.children){
+					x.classList.remove("selected");
+				}
+				(toolbarEl.children[parseInt(e.key) - 1] as HTMLElement)?.classList.add("selected");
+			}
+			if(!isNaN(parseInt(e.key[1]))){
+				for(let x of toolbarEl.children){
+					x.classList.remove("selected");
+				}
+				(toolbarEl.children[parseInt(e.key[1]) + 8] as HTMLElement)?.classList.add("selected");
+			}
+
+			//Easter egg
+			if(e.key == "Enter" && Input.lastKeysPressed.join(", ") == 
+				["ArrowUp", "ArrowUp", "ArrowDown", "ArrowDown", "ArrowLeft", "ArrowRight", "ArrowLeft", "ArrowRight", "b", "a", "Enter"].join(", ")
+				){
+				window.open("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
+				for(let [key, value] of Object.entries(level1.resources)){
+					level1.resources[key] = Infinity;
+				}
 			}
 		}
 	}

@@ -157,7 +157,7 @@ class Button {
     }
     ;
     handleMouseClick(e) {
-        if (this.isMouseInside()) {
+        if (this.isMouseInside() && e.button == 0) {
             this.onClick(e);
         }
     }
