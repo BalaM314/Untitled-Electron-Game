@@ -110,11 +110,11 @@ let fps = [0, 0, 0, 0, 0, 0];
 let state = {
     loading: {
         buttons: [],
-        update: function () {
+        update() {
             if (Game.texturesReady)
                 Game.state = "title";
         },
-        display: function (currentFrame) {
+        display(currentFrame) {
             ctxOverlays.clear();
             ctxOverlays.fillStyle = "#0033CC";
             ctxOverlays.fillRect(0, 0, innerWidth, innerHeight);
@@ -161,8 +161,8 @@ let state = {
                 onClick: () => { window.open("https://github.com/BalaM314/Untitled-Electron-Game/wiki/Quickstart-Guide"); }
             }),
         ],
-        update: function () { },
-        display: function (currentFrame) {
+        update() { },
+        display(currentFrame) {
             ctxOverlays.clear();
             ctxOverlays.fillStyle = "#0033CC";
             ctxOverlays.fillRect(0, 0, innerWidth, innerHeight);
@@ -233,8 +233,8 @@ let state = {
                 onClick: () => { Game.state = "title"; localStorage.setItem("settings", JSON.stringify(settings)); }
             }),
         ],
-        update: function () { },
-        display: function (currentFrame) {
+        update() { },
+        display(currentFrame) {
             ctxOverlays.clear();
             ctxOverlays.fillStyle = "#0033CC";
             ctxOverlays.fillRect(0, 0, innerWidth, innerHeight);
@@ -245,7 +245,7 @@ let state = {
             ctxOverlays.fillText("Settings", innerWidth / 2, innerHeight * 0.2);
             state.settings.buttons.forEach(button => button.display(ctxOverlays));
         },
-        onmousedown: function (e) {
+        onmousedown(e) {
             state.settings.buttons.forEach(button => button.handleMouseClick(e));
         }
     },
@@ -273,8 +273,8 @@ let state = {
                 onClick: () => { Game.state = "settings"; }
             }),
         ],
-        update: function () { },
-        display: function (currentFrame) {
+        update() { },
+        display(currentFrame) {
             ctxOverlays.clear();
             ctxOverlays.fillStyle = "#0033CC";
             ctxOverlays.fillRect(0, 0, innerWidth, innerHeight);
@@ -285,13 +285,13 @@ let state = {
             ctxOverlays.fillText("Keybinds", innerWidth / 2, innerHeight * 0.2);
             this.buttons.forEach(button => button.display(ctxOverlays));
         },
-        onmousedown: function (e) {
+        onmousedown(e) {
             this.buttons.forEach(button => button.handleMouseClick(e));
         }
     },
     game: {
         buttons: [],
-        update: function (currentFrame) {
+        update(currentFrame) {
             if (Game.paused)
                 return;
             level1.generateNecessaryChunks();
@@ -303,7 +303,7 @@ let state = {
                 throw new Error(`Error updating world: ${parseError(err)}`);
             }
         },
-        display: function (currentFrame) {
+        display(currentFrame) {
             if (Game.paused) {
                 ctxOverlays.font = "48px sans-serif";
                 ctxOverlays.fillStyle = "#3333CC";
@@ -355,7 +355,7 @@ let state = {
                 level1.buildBuilding(...Camera.unproject(Input.latestMouseEvent.x, Input.latestMouseEvent.y).map(Pos.pixelToTile), placedBuilding.ID);
             }
         },
-        onkeyheld: function (currentframe) {
+        onkeyheld(currentframe) {
             const scrollSpeed = keybinds.move.scroll_faster.isHeld() ? 20 : 5;
             if (keybinds.move.up.isHeld()) {
                 Camera.scrollY += scrollSpeed;

@@ -166,10 +166,10 @@ let state: {
 } = {
 	loading: {
 		buttons: [],
-		update: function(){
+		update(){
 			if(Game.texturesReady) Game.state = "title";
 		},
-		display: function(currentFrame:CurrentFrame){
+		display(currentFrame:CurrentFrame){
 			ctxOverlays.clear();
 			ctxOverlays.fillStyle = "#0033CC";
 			ctxOverlays.fillRect(0, 0, innerWidth, innerHeight);
@@ -216,8 +216,8 @@ let state: {
 				onClick: () => {window.open("https://github.com/BalaM314/Untitled-Electron-Game/wiki/Quickstart-Guide");}
 			}),
 		],
-		update: function(){},
-		display: function(currentFrame:CurrentFrame){
+		update(){},
+		display(currentFrame:CurrentFrame){
 			ctxOverlays.clear();
 			ctxOverlays.fillStyle = "#0033CC";
 			ctxOverlays.fillRect(0, 0, innerWidth, innerHeight);
@@ -288,8 +288,8 @@ let state: {
 				onClick: () => {Game.state = "title"; localStorage.setItem("settings", JSON.stringify(settings));}
 			}),
 		],
-		update: function(){},
-		display: function(currentFrame:CurrentFrame){
+		update(){},
+		display(currentFrame:CurrentFrame){
 			ctxOverlays.clear();
 			ctxOverlays.fillStyle = "#0033CC";
 			ctxOverlays.fillRect(0, 0, innerWidth, innerHeight);
@@ -300,7 +300,7 @@ let state: {
 			ctxOverlays.fillText("Settings", innerWidth / 2, innerHeight * 0.2);
 			state.settings.buttons.forEach(button => button.display(ctxOverlays));
 		},
-		onmousedown: function(e:MouseEvent){
+		onmousedown(e:MouseEvent){
 			state.settings.buttons.forEach(button => button.handleMouseClick(e));
 		}
 	},
@@ -328,8 +328,8 @@ let state: {
 				onClick: () => {Game.state = "settings";}
 			}),
 		],
-		update: function(){},
-		display: function(currentFrame:CurrentFrame){
+		update(){},
+		display(currentFrame:CurrentFrame){
 			ctxOverlays.clear();
 			ctxOverlays.fillStyle = "#0033CC";
 			ctxOverlays.fillRect(0, 0, innerWidth, innerHeight);
@@ -340,13 +340,13 @@ let state: {
 			ctxOverlays.fillText("Keybinds", innerWidth / 2, innerHeight * 0.2);
 			this.buttons.forEach(button => button.display(ctxOverlays));
 		},
-		onmousedown: function(e:MouseEvent){
+		onmousedown(e:MouseEvent){
 			this.buttons.forEach(button => button.handleMouseClick(e));
 		}
 	},
 	game: {
 		buttons: [],
-		update: function(currentFrame:CurrentFrame){
+		update(currentFrame:CurrentFrame){
 			if(Game.paused) return;
 			level1.generateNecessaryChunks();
 			try {
@@ -356,7 +356,7 @@ let state: {
 				throw new Error(`Error updating world: ${parseError(err)}`);
 			}			
 		},
-		display: function(currentFrame:CurrentFrame){
+		display(currentFrame:CurrentFrame){
 			//display
 
 			if(Game.paused){
@@ -430,7 +430,7 @@ let state: {
 			}
 		},
 		//Unlike the onkeydown function, this one needs to run based on keys being held.
-		onkeyheld: function(currentframe:CurrentFrame){
+		onkeyheld(currentframe:CurrentFrame){
 			const scrollSpeed = keybinds.move.scroll_faster.isHeld() ? 20 : 5;
 			if(keybinds.move.up.isHeld()){
 				Camera.scrollY += scrollSpeed;
