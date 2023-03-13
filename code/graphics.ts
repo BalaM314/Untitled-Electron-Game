@@ -70,11 +70,11 @@ class Camera {
 	}
 	static isVisible(rect:Rect, cullingMargin:number = 0){
 		const [x, y, w, h] = this.visibleRect();
-		return Intersector.rectsIntersect(rect, [x - cullingMargin, y - cullingMargin, w + cullingMargin, h + cullingMargin]);
+		return Intersector.rectsIntersect(rect, [x - cullingMargin, y - cullingMargin, w + cullingMargin * 2, h + cullingMargin * 2]);
 	}
 	static isPointVisible(point:[x:number, y:number], cullingMargin:number = 0){
 		const [x, y, w, h] = this.visibleRect();
-		return Intersector.pointInRect(point, [x - cullingMargin, y - cullingMargin, w + cullingMargin, h + cullingMargin]);
+		return Intersector.pointInRect(point, [x - cullingMargin, y - cullingMargin, w + cullingMargin * 2, h + cullingMargin * 2]);
 	}
 	/**Converts world coordinates to screen coordinates, where [0,0] is at the top left. */
 	static project(x:number, y:number):[x:number, y:number]{

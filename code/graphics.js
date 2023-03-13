@@ -49,11 +49,11 @@ class Camera {
     }
     static isVisible(rect, cullingMargin = 0) {
         const [x, y, w, h] = this.visibleRect();
-        return Intersector.rectsIntersect(rect, [x - cullingMargin, y - cullingMargin, w + cullingMargin, h + cullingMargin]);
+        return Intersector.rectsIntersect(rect, [x - cullingMargin, y - cullingMargin, w + cullingMargin * 2, h + cullingMargin * 2]);
     }
     static isPointVisible(point, cullingMargin = 0) {
         const [x, y, w, h] = this.visibleRect();
-        return Intersector.pointInRect(point, [x - cullingMargin, y - cullingMargin, w + cullingMargin, h + cullingMargin]);
+        return Intersector.pointInRect(point, [x - cullingMargin, y - cullingMargin, w + cullingMargin * 2, h + cullingMargin * 2]);
     }
     static project(x, y) {
         return [
