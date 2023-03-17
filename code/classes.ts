@@ -405,25 +405,10 @@ class Chunk {
 					} else buildingData = _buildingData as BuildingData;
 					let tempBuilding:Building;
 					try {
-						tempBuilding = new (Buildings.get(buildingData.id))(
-							parseInt(x) + (consts.CHUNK_SIZE * this.x),
-							parseInt(y) + (consts.CHUNK_SIZE * this.y),
-							buildingData.meta, this.parent
-						);
+						tempBuilding = Buildings.get(buildingData.id).read(buildingData, this.parent);
 					} catch(err){
 						console.error(err);
 						throw new Error(`Failed to import building id ${stringifyMeta(buildingData.id, buildingData.meta)} at position ${x},${y} in chunk ${this.x},${this.y}. See console for more details.`);
-					}
-					if(buildingData.item){
-						//If the building has an item, spawn it in.
-						tempBuilding.item = new Item(buildingData.item.x, buildingData.item.y, buildingData.item.id);
-					}
-					if(buildingData.inv && tempBuilding instanceof StorageBuilding){
-						//If the building has an inventory, spawn in the items.
-						for(let itemData of buildingData.inv){
-							let tempItem = new Item(itemData.x, itemData.y, itemData.id);
-							tempBuilding.inventory.push(tempItem);
-						}
 					}
 					this.layers[1][y][x] = tempBuilding;
 				}
@@ -726,6 +711,9 @@ class Item {
 			y: this.pos.pixelY,
 		};
 	}
+	static read(data:ItemData){
+		return new this(data.x, data.y, data.id);
+	}
 }
 
 class Building {
@@ -840,9 +828,13 @@ class Building {
 			y: this.pos.tileY,
 			id: this.block.id,
 			meta: this.meta,
-			item: this.item?.export() ?? null,
-			inv: []
+			item: this.item?.export() ?? null
 		};
+	}
+	static read(buildingData:BuildingData, level:Level):Building {
+		const build = new this(buildingData.x, buildingData.y, buildingData.meta, level);
+		if(buildingData.item) build.item = Item.read(buildingData.item);
+		return build;
 	}
 }
 
@@ -1418,6 +1410,15 @@ class StorageBuilding extends Building {
 			item: null,
 			inv: inv
 		};
+	}
+	static read(buildingData:BuildingData, level:Level){
+		const build = super.read(buildingData, level) as StorageBuilding;
+		if(buildingData.inv){
+			for(const itemData of buildingData.inv){
+				build.inventory.push(Item.read(itemData));
+			}
+		}
+		return build;
 	}
 }
 

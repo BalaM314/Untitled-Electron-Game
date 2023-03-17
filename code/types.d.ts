@@ -133,7 +133,7 @@ interface BuildingData {
 	id: RawBuildingID;
 	meta: BuildingMeta;
 	item: ItemData | null;
-	inv: ItemData[];
+	inv?: ItemData[];
 }
 
 interface ItemData {
