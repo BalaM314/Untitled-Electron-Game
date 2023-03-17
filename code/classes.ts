@@ -1375,13 +1375,12 @@ class Extractor extends OverlayBuild {
 	acceptItem(item:Item){ return false; }
 }
 
-interface StorageInventory extends Array<Item> {
-	MAX_LENGTH: number;
-}
 class StorageBuilding extends Building {
-	inventory: StorageInventory = Object.assign([], { MAX_LENGTH: 64 });
+	inventory:Item[] = [];
+	static capacity:number = 64;
+	block!:typeof StorageBuilding;
 	hasItem(){
-		if(this.inventory && this.inventory?.length != 0) return this.inventory[0];
+		if(this.inventory.length != 0) return this.inventory[0];
 		return super.hasItem();
 	}
 	removeItem(){
@@ -1391,7 +1390,7 @@ class StorageBuilding extends Building {
 		return super.removeItem();
 	}
 	acceptItem(item:Item) {
-		if(this.inventory.length < this.inventory.MAX_LENGTH){
+		if(this.inventory.length < this.block.capacity){
 			this.inventory.push(item);
 			return true;
 		} else return false;
@@ -1409,7 +1408,7 @@ class StorageBuilding extends Building {
 			y: this.pos.tileY,
 			id: this.block.id,
 			meta: this.meta,
-			item: this.item?.export() ?? null,
+			item: null,
 			inv: inv
 		};
 	}

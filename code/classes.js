@@ -1285,10 +1285,10 @@ Extractor.speed = 1;
 class StorageBuilding extends Building {
     constructor() {
         super(...arguments);
-        this.inventory = Object.assign([], { MAX_LENGTH: 64 });
+        this.inventory = [];
     }
     hasItem() {
-        if (this.inventory && this.inventory?.length != 0)
+        if (this.inventory.length != 0)
             return this.inventory[0];
         return super.hasItem();
     }
@@ -1299,7 +1299,7 @@ class StorageBuilding extends Building {
         return super.removeItem();
     }
     acceptItem(item) {
-        if (this.inventory.length < this.inventory.MAX_LENGTH) {
+        if (this.inventory.length < this.block.capacity) {
             this.inventory.push(item);
             return true;
         }
@@ -1320,11 +1320,12 @@ class StorageBuilding extends Building {
             y: this.pos.tileY,
             id: this.block.id,
             meta: this.meta,
-            item: this.item?.export() ?? null,
+            item: null,
             inv: inv
         };
     }
 }
+StorageBuilding.capacity = 64;
 class ResourceAcceptor extends Building {
     acceptItem(item) {
         var _a, _b;
