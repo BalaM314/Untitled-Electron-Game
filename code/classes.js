@@ -682,35 +682,16 @@ class Building {
         return true;
     }
     buildAt(direction) {
-        switch (direction) {
-            case Direction.right: return this.level.buildingAtTile(this.pos.tileX + 1, this.pos.tileY);
-            case Direction.down: return this.level.buildingAtTile(this.pos.tileX, this.pos.tileY + 1);
-            case Direction.left: return this.level.buildingAtTile(this.pos.tileX - 1, this.pos.tileY);
-            case Direction.up: return this.level.buildingAtTile(this.pos.tileX, this.pos.tileY - 1);
-            default: never();
-        }
+        return this.level.buildingAtTile(this.pos.tileX + direction.vec[0], this.pos.tileY + direction.vec[1]);
     }
     spawnItem(id) {
-        id ?? (id = "base_null");
-        if (this.block.canOutputTo(this.buildAt(Direction.right)) &&
-            this.buildAt(Direction.right).acceptItem(new Item((this.pos.tileX + 1.1) * consts.TILE_SIZE, (this.pos.tileY + 0.5) * consts.TILE_SIZE, id), Direction.left)) {
-            return true;
+        for (const direction of Object.values(Direction)) {
+            const build = this.buildAt(direction);
+            if (build && this.block.canOutputTo(build) &&
+                this.outputsItemToSide(direction) && build.acceptItem(new Item((this.pos.tileX + 0.5 + direction.vec[0] * 0.6) * consts.TILE_SIZE, (this.pos.tileY + 0.5 + direction.vec[1] * 0.6) * consts.TILE_SIZE, id), direction.opposite))
+                return true;
         }
-        else if (this.block.canOutputTo(this.buildAt(Direction.down)) &&
-            this.buildAt(Direction.down).acceptItem(new Item((this.pos.tileX + 0.5) * consts.TILE_SIZE, (this.pos.tileY + 1.1) * consts.TILE_SIZE, id), Direction.up)) {
-            return true;
-        }
-        else if (this.block.canOutputTo(this.buildAt(Direction.left)) &&
-            this.buildAt(Direction.left).acceptItem(new Item((this.pos.tileX - 0.1) * consts.TILE_SIZE, (this.pos.tileY + 0.5) * consts.TILE_SIZE, id), Direction.right)) {
-            return true;
-        }
-        else if (this.block.canOutputTo(this.buildAt(Direction.up)) &&
-            this.buildAt(Direction.up).acceptItem(new Item((this.pos.tileX + 0.5) * consts.TILE_SIZE, (this.pos.tileY - 0.1) * consts.TILE_SIZE, id), Direction.down)) {
-            return true;
-        }
-        else {
-            return false;
-        }
+        return false;
     }
     acceptItem(item, side) {
         if (this.item === null && (side == null || this.acceptsItemFromSide(side))) {

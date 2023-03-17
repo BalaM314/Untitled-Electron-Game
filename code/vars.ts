@@ -77,15 +77,16 @@ type Direction = {
 	num: number;
 	opposite: Direction;
 	string: string;
+	vec: [x:number, y:number];
 }
 //I miss java enums
 const Direction: {
 	[P in "right" | "down" | "left" | "up"]: Direction;
 } = (() => {
-	let right:any = { num: 0, string: "right"};
-	let down:any = { num: 1, string: "down"};
-	let left:any = { num: 2, string: "left"};
-	let up:any = { num: 3, string: "up"};
+	let right:any = { num: 0, string: "right", vec: [1, 0]};
+	let down:any = { num: 1, string: "down", vec: [0, 1]};
+	let left:any = { num: 2, string: "left", vec: [-1, 0]};
+	let up:any = { num: 3, string: "up", vec: [0, -1]};
 	right.opposite = left;
 	left.oppsite = right;
 	down.opposite = up;

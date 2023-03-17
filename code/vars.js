@@ -45,10 +45,10 @@ const names = {
     }
 };
 const Direction = (() => {
-    let right = { num: 0, string: "right" };
-    let down = { num: 1, string: "down" };
-    let left = { num: 2, string: "left" };
-    let up = { num: 3, string: "up" };
+    let right = { num: 0, string: "right", vec: [1, 0] };
+    let down = { num: 1, string: "down", vec: [0, 1] };
+    let left = { num: 2, string: "left", vec: [-1, 0] };
+    let up = { num: 3, string: "up", vec: [0, -1] };
     right.opposite = left;
     left.oppsite = right;
     down.opposite = up;
