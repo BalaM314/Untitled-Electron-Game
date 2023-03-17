@@ -81,6 +81,7 @@ const consts = {
     TILE_SIZE: 30,
     ITEM_SIZE: 16,
     chunkCullingMargin: 120,
+    ups: 60,
 };
 const keybinds = extend()({
     move: {

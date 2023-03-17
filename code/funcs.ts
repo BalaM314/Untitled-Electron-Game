@@ -440,6 +440,10 @@ function extend<Struct>() {
 	return <T extends Struct>(data:T) => data;
 }
 
+function never():never {
+	throw new Error(`Unreachable code was reached!`);
+}
+
 function makeRebindButton(y:number, buttonID: [string, string], buttonName:string, defaultKey: string){
 	const keybind = (<any>keybinds)[buttonID[0]]?.[buttonID[1]] as Keybind | null;
 	if(!keybind) throw new Error(`Invalid rebind button ${buttonID[0]}.${buttonID[1]}`);

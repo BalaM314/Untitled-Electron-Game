@@ -126,6 +126,8 @@ const consts = {
 	ITEM_SIZE: 16,
 	/**Margin applied to chunk culling. */
 	chunkCullingMargin: 120,
+	/**Updates per second. */
+	ups: 60,
 };
 
 

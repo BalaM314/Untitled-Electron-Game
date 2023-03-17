@@ -372,6 +372,9 @@ function is(input) {
 function extend() {
     return (data) => data;
 }
+function never() {
+    throw new Error(`Unreachable code was reached!`);
+}
 function makeRebindButton(y, buttonID, buttonName, defaultKey) {
     const keybind = keybinds[buttonID[0]]?.[buttonID[1]];
     if (!keybind)

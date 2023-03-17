@@ -640,8 +640,8 @@ class Chunk {
 			Gfx.strokeColor("#000000");
 			Gfx.lineWidth(1);
 			Gfx.layer("tile");
-			for(let y = 0; y < this.layers[0].length; y ++){
-				for(let x = 0; x < this.layers[0][y].length; x ++){
+			for(let y = 0; y < consts.CHUNK_SIZE; y ++){
+				for(let x = 0; x < consts.CHUNK_SIZE; x ++){
 					currentframe.tps ++;
 					let tileX = (this.x * consts.CHUNK_SIZE) + x;
 					let tileY = (this.y * consts.CHUNK_SIZE) + y;
@@ -743,12 +743,11 @@ class Building {
 	static immutable = false;
 	static isOverlay = false;
 	static displaysItem = false;
-	static outputsOnlyToConveyors = true;
 
 	item: Item | null = null;
 	pos:Pos;
 	block = this.constructor as typeof Building;
-	constructor(x:number, y:number, public meta:BuildingMeta, public level:Level){
+	constructor(x:number, y:number, public readonly meta:BuildingMeta, public level:Level){
 		this.pos = Pos.fromTileCoords(x, y, false);
 	}
 	static changeMeta(meta:BuildingMeta, tileX:number, tileY:number, level:Level):BuildingMeta {
@@ -1432,10 +1431,10 @@ class StorageBuilding extends Building {
 		return super.removeItem();
 	}
 	acceptItem(item:Item) {
-		if(this.inventory?.length < this.inventory?.MAX_LENGTH){
+		if(this.inventory.length < this.inventory.MAX_LENGTH){
 			this.inventory.push(item);
 			return true;
-		} else return super.acceptItem(item);
+		} else return false;
 	}
 	export():BuildingData {
 		let inv:ItemData[] = [];
