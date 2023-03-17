@@ -673,6 +673,9 @@ class Building {
     buildAt(direction) {
         return this.level.buildingAtTile(this.pos.tileX + direction.vec[0], this.pos.tileY + direction.vec[1]);
     }
+    buildAtOffset(offset) {
+        return this.level.buildingAtTile(this.pos.tileX + offset[0], this.pos.tileY + offset[1]);
+    }
     spawnItem(id) {
         for (const direction of Object.values(Direction)) {
             const build = this.buildAt(direction);
@@ -950,7 +953,7 @@ class Conveyor extends Building {
     update() {
         if (this.item instanceof Item) {
             if (this.item.pos.tileX != this.pos.tileX || this.item.pos.tileY != this.pos.tileY) {
-                let building = this.level.buildingAtPos(this.item.pos);
+                let building = this.buildAt(this.outputSide);
                 if (!building)
                     return;
                 if (building.acceptItem(this.item, this.outputSide.opposite)) {
@@ -1132,6 +1135,10 @@ class OverlayBuild extends Building {
 }
 OverlayBuild.isOverlay = true;
 class Extractor extends OverlayBuild {
+    constructor() {
+        super(...arguments);
+        this.outputOffset = this.block.getOutputTile(this.meta);
+    }
     static textureSize(meta) {
         switch (meta) {
             case 0: return [[2, 1], [0, 0]];
@@ -1152,21 +1159,35 @@ class Extractor extends OverlayBuild {
     static getID(type, direction, modifier) {
         return [type, (modifier * 4) + direction.num];
     }
+    static getOutputTile(meta) {
+        switch (meta) {
+            case 0: return [1, 0];
+            case 1: return [0, 1];
+            case 2: return [-1, 0];
+            case 3: return [0, -1];
+            case 4: return [2, 0];
+            case 5: return [0, 2];
+            case 6: return [-2, 0];
+            case 7: return [0, -2];
+            case 8: return [2, 0];
+            case 9: return [0, 2];
+            case 10: return [-2, 0];
+            case 11: return [0, -2];
+            default: throw new Error(`Invalid meta ${meta}`);
+        }
+    }
     grabItemFromTile(filter = item => item instanceof Item) {
         if (this.buildingUnder() instanceof Building &&
             this.buildingUnder().hasItem() &&
             filter(this.buildingUnder().hasItem())) {
-            let item = this.level.buildingAtPos(this.pos).removeItem();
-            if (!(item instanceof Item))
-                throw new ShouldNotBePossibleError("received invalid item");
-            this.item = item;
+            this.item = this.buildingUnder().removeItem();
             this.item.pos.pixelX = this.pos.pixelXCenteredInTile;
             this.item.pos.pixelY = this.pos.pixelYCenteredInTile;
         }
     }
     dropItem() {
         if (this.item instanceof Item) {
-            if (this.level.buildingAtPos(this.item.pos)?.acceptItem(this.item, null)) {
+            if (this.buildAtOffset(this.outputOffset)?.acceptItem(this.item, null)) {
                 this.item = null;
             }
         }

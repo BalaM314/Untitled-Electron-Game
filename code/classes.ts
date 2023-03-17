@@ -808,6 +808,9 @@ class Building {
 	buildAt(direction:Direction):Building | null {
 		return this.level.buildingAtTile(this.pos.tileX + direction.vec[0], this.pos.tileY + direction.vec[1]);
 	}
+	buildAtOffset(offset:[x:number, y:number]):Building | null {
+		return this.level.buildingAtTile(this.pos.tileX + offset[0], this.pos.tileY + offset[1]);
+	}
 	spawnItem(id:ItemID){
 		for(const direction of Object.values(Direction)){
 			const build = this.buildAt(direction);
@@ -1062,7 +1065,7 @@ class Conveyor extends Building {
 	update(){
 		if(this.item instanceof Item){
 			if(this.item.pos.tileX != this.pos.tileX || this.item.pos.tileY != this.pos.tileY){
-				let building = this.level.buildingAtPos(this.item.pos);
+				let building = this.buildAt(this.outputSide);
 				if(!building) return;
 				if(building.acceptItem(this.item, this.outputSide.opposite)){
 					this.item = null;
@@ -1247,7 +1250,7 @@ class Extractor extends OverlayBuild {
 	static displaysItem = true;
 	static speed = 1;
 	block!:typeof Extractor;
-	
+	outputOffset: [x:number, y:number] = this.block.getOutputTile(this.meta)
 	static textureSize(meta:BuildingMeta){
 		switch(meta){
 			case 0: return [[2, 1], [0, 0]] as [size:[number, number], offset:[number, number]];
@@ -1268,6 +1271,23 @@ class Extractor extends OverlayBuild {
 	static getID(type:RawBuildingID, direction:Direction, modifier:number):BuildingIDWithMeta {
 		return [type, (modifier * 4) + direction.num] as BuildingIDWithMeta;
 	}
+	static getOutputTile(meta:BuildingMeta):[x:number, y:number] {
+		switch(meta){
+			case 0: return [1, 0];
+			case 1: return [0, 1];
+			case 2: return [-1, 0];
+			case 3: return [0, -1];
+			case 4: return [2, 0];
+			case 5: return [0, 2];
+			case 6: return [-2, 0];
+			case 7: return [0, -2];
+			case 8: return [2, 0];
+			case 9: return [0, 2];
+			case 10: return [-2, 0];
+			case 11: return [0, -2];
+			default: throw new Error(`Invalid meta ${meta}`);
+		}
+	}
 
 	grabItemFromTile(filter:(item:Item) => boolean = item => item instanceof Item){
 
@@ -1276,9 +1296,7 @@ class Extractor extends OverlayBuild {
 			this.buildingUnder()!.hasItem() &&
 			filter(this.buildingUnder()!.hasItem()!)
 		){
-			let item = this.level.buildingAtPos(this.pos)!.removeItem();
-			if(!(item instanceof Item)) throw new ShouldNotBePossibleError("received invalid item");
-			this.item = item;
+			this.item = this.buildingUnder()!.removeItem()!;
 			this.item.pos.pixelX = this.pos.pixelXCenteredInTile;
 			this.item.pos.pixelY = this.pos.pixelYCenteredInTile;
 		}
@@ -1287,7 +1305,7 @@ class Extractor extends OverlayBuild {
 
 	dropItem(){
 		if(this.item instanceof Item){
-			if(this.level.buildingAtPos(this.item.pos)?.acceptItem(this.item, null)){
+			if(this.buildAtOffset(this.outputOffset)?.acceptItem(this.item, null)){
 				this.item = null;
 			}
 		} else {
