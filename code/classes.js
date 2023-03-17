@@ -326,12 +326,10 @@ class Chunk {
                     }
                     if (buildingData.item) {
                         tempBuilding.item = new Item(buildingData.item.x, buildingData.item.y, buildingData.item.id);
-                        tempBuilding.item.grabbedBy = tempBuilding;
                     }
                     if (buildingData.inv && tempBuilding instanceof StorageBuilding) {
                         for (let itemData of buildingData.inv) {
                             let tempItem = new Item(itemData.x, itemData.y, itemData.id);
-                            tempItem.grabbedBy = tempBuilding;
                             tempBuilding.inventory.push(tempItem);
                         }
                     }
@@ -360,7 +358,6 @@ class Chunk {
                     let tempBuilding = new (Buildings.get(buildingData.id))(parseInt(x) + (consts.CHUNK_SIZE * this.x), parseInt(y) + (consts.CHUNK_SIZE * this.y), buildingData.meta, this.parent);
                     if (buildingData.item && +data.version.split(" ")[1].replaceAll(".", "") >= 130) {
                         tempBuilding.item = new Item(buildingData.item.x, buildingData.item.y, buildingData.item.id);
-                        tempBuilding.item.grabbedBy = tempBuilding;
                     }
                     this.layers[2][y][x] = tempBuilding;
                 }
@@ -593,8 +590,6 @@ class Chunk {
 class Item {
     constructor(x, y, id) {
         this.id = id;
-        this.grabbedBy = null;
-        this.deleted = false;
         this.pos = Pos.fromPixelCoords(x, y);
     }
     update(currentframe) {
@@ -607,13 +602,10 @@ class Item {
         }
     }
     export() {
-        if (this.deleted || !this.grabbedBy)
-            return null;
         return {
             id: this.id,
             x: this.pos.pixelX,
             y: this.pos.pixelY,
-            grabbedBy: { x: this.grabbedBy.pos.tileX, y: this.grabbedBy.pos.tileY },
         };
     }
 }
@@ -641,9 +633,6 @@ class Building {
         return building instanceof Conveyor;
     }
     break() {
-        if (this.item) {
-            this.item.grabbedBy = null;
-        }
         if (this.block.isOverlay)
             this.level.writeOverlayBuild(this.pos.tileX, this.pos.tileY, null);
         else
@@ -696,7 +685,6 @@ class Building {
     acceptItem(item, side) {
         if (this.item === null && (side == null || this.acceptsItemFromSide(side))) {
             this.item = item;
-            item.grabbedBy = this;
             return true;
         }
         else {
@@ -736,7 +724,6 @@ class BuildingWithRecipe extends Building {
                         continue;
                     if (!this.items.map(item => recipe.inputs.includes(item.id)).includes(false) && recipe.inputs.includes(item.id)) {
                         this.items[i] = item;
-                        item.grabbedBy = this;
                         if (recipe.inputs.length == i + 1) {
                             this.setRecipe(recipe);
                         }
@@ -1172,12 +1159,9 @@ class Extractor extends OverlayBuild {
             let item = this.level.buildingAtPos(this.pos).removeItem();
             if (!(item instanceof Item))
                 throw new ShouldNotBePossibleError("received invalid item");
-            if (item.deleted)
-                throw new ShouldNotBePossibleError("received deleted item");
             this.item = item;
             this.item.pos.pixelX = this.pos.pixelXCenteredInTile;
             this.item.pos.pixelY = this.pos.pixelYCenteredInTile;
-            item.grabbedBy = this;
         }
     }
     dropItem() {
@@ -1193,11 +1177,6 @@ class Extractor extends OverlayBuild {
     }
     update() {
         if (this.item instanceof Item) {
-            if (this.item.grabbedBy != this || this.item.deleted) {
-                console.error(this.item);
-                console.error(this);
-                throw new InvalidStateError("Item somehow grabbed or deleted from an extractor.");
-            }
             switch (this.meta) {
                 case 0x00:
                     if (this.item.pos.tileXExact >= this.pos.tileX + 1.5)
@@ -1287,14 +1266,6 @@ class StorageBuilding extends Building {
         super(...arguments);
         this.inventory = Object.assign([], { MAX_LENGTH: 64 });
     }
-    break() {
-        if (this.inventory) {
-            for (let item of this.inventory) {
-                item.grabbedBy = null;
-            }
-        }
-        super.break();
-    }
     hasItem() {
         if (this.inventory && this.inventory?.length != 0)
             return this.inventory[0];
@@ -1336,8 +1307,6 @@ class StorageBuilding extends Building {
 class ResourceAcceptor extends Building {
     acceptItem(item) {
         var _a, _b;
-        item.deleted = true;
-        item.grabbedBy = null;
         (_a = this.level.resources)[_b = item.id] ?? (_a[_b] = 0);
         this.level.resources[item.id]++;
         return true;

@@ -417,13 +417,11 @@ class Chunk {
 					if(buildingData.item){
 						//If the building has an item, spawn it in.
 						tempBuilding.item = new Item(buildingData.item.x, buildingData.item.y, buildingData.item.id);
-						tempBuilding.item.grabbedBy = tempBuilding;
 					}
 					if(buildingData.inv && tempBuilding instanceof StorageBuilding){
 						//If the building has an inventory, spawn in the items.
 						for(let itemData of buildingData.inv){
 							let tempItem = new Item(itemData.x, itemData.y, itemData.id);
-							tempItem.grabbedBy = tempBuilding;
 							tempBuilding.inventory.push(tempItem);
 						}
 					}
@@ -457,7 +455,6 @@ class Chunk {
 					if(buildingData.item && +data.version.split(" ")[1].replaceAll(".", "") >= 130){
 						//AAAAAAAAAAAAAAaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaAAA
 						tempBuilding.item = new Item(buildingData.item.x, buildingData.item.y, buildingData.item.id);
-						tempBuilding.item.grabbedBy = tempBuilding;
 					}
 					this.layers[2][y][x] = tempBuilding;
 				}
@@ -708,8 +705,6 @@ class Chunk {
 }
 
 class Item {
-	grabbedBy: Building | null = null;
-	deleted: boolean = false;
 	pos: Pos;
 	constructor(x:number, y:number, public id:ItemID){
 		this.pos = Pos.fromPixelCoords(x, y);
@@ -725,12 +720,10 @@ class Item {
 		}
 	}
 	export():ItemData | null {
-		if(this.deleted || !this.grabbedBy) return null;
 		return {
 			id: this.id,
 			x: this.pos.pixelX,
 			y: this.pos.pixelY,
-			grabbedBy: {x: this.grabbedBy.pos.tileX, y: this.grabbedBy.pos.tileY},
 		};
 	}
 }
@@ -769,9 +762,6 @@ class Building {
 	}
 	/**Called to destroy the building. Should remove all references to it. */
 	break(){
-		if(this.item){
-			this.item.grabbedBy = null;
-		}
 		if(this.block.isOverlay) this.level.writeOverlayBuild(this.pos.tileX, this.pos.tileY, null);
 		else this.level.writeBuilding(this.pos.tileX, this.pos.tileY, null);
 	}
@@ -835,7 +825,6 @@ class Building {
 	acceptItem(item:Item, side:Direction | null):boolean {
 		if(this.item === null && (side == null || this.acceptsItemFromSide(side))){
 			this.item = item;
-			item.grabbedBy = this;
 			return true;
 		} else {
 			return false;
@@ -878,7 +867,6 @@ class BuildingWithRecipe extends Building {
 					if(!this.items.map(item => recipe.inputs!.includes(item.id)).includes(false) && recipe.inputs.includes(item.id)){
 						//if all of the current items are inputs of the recipe and the item is an input of the recipe
 						this.items[i] = item;
-						item.grabbedBy = this;
 						if(recipe.inputs.length == i + 1){
 							this.setRecipe(recipe);
 						}
@@ -1290,11 +1278,9 @@ class Extractor extends OverlayBuild {
 		){
 			let item = this.level.buildingAtPos(this.pos)!.removeItem();
 			if(!(item instanceof Item)) throw new ShouldNotBePossibleError("received invalid item");
-			if(item.deleted) throw new ShouldNotBePossibleError("received deleted item");
 			this.item = item;
 			this.item.pos.pixelX = this.pos.pixelXCenteredInTile;
 			this.item.pos.pixelY = this.pos.pixelYCenteredInTile;
-			item.grabbedBy = this;
 		}
 
 	}
@@ -1312,12 +1298,6 @@ class Extractor extends OverlayBuild {
 
 	update(){
 		if(this.item instanceof Item){
-			if(this.item.grabbedBy != this || this.item.deleted){
-				console.error(this.item);
-				console.error(this);
-				throw new InvalidStateError("Item somehow grabbed or deleted from an extractor.");
-			}
-
 			switch(this.meta){
 				case 0x00:
 					if(this.item.pos.tileXExact >= this.pos.tileX + 1.5) return this.dropItem();
@@ -1382,14 +1362,6 @@ interface StorageInventory extends Array<Item> {
 }
 class StorageBuilding extends Building {
 	inventory: StorageInventory = Object.assign([], { MAX_LENGTH: 64 });
-	break(){
-		if(this.inventory){
-			for(let item of this.inventory){
-				item.grabbedBy = null;
-			}
-		}
-		super.break();
-	}
 	hasItem(){
 		if(this.inventory && this.inventory?.length != 0) return this.inventory[0];
 		return super.hasItem();
@@ -1429,8 +1401,6 @@ class StorageBuilding extends Building {
 class ResourceAcceptor extends Building {
 	static immutable = true;
 	acceptItem(item:Item){
-		item.deleted = true;
-		item.grabbedBy = null;
 		this.level.resources[item.id] ??= 0;
 		this.level.resources[item.id] ++;
 		return true;

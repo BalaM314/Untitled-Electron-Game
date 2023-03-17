@@ -142,7 +142,6 @@ interface ItemData {
 	x: number;
 	y: number;
 	id: ItemID;
-	grabbedBy: {x: number; y: number;}
 }
 
 declare let noise: {
