@@ -73,10 +73,25 @@ type ItemID =
 	"base_motor"
 ;
 
-
-enum Direction {
-	right, down, left, up
+type Direction = {
+	num: number;
+	opposite: Direction;
+	string: string;
 }
+//I miss java enums
+const Direction: {
+	[P in "right" | "down" | "left" | "up"]: Direction;
+} = (() => {
+	let right:any = { num: 0, string: "right"};
+	let down:any = { num: 1, string: "down"};
+	let left:any = { num: 2, string: "left"};
+	let up:any = { num: 3, string: "up"};
+	right.opposite = left;
+	left.oppsite = right;
+	down.opposite = up;
+	up.opposite = down;
+	return {right, down, left, up};
+})();
 
 enum triggerType {
 	placeBuilding,

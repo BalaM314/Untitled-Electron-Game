@@ -355,7 +355,7 @@ let state = {
             if (Game.paused)
                 return;
             if (e.ctrlKey && e.button == 0) {
-                level1.buildingAtPixel(...(Camera.unproject(e.x, e.y)))?.acceptItem(new Item(...Camera.unproject(e.x, e.y).map(c => Pos.tileToPixel(Pos.pixelToTile(c), true)), "base_null"));
+                level1.buildingAtPixel(...(Camera.unproject(e.x, e.y)))?.acceptItem(new Item(...Camera.unproject(e.x, e.y).map(c => Pos.tileToPixel(Pos.pixelToTile(c), true)), "base_null"), null);
             }
         },
         onmouseheld() {

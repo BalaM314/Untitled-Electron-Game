@@ -815,45 +815,46 @@ class Building {
 	outputsItemToSide(side:Direction):boolean {
 		return true;
 	}
-	buildAt(direction:Direction){
+	buildAt(direction:Direction):Building | null {
 		switch(direction){
 			case Direction.right: return this.level.buildingAtTile(this.pos.tileX + 1, this.pos.tileY);
 			case Direction.down: return this.level.buildingAtTile(this.pos.tileX, this.pos.tileY + 1);
 			case Direction.left: return this.level.buildingAtTile(this.pos.tileX - 1, this.pos.tileY);
 			case Direction.up: return this.level.buildingAtTile(this.pos.tileX, this.pos.tileY - 1);
+			default: never();
 		}
 	}
 	spawnItem(id:ItemID){
 		id ??= "base_null";
 		if(
 			this.block.canOutputTo(this.buildAt(Direction.right)) &&
-			this.buildAt(Direction.right)!.acceptsItemFromSide(Direction.left) &&
 			this.buildAt(Direction.right)!.acceptItem(
-				new Item((this.pos.tileX + 1.1) * consts.TILE_SIZE, (this.pos.tileY + 0.5) * consts.TILE_SIZE, id)
+				new Item((this.pos.tileX + 1.1) * consts.TILE_SIZE, (this.pos.tileY + 0.5) * consts.TILE_SIZE, id),
+				Direction.left
 			)
 		){
 			return true;
 		} else if(
 			this.block.canOutputTo(this.buildAt(Direction.down)) &&
-			this.buildAt(Direction.down)!.acceptsItemFromSide(Direction.up) &&
 			this.buildAt(Direction.down)!.acceptItem(
-				new Item((this.pos.tileX + 0.5) * consts.TILE_SIZE, (this.pos.tileY + 1.1) * consts.TILE_SIZE, id)
+				new Item((this.pos.tileX + 0.5) * consts.TILE_SIZE, (this.pos.tileY + 1.1) * consts.TILE_SIZE, id),
+				Direction.up
 			)
 		){
 			return true;
 		} else if(
 			this.block.canOutputTo(this.buildAt(Direction.left)) &&
-			this.buildAt(Direction.left)!.acceptsItemFromSide(Direction.right) &&
 			this.buildAt(Direction.left)!.acceptItem(
-				new Item((this.pos.tileX - 0.1) * consts.TILE_SIZE, (this.pos.tileY + 0.5) * consts.TILE_SIZE, id)
+				new Item((this.pos.tileX - 0.1) * consts.TILE_SIZE, (this.pos.tileY + 0.5) * consts.TILE_SIZE, id),
+				Direction.right
 			)
 		){
 			return true;
 		} else if(
 			this.block.canOutputTo(this.buildAt(Direction.up)) &&
-			this.buildAt(Direction.up)!.acceptsItemFromSide(Direction.down) &&
 			this.buildAt(Direction.up)!.acceptItem(
-				new Item((this.pos.tileX + 0.5) * consts.TILE_SIZE, (this.pos.tileY - 0.1) * consts.TILE_SIZE, id)
+				new Item((this.pos.tileX + 0.5) * consts.TILE_SIZE, (this.pos.tileY - 0.1) * consts.TILE_SIZE, id),
+				Direction.down
 			)
 		){
 			return true;
@@ -861,8 +862,8 @@ class Building {
 			return false;
 		}
 	}
-	acceptItem(item:Item):boolean{
-		if(this.item === null){
+	acceptItem(item:Item, side:Direction | null):boolean {
+		if(this.item === null && (side == null || this.acceptsItemFromSide(side))){
 			this.item = item;
 			item.grabbedBy = this;
 			return true;
@@ -989,6 +990,7 @@ class Conveyor extends Building {
 	/**Speed of the item in pixels per update. */
 	static speed = 1;
 	block!:typeof Conveyor;
+	outputSide:Direction = Conveyor.outputSide(this.meta);
 	acceptsItemFromSide(side:Direction):boolean {
 		//Bit cursed, but far better than what it used to be
 		switch(side){
@@ -1004,6 +1006,7 @@ class Conveyor extends Building {
 			case Direction.down: return [
 				0x03, 0x08, 0x04, 0x0C, 0x10, 0x12, 0x13, 0x14, 0x16, 0x18, 0x1A, 0x1B,
 			].includes(this.meta);
+			default: never();
 		}
 	}
 	outputsItemToSide(side:Direction):boolean {
@@ -1021,10 +1024,19 @@ class Conveyor extends Building {
 			case Direction.down: return [
 				1, 6, 7, 14, 15, 21, 25
 			].includes(this.meta);
+			default: never();
 		}
 	}
+	/**Not sure if this function is a good idea? */
+	static outputSide(meta:number):Direction {
+		if([2, 8, 9, 16, 17, 22, 26].includes(meta)) return Direction.left;
+		if([3,10,11, 18, 19, 23, 27].includes(meta)) return Direction.up;
+		if([0, 4, 5, 12, 13, 20, 24].includes(meta)) return Direction.right;
+		if([1, 6, 7, 14, 15, 21, 25].includes(meta)) return Direction.down;
+		throw new Error(`Invalid meta ${meta}`);
+	}
 	static getID(type:RawBuildingID, direction:Direction, modifier:number):BuildingIDWithMeta {
-		return [type, direction] as BuildingIDWithMeta;
+		return [type, direction.num] as BuildingIDWithMeta;
 	}
 	static changeMeta(meta:BuildingMeta, tileX:number, tileY:number, level:Level):BuildingMeta {
 		if(keybinds.placement.force_straight_conveyor.isHeld()){
@@ -1094,7 +1106,7 @@ class Conveyor extends Building {
 			if(this.item.pos.tileX != this.pos.tileX || this.item.pos.tileY != this.pos.tileY){
 				let building = this.level.buildingAtPos(this.item.pos);
 				if(!building) return;
-				if(building.acceptItem(this.item)){
+				if(building.acceptItem(this.item, this.outputSide.opposite)){
 					this.item = null;
 				}
 				return;
@@ -1264,18 +1276,6 @@ class Conveyor extends Building {
 			}
 		}
 	}
-	acceptItem(item: Item):boolean {
-		//If the item is over a different tile, reject
-		if(item.pos.tileX != this.pos.tileX || item.pos.tileY != this.pos.tileY) return false;
-		if(
-			item.pos.tileOffsetXInTiles <= 0.1 && this.acceptsItemFromSide(Direction.left) ||
-			item.pos.tileOffsetYInTiles <= 0.1 && this.acceptsItemFromSide(Direction.up) ||
-			item.pos.tileOffsetXInTiles >= 0.9 && this.acceptsItemFromSide(Direction.right) ||
-			item.pos.tileOffsetYInTiles >= 0.9 && this.acceptsItemFromSide(Direction.down) ||
-			item.pos.tileOffsetXCentered && item.pos.tileOffsetYCentered){
-			return super.acceptItem(item);
-		} else return false;
-	}
 }
 
 class OverlayBuild extends Building {
@@ -1308,7 +1308,7 @@ class Extractor extends OverlayBuild {
 		}
 	}
 	static getID(type:RawBuildingID, direction:Direction, modifier:number):BuildingIDWithMeta {
-		return [type, (modifier * 4) + direction] as BuildingIDWithMeta;
+		return [type, (modifier * 4) + direction.num] as BuildingIDWithMeta;
 	}
 
 	grabItemFromTile(filter:(item:Item) => boolean = item => item instanceof Item){
@@ -1331,7 +1331,7 @@ class Extractor extends OverlayBuild {
 
 	dropItem(){
 		if(this.item instanceof Item){
-			if(this.level.buildingAtPos(this.item.pos)?.acceptItem(this.item)){
+			if(this.level.buildingAtPos(this.item.pos)?.acceptItem(this.item, null)){
 				this.item = null;
 			}
 		} else {

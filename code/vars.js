@@ -44,13 +44,17 @@ const names = {
         "base_motor": "Motor"
     }
 };
-var Direction;
-(function (Direction) {
-    Direction[Direction["right"] = 0] = "right";
-    Direction[Direction["down"] = 1] = "down";
-    Direction[Direction["left"] = 2] = "left";
-    Direction[Direction["up"] = 3] = "up";
-})(Direction || (Direction = {}));
+const Direction = (() => {
+    let right = { num: 0, string: "right" };
+    let down = { num: 1, string: "down" };
+    let left = { num: 2, string: "left" };
+    let up = { num: 3, string: "up" };
+    right.opposite = left;
+    left.oppsite = right;
+    down.opposite = up;
+    up.opposite = down;
+    return { right, down, left, up };
+})();
 var triggerType;
 (function (triggerType) {
     triggerType[triggerType["placeBuilding"] = 0] = "placeBuilding";

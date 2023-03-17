@@ -527,8 +527,8 @@ class Chunk {
             Gfx.strokeColor("#000000");
             Gfx.lineWidth(1);
             Gfx.layer("tile");
-            for (let y = 0; y < this.layers[0].length; y++) {
-                for (let x = 0; x < this.layers[0][y].length; x++) {
+            for (let y = 0; y < consts.CHUNK_SIZE; y++) {
+                for (let x = 0; x < consts.CHUNK_SIZE; x++) {
                     currentframe.tps++;
                     let tileX = (this.x * consts.CHUNK_SIZE) + x;
                     let tileY = (this.y * consts.CHUNK_SIZE) + y;
@@ -687,36 +687,33 @@ class Building {
             case Direction.down: return this.level.buildingAtTile(this.pos.tileX, this.pos.tileY + 1);
             case Direction.left: return this.level.buildingAtTile(this.pos.tileX - 1, this.pos.tileY);
             case Direction.up: return this.level.buildingAtTile(this.pos.tileX, this.pos.tileY - 1);
+            default: never();
         }
     }
     spawnItem(id) {
         id ?? (id = "base_null");
         if (this.block.canOutputTo(this.buildAt(Direction.right)) &&
-            this.buildAt(Direction.right).acceptsItemFromSide(Direction.left) &&
-            this.buildAt(Direction.right).acceptItem(new Item((this.pos.tileX + 1.1) * consts.TILE_SIZE, (this.pos.tileY + 0.5) * consts.TILE_SIZE, id))) {
+            this.buildAt(Direction.right).acceptItem(new Item((this.pos.tileX + 1.1) * consts.TILE_SIZE, (this.pos.tileY + 0.5) * consts.TILE_SIZE, id), Direction.left)) {
             return true;
         }
         else if (this.block.canOutputTo(this.buildAt(Direction.down)) &&
-            this.buildAt(Direction.down).acceptsItemFromSide(Direction.up) &&
-            this.buildAt(Direction.down).acceptItem(new Item((this.pos.tileX + 0.5) * consts.TILE_SIZE, (this.pos.tileY + 1.1) * consts.TILE_SIZE, id))) {
+            this.buildAt(Direction.down).acceptItem(new Item((this.pos.tileX + 0.5) * consts.TILE_SIZE, (this.pos.tileY + 1.1) * consts.TILE_SIZE, id), Direction.up)) {
             return true;
         }
         else if (this.block.canOutputTo(this.buildAt(Direction.left)) &&
-            this.buildAt(Direction.left).acceptsItemFromSide(Direction.right) &&
-            this.buildAt(Direction.left).acceptItem(new Item((this.pos.tileX - 0.1) * consts.TILE_SIZE, (this.pos.tileY + 0.5) * consts.TILE_SIZE, id))) {
+            this.buildAt(Direction.left).acceptItem(new Item((this.pos.tileX - 0.1) * consts.TILE_SIZE, (this.pos.tileY + 0.5) * consts.TILE_SIZE, id), Direction.right)) {
             return true;
         }
         else if (this.block.canOutputTo(this.buildAt(Direction.up)) &&
-            this.buildAt(Direction.up).acceptsItemFromSide(Direction.down) &&
-            this.buildAt(Direction.up).acceptItem(new Item((this.pos.tileX + 0.5) * consts.TILE_SIZE, (this.pos.tileY - 0.1) * consts.TILE_SIZE, id))) {
+            this.buildAt(Direction.up).acceptItem(new Item((this.pos.tileX + 0.5) * consts.TILE_SIZE, (this.pos.tileY - 0.1) * consts.TILE_SIZE, id), Direction.down)) {
             return true;
         }
         else {
             return false;
         }
     }
-    acceptItem(item) {
-        if (this.item === null) {
+    acceptItem(item, side) {
+        if (this.item === null && (side == null || this.acceptsItemFromSide(side))) {
             this.item = item;
             item.grabbedBy = this;
             return true;
@@ -741,7 +738,6 @@ Building.outputsItems = false;
 Building.immutable = false;
 Building.isOverlay = false;
 Building.displaysItem = false;
-Building.outputsOnlyToConveyors = true;
 class BuildingWithRecipe extends Building {
     constructor(tileX, tileY, meta, level) {
         super(tileX, tileY, meta, level);
@@ -835,6 +831,10 @@ class TrashCan extends Building {
     }
 }
 class Conveyor extends Building {
+    constructor() {
+        super(...arguments);
+        this.outputSide = Conveyor.outputSide(this.meta);
+    }
     acceptsItemFromSide(side) {
         switch (side) {
             case Direction.left: return [
@@ -849,6 +849,7 @@ class Conveyor extends Building {
             case Direction.down: return [
                 0x03, 0x08, 0x04, 0x0C, 0x10, 0x12, 0x13, 0x14, 0x16, 0x18, 0x1A, 0x1B,
             ].includes(this.meta);
+            default: never();
         }
     }
     outputsItemToSide(side) {
@@ -865,10 +866,22 @@ class Conveyor extends Building {
             case Direction.down: return [
                 1, 6, 7, 14, 15, 21, 25
             ].includes(this.meta);
+            default: never();
         }
     }
+    static outputSide(meta) {
+        if ([2, 8, 9, 16, 17, 22, 26].includes(meta))
+            return Direction.left;
+        if ([3, 10, 11, 18, 19, 23, 27].includes(meta))
+            return Direction.up;
+        if ([0, 4, 5, 12, 13, 20, 24].includes(meta))
+            return Direction.right;
+        if ([1, 6, 7, 14, 15, 21, 25].includes(meta))
+            return Direction.down;
+        throw new Error(`Invalid meta ${meta}`);
+    }
     static getID(type, direction, modifier) {
-        return [type, direction];
+        return [type, direction.num];
     }
     static changeMeta(meta, tileX, tileY, level) {
         if (keybinds.placement.force_straight_conveyor.isHeld()) {
@@ -972,7 +985,7 @@ class Conveyor extends Building {
                 let building = this.level.buildingAtPos(this.item.pos);
                 if (!building)
                     return;
-                if (building.acceptItem(this.item)) {
+                if (building.acceptItem(this.item, this.outputSide.opposite)) {
                     this.item = null;
                 }
                 return;
@@ -1141,19 +1154,6 @@ class Conveyor extends Building {
             }
         }
     }
-    acceptItem(item) {
-        if (item.pos.tileX != this.pos.tileX || item.pos.tileY != this.pos.tileY)
-            return false;
-        if (item.pos.tileOffsetXInTiles <= 0.1 && this.acceptsItemFromSide(Direction.left) ||
-            item.pos.tileOffsetYInTiles <= 0.1 && this.acceptsItemFromSide(Direction.up) ||
-            item.pos.tileOffsetXInTiles >= 0.9 && this.acceptsItemFromSide(Direction.right) ||
-            item.pos.tileOffsetYInTiles >= 0.9 && this.acceptsItemFromSide(Direction.down) ||
-            item.pos.tileOffsetXCentered && item.pos.tileOffsetYCentered) {
-            return super.acceptItem(item);
-        }
-        else
-            return false;
-    }
 }
 Conveyor.displaysItem = true;
 Conveyor.speed = 1;
@@ -1182,7 +1182,7 @@ class Extractor extends OverlayBuild {
         }
     }
     static getID(type, direction, modifier) {
-        return [type, (modifier * 4) + direction];
+        return [type, (modifier * 4) + direction.num];
     }
     grabItemFromTile(filter = item => item instanceof Item) {
         if (this.buildingUnder() instanceof Building &&
@@ -1201,7 +1201,7 @@ class Extractor extends OverlayBuild {
     }
     dropItem() {
         if (this.item instanceof Item) {
-            if (this.level.buildingAtPos(this.item.pos)?.acceptItem(this.item)) {
+            if (this.level.buildingAtPos(this.item.pos)?.acceptItem(this.item, null)) {
                 this.item = null;
             }
         }
@@ -1326,12 +1326,12 @@ class StorageBuilding extends Building {
         return super.removeItem();
     }
     acceptItem(item) {
-        if (this.inventory?.length < this.inventory?.MAX_LENGTH) {
+        if (this.inventory.length < this.inventory.MAX_LENGTH) {
             this.inventory.push(item);
             return true;
         }
         else
-            return super.acceptItem(item);
+            return false;
     }
     export() {
         let inv = [];

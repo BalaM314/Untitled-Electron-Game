@@ -429,7 +429,7 @@ let state: {
 				)?.acceptItem(new Item(
 					...(Camera.unproject(e.x, e.y).map(c => Pos.tileToPixel(Pos.pixelToTile(c), true)) as [number, number]),
 					"base_null"
-				));
+				), null);
 			}
 		},
 		onmouseheld(){
