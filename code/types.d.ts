@@ -67,7 +67,6 @@ type RawBuildingID = "base_conveyor" | "base_miner" | "base_trash_can" | "base_f
 type BuildingIDWithMeta = [buildingID:RawBuildingID, meta:BuildingMeta];
 type BuildingMeta = number;
 type StringBuildingID = `${RawBuildingID}:${BuildingMeta}`;
-type RecipeType = "1-1" | "2-1" | "t-1";
 
 interface Recipe {
 	inputs?: ItemID[];
@@ -78,7 +77,6 @@ interface Recipe {
 
 interface Recipes {
 	[index: `${string}_${string}`]: {
-		type: RecipeType;
 		recipes: Recipe[];
 	};
 }

@@ -17,7 +17,6 @@ class ContentRegistry {
 }
 const recipes = {
     base_mining: {
-        type: "t-1",
         recipes: [
             {
                 outputs: ["base_coalOre"],
@@ -35,7 +34,6 @@ const recipes = {
         ]
     },
     base_smelting: {
-        type: "1-1",
         recipes: [
             {
                 inputs: ["base_coalOre"],
@@ -53,7 +51,6 @@ const recipes = {
         ]
     },
     base_alloying: {
-        type: "2-1",
         recipes: [
             {
                 inputs: ["base_coal", "base_ironIngot"],
@@ -63,7 +60,6 @@ const recipes = {
         ]
     },
     base_wiremilling: {
-        type: "1-1",
         recipes: [
             {
                 inputs: ["base_copperIngot"],
@@ -73,7 +69,6 @@ const recipes = {
         ]
     },
     base_compressing: {
-        type: "1-1",
         recipes: [
             {
                 inputs: ["base_ironIngot"],
@@ -87,7 +82,6 @@ const recipes = {
         ]
     },
     base_lathing: {
-        type: "1-1",
         recipes: [
             {
                 inputs: ["base_ironIngot"],
@@ -101,7 +95,6 @@ const recipes = {
         ]
     },
     base_assembling: {
-        type: "2-1",
         recipes: [
             {
                 inputs: ["base_steelRod", "base_copperWire"],
@@ -125,7 +118,7 @@ Buildings.register("base_miner", Miner);
 Buildings.register("base_trash_can", TrashCan);
 Buildings.register("base_furnace", BuildingWithRecipe, { recipeType: recipes.base_smelting });
 Buildings.register("base_extractor", Extractor);
-Buildings.register("base_chest", StorageBuilding);
+Buildings.register("base_chest", StorageBuilding, { capacity: 64 });
 Buildings.register("base_resource_acceptor", ResourceAcceptor);
 Buildings.register("base_alloy_smelter", BuildingWithRecipe, { recipeType: recipes.base_alloying });
 Buildings.register("base_wiremill", BuildingWithRecipe, { recipeType: recipes.base_wiremilling });
