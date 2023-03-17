@@ -115,7 +115,7 @@ class Level {
         let changedID = [buildingID[0], buildingID[1]];
         changedID[1] = Buildings.get(buildingID[0]).changeMeta(changedID[1], tileX, tileY, this);
         let textureSize = Buildings.get(buildingID[0]).textureSize(buildingID[1]);
-        let isError = !Buildings.get(changedID[0]).canBuildAt(tileX, tileY, this);
+        let isError = !Buildings.get(changedID[0]).canBuildAt(tileX, tileY, this) || this.buildingAtTile(tileX, tileY)?.block.immutable;
         let underlayTextureSize = textureSize[0][0] == textureSize[0][1] ? textureSize : [[1, 1], [0, 0]];
         Gfx.tImage(isError ? Gfx.texture("misc/invalidunderlay") : Gfx.texture("misc/ghostunderlay"), tileX + underlayTextureSize[1][0], tileY + underlayTextureSize[1][1], underlayTextureSize[0][0], underlayTextureSize[0][1]);
         Gfx.alpha(0.7);
