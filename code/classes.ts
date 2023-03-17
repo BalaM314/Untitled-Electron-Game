@@ -731,6 +731,7 @@ class Item {
 class Building {
 	static animated = false;
 	static outputsItems = false;
+	static acceptsItems = false;
 	static id:RawBuildingID;
 	/**Whether this building cannot be placed or broken.*/
 	static immutable = false;
@@ -799,11 +800,11 @@ class Building {
 	}
 	/**Whether a building can ever accept items from a particular side. */
 	acceptsItemFromSide(side:Direction):boolean {
-		return true;
+		return this.block.acceptsItems;
 	}
 	/**Whether a building can ever output items to a particular side. */
 	outputsItemToSide(side:Direction):boolean {
-		return true;
+		return this.block.outputsItems;
 	}
 	buildAt(direction:Direction):Building | null {
 		return this.level.buildingAtTile(this.pos.tileX + direction.vec[0], this.pos.tileY + direction.vec[1]);
@@ -826,7 +827,7 @@ class Building {
 		return false;
 	}
 	acceptItem(item:Item, side:Direction | null):boolean {
-		if(this.item === null && (side == null || this.acceptsItemFromSide(side))){
+		if(this.item === null && this.block.acceptsItems && (side == null || this.acceptsItemFromSide(side))){
 			this.item = item;
 			return true;
 		} else {
@@ -852,6 +853,7 @@ class BuildingWithRecipe extends Building {
 	recipe: Recipe | null = null;
 	items: Item[] = [];
 	static outputsItems = true;
+	static acceptsItems = true;
 	static recipeType: {recipes: Recipe[]};
 	static recipeMaxInputs = 3;
 	block!:typeof BuildingWithRecipe;
@@ -940,6 +942,7 @@ class Miner extends Building {
 
 
 class TrashCan extends Building {
+	static acceptsItems = true;
 	acceptItem(item:Item){
 		return true;
 	}
@@ -948,6 +951,8 @@ class TrashCan extends Building {
 
 class Conveyor extends Building {
 	static displaysItem = true;
+	static acceptsItems = true;
+	static outputsItems = true;
 	/**Speed of the item in pixels per update. */
 	static speed = 1;
 	block!:typeof Conveyor;
@@ -1249,6 +1254,7 @@ class OverlayBuild extends Building {
 class Extractor extends OverlayBuild {
 	static displaysItem = true;
 	static speed = 1;
+	static outputsItems = true;
 	block!:typeof Extractor;
 	outputOffset: [x:number, y:number] = this.block.getOutputTile(this.meta)
 	static textureSize(meta:BuildingMeta){
@@ -1378,6 +1384,7 @@ class Extractor extends OverlayBuild {
 class StorageBuilding extends Building {
 	inventory:Item[] = [];
 	static capacity:number = 64;
+	static acceptsItems = true;
 	block!:typeof StorageBuilding;
 	hasItem(){
 		if(this.inventory.length != 0) return this.inventory[0];
@@ -1417,6 +1424,7 @@ class StorageBuilding extends Building {
 
 class ResourceAcceptor extends Building {
 	static immutable = true;
+	static acceptsItems = true;
 	acceptItem(item:Item){
 		this.level.resources[item.id] ??= 0;
 		this.level.resources[item.id] ++;
@@ -1428,7 +1436,6 @@ class MultiBlockController extends BuildingWithRecipe {
 	block!: typeof MultiBlockController;
 	secondaries: MultiBlockSecondary[] = [];
 	static multiblockSize = [2, 2] as [number, number];
-	static outputsItems = true;
 	static textureSize(meta: number) {
 		return [this.multiblockSize, [0, 0]] as [size: [number, number], offset: [number, number]];
 	}
@@ -1489,6 +1496,7 @@ class MultiBlockSecondary extends Building {
 	/**Assigned in buildBuilding */
 	controller: MultiBlockController | null = null;
 	static outputsItems = true;
+	static acceptsItems = true;
 	acceptItem(item: Item):boolean {
 		return this.controller?.acceptItem(item) ?? false;
 	}

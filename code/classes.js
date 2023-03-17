@@ -665,10 +665,10 @@ class Building {
         return null;
     }
     acceptsItemFromSide(side) {
-        return true;
+        return this.block.acceptsItems;
     }
     outputsItemToSide(side) {
-        return true;
+        return this.block.outputsItems;
     }
     buildAt(direction) {
         return this.level.buildingAtTile(this.pos.tileX + direction.vec[0], this.pos.tileY + direction.vec[1]);
@@ -686,7 +686,7 @@ class Building {
         return false;
     }
     acceptItem(item, side) {
-        if (this.item === null && (side == null || this.acceptsItemFromSide(side))) {
+        if (this.item === null && this.block.acceptsItems && (side == null || this.acceptsItemFromSide(side))) {
             this.item = item;
             return true;
         }
@@ -707,6 +707,7 @@ class Building {
 }
 Building.animated = false;
 Building.outputsItems = false;
+Building.acceptsItems = false;
 Building.immutable = false;
 Building.isOverlay = false;
 Building.displaysItem = false;
@@ -764,6 +765,7 @@ class BuildingWithRecipe extends Building {
     }
 }
 BuildingWithRecipe.outputsItems = true;
+BuildingWithRecipe.acceptsItems = true;
 BuildingWithRecipe.recipeMaxInputs = 3;
 class Miner extends Building {
     constructor(tileX, tileY, meta, level) {
@@ -801,6 +803,7 @@ class TrashCan extends Building {
         return true;
     }
 }
+TrashCan.acceptsItems = true;
 class Conveyor extends Building {
     constructor() {
         super(...arguments);
@@ -1127,6 +1130,8 @@ class Conveyor extends Building {
     }
 }
 Conveyor.displaysItem = true;
+Conveyor.acceptsItems = true;
+Conveyor.outputsItems = true;
 Conveyor.speed = 1;
 class OverlayBuild extends Building {
     buildingUnder() {
@@ -1282,6 +1287,7 @@ class Extractor extends OverlayBuild {
 }
 Extractor.displaysItem = true;
 Extractor.speed = 1;
+Extractor.outputsItems = true;
 class StorageBuilding extends Building {
     constructor() {
         super(...arguments);
@@ -1326,6 +1332,7 @@ class StorageBuilding extends Building {
     }
 }
 StorageBuilding.capacity = 64;
+StorageBuilding.acceptsItems = true;
 class ResourceAcceptor extends Building {
     acceptItem(item) {
         var _a, _b;
@@ -1335,6 +1342,7 @@ class ResourceAcceptor extends Building {
     }
 }
 ResourceAcceptor.immutable = true;
+ResourceAcceptor.acceptsItems = true;
 class MultiBlockController extends BuildingWithRecipe {
     constructor() {
         super(...arguments);
@@ -1394,7 +1402,6 @@ class MultiBlockController extends BuildingWithRecipe {
     }
 }
 MultiBlockController.multiblockSize = [2, 2];
-MultiBlockController.outputsItems = true;
 class MultiBlockSecondary extends Building {
     constructor() {
         super(...arguments);
@@ -1421,3 +1428,4 @@ class MultiBlockSecondary extends Building {
     }
 }
 MultiBlockSecondary.outputsItems = true;
+MultiBlockSecondary.acceptsItems = true;
