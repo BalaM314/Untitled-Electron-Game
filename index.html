@@ -2,15 +2,19 @@
 <html>
 	<head>
 		<meta charset="UTF-8">
+
+		<!-- SEO -->
 		<meta property="og:title" content="Untitled Electron Game" />
 		<meta property="og:type" content="website" />
 		<meta property="og:url" content="https://balam314.github.io/Untitled-Electron-Game" />
-		<meta property="og:image" content="https://balam314.github.io/Untitled-Electron-Game/assets/textures/building/0x0011.png" />
+		<meta property="og:image" content="https://balam314.github.io/Untitled-Electron-Game/assets/textures/logo.png" />
 		<meta name="description" content="Untitled Electron Game: a factory building game that's in early alpha. Play it now!">
 		<meta property="og:description" content="Untitled Electron Game: a factory building game that's in early alpha. Play it now!" />
 		<meta name="theme-color" content="#3141FF">
+		
 		<title>Untitled Electron Game</title>
 		
+		<!-- Code loading -->
 		<script src='code/perlin.js'></script> <!--Above script by Stefan Gustavson, in public domain.-->
 		<script src="code/texturedata.js"></script>
 		<script src="code/funcs.js"></script>
@@ -20,168 +24,13 @@
 		<script src="code/elements.js" defer></script>
 		<script src="code/graphics.js" defer></script>
 		<script src="code/game_main.js" defer></script>
-		<style>
-			html,body {
-				width: 100%;
-				height: 100%;
-				margin: 0px;
-				overflow: hidden;
-			}
-			canvas {
-				border-right: 2px dashed green;
-				border-bottom: 2px dashed green;
-				position: absolute;
-			}
-			#canvas {
-				z-index: 1;
-			}
-			#canvas1 {
-				z-index: 2;
-			}
-			#canvas2 {
-				z-index: 3;
-			}
-			#canvas25 {
-				z-index: 4;
-			}
-			#canvas3 {
-				z-index: 5;
-			}
-			#canvas4 {
-				z-index: 6;
-			}
+		<link rel="stylesheet" href="index.css">
 
-			#error_background {
-				position: absolute;
-				width: 100%;
-				height: 100%;
-				background-color: red;
-				text-align: center;
-				font-size: 200%;
-				z-index: 0;
-			}
-			#loading_background {
-				position: absolute;
-				width: 100%;
-				height: 100%;
-				background-color: #44C;
-				text-align: center;
-				font-size: 200%;
-				z-index: 0;
-			}
-			#toolbar {
-				position: absolute;
-				display: flex;
-				bottom: 20px;
-				width: 60%;
-				left: 20%;
-				right: 20%;
-				top: 90%;
-				--cell-size: calc(10% - 20px - 1%);
-				background-color: rgba(0, 0, 255, 0.2);
-				border-radius: 5%;
-				z-index: 10;
-			}
-			.hidden {
-				margin-top: 10000%;
-				position: absolute;
-				display: none;
-				visibility: hidden;
-			}
-			.selected {
-				border: 5px ridge green;
-			}
-			#clickcapture {
-				z-index: 7;
-				position: absolute;
-				width: 100%;
-				height: 100%;
-			}
-			#resources {
-				position: absolute;
-				z-index: 9;
-				margin-left: 40%;
-				margin-right: 40%;
-				width: 20%;
-				text-align: center;
-				font-size: 32px;
-				font-family: sans-serif;
-				border: 2px solid gray;
-				background-color: rgba(0, 0, 255, 0.2);
-			}
-			#resources span {
-				margin-left: 4px;
-				margin-right: 4px;
-			}
-			#resources span::before {
-				width: 32px;
-				height: 32px;
-				margin-right: 4px;
-				background-size: 32px;
-				content: "";
-				display: inline-block !important;
-			}
-			#base_coal::before {
-				background-image: url("assets/textures/item/base_coal.png");
-			}
-			#base_ironIngot::before {
-				background-image: url("assets/textures/item/base_ironIngot.png");
-			}
-			#base_steelIngot::before {
-				background-image: url("assets/textures/item/base_steelIngot.png");
-			}
-			#base_copperIngot::before {
-				background-image: url("assets/textures/item/base_copperIngot.png");
-			}
-			@keyframes alertfade {
-				from {
-					background-color: rgba(0, 0, 255, 0.0);
-					border-color: rgba(0, 0, 0, 0.0);
-					color: rgba(255, 255, 255, 0.1);
-				}
-				to {
-					background-color: rgba(0, 255, 255, 0.4);
-					border-color: rgba(0, 0, 0, 0.8);
-					color: rgba(255, 255, 255, 1.0);
-				}
-			}
-			#alertbox {
-				position: absolute;
-				top: 35%;
-				left: 35%;
-				width: 30%;
-				height: 30%;
-				border-color: black;
-				border-radius: 2px;
-				border-width: 5px;
-			}
-			#alertbox.active {
-				border-style: solid;
-				animation-name: alertfade;
-				animation-duration: 500ms;
-				animation-fill-mode: both;
-				z-index: 15;
-			}
-			#alertmessage {
-				font-size: min(200%, calc(50000% / var(--text-length)));
-				text-align: center;
-				overflow-wrap: break-word;
-			}
-			#alertexit {
-				position: absolute;
-				font-size: 200%;
-				right: 5%;
-				bottom: 5%;
-			}
-		</style>
 	</head>
 	<body>
+		<div class="hidden" onload="this.innerText = 'Why are you able to read this?\nThis div contains a boilerplate description for search engines.';">Untitled Electron Game is a factory building game that's in early alpha. Play it now!</div>
 		<div id="textures" hidden>
-			<!-- Dynamically generated through Javascript, see loadTexturesIntoPage(). -->
-			<div id="item"></div>
-			<div id="building"></div>
-			<div id="tile"></div>
-			<div id="misc"></div>
+			<!-- Dynamically generated through Javascript, see loadTexture(). -->
 		</div>
 		<input id="uploadButton" type="file" accept="application/json" class="hidden"/>
 		<canvas id="canvas" width=1200 height=1200></canvas>
@@ -197,7 +46,6 @@
 			<span id="base_copperIngot">0</span>
 			<span id="base_steelIngot">0</span>
 		</div>
-		<div class="hidden" onload="this.innerText = 'Why are you able to read this?\nThis div contains a boilerplate description for search engines.';">Untitled Electron Game is a factory building game that's in early alpha. Play it now!</div>
 		<div id="error_background" class="hidden">Oops! If you're seeing this(for more than a second), something went wrong. Please check the dev console(F12 then console) for any red boxes, take a screenshot, and report it to the <a href="https://github.com/BalaM314/Untitled-Electron-Game/issues">issue tracker.</a></div>
 		<div id="loading_background">
 			<h1>Loading...</h1>

@@ -808,6 +808,7 @@ class Building {
 	}
 	static read(buildingData:BuildingData, level:Level):Building {
 		const build = new this(buildingData.x, buildingData.y, buildingData.meta, level);
+		//"this" refers to the superclass that read() was called on, which should be Buildings.get(id)
 		if(buildingData.item) build.item = Item.read(buildingData.item);
 		return build;
 	}
