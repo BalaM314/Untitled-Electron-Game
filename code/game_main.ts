@@ -155,6 +155,7 @@ function registerEventHandlers(){
 		});
 	}
 
+	alertexit.onclick = closeAlert;
 }
 
 

@@ -204,6 +204,10 @@ function trigger(type, buildingID, itemID) {
 function _alert(x) {
     Game.alerts.list.push(x);
 }
+function closeAlert() {
+    alertbox.classList.remove("active");
+    Game.alerts.active = false;
+}
 function hex(num, length) {
     return `0x${(Array(length).fill("0").join("") + num.toString(16)).toUpperCase().slice(-length)}`;
 }

@@ -117,6 +117,7 @@ function registerEventHandlers() {
             }
         });
     }
+    alertexit.onclick = closeAlert;
 }
 let fps = [0, 0, 0, 0, 0, 0];
 let state = {

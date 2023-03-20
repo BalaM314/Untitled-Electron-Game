@@ -15,9 +15,3 @@ const errorBackground = getElement("error_background", HTMLDivElement);
 const loadingBackground = getElement("loading_background", HTMLDivElement);
 const resourcesEl = getElement("resources", HTMLDivElement);
 const texturesDiv = getElement("textures", HTMLDivElement);
-
-
-alertexit.onclick = (e) => {
-	alertbox.classList.remove("active");
-	Game.alerts.active = false;
-};

@@ -185,7 +185,8 @@ const keybinds = extend<Keybinds>()({
 		show_tooltip: new Keybind("shift"),
 	},
 	misc: {
-		pause: new Keybind("escape", [], () => {Game.paused = !Game.paused;}),
+		pause: new Keybind(" ", [], () => {Game.paused = !Game.paused;}),
+		close_dialog: new Keybind("escape", [], () => {if(Game.alerts.active) closeAlert()}),
 	}
 });
 

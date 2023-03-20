@@ -253,6 +253,11 @@ function _alert(x:string){
 	Game.alerts.list.push(x);
 }
 
+function closeAlert(){
+	alertbox.classList.remove("active");
+	Game.alerts.active = false;
+}
+
 function hex(num:number, length:number){
 	return `0x${(Array(length).fill("0").join("") + num.toString(16)).toUpperCase().slice(-length)}`;
 	//it just works
