@@ -115,6 +115,18 @@ class Gfx {
 	static texture(id:string):Texture {
 		return this.textures[id] ?? this.textures["error"];
 	}
+	static tLine(x1:number, y1:number, x2:number, y2:number, _ctx = this.ctx){
+		_ctx.beginPath();
+		_ctx.moveTo(
+			(x1 * consts.TILE_SIZE + Camera.scrollX) * Camera.zoomLevel + Camera.width / 2,
+			(y1 * consts.TILE_SIZE + Camera.scrollY) * Camera.zoomLevel + Camera.height / 2
+		);
+		_ctx.lineTo(
+			(x2 * consts.TILE_SIZE + Camera.scrollX) * Camera.zoomLevel + Camera.width / 2,
+			(y2 * consts.TILE_SIZE + Camera.scrollY) * Camera.zoomLevel + Camera.height / 2
+		);
+		_ctx.stroke();
+	}
 	static lineTRect(tileX:number, tileY:number, width:number, height:number, mode:RectMode = this.rectMode, _ctx = this.ctx){
 		if(mode == RectMode.CORNER)
 			_ctx.strokeRect(
