@@ -158,16 +158,7 @@ class Level {
 		Gfx.tImage(isError ? Gfx.texture("misc/invalidunderlay") : Gfx.texture("misc/ghostunderlay"), tileX + underlayTextureSize[1][0], tileY + underlayTextureSize[1][1], underlayTextureSize[0][0], underlayTextureSize[0][1]);
 
 		Gfx.alpha(0.7);
-		Building.prototype.display.bind({
-			pos: Pos.fromTileCoords(tileX, tileY, false),
-			meta: changedID[1],
-			level: this,
-			block: {
-				animated: false,
-				id: changedID[0]
-			},
-			stringID: Building.prototype.stringID
-		})(currentframe, "ghostBuilds");
+		Building.display(changedID, Pos.fromTileCoords(tileX, tileY, false), "ghostBuilds");
 		Gfx.alpha(1);
 
 	}
@@ -741,16 +732,19 @@ class Building {
 	stringID(){
 		return stringifyMeta(this.block.id, this.meta);
 	}
-	display(currentFrame:CurrentFrame, layer:(keyof typeof Gfx.layers) = this.block.isOverlay ? "overlayBuilds" : "ghostBuilds"){
-		const textureSize = Buildings.get(this.block.id).textureSize(this.meta);
-		//do not edit, necessary due to the cursed .bind() shenanigans
-		
+	static display(id:BuildingIDWithMeta, pos:Pos, layer?:(keyof typeof Gfx.layers)){
+		const block = Buildings.get(id[0]);
+		const textureSize = block.textureSize(id[1]);
+		layer ??= block.isOverlay ? "overlayBuilds" : "ghostBuilds"
 		Gfx.tImage(
-			Gfx.texture(`building/${this.stringID()}`),
-			this.pos.tileX + textureSize[1][0], this.pos.tileY + textureSize[1][1],
+			Gfx.texture(`building/${stringifyMeta(...id)}`),
+			pos.tileX + textureSize[1][0], pos.tileY + textureSize[1][1],
 			...textureSize[0],
 			Gfx.layers[layer]
 		);
+	}
+	display(currentFrame:CurrentFrame, layer:(keyof typeof Gfx.layers) = this.block.isOverlay ? "overlayBuilds" : "ghostBuilds"){
+		Building.display([this.block.id, this.meta], this.pos, layer);
 		if(this.item instanceof Item && this.block.displaysItem){
 			this.item.display(currentFrame);
 		}
