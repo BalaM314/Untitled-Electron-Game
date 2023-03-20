@@ -7,44 +7,41 @@
 class Level {
 	resources: {
 		[index: string]: number
-	}
-	storage: Map<string, Chunk>;
-	seed: number;
+	} = {};
+	storage = new Map<string, Chunk>();
 	format: string;
 	uuid: string;
-	constructor(data:number|LevelData){
-		this.storage = new Map<string, Chunk>();
+	constructor(public seed:number){
 		this.format = consts.VERSION;
-		this.resources = {};
-		if(typeof data != "object"){
-			this.seed = data ?? 0;
-			this.uuid = Math.random().toString().substring(2);
-			this.generateNecessaryChunks();
-			this.buildBuilding(0, 0, ["base_resource_acceptor", 0]);
-			this.buildBuilding(0, -1, ["base_resource_acceptor", 0]);
-			this.buildBuilding(-1, 0, ["base_resource_acceptor", 0]);
-			this.buildBuilding(-1, -1, ["base_resource_acceptor", 0]);
-		} else {
-			// Generate a level from JSON
-			let {chunks, resources, seed, version, uuid} = data;
-			this.seed = seed;
-			this.resources = resources;
-			this.uuid = uuid;
-			let position, chunkData;
-			try {
-				for([position, chunkData] of Object.entries(chunks)){
-					chunkData.version = version;
-					this.storage.set(position, new Chunk({
-						x: parseInt(position.split(",")[0]), y: parseInt(position.split(",")[1]),
-						seed: seed, parent: this
-					}, chunkData).generate());
-					//Generate a chunk with that data
-				}
-			} catch(err){
-				throw new Error(`Error loading chunk ${position}: ${parseError(err)}`)
+		this.uuid = Math.random().toString().substring(2);
+	}
+	static read(data:LevelData){
+		// Read a level from JSON
+		const {chunks, resources, seed, version, uuid} = data;
+		const level = new Level(seed);
+		level.resources = resources;
+		level.uuid = uuid;
+		let position, chunkData;
+		try {
+			for([position, chunkData] of Object.entries(chunks)){
+				chunkData.version = version;
+				level.storage.set(position,
+					Chunk.read(parseInt(position.split(",")[0]), parseInt(position.split(",")[1]), level, chunkData)
+				);
+				//Generate a chunk with that data
 			}
-
+		} catch(err){
+			throw new Error(`Error loading chunk ${position}: ${parseError(err)}`)
 		}
+		return level;
+	}
+	generate(){
+		this.generateNecessaryChunks();
+		this.buildBuilding(0, 0, ["base_resource_acceptor", 0]);
+		this.buildBuilding(0, -1, ["base_resource_acceptor", 0]);
+		this.buildBuilding(-1, 0, ["base_resource_acceptor", 0]);
+		this.buildBuilding(-1, -1, ["base_resource_acceptor", 0]);
+		return this;
 	}
 	hasChunk(tileX:number, tileY:number):boolean {
 		return !! this.storage.get(`${Pos.tileToChunk(tileX)},${Pos.tileToChunk(tileY)}`);
@@ -60,8 +57,7 @@ class Level {
 			return;
 		}
 		this.storage.set(`${x},${y}`, 
-			new Chunk({x, y, seed: this.seed, parent: this})
-			.generate()
+			new Chunk(x, y, this).generate()
 		);
 	}
 	generateNecessaryChunks(){
@@ -335,118 +331,103 @@ class Chunk {
     value: number;
     chance(amount: number): boolean;
 	}, never>;
-	x: number;
-	y: number;
 	chunkSeed: number;
-	parent: Level;
 	hasBuildings: boolean = false;
-	constructor({x, y, seed, parent}: { x: number; y: number; seed: number; parent: Level;}, data?:ChunkData){
-		this.x = x;
-		this.y = y;
-		this.parent = parent;
+	constructor(public x:number, public y:number, public parent:Level){
 		//Don't allow x or y to be zero
 		let tweakedX = x == 0 ? 5850 : x;
 		let tweakedY = y == 0 ? 9223 : y;
 		this.chunkSeed = Math.abs(
-			(((tweakedX) ** 3) * (tweakedY ** 5) + 3850 + ((seed - 314) * 11)) % (2 ** 16)
+			(((tweakedX) ** 3) * (tweakedY ** 5) + 3850 + ((parent.seed - 314) * 11)) % (2 ** 16)
 		);
 		//A very sophisticated algorithm that I definitely didn't just make up
 
 		this._generator = pseudoRandom(this.chunkSeed);
-		this.layers = [
+		this.layers = Chunk.initializeLayers();
+
+		return this;
+	}
+	static initializeLayers(){
+		const layers:Chunk["layers"] = [
 			new Array(consts.CHUNK_SIZE),
 			new Array(consts.CHUNK_SIZE),
 			new Array(consts.CHUNK_SIZE)
 		];
-
-		for(let x = 0; x < consts.CHUNK_SIZE; x ++){
-			this.layers[0][x] = new Array(consts.CHUNK_SIZE);
-			for(let z = 0; z < consts.CHUNK_SIZE; z ++){
-				this.layers[0][x][z] = "base_null";
-			}
+		for(let i = 0; i < consts.CHUNK_SIZE; i ++){
+			layers[0][i] = new Array(consts.CHUNK_SIZE).fill("base_null");
+			layers[1][i] = new Array(consts.CHUNK_SIZE).fill(null);
+			layers[2][i] = new Array(consts.CHUNK_SIZE).fill(null);
 		}
-
-		for(let x = 0; x < consts.CHUNK_SIZE; x ++){
-			this.layers[1][x] = new Array(consts.CHUNK_SIZE);
-			for(let z = 0; z < consts.CHUNK_SIZE; z ++){
-				this.layers[1][x][z] = null;
-			}
+		return layers;
+	}
+	static read(chunkX:number, chunkY:number, level:Level, data:ChunkData){
+		const chunk = new Chunk(chunkX, chunkY, level);
+		//Import a chunk from JSON data.
+		//TODO 🚮
+		const numericVersion = +data.version.split(" ")[1].replaceAll(".", "");
+		if(numericVersion < 200){
+			(data as any).layers = data;
 		}
-
-		for(let x = 0; x < consts.CHUNK_SIZE; x ++){
-			this.layers[2][x] = new Array(consts.CHUNK_SIZE);
-			for(let z = 0; z < consts.CHUNK_SIZE; z ++){
-				this.layers[2][x][z] = null;
-			}
-		}
-
-		if(data){
-			//Import a chunk from JSON data.
-			//TODO 🚮
-			if(+data.version.split(" ")[1].replaceAll(".", "") < 200){
-				(data as any).layers = data;
-			}
-			for(let y in data.layers[0]){
-				for(let x in data.layers[0][y]){
-					let _buildingData = data.layers[0][y][x] as BuildingData | LegacyBuildingData | null;
-					if(!_buildingData) continue;
-					this.hasBuildings = true;
-					let buildingData:BuildingData;
-					if(+data.version.split(" ")[1].replaceAll(".", "") <= 200){
-						_buildingData.id = hex(_buildingData.id as any as number, 4) as LegacyBuildingID;
-					}
-					if(+data.version.split(" ")[1].replaceAll(".", "") < 300){
-						buildingData = {
-							..._buildingData,
-							id: mapLegacyRawBuildingID(getLegacyRawBuildingID((_buildingData as LegacyBuildingData).id)),
-							meta: +(_buildingData as LegacyBuildingData).id >> 8
-						}
-						//aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa I am still looking forward to beta when I can throw out these garbage formats
-					} else buildingData = _buildingData as BuildingData;
-					let tempBuilding:Building;
-					try {
-						tempBuilding = Buildings.get(buildingData.id).read(buildingData, this.parent);
-					} catch(err){
-						console.error(err);
-						throw new Error(`Failed to import building id ${stringifyMeta(buildingData.id, buildingData.meta)} at position ${x},${y} in chunk ${this.x},${this.y}. See console for more details.`);
-					}
-					this.layers[1][y][x] = tempBuilding;
+		for(let y in data.layers[0]){
+			for(let x in data.layers[0][y]){
+				let _buildingData = data.layers[0][y][x] as BuildingData | LegacyBuildingData | null;
+				if(!_buildingData) continue;
+				chunk.hasBuildings = true;
+				let buildingData:BuildingData;
+				if(numericVersion <= 200){
+					_buildingData.id = hex(_buildingData.id as any as number, 4) as LegacyBuildingID;
 				}
-			}
-
-			//Same as above but for overlay builds.
-			for(let y in data.layers[1]){
-				for(let x in data.layers[1][y]){
-					let _buildingData = data.layers[1][y][x] as BuildingData | LegacyBuildingData | null;
-					if(!_buildingData) continue;
-					this.hasBuildings = true;
-					let buildingData:BuildingData;
-					if(+data.version.split(" ")[1].replaceAll(".", "") <= 200){
-						_buildingData.id = hex(_buildingData.id as any as number, 4) as LegacyBuildingID;
+				if(numericVersion < 300){
+					buildingData = {
+						..._buildingData,
+						id: mapLegacyRawBuildingID(getLegacyRawBuildingID((_buildingData as LegacyBuildingData).id)),
+						meta: +(_buildingData as LegacyBuildingData).id >> 8
 					}
-					if(+data.version.split(" ")[1].replaceAll(".", "") < 300){
-						buildingData = {
-							..._buildingData,
-							id: mapLegacyRawBuildingID(getLegacyRawBuildingID((_buildingData as LegacyBuildingData).id)),
-							meta: +(_buildingData as LegacyBuildingData).id >> 8
-						}
-						//aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa I am still looking forward to beta when I can throw out these garbage formats
-					} else buildingData = _buildingData as BuildingData;
-					let tempBuilding = new (Buildings.get(buildingData.id))(
-						parseInt(x) + (consts.CHUNK_SIZE * this.x),
-						parseInt(y) + (consts.CHUNK_SIZE * this.y),
-						buildingData.meta, this.parent
-					) as OverlayBuild;
-					if(buildingData.item && +data.version.split(" ")[1].replaceAll(".", "") >= 130){
-						//AAAAAAAAAAAAAAaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaAAA
-						tempBuilding.item = new Item(buildingData.item.x, buildingData.item.y, buildingData.item.id);
-					}
-					this.layers[2][y][x] = tempBuilding;
+					//aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa I am still looking forward to beta when I can throw out these garbage formats
+				} else buildingData = _buildingData as BuildingData;
+				let tempBuilding:Building;
+				try {
+					tempBuilding = Buildings.get(buildingData.id).read(buildingData, level);
+				} catch(err){
+					console.error(err);
+					throw new Error(`Failed to import building id ${stringifyMeta(buildingData.id, buildingData.meta)} at position ${x},${y} in chunk ${chunkX},${chunkY}. See console for more details.`);
 				}
+				chunk.layers[1][y][x] = tempBuilding;
 			}
 		}
 
-		return this;
+		//Same as above but for overlay builds.
+		for(let y in data.layers[1]){
+			for(let x in data.layers[1][y]){
+				let _buildingData = data.layers[1][y][x] as BuildingData | LegacyBuildingData | null;
+				if(!_buildingData) continue;
+				chunk.hasBuildings = true;
+				let buildingData:BuildingData;
+				if(numericVersion <= 200){
+					_buildingData.id = hex(_buildingData.id as any as number, 4) as LegacyBuildingID;
+				}
+				if(numericVersion < 300){
+					buildingData = {
+						..._buildingData,
+						id: mapLegacyRawBuildingID(getLegacyRawBuildingID((_buildingData as LegacyBuildingData).id)),
+						meta: +(_buildingData as LegacyBuildingData).id >> 8
+					}
+					//aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa I am still looking forward to beta when I can throw out these garbage formats
+				} else buildingData = _buildingData as BuildingData;
+				let tempBuilding = new (Buildings.get(buildingData.id))(
+					parseInt(x) + (consts.CHUNK_SIZE * chunkX),
+					parseInt(y) + (consts.CHUNK_SIZE * chunkY),
+					buildingData.meta, level
+				) as OverlayBuild;
+				if(buildingData.item && numericVersion >= 130){
+					//AAAAAAAAAAAAAAaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaAAA
+					tempBuilding.item = new Item(buildingData.item.x, buildingData.item.y, buildingData.item.id);
+				}
+				chunk.layers[2][y][x] = tempBuilding;
+			}
+		}
+		chunk.generate();
+		return chunk;
 	}
 	update(currentFrame:CurrentFrame):Chunk {
 		if(!this.hasBuildings) return this;

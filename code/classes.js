@@ -1,37 +1,36 @@
 "use strict";
 class Level {
-    constructor(data) {
+    constructor(seed) {
+        this.seed = seed;
+        this.resources = {};
         this.storage = new Map();
         this.format = consts.VERSION;
-        this.resources = {};
-        if (typeof data != "object") {
-            this.seed = data ?? 0;
-            this.uuid = Math.random().toString().substring(2);
-            this.generateNecessaryChunks();
-            this.buildBuilding(0, 0, ["base_resource_acceptor", 0]);
-            this.buildBuilding(0, -1, ["base_resource_acceptor", 0]);
-            this.buildBuilding(-1, 0, ["base_resource_acceptor", 0]);
-            this.buildBuilding(-1, -1, ["base_resource_acceptor", 0]);
-        }
-        else {
-            let { chunks, resources, seed, version, uuid } = data;
-            this.seed = seed;
-            this.resources = resources;
-            this.uuid = uuid;
-            let position, chunkData;
-            try {
-                for ([position, chunkData] of Object.entries(chunks)) {
-                    chunkData.version = version;
-                    this.storage.set(position, new Chunk({
-                        x: parseInt(position.split(",")[0]), y: parseInt(position.split(",")[1]),
-                        seed: seed, parent: this
-                    }, chunkData).generate());
-                }
-            }
-            catch (err) {
-                throw new Error(`Error loading chunk ${position}: ${parseError(err)}`);
+        this.uuid = Math.random().toString().substring(2);
+    }
+    static read(data) {
+        const { chunks, resources, seed, version, uuid } = data;
+        const level = new Level(seed);
+        level.resources = resources;
+        level.uuid = uuid;
+        let position, chunkData;
+        try {
+            for ([position, chunkData] of Object.entries(chunks)) {
+                chunkData.version = version;
+                level.storage.set(position, Chunk.read(parseInt(position.split(",")[0]), parseInt(position.split(",")[1]), level, chunkData));
             }
         }
+        catch (err) {
+            throw new Error(`Error loading chunk ${position}: ${parseError(err)}`);
+        }
+        return level;
+    }
+    generate() {
+        this.generateNecessaryChunks();
+        this.buildBuilding(0, 0, ["base_resource_acceptor", 0]);
+        this.buildBuilding(0, -1, ["base_resource_acceptor", 0]);
+        this.buildBuilding(-1, 0, ["base_resource_acceptor", 0]);
+        this.buildBuilding(-1, -1, ["base_resource_acceptor", 0]);
+        return this;
     }
     hasChunk(tileX, tileY) {
         return !!this.storage.get(`${Pos.tileToChunk(tileX)},${Pos.tileToChunk(tileY)}`);
@@ -46,8 +45,7 @@ class Level {
         if (this.storage.get(`${x},${y}`)) {
             return;
         }
-        this.storage.set(`${x},${y}`, new Chunk({ x, y, seed: this.seed, parent: this })
-            .generate());
+        this.storage.set(`${x},${y}`, new Chunk(x, y, this).generate());
     }
     generateNecessaryChunks() {
         let [chunkX, chunkY] = Camera.unproject(0, 0).map(Pos.pixelToChunk);
@@ -261,100 +259,95 @@ class Level {
     }
 }
 class Chunk {
-    constructor({ x, y, seed, parent }, data) {
-        this.hasBuildings = false;
+    constructor(x, y, parent) {
         this.x = x;
         this.y = y;
         this.parent = parent;
+        this.hasBuildings = false;
         let tweakedX = x == 0 ? 5850 : x;
         let tweakedY = y == 0 ? 9223 : y;
-        this.chunkSeed = Math.abs((((tweakedX) ** 3) * (tweakedY ** 5) + 3850 + ((seed - 314) * 11)) % (2 ** 16));
+        this.chunkSeed = Math.abs((((tweakedX) ** 3) * (tweakedY ** 5) + 3850 + ((parent.seed - 314) * 11)) % (2 ** 16));
         this._generator = pseudoRandom(this.chunkSeed);
-        this.layers = [
+        this.layers = Chunk.initializeLayers();
+        return this;
+    }
+    static initializeLayers() {
+        const layers = [
             new Array(consts.CHUNK_SIZE),
             new Array(consts.CHUNK_SIZE),
             new Array(consts.CHUNK_SIZE)
         ];
-        for (let x = 0; x < consts.CHUNK_SIZE; x++) {
-            this.layers[0][x] = new Array(consts.CHUNK_SIZE);
-            for (let z = 0; z < consts.CHUNK_SIZE; z++) {
-                this.layers[0][x][z] = "base_null";
-            }
+        for (let i = 0; i < consts.CHUNK_SIZE; i++) {
+            layers[0][i] = new Array(consts.CHUNK_SIZE).fill("base_null");
+            layers[1][i] = new Array(consts.CHUNK_SIZE).fill(null);
+            layers[2][i] = new Array(consts.CHUNK_SIZE).fill(null);
         }
-        for (let x = 0; x < consts.CHUNK_SIZE; x++) {
-            this.layers[1][x] = new Array(consts.CHUNK_SIZE);
-            for (let z = 0; z < consts.CHUNK_SIZE; z++) {
-                this.layers[1][x][z] = null;
-            }
+        return layers;
+    }
+    static read(chunkX, chunkY, level, data) {
+        const chunk = new Chunk(chunkX, chunkY, level);
+        const numericVersion = +data.version.split(" ")[1].replaceAll(".", "");
+        if (numericVersion < 200) {
+            data.layers = data;
         }
-        for (let x = 0; x < consts.CHUNK_SIZE; x++) {
-            this.layers[2][x] = new Array(consts.CHUNK_SIZE);
-            for (let z = 0; z < consts.CHUNK_SIZE; z++) {
-                this.layers[2][x][z] = null;
-            }
-        }
-        if (data) {
-            if (+data.version.split(" ")[1].replaceAll(".", "") < 200) {
-                data.layers = data;
-            }
-            for (let y in data.layers[0]) {
-                for (let x in data.layers[0][y]) {
-                    let _buildingData = data.layers[0][y][x];
-                    if (!_buildingData)
-                        continue;
-                    this.hasBuildings = true;
-                    let buildingData;
-                    if (+data.version.split(" ")[1].replaceAll(".", "") <= 200) {
-                        _buildingData.id = hex(_buildingData.id, 4);
-                    }
-                    if (+data.version.split(" ")[1].replaceAll(".", "") < 300) {
-                        buildingData = {
-                            ..._buildingData,
-                            id: mapLegacyRawBuildingID(getLegacyRawBuildingID(_buildingData.id)),
-                            meta: +_buildingData.id >> 8
-                        };
-                    }
-                    else
-                        buildingData = _buildingData;
-                    let tempBuilding;
-                    try {
-                        tempBuilding = Buildings.get(buildingData.id).read(buildingData, this.parent);
-                    }
-                    catch (err) {
-                        console.error(err);
-                        throw new Error(`Failed to import building id ${stringifyMeta(buildingData.id, buildingData.meta)} at position ${x},${y} in chunk ${this.x},${this.y}. See console for more details.`);
-                    }
-                    this.layers[1][y][x] = tempBuilding;
+        for (let y in data.layers[0]) {
+            for (let x in data.layers[0][y]) {
+                let _buildingData = data.layers[0][y][x];
+                if (!_buildingData)
+                    continue;
+                chunk.hasBuildings = true;
+                let buildingData;
+                if (numericVersion <= 200) {
+                    _buildingData.id = hex(_buildingData.id, 4);
                 }
-            }
-            for (let y in data.layers[1]) {
-                for (let x in data.layers[1][y]) {
-                    let _buildingData = data.layers[1][y][x];
-                    if (!_buildingData)
-                        continue;
-                    this.hasBuildings = true;
-                    let buildingData;
-                    if (+data.version.split(" ")[1].replaceAll(".", "") <= 200) {
-                        _buildingData.id = hex(_buildingData.id, 4);
-                    }
-                    if (+data.version.split(" ")[1].replaceAll(".", "") < 300) {
-                        buildingData = {
-                            ..._buildingData,
-                            id: mapLegacyRawBuildingID(getLegacyRawBuildingID(_buildingData.id)),
-                            meta: +_buildingData.id >> 8
-                        };
-                    }
-                    else
-                        buildingData = _buildingData;
-                    let tempBuilding = new (Buildings.get(buildingData.id))(parseInt(x) + (consts.CHUNK_SIZE * this.x), parseInt(y) + (consts.CHUNK_SIZE * this.y), buildingData.meta, this.parent);
-                    if (buildingData.item && +data.version.split(" ")[1].replaceAll(".", "") >= 130) {
-                        tempBuilding.item = new Item(buildingData.item.x, buildingData.item.y, buildingData.item.id);
-                    }
-                    this.layers[2][y][x] = tempBuilding;
+                if (numericVersion < 300) {
+                    buildingData = {
+                        ..._buildingData,
+                        id: mapLegacyRawBuildingID(getLegacyRawBuildingID(_buildingData.id)),
+                        meta: +_buildingData.id >> 8
+                    };
                 }
+                else
+                    buildingData = _buildingData;
+                let tempBuilding;
+                try {
+                    tempBuilding = Buildings.get(buildingData.id).read(buildingData, level);
+                }
+                catch (err) {
+                    console.error(err);
+                    throw new Error(`Failed to import building id ${stringifyMeta(buildingData.id, buildingData.meta)} at position ${x},${y} in chunk ${chunkX},${chunkY}. See console for more details.`);
+                }
+                chunk.layers[1][y][x] = tempBuilding;
             }
         }
-        return this;
+        for (let y in data.layers[1]) {
+            for (let x in data.layers[1][y]) {
+                let _buildingData = data.layers[1][y][x];
+                if (!_buildingData)
+                    continue;
+                chunk.hasBuildings = true;
+                let buildingData;
+                if (numericVersion <= 200) {
+                    _buildingData.id = hex(_buildingData.id, 4);
+                }
+                if (numericVersion < 300) {
+                    buildingData = {
+                        ..._buildingData,
+                        id: mapLegacyRawBuildingID(getLegacyRawBuildingID(_buildingData.id)),
+                        meta: +_buildingData.id >> 8
+                    };
+                }
+                else
+                    buildingData = _buildingData;
+                let tempBuilding = new (Buildings.get(buildingData.id))(parseInt(x) + (consts.CHUNK_SIZE * chunkX), parseInt(y) + (consts.CHUNK_SIZE * chunkY), buildingData.meta, level);
+                if (buildingData.item && numericVersion >= 130) {
+                    tempBuilding.item = new Item(buildingData.item.x, buildingData.item.y, buildingData.item.id);
+                }
+                chunk.layers[2][y][x] = tempBuilding;
+            }
+        }
+        chunk.generate();
+        return chunk;
     }
     update(currentFrame) {
         if (!this.hasBuildings)

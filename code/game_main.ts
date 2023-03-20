@@ -581,21 +581,22 @@ function main_loop(){
 /**Called when switching to gamestate "game". */
 function load(){
 	
-	level1 = new Level(314);
-
+	
 	
 	if(!localStorage.firstload){
 		localStorage.firstload = true;
 		_alert(`Welcome to Untitled Electron Game!
-This is a game about building a factory. It's still in early alpha, so there's not much content.
-There's no good in game tutorial, so to get started check the <a href="https://github.com/BalaM314/Untitled-Electron-Game/wiki/Quickstart-Guide">wiki page</a>.`);
+		This is a game about building a factory. It's still in early alpha, so there's not much content.
+		There's no good in game tutorial, so to get started check the <a href="https://github.com/BalaM314/Untitled-Electron-Game/wiki/Quickstart-Guide">wiki page</a>.`);
 	}
-
+	
 	if(
-		localStorage.getItem("save1") &&
-		(settings.alwaysLoadSave || confirm("Would you like to load your save?"))
+	localStorage.getItem("save1") &&
+	(settings.alwaysLoadSave || confirm("Would you like to load your save?"))
 	){
 		importData(localStorage.getItem("save1")!);
+	} else {
+		level1 = new Level(314).generate();
 	}
 
 	Game.state = "game";
@@ -650,7 +651,7 @@ function importData(rawData:string){
 
 
 
-		tempLevel = new Level(levelData);
+		tempLevel = Level.read(levelData);
 		level1 = tempLevel;
 
 	} catch(err){
