@@ -202,7 +202,7 @@ function getElement(id, type) {
 function trigger(type, buildingID, itemID) {
 }
 function _alert(x) {
-    alerts.list.push(x);
+    Game.alerts.list.push(x);
 }
 function hex(num, length) {
     return `0x${(Array(length).fill("0").join("") + num.toString(16)).toUpperCase().slice(-length)}`;

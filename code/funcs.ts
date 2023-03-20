@@ -250,7 +250,7 @@ function trigger(type:triggerType, buildingID?:RawBuildingID, itemID?:ItemID){
 }
 
 function _alert(x:string){
-	alerts.list.push(x);
+	Game.alerts.list.push(x);
 }
 
 function hex(num:number, length:number){

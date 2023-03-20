@@ -62,10 +62,6 @@ var triggerType;
     triggerType[triggerType["spawnItem"] = 2] = "spawnItem";
     triggerType[triggerType["buildingRun"] = 3] = "buildingRun";
 })(triggerType || (triggerType = {}));
-let alerts = {
-    list: [],
-    active: false
-};
 const generation_consts = {
     perlin_scale: 2 * Math.PI,
     y_offset: 2031,
@@ -99,20 +95,7 @@ const keybinds = extend()({
         save_to_file: new Keybind("s", ["control", "alt", "!shift"], () => {
             download("Untitled-Electron-Game-save.json", JSON.stringify(exportData()));
         }),
-        save: new Keybind("s", ["control", "!alt", "!shift"], () => {
-            if ((!localStorage.getItem("save1")
-                || JSON.parse(localStorage.getItem("save1")).UntitledElectronGame?.level1?.uuid == level1?.uuid)
-                || confirm("Are you sure you want to save? This will overwrite your current saved world which seems to be different!")) {
-                try {
-                    localStorage.setItem("save1", JSON.stringify(exportData()));
-                    alert("Saved successfully!");
-                    Game.lastSaved = millis();
-                }
-                catch (err) {
-                    alert("Failed to save! " + parseError(err));
-                }
-            }
-        }),
+        save: new Keybind("s", ["control", "!alt", "!shift"], () => attemptManualLocalSave),
         load_from_file: new Keybind("o", ["control"], () => {
             uploadButton.click();
         }),
@@ -169,15 +152,19 @@ let Game = {
     tutorial: {},
     paused: false,
     state: "loading",
-    title: {
-        splashtext: "",
-        splashbehavior: Math.sin
+    splash: {
+        text: "",
+        bounceFunc: Math.sin
     },
     loadedTextures: 0,
     animationFrame: 0,
+    alerts: {
+        list: [],
+        active: false
+    },
 };
 let level1 = null;
-let splashes = [
+const splashes = [
     "Get out of my files!",
     "Remember everyone, the secret to a good game in 2020 is s p l a s h t e x t",
     "Got any grapes?",
@@ -255,7 +242,7 @@ let splashes = [
     "Brought to you by the letter π",
     "Type the Konami code for a secret!"
 ];
-let raresplashes = [
+const raresplashes = [
     "This is the rarest splash of all. It's so rare it never displays!",
     "notched apple",
     "Diamonds never were actually forever",

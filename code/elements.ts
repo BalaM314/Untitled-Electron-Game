@@ -19,5 +19,5 @@ const texturesDiv = getElement("textures", HTMLDivElement);
 
 alertexit.onclick = (e) => {
 	alertbox.classList.remove("active");
-	alerts.active = false;
+	Game.alerts.active = false;
 };

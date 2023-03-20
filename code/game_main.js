@@ -184,8 +184,8 @@ let state = {
             ctxOverlays.fillStyle = "#000000";
             ctxOverlays.fillText("Untitled Electron Game", innerWidth / 2, innerHeight * 0.2);
             ctxOverlays.fillStyle = "#cccc00";
-            ctxOverlays.font = `${20 + 5 * Game.title.splashbehavior(millis() / 400)}px sans-serif`;
-            ctxOverlays.fillText(Game.title.splashtext ?? "splash not found! this is actually an error pls report", innerWidth / 2, innerHeight * 0.35);
+            ctxOverlays.font = `${20 + 5 * Game.splash.bounceFunc(millis() / 400)}px sans-serif`;
+            ctxOverlays.fillText(Game.splash.text ?? "splash not found! this is actually an error pls report", innerWidth / 2, innerHeight * 0.35);
             state.title.buttons.forEach(button => button.display(ctxOverlays));
         },
         onmousedown(e) {
@@ -426,12 +426,12 @@ function fixSizes() {
     }
 }
 function handleAlerts() {
-    if (alerts.list.length && alerts.active == false) {
+    if (Game.alerts.list.length && !Game.alerts.active) {
         Input.mouseDown = false;
-        alertmessage.innerHTML = alerts.list.shift();
+        alertmessage.innerHTML = Game.alerts.list.shift();
         alertmessage.style.setProperty("--text-length", alertmessage.innerText.length.toString());
         alertbox.classList.add("active");
-        alerts.active = true;
+        Game.alerts.active = true;
     }
 }
 function main_loop() {
@@ -538,6 +538,20 @@ function importData(rawData) {
         alert("Import failed! " + parseError(err));
     }
 }
+function attemptManualLocalSave() {
+    if ((!localStorage.getItem("save1")
+        || JSON.parse(localStorage.getItem("save1")).UntitledElectronGame?.level1?.uuid == level1?.uuid)
+        || confirm("Are you sure you want to save? This will overwrite your current saved world which seems to be different!")) {
+        try {
+            localStorage.setItem("save1", JSON.stringify(exportData()));
+            alert("Saved successfully!");
+            Game.lastSaved = millis();
+        }
+        catch (err) {
+            alert("Failed to save! " + parseError(err));
+        }
+    }
+}
 let placedBuilding = {
     type: "base_null",
     direction: Direction.right,
@@ -569,8 +583,8 @@ function init() {
     if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
         alert("It looks like you're trying to play on a phone. Unfortunately, mobile devices are not currently supported.");
     }
-    Game.title.splashtext = Math.random() < 0.95 ? splashes[Math.ceil(Math.random() * (splashes.length - 1))] : raresplashes[Math.ceil(Math.random() * (raresplashes.length - 1))];
-    Game.title.splashbehavior = Math.random() < 0.9 ? Math.sin : Math.tan;
+    Game.splash.text = Math.random() < 0.95 ? splashes[Math.ceil(Math.random() * (splashes.length - 1))] : raresplashes[Math.ceil(Math.random() * (raresplashes.length - 1))];
+    Game.splash.bounceFunc = Math.random() < 0.9 ? Math.sin : Math.tan;
     errorBackground.classList.remove("hidden");
     loadingBackground.classList.add("hidden");
     main_loop();

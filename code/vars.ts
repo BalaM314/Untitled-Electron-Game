@@ -101,14 +101,6 @@ enum triggerType {
 	buildingRun
 }
 
-let alerts: {
-	list: string[];
-	active: boolean;
-} = {
-	list: [],
-	active: false
-};
-
 const generation_consts = {
 	//All distance values are in chunks.
 	/**	An irrational number used to scale the perlin noise. The larger the number, the larger the terrain formations.*/
@@ -161,21 +153,7 @@ const keybinds = extend<Keybinds>()({
 		save_to_file: new Keybind("s", ["control", "alt", "!shift"], () => {
 			download("Untitled-Electron-Game-save.json", JSON.stringify(exportData()));
 		}),
-		save: new Keybind("s", ["control", "!alt", "!shift"], () => {
-			if(
-				(!localStorage.getItem("save1") 
-					|| (JSON.parse(localStorage.getItem("save1")!) as SaveData).UntitledElectronGame?.level1?.uuid == level1?.uuid)
-				|| confirm("Are you sure you want to save? This will overwrite your current saved world which seems to be different!")
-			){
-				try {
-					localStorage.setItem("save1", JSON.stringify(exportData()));
-					alert("Saved successfully!");
-					Game.lastSaved = millis();
-				} catch(err){
-					alert("Failed to save! " + parseError(err));
-				}
-			}
-		}),
+		save: new Keybind("s", ["control", "!alt", "!shift"], () => attemptManualLocalSave),
 		load_from_file: new Keybind("o", ["control"], () => {
 			uploadButton.click();
 		}),
@@ -235,12 +213,16 @@ let Game: {
 	};
 	state: "loading" | "title" | "settings" | "settings.keybinds" | "game";
 	paused: boolean;
-	title: {
-		splashtext: string;
-		splashbehavior: (x:number) => number;
+	splash: {
+		text: string;
+		bounceFunc: (x:number) => number;
 	};
 	loadedTextures: number;
 	animationFrame: number;
+	alerts: {
+		list: string[];
+		active: boolean;
+	}
 } = {
 	texturesReady: false,
 	startTime: new Date().getTime(),
@@ -251,15 +233,19 @@ let Game: {
 	},
 	paused: false,
 	state: "loading",
-	title: {
-		splashtext: "",
-		splashbehavior: Math.sin
+	splash: {
+		text: "",
+		bounceFunc: Math.sin
 	},
 	loadedTextures: 0,
 	animationFrame: 0,
+	alerts: {
+		list: [],
+		active: false
+	},
 };
 let level1:Level = null!;
-let splashes:string[] = [
+const splashes:string[] = [
 	"Get out of my files!",
 	"Remember everyone, the secret to a good game in 2020 is s p l a s h t e x t",
 	"Got any grapes?",
@@ -337,7 +323,7 @@ let splashes:string[] = [
 	"Brought to you by the letter π",
 	"Type the Konami code for a secret!"
 ];
-let raresplashes: string[] = [
+const raresplashes: string[] = [
 	"This is the rarest splash of all. It's so rare it never displays!",
 	"notched apple",
 	"Diamonds never were actually forever",
