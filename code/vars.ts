@@ -224,6 +224,7 @@ let Game: {
 		list: string[];
 		active: boolean;
 	}
+	frames: number;
 } = {
 	texturesReady: false,
 	startTime: new Date().getTime(),
@@ -244,6 +245,7 @@ let Game: {
 		list: [],
 		active: false
 	},
+	frames: 0,
 };
 let level1:Level = null!;
 const splashes:string[] = [

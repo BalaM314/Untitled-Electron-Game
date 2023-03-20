@@ -693,8 +693,11 @@ class Item {
 	}
 }
 
+interface BlockDrawer<T> {
+	(build:T, currentFrame:CurrentFrame):void;
+}
+
 class Building {
-	static animated = false;
 	static outputsItems = false;
 	static acceptsItems = false;
 	static id:RawBuildingID;
@@ -702,6 +705,8 @@ class Building {
 	static immutable = false;
 	static isOverlay = false;
 	static displaysItem = false;
+	//TODO ew, any
+	static drawer:BlockDrawer<any> | null = null;
 
 	item: Item | null = null;
 	pos:Pos;
@@ -740,7 +745,7 @@ class Building {
 	static display(id:BuildingIDWithMeta, pos:Pos, layer?:(keyof typeof Gfx.layers)){
 		const block = Buildings.get(id[0]);
 		const textureSize = block.textureSize(id[1]);
-		layer ??= block.isOverlay ? "overlayBuilds" : "ghostBuilds"
+		layer ??= block.isOverlay ? "overlayBuilds" : "buildings"
 		Gfx.tImage(
 			Gfx.texture(`building/${stringifyMeta(...id)}`),
 			pos.tileX + textureSize[1][0], pos.tileY + textureSize[1][1],
@@ -748,8 +753,9 @@ class Building {
 			Gfx.layers[layer]
 		);
 	}
-	display(currentFrame:CurrentFrame, layer:(keyof typeof Gfx.layers) = this.block.isOverlay ? "overlayBuilds" : "ghostBuilds"){
+	display(currentFrame:CurrentFrame, layer:(keyof typeof Gfx.layers) = this.block.isOverlay ? "overlayBuilds" : "buildings"){
 		Building.display([this.block.id, this.meta], this.pos, layer);
+		this.block.drawer?.(this, currentFrame);
 		if(this.item instanceof Item && this.block.displaysItem){
 			this.item.display(currentFrame);
 		}
@@ -875,6 +881,23 @@ class BuildingWithRecipe extends Building {
 				this.timer = -1;
 				this.items = [];
 				this.recipe = null;
+			}
+		}
+	}
+	static makeDrawer<T extends BuildingWithRecipe>(drawer:(build:T, e:AnimationData, currentFrame:CurrentFrame) => void):BlockDrawer<T> {
+		return (build, currentFrame) => {
+			if(build.recipe){
+				Gfx.layer("buildings");
+				drawer(build, getAnimationData(1 - (build.timer) / build.recipe.duration), currentFrame);
+			}
+		}
+	}
+	static progressDrawer<T extends BuildingWithRecipe>():BlockDrawer<T> {
+		return (build, currentFrame) => {
+			if(build.recipe){
+				Gfx.layer("buildings");
+				Gfx.fillColor("blue");
+				Gfx.tEllipse(build.pos.tileX + 0.5, build.pos.tileY + 0.5, 0.3, 0.3, 0, 0, (1 - (build.timer) / build.recipe.duration) * 2 * Math.PI);
 			}
 		}
 	}

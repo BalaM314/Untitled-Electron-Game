@@ -164,6 +164,7 @@ let Game = {
         list: [],
         active: false
     },
+    frames: 0,
 };
 let level1 = null;
 const splashes = [

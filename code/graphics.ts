@@ -10,6 +10,23 @@ interface Texture extends UnloadedTexture {
 	height: number;
 }
 
+interface AnimationData {
+	/**0 to 1 */
+	in:number;
+	out:number;
+	sin:number;
+	cos:number;
+}
+
+function getAnimationData(fin:number){
+	return {
+		in: fin,
+		out: 1 - fin,
+		sin: Math.sin(Math.PI * 2 * fin),
+		cos: Math.cos(Math.PI * 2 * fin),
+	};
+}
+
 function loadTexture(t:UnloadedTexture, texturesDiv:HTMLDivElement){
 	return new Promise<Texture>((resolve, reject) => {
 		let img = document.createElement("img");
@@ -94,20 +111,39 @@ class Camera {
 
 class Gfx {
 
+	//TODO fix layers
 	static layers = {
-		tile: ctxTiles,
-		buildings: ctxBuilds,
-		overlayBuilds: ctxOBuilds,
-		ghostBuilds: ctxGBuilds,
-		items: ctxItems,
-		overlay: ctxOverlays,
+		tile: null! as CanvasRenderingContext2D,
+		buildings: null! as CanvasRenderingContext2D,
+		overlayBuilds: null! as CanvasRenderingContext2D,
+		ghostBuilds: null! as CanvasRenderingContext2D,
+		items: null! as CanvasRenderingContext2D,
+		overlay: null! as CanvasRenderingContext2D,
 	};
 	static textures:Record<string, Texture> = {};
 	static rectMode:RectMode = RectMode.CORNER;
-	static ctx:CanvasRenderingContext2D = this.layers.overlay;
+	static ctx:CanvasRenderingContext2D = null!;
+	static init(){
+		this.layers = {
+			tile: ctxTiles,
+			buildings: ctxBuilds,
+			overlayBuilds: ctxOBuilds,
+			ghostBuilds: ctxGBuilds,
+			items: ctxItems,
+			overlay: ctxOverlays,
+		};
+		this.ctx = this.layers.overlay;
+	}
 	static layer(k:keyof typeof this.layers){
 		this.ctx = this.layers[k];
 		this.alpha(1);
+	}
+	static lerp(from:[r:number, g:number, b:number], to:[r:number, g:number, b:number], f:number):[r:number, g:number, b:number]{
+		return [
+			from[0] + f * (to[0] - from[0]),
+			from[1] + f * (to[1] - from[1]),
+			from[2] + f * (to[2] - from[2])
+		];
 	}
 	static alpha(a:number) {
 		this.ctx.globalAlpha = a;
@@ -158,8 +194,14 @@ class Gfx {
 	static strokeColor(color:string) {
 		this.ctx.strokeStyle = color;
 	}
-	static fillColor(color:string) {
-		this.ctx.fillStyle = color;
+	static fillColor(color:string):void;
+	static fillColor(r:number, g:number, b:number):void;
+	static fillColor(arg1:any, arg2?:any, arg3?:any){
+		if(typeof arg1 == "string"){
+			this.ctx.fillStyle = arg1;
+		} else {
+			this.ctx.fillStyle = `rgb(${arg1},${arg2},${arg3})`;
+		}
 	}
 	static font(font:string) {
 		this.ctx.font = font;
@@ -237,6 +279,21 @@ class Gfx {
 				width * Camera.zoomLevel,
 				height * Camera.zoomLevel
 			);
+	}
+	static tEllipse(tileX:number, tileY:number, width:number, height:number, rotation = 0, startAngle = 0, endAngle = 2 * Math.PI, _ctx = this.ctx){
+		_ctx.beginPath();
+		_ctx.moveTo(
+			(tileX * consts.TILE_SIZE + Camera.scrollX) * Camera.zoomLevel + Camera.width / 2,
+			(tileY * consts.TILE_SIZE + Camera.scrollY) * Camera.zoomLevel + Camera.height / 2
+		);
+		_ctx.ellipse(
+			(tileX * consts.TILE_SIZE + Camera.scrollX) * Camera.zoomLevel + Camera.width / 2,
+			(tileY * consts.TILE_SIZE + Camera.scrollY) * Camera.zoomLevel + Camera.height / 2,
+			width * Camera.zoomLevel * consts.TILE_SIZE / 2,
+			height * Camera.zoomLevel * consts.TILE_SIZE / 2,
+			rotation, startAngle, endAngle
+		);
+		_ctx.fill();
 	}
 	static ellipse(x:number, y:number, w:number, h:number, _ctx = this.ctx){
 		_ctx.beginPath();

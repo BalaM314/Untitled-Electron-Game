@@ -1,5 +1,12 @@
 "use strict";
-var _a;
+function getAnimationData(fin) {
+    return {
+        in: fin,
+        out: 1 - fin,
+        sin: Math.sin(Math.PI * 2 * fin),
+        cos: Math.cos(Math.PI * 2 * fin),
+    };
+}
 function loadTexture(t, texturesDiv) {
     return new Promise((resolve, reject) => {
         let img = document.createElement("img");
@@ -76,9 +83,27 @@ Camera.scrollY = 0;
 Camera.width = window.innerWidth;
 Camera.height = window.innerHeight;
 class Gfx {
+    static init() {
+        this.layers = {
+            tile: ctxTiles,
+            buildings: ctxBuilds,
+            overlayBuilds: ctxOBuilds,
+            ghostBuilds: ctxGBuilds,
+            items: ctxItems,
+            overlay: ctxOverlays,
+        };
+        this.ctx = this.layers.overlay;
+    }
     static layer(k) {
         this.ctx = this.layers[k];
         this.alpha(1);
+    }
+    static lerp(from, to, f) {
+        return [
+            from[0] + f * (to[0] - from[0]),
+            from[1] + f * (to[1] - from[1]),
+            from[2] + f * (to[2] - from[2])
+        ];
     }
     static alpha(a) {
         this.ctx.globalAlpha = a;
@@ -115,8 +140,13 @@ class Gfx {
     static strokeColor(color) {
         this.ctx.strokeStyle = color;
     }
-    static fillColor(color) {
-        this.ctx.fillStyle = color;
+    static fillColor(arg1, arg2, arg3) {
+        if (typeof arg1 == "string") {
+            this.ctx.fillStyle = arg1;
+        }
+        else {
+            this.ctx.fillStyle = `rgb(${arg1},${arg2},${arg3})`;
+        }
     }
     static font(font) {
         this.ctx.font = font;
@@ -150,21 +180,26 @@ class Gfx {
         else
             _ctx.drawImage(texture.image, (pixelX - (width / 2) + Camera.scrollX) * Camera.zoomLevel + Camera.width / 2, (pixelY - (width / 2) + Camera.scrollY) * Camera.zoomLevel + Camera.height / 2, width * Camera.zoomLevel, height * Camera.zoomLevel);
     }
+    static tEllipse(tileX, tileY, width, height, rotation = 0, startAngle = 0, endAngle = 2 * Math.PI, _ctx = this.ctx) {
+        _ctx.beginPath();
+        _ctx.moveTo((tileX * consts.TILE_SIZE + Camera.scrollX) * Camera.zoomLevel + Camera.width / 2, (tileY * consts.TILE_SIZE + Camera.scrollY) * Camera.zoomLevel + Camera.height / 2);
+        _ctx.ellipse((tileX * consts.TILE_SIZE + Camera.scrollX) * Camera.zoomLevel + Camera.width / 2, (tileY * consts.TILE_SIZE + Camera.scrollY) * Camera.zoomLevel + Camera.height / 2, width * Camera.zoomLevel * consts.TILE_SIZE / 2, height * Camera.zoomLevel * consts.TILE_SIZE / 2, rotation, startAngle, endAngle);
+        _ctx.fill();
+    }
     static ellipse(x, y, w, h, _ctx = this.ctx) {
         _ctx.beginPath();
         _ctx.ellipse(x, y, w, h, 0, 0, Math.PI * 2);
         _ctx.fill();
     }
 }
-_a = Gfx;
 Gfx.layers = {
-    tile: ctxTiles,
-    buildings: ctxBuilds,
-    overlayBuilds: ctxOBuilds,
-    ghostBuilds: ctxGBuilds,
-    items: ctxItems,
-    overlay: ctxOverlays,
+    tile: null,
+    buildings: null,
+    overlayBuilds: null,
+    ghostBuilds: null,
+    items: null,
+    overlay: null,
 };
 Gfx.textures = {};
 Gfx.rectMode = RectMode.CORNER;
-Gfx.ctx = _a.layers.overlay;
+Gfx.ctx = null;

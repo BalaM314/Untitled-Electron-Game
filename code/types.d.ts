@@ -157,6 +157,7 @@ interface CurrentFrame {
 	tps: number;//Tiles per frame
 	ips: number;//Items per frame
 	redraw: boolean;
+	frame: number;
 }
 
 interface Array<T> {

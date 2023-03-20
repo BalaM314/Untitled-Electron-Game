@@ -536,7 +536,8 @@ function main_loop(){
 			cps: 0,
 			tps: 0,
 			ips: 0,
-			redraw: Game.forceRedraw
+			redraw: Game.forceRedraw,
+			frame: Game.frames
 		};
 		Game.forceRedraw = false;
 		fixSizes();
@@ -569,6 +570,7 @@ function main_loop(){
 		}
 
 		handleAlerts();
+		Game.frames ++;
 
 	} catch(err){
 		alert("An error has occurred! Oopsie.\nPlease create an issue on this project's GitHub so I can fix it.\nError message: " + parseError(err));
@@ -706,6 +708,8 @@ function init(){
 	}
 	
 	console.log("%c Hey there! It looks like you're checking out the console.\nIf you want to view the source code, *please do it at* https://github.com/BalaM314/Untitled-Electron-Game \n Make sure to view the .ts files as the .js files are compiled and thus look weird.", "color: blue; font-size: 30px;")
+
+	Gfx.init();
 	
 	noise.seed(1);
 	loadTextures(textureIDs.map(id => ({id})), texturesDiv)

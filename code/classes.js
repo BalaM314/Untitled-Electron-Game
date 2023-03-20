@@ -629,11 +629,12 @@ class Building {
     static display(id, pos, layer) {
         const block = Buildings.get(id[0]);
         const textureSize = block.textureSize(id[1]);
-        layer ?? (layer = block.isOverlay ? "overlayBuilds" : "ghostBuilds");
+        layer ?? (layer = block.isOverlay ? "overlayBuilds" : "buildings");
         Gfx.tImage(Gfx.texture(`building/${stringifyMeta(...id)}`), pos.tileX + textureSize[1][0], pos.tileY + textureSize[1][1], ...textureSize[0], Gfx.layers[layer]);
     }
-    display(currentFrame, layer = this.block.isOverlay ? "overlayBuilds" : "ghostBuilds") {
+    display(currentFrame, layer = this.block.isOverlay ? "overlayBuilds" : "buildings") {
         Building.display([this.block.id, this.meta], this.pos, layer);
+        this.block.drawer?.(this, currentFrame);
         if (this.item instanceof Item && this.block.displaysItem) {
             this.item.display(currentFrame);
         }
@@ -697,12 +698,12 @@ class Building {
         return build;
     }
 }
-Building.animated = false;
 Building.outputsItems = false;
 Building.acceptsItems = false;
 Building.immutable = false;
 Building.isOverlay = false;
 Building.displaysItem = false;
+Building.drawer = null;
 class BuildingWithRecipe extends Building {
     constructor(tileX, tileY, meta, level) {
         super(tileX, tileY, meta, level);
@@ -754,6 +755,23 @@ class BuildingWithRecipe extends Building {
                 this.recipe = null;
             }
         }
+    }
+    static makeDrawer(drawer) {
+        return (build, currentFrame) => {
+            if (build.recipe) {
+                Gfx.layer("buildings");
+                drawer(build, getAnimationData(1 - (build.timer) / build.recipe.duration), currentFrame);
+            }
+        };
+    }
+    static progressDrawer() {
+        return (build, currentFrame) => {
+            if (build.recipe) {
+                Gfx.layer("buildings");
+                Gfx.fillColor("blue");
+                Gfx.tEllipse(build.pos.tileX + 0.5, build.pos.tileY + 0.5, 0.3, 0.3, 0, 0, (1 - (build.timer) / build.recipe.duration) * 2 * Math.PI);
+            }
+        };
     }
 }
 BuildingWithRecipe.outputsItems = true;
