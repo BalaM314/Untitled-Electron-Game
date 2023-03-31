@@ -674,11 +674,14 @@ class Item {
 	update(currentframe:CurrentFrame){
 		//nothing necessary
 	}
+	static display(id:ItemID, pos:Pos){
+		Gfx.layer("items");
+		Gfx.pImage(Gfx.texture(`item/${id}`), pos.pixelX, pos.pixelY, consts.ITEM_SIZE, consts.ITEM_SIZE, RectMode.CENTER);
+	}
 	display(currentframe:CurrentFrame){
 		if(Camera.isPointVisible([this.pos.pixelX, this.pos.pixelY], consts.ITEM_SIZE)){
 			currentframe.ips ++;
-			Gfx.layer("items");
-			Gfx.pImage(Gfx.texture(`item/${this.id}`), this.pos.pixelX, this.pos.pixelY, consts.ITEM_SIZE, consts.ITEM_SIZE, RectMode.CENTER);
+			Item.display(this.id, this.pos);
 		}
 	}
 	export():ItemData | null {
@@ -705,11 +708,11 @@ class Building {
 	static immutable = false;
 	static isOverlay = false;
 	static displaysItem = false;
-	//TODO ew, any
-	static drawer:BlockDrawer<any> | null = null;
+	static drawer:BlockDrawer<Building> | null = null;
 
 	item: Item | null = null;
 	pos:Pos;
+	//https://www.typescriptlang.org/play?#code/CYUwxgNghgTiAEAzArgOzAFwJYHtXzgHMsBnDEGAHgCF4QAPc1YE+DATwAcQdF5rkWCMCypCAPgAUWYAC4yMUYQA08TDhizqqzjBycSsgN4AoeOfgBtAArxR8ANYh2vfgF0A-LP423AbhMAXwBKLQCAenCAFQALUiQ0TFx8GKhWACMQEHwsAFtOCBBc7PJgeChmeAB3DQdWRGgqwpISCHZVKAgMGJxkQhi2GIQwHFB4CBwcOoIQTrbqkCwYYAA6ExNIgEEc1DIKsARXbvjINNY4XRASEtYoeBIlQvh0wWElO1QAWhqYYTXTlr8V4iMTwUwWe4YKDYMB2OQKd4AXngACI0KgoMUyi8hCDCCiAhC9jD7lgAF4gWSoZC5TIweDIgCMhIs6QmYAcDMGpBWI12GBgyHU9LSbC4PD4AlxShZ5kIIAwAElgJJguCIRY4BhkDB8McSCs2TgOSsZLL4IEzBZkJxgNCQKqjJbLSYAawAMJ4ABuzg0dEY2RYQOloPV5mJWFhJG4IDk1NpFC5zKt5kiiuqFQwbBw8FSPvgIkQiAoJTF3FYrj5PpcMFYVSw3QLWCLJdQWejWRYKfgkQAsuwkEsyOVOLocFAwAMqqKMDmwHB7eV4KgQFU1NBAQwmHi1N7ffT6427oXi3A2-cY2UvZ1kAh7N076gG1hOuSKKoXlnutCCzgrqgAHIs1Aa4YHzWdngQO43Q+QYEEICZ0k6e4Rm4NYITTNQF1KJciFIch6RQdBsDwao4kneBkGuVgAHl0gAK3ADAVjOLBCD1HN5RXGBFwfdcznKLNBTbPIoMqMgNDvLN7GgvAmCzXIoE4dCLEiWJ4h+aZuBgYtMHmRBRBAD9kC-IY4AA1h6KorM8DvFpb1kbtMJXWNuVYCBDMgiYqhU8wjQ5ABCbwOG4VxPVQasNHNLZ0hwfN7yGYM3lBN1VCqVIs3TBcIHmadz3iFFRFPOCy0OPh9V5PAFCFWcYBRYysyicUSHnLBOGk1BT1YBtylYFEADFEhI1AUTIyMBniKiQGaEgOkqdNA0ozhcygL13gg1CB31Z4cCECgCkXDyV3KVB2GndhfKWu1yEdbsIQq-yHBWDtY3NZ11hg3tDPpLdA1YKVksIMFuwjWFckMgBlS8qRpOkuQANgABnNR6gtK1wvu480bWuh01TuiwHvZJ7wZXKHOzeoJ1jwsgKEkFFWhwKp6vgcLIpgVQjAvTtvERlYAFYLWCAIaYI+nEDSDAWbZ-dOe52NvAAZiFkWQGIWmYHp9I2M+UmKBZzH3zBUkKW8RkVaAA
 	block = this.constructor as typeof Building;
 	constructor(x:number, y:number, public readonly meta:BuildingMeta, public level:Level){
 		this.pos = Pos.fromTileCoords(x, y, false);
@@ -741,6 +744,9 @@ class Building {
 	}
 	stringID(){
 		return stringifyMeta(this.block.id, this.meta);
+	}
+	centeredPos(){
+		return Pos.fromTileCoords(this.pos.tileX, this.pos.tileY, true);
 	}
 	static display(id:BuildingIDWithMeta, pos:Pos, layer?:(keyof typeof Gfx.layers)){
 		const block = Buildings.get(id[0]);
@@ -817,9 +823,11 @@ class Building {
 			item: this.item?.export() ?? null
 		};
 	}
+	/**Must be called with a "this" context obtained from Buildings.get(id). */
 	static read(buildingData:BuildingData, level:Level):Building {
-		const build = new this(buildingData.x, buildingData.y, buildingData.meta, level);
 		//"this" refers to the superclass that read() was called on, which should be Buildings.get(id)
+		//This is done because superclasses may want to override the read() method, so you have to Buildings.get() anyway.
+		const build = new this(buildingData.x, buildingData.y, buildingData.meta, level);
 		if(buildingData.item) build.item = Item.read(buildingData.item);
 		return build;
 	}
@@ -884,22 +892,33 @@ class BuildingWithRecipe extends Building {
 			}
 		}
 	}
-	static makeDrawer<T extends BuildingWithRecipe>(drawer:(build:T, e:AnimationData, currentFrame:CurrentFrame) => void):BlockDrawer<T> {
-		return (build, currentFrame) => {
+	static makeDrawer<T extends BuildingWithRecipe>(drawer:(build:T, e:AnimationData, currentFrame:CurrentFrame) => void, ...drawers:BlockDrawer<T>[]){
+		return ((build:T, currentFrame:CurrentFrame) => {
 			if(build.recipe){
 				Gfx.layer("buildings");
 				drawer(build, getAnimationData(1 - (build.timer) / build.recipe.duration), currentFrame);
 			}
-		}
+			drawers.forEach(d => d(build, currentFrame));
+			BuildingWithRecipe.makeDrawer((build, e, currentFrame) => {build.recipe});
+		}) as BlockDrawer<Building>;
+		//This is an unsafe cast
+		//The issue is that static properties can't reference this in their type declaration, so I can't tell typescript that a (T extends BuildingWithRecipe)'s drawer won't get called with something other than a T (so it only accepts BuildingDrawer<Building>) without adding an extra line of boilerplate to each class.
 	}
-	static progressDrawer<T extends BuildingWithRecipe>():BlockDrawer<T> {
-		return (build, currentFrame) => {
+	static progressDrawer<T extends BuildingWithRecipe>(){
+		return ((build:T, currentFrame:CurrentFrame) => {
 			if(build.recipe){
 				Gfx.layer("buildings");
 				Gfx.fillColor("blue");
 				Gfx.tEllipse(build.pos.tileX + 0.5, build.pos.tileY + 0.5, 0.3, 0.3, 0, 0, (1 - (build.timer) / build.recipe.duration) * 2 * Math.PI);
 			}
-		}
+		}) as BlockDrawer<Building>;
+	}
+	static outputDrawer<T extends BuildingWithRecipe>(){
+		return ((build:T, currentFrame:CurrentFrame) => {
+			if(build.recipe){
+				Item.display(build.recipe.outputs[0], build.centeredPos());
+			}
+		}) as BlockDrawer<Building>;
 	}
 }
 
@@ -1453,6 +1472,9 @@ class MultiBlockController extends BuildingWithRecipe {
 			}
 		}
 		return offsets;
+	}
+	centeredPos(){
+		return Pos.fromTileCoords(this.pos.tileX + this.block.multiblockSize[0] / 2, this.pos.tileY + this.block.multiblockSize[1] / 2, false);
 	}
 	break(){
 		this.secondaries.forEach(secondary => secondary.break(true));

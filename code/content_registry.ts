@@ -117,12 +117,10 @@ const Buildings = new ContentRegistry<RawBuildingID, typeof Building>();
 Buildings.register("base_conveyor", Conveyor);
 Buildings.register("base_miner", Miner);
 Buildings.register("base_trash_can", TrashCan);
-Buildings.register("base_furnace", BuildingWithRecipe, { recipeType: recipes.base_smelting, drawer: BuildingWithRecipe.makeDrawer((build, e) => {
+Buildings.register("base_furnace", BuildingWithRecipe, { recipeType: recipes.base_smelting, drawer: BuildingWithRecipe.makeDrawer<BuildingWithRecipe>((build, e) => {
 	Gfx.fillColor(...Gfx.lerp([255, 127, 39], [255, 95, 29], e.sin));
-	Gfx.tRect(build.pos.tileX + 0.25, build.pos.tileY + 0.25, 0.5, 0.5);
-	Gfx.fillColor("blue");
-	Gfx.tEllipse(build.pos.tileX + 0.5, build.pos.tileY + 0.5, 0.3, 0.3, 0, 0, e.in * 2 * Math.PI);
-})});
+	Gfx.tRect(...build.centeredPos().tuple, 0.5, 0.5, RectMode.CENTER);
+}, BuildingWithRecipe.outputDrawer())});
 Buildings.register("base_extractor", Extractor);
 Buildings.register("base_chest", StorageBuilding, { capacity: 64 });
 Buildings.register("base_resource_acceptor", ResourceAcceptor);
@@ -131,4 +129,4 @@ Buildings.register("base_wiremill", BuildingWithRecipe, { recipeType: recipes.ba
 Buildings.register("base_compressor", BuildingWithRecipe, { recipeType: recipes.base_compressing, drawer: BuildingWithRecipe.progressDrawer() });
 Buildings.register("base_lathe", BuildingWithRecipe, { recipeType: recipes.base_lathing });
 Buildings.register("base_multiblock_secondary", MultiBlockSecondary);
-Buildings.register("base_assembler", MultiBlockController, { recipeType: recipes.base_assembling, multiblockSize: [2, 2] });
+Buildings.register("base_assembler", MultiBlockController, { recipeType: recipes.base_assembling, multiblockSize: [2, 2], drawer: BuildingWithRecipe.outputDrawer() });

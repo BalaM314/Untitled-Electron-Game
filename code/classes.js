@@ -573,11 +573,14 @@ class Item {
     }
     update(currentframe) {
     }
+    static display(id, pos) {
+        Gfx.layer("items");
+        Gfx.pImage(Gfx.texture(`item/${id}`), pos.pixelX, pos.pixelY, consts.ITEM_SIZE, consts.ITEM_SIZE, RectMode.CENTER);
+    }
     display(currentframe) {
         if (Camera.isPointVisible([this.pos.pixelX, this.pos.pixelY], consts.ITEM_SIZE)) {
             currentframe.ips++;
-            Gfx.layer("items");
-            Gfx.pImage(Gfx.texture(`item/${this.id}`), this.pos.pixelX, this.pos.pixelY, consts.ITEM_SIZE, consts.ITEM_SIZE, RectMode.CENTER);
+            Item.display(this.id, this.pos);
         }
     }
     export() {
@@ -625,6 +628,9 @@ class Building {
     }
     stringID() {
         return stringifyMeta(this.block.id, this.meta);
+    }
+    centeredPos() {
+        return Pos.fromTileCoords(this.pos.tileX, this.pos.tileY, true);
     }
     static display(id, pos, layer) {
         const block = Buildings.get(id[0]);
@@ -756,22 +762,31 @@ class BuildingWithRecipe extends Building {
             }
         }
     }
-    static makeDrawer(drawer) {
-        return (build, currentFrame) => {
+    static makeDrawer(drawer, ...drawers) {
+        return ((build, currentFrame) => {
             if (build.recipe) {
                 Gfx.layer("buildings");
                 drawer(build, getAnimationData(1 - (build.timer) / build.recipe.duration), currentFrame);
             }
-        };
+            drawers.forEach(d => d(build, currentFrame));
+            BuildingWithRecipe.makeDrawer((build, e, currentFrame) => { build.recipe; });
+        });
     }
     static progressDrawer() {
-        return (build, currentFrame) => {
+        return ((build, currentFrame) => {
             if (build.recipe) {
                 Gfx.layer("buildings");
                 Gfx.fillColor("blue");
                 Gfx.tEllipse(build.pos.tileX + 0.5, build.pos.tileY + 0.5, 0.3, 0.3, 0, 0, (1 - (build.timer) / build.recipe.duration) * 2 * Math.PI);
             }
-        };
+        });
+    }
+    static outputDrawer() {
+        return ((build, currentFrame) => {
+            if (build.recipe) {
+                Item.display(build.recipe.outputs[0], build.centeredPos());
+            }
+        });
     }
 }
 BuildingWithRecipe.outputsItems = true;
@@ -1380,6 +1395,9 @@ class MultiBlockController extends BuildingWithRecipe {
             }
         }
         return offsets;
+    }
+    centeredPos() {
+        return Pos.fromTileCoords(this.pos.tileX + this.block.multiblockSize[0] / 2, this.pos.tileY + this.block.multiblockSize[1] / 2, false);
     }
     break() {
         this.secondaries.forEach(secondary => secondary.break(true));

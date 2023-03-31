@@ -299,6 +299,9 @@ class Pos {
 	static fromTileCoords(x:number, y:number, centered:boolean){
 		return new Pos(this.tileToPixel(x, centered), this.tileToPixel(y, centered));
 	}
+	get tuple():[x:number, y:number] {
+		return [this.pixelX, this.pixelY];
+	}
 	get pixelXCenteredInTile(){
 		return Pos.tileToPixel(this.tileX, true);
 	}
