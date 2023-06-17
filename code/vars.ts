@@ -81,17 +81,29 @@ type Direction = {
 }
 //I miss java enums
 const Direction: {
-	[P in "right" | "down" | "left" | "up"]: Direction;
+	right: Direction;
+	down: Direction;
+	left: Direction;
+	up: Direction;
+	[Symbol.iterator](): IterableIterator<Direction>;
 } = (() => {
 	let right:any = { num: 0, string: "right", vec: [1, 0]};
 	let down:any = { num: 1, string: "down", vec: [0, 1]};
 	let left:any = { num: 2, string: "left", vec: [-1, 0]};
 	let up:any = { num: 3, string: "up", vec: [0, -1]};
 	right.opposite = left;
-	left.oppsite = right;
+	left.opposite = right;
 	down.opposite = up;
 	up.opposite = down;
-	return {right, down, left, up};
+	return {
+		right, down, left, up,
+		*[Symbol.iterator](){
+			yield right;
+			yield down;
+			yield left;
+			yield up;
+		}
+	};
 })();
 
 enum triggerType {

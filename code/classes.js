@@ -671,10 +671,10 @@ class Building {
         return this.level.buildingAtTile(this.pos.tileX + offset[0], this.pos.tileY + offset[1]);
     }
     spawnItem(id) {
-        for (const direction of Object.values(Direction)) {
+        for (const direction of Direction) {
             const build = this.buildAt(direction);
             if (build && this.block.canOutputTo(build) &&
-                this.outputsItemToSide(direction) && build.acceptItem(new Item((this.pos.tileX + 0.5 + direction.vec[0] * 0.6) * consts.TILE_SIZE, (this.pos.tileY + 0.5 + direction.vec[1] * 0.6) * consts.TILE_SIZE, id), direction.opposite))
+                this.outputsItemToSide(direction) && build.acceptsItemFromSide(direction.opposite) && build.acceptItem(new Item((this.pos.tileX + 0.5 + direction.vec[0] * 0.6) * consts.TILE_SIZE, (this.pos.tileY + 0.5 + direction.vec[1] * 0.6) * consts.TILE_SIZE, id), direction.opposite))
                 return true;
         }
         return false;

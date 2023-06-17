@@ -50,10 +50,18 @@ const Direction = (() => {
     let left = { num: 2, string: "left", vec: [-1, 0] };
     let up = { num: 3, string: "up", vec: [0, -1] };
     right.opposite = left;
-    left.oppsite = right;
+    left.opposite = right;
     down.opposite = up;
     up.opposite = down;
-    return { right, down, left, up };
+    return {
+        right, down, left, up,
+        *[Symbol.iterator]() {
+            yield right;
+            yield down;
+            yield left;
+            yield up;
+        }
+    };
 })();
 var triggerType;
 (function (triggerType) {
