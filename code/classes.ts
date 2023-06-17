@@ -1544,3 +1544,41 @@ class MultiBlockSecondary extends Building {
 		}
 	}
 }
+
+
+/**A combination of an ItemID and an amount. The amount is frequently mutated by function calls. */
+type ItemStack = [id:ItemID, amount:number];
+
+class ItemModule {
+	storage:Partial<Record<ItemID, number>> = {};
+	constructor(public maxCapacity:number = 10){}
+	get(id:ItemID){
+		return this.storage[id] ?? 0;
+	}
+	has(id:ItemID){
+		return this.storage[id] === 0 || this.storage[id] === undefined;
+	}
+	/**
+	 * Attempts to grab an ItemStack, mutating it.
+	 * @returns whether the ItemStack was fully consumed.
+	 **/
+	addFrom(stack:ItemStack):boolean {
+		const remainingSpace = this.maxCapacity - this.get(stack[0]);
+		const amountTransferred = Math.max(0, Math.min(remainingSpace, stack[1]));
+		this.storage[stack[0]] ??= 0;
+		this.storage[stack[0]]! += amountTransferred;
+		return (stack[1] -= amountTransferred) <= 0;
+	}
+	/**
+	 * Attempts to output to an ItemStack, mutating it.
+	 * @returns whether the output stack is full.
+	 */
+	removeTo(stack:ItemStack, maxCapacity = Infinity):boolean {
+		const remainingSpace = maxCapacity - stack[1];
+		const amountTransferred = Math.min(remainingSpace, this.get(stack[0]));
+		this.storage[stack[0]] ??= 0;
+		this.storage[stack[0]]! -= amountTransferred;
+		return (stack[1] += amountTransferred) == maxCapacity;
+	}
+	
+}

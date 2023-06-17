@@ -1466,3 +1466,31 @@ class MultiBlockSecondary extends Building {
 }
 MultiBlockSecondary.outputsItems = true;
 MultiBlockSecondary.acceptsItems = true;
+class ItemModule {
+    constructor(maxCapacity = 10) {
+        this.maxCapacity = maxCapacity;
+        this.storage = {};
+    }
+    get(id) {
+        return this.storage[id] ?? 0;
+    }
+    has(id) {
+        return this.storage[id] === 0 || this.storage[id] === undefined;
+    }
+    addFrom(stack) {
+        var _a, _b;
+        const remainingSpace = this.maxCapacity - this.get(stack[0]);
+        const amountTransferred = Math.max(0, Math.min(remainingSpace, stack[1]));
+        (_a = this.storage)[_b = stack[0]] ?? (_a[_b] = 0);
+        this.storage[stack[0]] += amountTransferred;
+        return (stack[1] -= amountTransferred) <= 0;
+    }
+    removeTo(stack, maxCapacity = Infinity) {
+        var _a, _b;
+        const remainingSpace = maxCapacity - stack[1];
+        const amountTransferred = Math.min(remainingSpace, this.get(stack[0]));
+        (_a = this.storage)[_b = stack[0]] ?? (_a[_b] = 0);
+        this.storage[stack[0]] -= amountTransferred;
+        return (stack[1] += amountTransferred) == maxCapacity;
+    }
+}
