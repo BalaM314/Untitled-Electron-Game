@@ -247,6 +247,8 @@ let state: {
 		},
 		onmousedown(e:MouseEvent){
 			state.title.buttons.forEach(button => button.handleMouseClick(e));
+			if(Intersector.pointInRect(Input.mouse, [innerWidth * 0.4, innerHeight * 0.3, innerWidth * 0.2, innerHeight * 0.1]))
+				Game.splash.clickBehavior();
 		}
 	},
 	settings: {
@@ -727,6 +729,7 @@ function init(){
 	
 	Game.splash.text = Math.random() < 0.95 ? splashes[Math.ceil(Math.random() * (splashes.length - 1))] : raresplashes[Math.ceil(Math.random() * (raresplashes.length - 1))];
 	Game.splash.bounceFunc = Math.random() < 0.9 ? Math.sin : Math.tan;
+	if(Game.splash.text == "I wonder what this button does!") Game.splash.clickBehavior = () => window.open("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
 	
 	errorBackground.classList.remove("hidden");
 	loadingBackground.classList.add("hidden");

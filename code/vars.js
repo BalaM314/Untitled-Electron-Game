@@ -143,6 +143,9 @@ const keybinds = extend()({
 const Input = {
     mouseX: 0,
     mouseY: 0,
+    get mouse() {
+        return [Input.mouseX, Input.mouseY];
+    },
     mouseDown: false,
     latestMouseEvent: null,
     keysHeld: new Set(),
@@ -164,7 +167,8 @@ let Game = {
     state: "loading",
     splash: {
         text: "",
-        bounceFunc: Math.sin
+        bounceFunc: Math.sin,
+        clickBehavior: () => { },
     },
     loadedTextures: 0,
     animationFrame: 0,
