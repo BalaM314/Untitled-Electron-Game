@@ -119,12 +119,12 @@ Buildings.register("base_miner", Miner);
 Buildings.register("base_trash_can", TrashCan);
 Buildings.register("base_furnace", BuildingWithRecipe, { recipeType: recipes.base_smelting, drawer: BuildingWithRecipe.makeDrawer<BuildingWithRecipe>((build, e) => {
 	Gfx.fillColor(...Gfx.lerp([255, 127, 39], [255, 95, 29], e.sin));
-	Gfx.tRect(...build.centeredPos().tuple, 0.5, 0.5, RectMode.CENTER);
+	Gfx.tRect(...build.centeredPos().tile, 0.5, 0.5, RectMode.CENTER);
 }, BuildingWithRecipe.outputDrawer())});
 Buildings.register("base_extractor", Extractor);
 Buildings.register("base_chest", StorageBuilding, { capacity: 64 });
 Buildings.register("base_resource_acceptor", ResourceAcceptor);
-Buildings.register("base_alloy_smelter", BuildingWithRecipe, { recipeType: recipes.base_alloying });
+Buildings.register("base_alloy_smelter", BuildingWithRecipe, { recipeType: recipes.base_alloying, drawer: BuildingWithRecipe.outputDrawer() });
 Buildings.register("base_wiremill", BuildingWithRecipe, { recipeType: recipes.base_wiremilling });
 Buildings.register("base_compressor", BuildingWithRecipe, { recipeType: recipes.base_compressing, drawer: BuildingWithRecipe.progressDrawer() });
 Buildings.register("base_lathe", BuildingWithRecipe, { recipeType: recipes.base_lathing });

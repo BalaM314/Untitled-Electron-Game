@@ -909,7 +909,7 @@ class BuildingWithRecipe extends Building {
 			if(build.recipe){
 				Gfx.layer("buildings");
 				Gfx.fillColor("blue");
-				Gfx.tEllipse(build.pos.tileX + 0.5, build.pos.tileY + 0.5, 0.3, 0.3, 0, 0, (1 - (build.timer) / build.recipe.duration) * 2 * Math.PI);
+				Gfx.tEllipse(...build.centeredPos().tile, 0.3, 0.3, 0, 0, (1 - (build.timer) / build.recipe.duration) * 2 * Math.PI);
 			}
 		}) as BlockDrawer<Building>;
 	}

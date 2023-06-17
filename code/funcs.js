@@ -246,8 +246,11 @@ class Pos {
     static fromTileCoords(x, y, centered) {
         return new Pos(this.tileToPixel(x, centered), this.tileToPixel(y, centered));
     }
-    get tuple() {
+    get pixel() {
         return [this.pixelX, this.pixelY];
+    }
+    get tile() {
+        return [this.tileXExact, this.tileYExact];
     }
     get pixelXCenteredInTile() {
         return Pos.tileToPixel(this.tileX, true);
