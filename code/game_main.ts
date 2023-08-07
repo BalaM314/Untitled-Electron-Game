@@ -447,7 +447,7 @@ let state: {
 		},
 		//Unlike the onkeydown function, this one needs to run based on keys being held.
 		onkeyheld(currentframe:CurrentFrame){
-			const scrollSpeed = keybinds.move.scroll_faster.isHeld() ? 20 : 5;
+			const scrollSpeed = keybinds.move.scroll_faster.isHeld() ? consts.fastScrollSpeed : consts.scrollSpeed;
 			if(keybinds.move.up.isHeld()){
 				Camera.scrollY += scrollSpeed;
 				currentframe.redraw = true;

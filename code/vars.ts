@@ -148,6 +148,8 @@ const consts = {
 	chunkCullingMargin: 120,
 	/**Updates per second. */
 	ups: 60,
+	scrollSpeed: 5,
+	fastScrollSpeed: 20,
 };
 
 
