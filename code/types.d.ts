@@ -81,11 +81,7 @@ interface Recipes {
 	};
 }
 
-interface Keybinds {
-	[index: string]: {
-		[index: string]: Keybind
-	}
-}
+type Keybinds = Record<string, Record<string, Keybind>>;
 
 type Rect = [x:number, y:number, width:number, height:number];
 

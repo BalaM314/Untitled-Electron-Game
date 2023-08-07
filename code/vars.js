@@ -152,7 +152,6 @@ const Input = {
     lastKeysPressed: new Array(11).fill(""),
 };
 let settings = {
-    graphics_mode: 1,
     debug: true,
     alwaysLoadSave: true,
     autoSave: true,
