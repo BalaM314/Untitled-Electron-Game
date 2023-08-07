@@ -319,8 +319,8 @@ class Chunk {
 		(OverlayBuild | null)[][]
 	];
 	_generator: Generator<{
-    value: number;
-    chance(amount: number): boolean;
+		value: number;
+		chance(amount: number): boolean;
 	}, never>;
 	chunkSeed: number;
 	hasBuildings: boolean = false;
@@ -484,7 +484,7 @@ class Chunk {
 		return this._generator.next().value;
 	}
 	generate():Chunk {
-		//This... needs to be refactored.  TODO
+		//This... needs to be refactored. TODO
 		let isWet = false;
 		let isHilly = false;
 

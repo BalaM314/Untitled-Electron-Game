@@ -1,22 +1,22 @@
 {
-  "name": "untitled-electron-game",
-  "version": "1.0.0",
-  "description": "some game idk",
-  "main": "main.js",
-  "scripts": {
-    "test": "electron ."
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/BalaM314/Untitled-Electron-Game.git"
-  },
-  "author": "BalaM314",
-  "license": "SEE LICENSE IN <LICENSE.md>",
-  "bugs": {
-    "url": "https://github.com/BalaM314/Untitled-Electron-Game/issues"
-  },
-  "homepage": "https://github.com/BalaM314/Untitled-Electron-Game#readme",
-  "devDependencies": {
-    "electron": "^13.1.9"
-  }
+	"name": "untitled-electron-game",
+	"version": "1.0.0",
+	"description": "some game idk",
+	"main": "main.js",
+	"scripts": {
+		"test": "electron ."
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/BalaM314/Untitled-Electron-Game.git"
+	},
+	"author": "BalaM314",
+	"license": "SEE LICENSE IN <LICENSE.md>",
+	"bugs": {
+		"url": "https://github.com/BalaM314/Untitled-Electron-Game/issues"
+	},
+	"homepage": "https://github.com/BalaM314/Untitled-Electron-Game#readme",
+	"devDependencies": {
+		"electron": "^13.1.9"
+	}
 }

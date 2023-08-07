@@ -94,14 +94,14 @@ function assert(x:any){
 }
 
 function download(filename:string, text:string){
-  //Self explanatory.
-  let temp2 = document.createElement('a');
-  temp2.setAttribute('href', 'data:text/json;charset=utf-8,' + encodeURIComponent(text));
-  temp2.setAttribute('download', filename);
-  temp2.style.display = 'none';
-  document.body.appendChild(temp2);
-  temp2.click();
-  document.body.removeChild(temp2);
+	//Self explanatory.
+	let temp2 = document.createElement('a');
+	temp2.setAttribute('href', 'data:text/json;charset=utf-8,' + encodeURIComponent(text));
+	temp2.setAttribute('download', filename);
+	temp2.style.display = 'none';
+	document.body.appendChild(temp2);
+	temp2.click();
+	document.body.removeChild(temp2);
 }
 
 function parseError(err:unknown){
@@ -123,7 +123,7 @@ class Button {
 	color: string;
 	font: string;
 	onClick: (event:MouseEvent) => void
-  constructor(config:{
+	constructor(config:{
 		x: number | (() => number);
 		y: number | (() => number);
 		width: number | (() => number);
@@ -161,8 +161,8 @@ class Button {
 		this.color = config.color ?? "#0000FF";
 		this.font = config.font ?? "20px sans-serif";
 		this.onClick = config.onClick ?? (()=>{});
-  };
-  display(_ctx:CanvasRenderingContext2D){
+	}
+	display(_ctx:CanvasRenderingContext2D){
 		_ctx.fillStyle = this.color;
 		_ctx.strokeStyle = "#000000";
 		_ctx.lineWidth = 2;
@@ -188,15 +188,15 @@ class Button {
 		_ctx.fillStyle = "#FFFFFF";
 		_ctx.fillText(this.label,this.x + this.width/2,this.y + this.height/2);
 		_ctx.textBaseline = tempBaseline;
-  };
-  isMouseInside(){
+	}
+	isMouseInside(){
 		return Intersector.pointInRect([Input.mouseX, Input.mouseY], [this.x, this.y, this.width, this.height]);
-  };
-  handleMouseClick(e:MouseEvent){
+	}
+	handleMouseClick(e:MouseEvent){
 		if(this.isMouseInside() && e.button == 0){
 			this.onClick(e);
 		}
-  };
+	}
 }
 
 class Intersector {

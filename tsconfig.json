@@ -1,13 +1,13 @@
 {
-    "compilerOptions": {
-        "lib": [
-            "ES2021",
-            "DOM.Iterable",
-            "DOM"
-        ],
-        "target": "ES2020",
-        "alwaysStrict": true,
-        "removeComments": true,
-        "strict": true
-    }
+	"compilerOptions": {
+		"lib": [
+			"ES2021",
+			"DOM.Iterable",
+			"DOM"
+		],
+		"target": "ES2020",
+		"alwaysStrict": true,
+		"removeComments": true,
+		"strict": true
+	}
 }
