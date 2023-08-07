@@ -122,7 +122,6 @@ class Button {
         this.font = config.font ?? "20px sans-serif";
         this.onClick = config.onClick ?? (() => { });
     }
-    ;
     display(_ctx) {
         _ctx.fillStyle = this.color;
         _ctx.strokeStyle = "#000000";
@@ -151,17 +150,14 @@ class Button {
         _ctx.fillText(this.label, this.x + this.width / 2, this.y + this.height / 2);
         _ctx.textBaseline = tempBaseline;
     }
-    ;
     isMouseInside() {
         return Intersector.pointInRect([Input.mouseX, Input.mouseY], [this.x, this.y, this.width, this.height]);
     }
-    ;
     handleMouseClick(e) {
         if (this.isMouseInside() && e.button == 0) {
             this.onClick(e);
         }
     }
-    ;
 }
 class Intersector {
     static pointInRect([x, y], [rX, rY, rW, rH]) {

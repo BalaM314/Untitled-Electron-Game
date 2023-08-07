@@ -90,6 +90,8 @@ const consts = {
     ITEM_SIZE: 16,
     chunkCullingMargin: 120,
     ups: 60,
+    scrollSpeed: 5,
+    fastScrollSpeed: 20,
 };
 const keybinds = extend()({
     move: {
