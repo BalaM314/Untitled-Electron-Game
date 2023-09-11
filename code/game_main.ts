@@ -690,8 +690,8 @@ let placedBuilding: {
 	type: "base_null",
 	direction: Direction.right,
 	modifier: 0,
-	get ID(){
-		if(this.type == "base_null") return ["base_null", 0] as BuildingIDWithMeta;
+	get ID():BuildingIDWithMeta {
+		if(this.type == "base_null") return ["base_null", 0];
 		return Buildings.get(this.type).getID(this.type, this.direction, this.modifier);
 	}
 };
