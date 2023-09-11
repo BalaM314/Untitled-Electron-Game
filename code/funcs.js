@@ -39,6 +39,13 @@ function gcd(x, y) {
     }
     return x;
 }
+function round(amount, places = 0) {
+    const tenEplaces = 10 ** places;
+    return Math.round(amount * tenEplaces) / tenEplaces;
+}
+function percentage(amount, places = 0) {
+    return `${round(amount * 100, places)}%`;
+}
 function random(min, max) {
     if (typeof min == "number") {
         if (arguments.length > 2) {
@@ -173,14 +180,11 @@ class WindowedMean {
         this.queuei = 0;
         this.data = new Array(maxWindowSize).fill(fillValue);
     }
-    hasEnoughData() {
-        return this.queuei >= this.data.length;
-    }
     add(value) {
         this.data[this.queuei++ % this.maxWindowSize] = value;
     }
-    mean(windowSize = this.maxWindowSize, notEnoughDataValue = 0) {
-        if (this.hasEnoughData())
+    mean(windowSize = this.maxWindowSize, notEnoughDataValue = null) {
+        if (this.queuei >= windowSize)
             return this.rawMean(windowSize);
         else
             return notEnoughDataValue;
@@ -199,7 +203,7 @@ class WindowedMean {
         return total / windowSize;
     }
     standardDeviation(windowSize = this.maxWindowSize, notEnoughDataValue = 0) {
-        if (!this.hasEnoughData())
+        if (this.queuei < windowSize)
             return notEnoughDataValue;
         const mean = this.mean(windowSize);
         let sumXMinusMeanSquared = 0;

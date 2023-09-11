@@ -178,6 +178,9 @@ let Game = {
         active: false
     },
     frames: 0,
+    stats: {
+        frameTimes: new WindowedMean(120),
+    }
 };
 let level1 = null;
 const splashes = [

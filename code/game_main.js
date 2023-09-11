@@ -119,7 +119,6 @@ function registerEventHandlers() {
     }
     alertexit.onclick = closeAlert;
 }
-let fps = [0, 0, 0, 0, 0, 0];
 let state = {
     loading: {
         buttons: [],
@@ -439,7 +438,7 @@ function handleAlerts() {
 }
 function main_loop() {
     try {
-        let startFrameTime = new Date();
+        let startFrameTime = Date.now();
         let currentFrame = {
             tooltip: true,
             debug: settings.debug,
@@ -465,14 +464,16 @@ function main_loop() {
         currentState.update(currentFrame);
         currentState.display(currentFrame);
         if (Game.state == "game") {
-            let frameMS = (new Date()).getTime() - startFrameTime.getTime();
-            fps.splice(0, 1);
-            fps.push(frameMS);
-            let avgFPS = Math.round(constrain(5000 / (fps[0] + fps[1] + fps[2] + fps[3] + fps[4]), 0, 60));
+            let frameMS = Date.now() - startFrameTime;
+            Game.stats.frameTimes.add(frameMS);
+            const frameMSLast10 = Game.stats.frameTimes.mean(10, null);
+            const frameMSLast120 = Game.stats.frameTimes.mean(120, null);
+            const fpsLast10 = frameMSLast10 ? Math.min(consts.ups, round(1000 / frameMSLast10, 1)) : "...";
+            const fpsLast120 = frameMSLast120 ? Math.min(consts.ups, round(1000 / frameMSLast120, 1)) : "...";
             ctxOverlays.fillStyle = "#000000";
             ctxOverlays.font = "30px sans-serif";
             ctxOverlays.textAlign = "left";
-            ctxOverlays.fillText(avgFPS + " fps", 10, 50);
+            ctxOverlays.fillText(`FPS: ${fpsLast10}/${fpsLast120}`, 10, 50);
         }
         handleAlerts();
         Game.frames++;

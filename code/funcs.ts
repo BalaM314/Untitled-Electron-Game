@@ -49,6 +49,15 @@ function gcd(x:number, y:number){
 	return x;
 }
 
+function round(amount:number, places = 0):number {
+	const tenEplaces = 10 ** places;
+	return Math.round(amount * tenEplaces) / tenEplaces;
+}
+/** Displays a number as a percentage. */
+function percentage(amount:number, places = 0):string {
+	return `${round(amount * 100, places)}%`;
+}
+
 function random(min:number, max:number): number;
 function random<T>(list:T, max?:null): number;
 
@@ -222,14 +231,11 @@ class WindowedMean {
 		this.data = new Array(maxWindowSize).fill(fillValue);
 	}
 
-	hasEnoughData(){
-		return this.queuei >= this.data.length;
-	}
 	add(value:number){
 		this.data[this.queuei++ % this.maxWindowSize] = value;
 	}
-	mean<T = number>(windowSize = this.maxWindowSize, notEnoughDataValue:T = 0 as T):number | T {
-		if(this.hasEnoughData()) return this.rawMean(windowSize);
+	mean<T = null>(windowSize = this.maxWindowSize, notEnoughDataValue:T = null as T):number | T {
+		if(this.queuei >= windowSize) return this.rawMean(windowSize);
 		else return notEnoughDataValue;
 	}
 	rawMean(windowSize:number = this.maxWindowSize){
@@ -244,8 +250,8 @@ class WindowedMean {
 	}
 
 	standardDeviation<T = number>(windowSize = this.maxWindowSize, notEnoughDataValue:T = 0 as T):number | T {
-		if(!this.hasEnoughData()) return notEnoughDataValue;
-		const mean = this.mean(windowSize);
+		if(this.queuei < windowSize) return notEnoughDataValue;
+		const mean = this.mean(windowSize)!;
 		/** Σ(x-x̄)^2 */
 		let sumXMinusMeanSquared = 0;
 		let wrappedQueueI = this.queuei % this.maxWindowSize;

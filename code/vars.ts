@@ -242,6 +242,10 @@ let Game: {
 		active: boolean;
 	}
 	frames: number;
+	stats: {
+		/** Stores the time in milliseconds to render for the past 120 frames. */
+		frameTimes: WindowedMean;
+	}
 } = {
 	texturesReady: false,
 	startTime: new Date().getTime(),
@@ -264,6 +268,9 @@ let Game: {
 		active: false
 	},
 	frames: 0,
+	stats: {
+		frameTimes: new WindowedMean(120),
+	}
 };
 let level1:Level = null!;
 const splashes:string[] = [
