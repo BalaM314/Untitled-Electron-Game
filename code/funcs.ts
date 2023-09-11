@@ -208,6 +208,57 @@ class Intersector {
 	}
 }
 
+/**
+ * Keeps a running average of some data.
+ */
+class WindowedMean {
+	/** Queue to hold the data. */
+	data:number[];
+	/** Index of the next place to insert an item into the queue. */
+	queuei:number = 0;
+	
+
+	constructor(public maxWindowSize:number, fillValue = 0){
+		this.data = new Array(maxWindowSize).fill(fillValue);
+	}
+
+	hasEnoughData(){
+		return this.queuei >= this.data.length;
+	}
+	add(value:number){
+		this.data[this.queuei++ % this.maxWindowSize] = value;
+	}
+	mean<T = number>(windowSize = this.maxWindowSize, notEnoughDataValue:T = 0 as T):number | T {
+		if(this.hasEnoughData()) return this.rawMean(windowSize);
+		else return notEnoughDataValue;
+	}
+	rawMean(windowSize:number = this.maxWindowSize){
+		if(windowSize > this.maxWindowSize) throw new Error(`Cannot get average over the last ${windowSize} values becaue only ${this.maxWindowSize} values are stored`);
+		let total = 0;
+		let wrappedQueueI = this.queuei % this.maxWindowSize;
+		for(let i = wrappedQueueI - windowSize; i < wrappedQueueI; i ++){
+			if(i >= 0) total += this.data[i];
+			else total += this.data[this.maxWindowSize + i];
+		}
+		return total / windowSize;
+	}
+
+	standardDeviation<T = number>(windowSize = this.maxWindowSize, notEnoughDataValue:T = 0 as T):number | T {
+		if(!this.hasEnoughData()) return notEnoughDataValue;
+		const mean = this.mean(windowSize);
+		/** Σ(x-x̄)^2 */
+		let sumXMinusMeanSquared = 0;
+		let wrappedQueueI = this.queuei % this.maxWindowSize;
+		for(let i = wrappedQueueI - windowSize; i < wrappedQueueI; i ++){
+			sumXMinusMeanSquared += (((i >= 0)
+			? this.data[i]
+			: this.data[this.maxWindowSize + i]) - mean) ** 2;
+		}
+		return sumXMinusMeanSquared / windowSize;
+	}
+
+}
+
 
 /**
  * Drawing Functions

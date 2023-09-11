@@ -167,6 +167,51 @@ class Intersector {
         return bX < aX + aW && aX < bX + bW && bY < aY + aH && aY < bY + bH;
     }
 }
+class WindowedMean {
+    constructor(maxWindowSize, fillValue = 0) {
+        this.maxWindowSize = maxWindowSize;
+        this.queuei = 0;
+        this.data = new Array(maxWindowSize).fill(fillValue);
+    }
+    hasEnoughData() {
+        return this.queuei >= this.data.length;
+    }
+    add(value) {
+        this.data[this.queuei++ % this.maxWindowSize] = value;
+    }
+    mean(windowSize = this.maxWindowSize, notEnoughDataValue = 0) {
+        if (this.hasEnoughData())
+            return this.rawMean(windowSize);
+        else
+            return notEnoughDataValue;
+    }
+    rawMean(windowSize = this.maxWindowSize) {
+        if (windowSize > this.maxWindowSize)
+            throw new Error(`Cannot get average over the last ${windowSize} values becaue only ${this.maxWindowSize} values are stored`);
+        let total = 0;
+        let wrappedQueueI = this.queuei % this.maxWindowSize;
+        for (let i = wrappedQueueI - windowSize; i < wrappedQueueI; i++) {
+            if (i >= 0)
+                total += this.data[i];
+            else
+                total += this.data[this.maxWindowSize + i];
+        }
+        return total / windowSize;
+    }
+    standardDeviation(windowSize = this.maxWindowSize, notEnoughDataValue = 0) {
+        if (!this.hasEnoughData())
+            return notEnoughDataValue;
+        const mean = this.mean(windowSize);
+        let sumXMinusMeanSquared = 0;
+        let wrappedQueueI = this.queuei % this.maxWindowSize;
+        for (let i = wrappedQueueI - windowSize; i < wrappedQueueI; i++) {
+            sumXMinusMeanSquared += (((i >= 0)
+                ? this.data[i]
+                : this.data[this.maxWindowSize + i]) - mean) ** 2;
+        }
+        return sumXMinusMeanSquared / windowSize;
+    }
+}
 var RectMode;
 (function (RectMode) {
     RectMode[RectMode["CENTER"] = 0] = "CENTER";

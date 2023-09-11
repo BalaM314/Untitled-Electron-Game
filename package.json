@@ -4,7 +4,8 @@
 	"description": "some game idk",
 	"main": "main.js",
 	"scripts": {
-		"test": "electron ."
+		"test": "electron .",
+		"start": "tsc -w"
 	},
 	"repository": {
 		"type": "git",
