@@ -1,4 +1,42 @@
 "use strict";
+var __esDecorate = (this && this.__esDecorate) || function (ctor, descriptorIn, decorators, contextIn, initializers, extraInitializers) {
+    function accept(f) { if (f !== void 0 && typeof f !== "function") throw new TypeError("Function expected"); return f; }
+    var kind = contextIn.kind, key = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
+    var target = !descriptorIn && ctor ? contextIn["static"] ? ctor : ctor.prototype : null;
+    var descriptor = descriptorIn || (target ? Object.getOwnPropertyDescriptor(target, contextIn.name) : {});
+    var _, done = false;
+    for (var i = decorators.length - 1; i >= 0; i--) {
+        var context = {};
+        for (var p in contextIn) context[p] = p === "access" ? {} : contextIn[p];
+        for (var p in contextIn.access) context.access[p] = contextIn.access[p];
+        context.addInitializer = function (f) { if (done) throw new TypeError("Cannot add initializers after decoration has completed"); extraInitializers.push(accept(f || null)); };
+        var result = (0, decorators[i])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key], context);
+        if (kind === "accessor") {
+            if (result === void 0) continue;
+            if (result === null || typeof result !== "object") throw new TypeError("Object expected");
+            if (_ = accept(result.get)) descriptor.get = _;
+            if (_ = accept(result.set)) descriptor.set = _;
+            if (_ = accept(result.init)) initializers.push(_);
+        }
+        else if (_ = accept(result)) {
+            if (kind === "field") initializers.push(_);
+            else descriptor[key] = _;
+        }
+    }
+    if (target) Object.defineProperty(target, contextIn.name, descriptor);
+    done = true;
+};
+var __runInitializers = (this && this.__runInitializers) || function (thisArg, initializers, value) {
+    var useValue = arguments.length > 2;
+    for (var i = 0; i < initializers.length; i++) {
+        value = useValue ? initializers[i].call(thisArg, value) : initializers[i].call(thisArg);
+    }
+    return useValue ? value : void 0;
+};
+var __setFunctionName = (this && this.__setFunctionName) || function (f, name, prefix) {
+    if (typeof name === "symbol") name = name.description ? "[".concat(name.description, "]") : "";
+    return Object.defineProperty(f, "name", { configurable: true, value: prefix ? "".concat(prefix, " ", name) : name });
+};
 class Level {
     constructor(seed) {
         this.seed = seed;
@@ -594,204 +632,232 @@ class Item {
         return new this(data.x, data.y, data.id);
     }
 }
-class Building {
-    constructor(x, y, meta, level) {
-        this.meta = meta;
-        this.level = level;
-        this.item = null;
-        this.block = this.constructor;
-        this.pos = Pos.fromTileCoords(x, y, false);
-    }
-    static changeMeta(meta, tileX, tileY, level) {
-        return meta;
-    }
-    static getID(type, direction, modifier) {
-        return [type, 0];
-    }
-    static canBuildAt(tileX, tileY, level) {
-        return level.tileAtByTile(tileX, tileY) != "base_water";
-    }
-    static textureSize(meta) {
-        return [[1, 1], [0, 0]];
-    }
-    static canOutputTo(building) {
-        return building instanceof Conveyor;
-    }
-    break() {
-        if (this.block.isOverlay)
-            this.level.writeOverlayBuild(this.pos.tileX, this.pos.tileY, null);
-        else
-            this.level.writeBuilding(this.pos.tileX, this.pos.tileY, null);
-    }
-    update(currentFrame) {
-        this.item?.update(currentFrame);
-    }
-    stringID() {
-        return stringifyMeta(this.block.id, this.meta);
-    }
-    centeredPos() {
-        return Pos.fromTileCoords(this.pos.tileX, this.pos.tileY, true);
-    }
-    static display(id, pos, layer) {
-        const block = Buildings.get(id[0]);
-        const textureSize = block.textureSize(id[1]);
-        layer ?? (layer = block.isOverlay ? "overlayBuilds" : "buildings");
-        Gfx.tImage(Gfx.texture(`building/${stringifyMeta(...id)}`), pos.tileX + textureSize[1][0], pos.tileY + textureSize[1][1], ...textureSize[0], Gfx.layers[layer]);
-    }
-    display(currentFrame, layer = this.block.isOverlay ? "overlayBuilds" : "buildings") {
-        Building.display([this.block.id, this.meta], this.pos, layer);
-        this.block.drawer?.(this, currentFrame);
-        if (this.item instanceof Item && this.block.displaysItem) {
-            this.item.display(currentFrame);
-        }
-    }
-    hasItem() {
-        if (this.item)
-            return this.item;
-        return null;
-    }
-    removeItem() {
-        if (this.item) {
-            let temp = this.item;
+let Building = (() => {
+    let _classDecorators = [Abstract];
+    let _classDescriptor;
+    let _classExtraInitializers = [];
+    let _classThis;
+    var Building = _classThis = class {
+        constructor(x, y, meta, level) {
+            this.meta = meta;
+            this.level = level;
             this.item = null;
-            return temp;
+            this.block = this.constructor;
+            this.pos = Pos.fromTileCoords(x, y, false);
         }
-        return null;
-    }
-    acceptsItemFromSide(side) {
-        return this.block.acceptsItems;
-    }
-    outputsItemToSide(side) {
-        return this.block.outputsItems;
-    }
-    buildAt(direction) {
-        return this.level.buildingAtTile(this.pos.tileX + direction.vec[0], this.pos.tileY + direction.vec[1]);
-    }
-    buildAtOffset(offset) {
-        return this.level.buildingAtTile(this.pos.tileX + offset[0], this.pos.tileY + offset[1]);
-    }
-    spawnItem(id) {
-        for (const direction of Direction) {
-            const build = this.buildAt(direction);
-            if (build && this.block.canOutputTo(build) &&
-                this.outputsItemToSide(direction) && build.acceptsItemFromSide(direction.opposite) && build.acceptItem(new Item((this.pos.tileX + 0.5 + direction.vec[0] * 0.6) * consts.TILE_SIZE, (this.pos.tileY + 0.5 + direction.vec[1] * 0.6) * consts.TILE_SIZE, id), direction.opposite))
-                return true;
+        static changeMeta(meta, tileX, tileY, level) {
+            return meta;
         }
-        return false;
-    }
-    acceptItem(item, side) {
-        if (this.item === null && this.block.acceptsItems && (side == null || this.acceptsItemFromSide(side))) {
-            this.item = item;
-            return true;
+        static getID(type, direction, modifier) {
+            return [type, 0];
         }
-        else {
+        static canBuildAt(tileX, tileY, level) {
+            return level.tileAtByTile(tileX, tileY) != "base_water";
+        }
+        static textureSize(meta) {
+            return [[1, 1], [0, 0]];
+        }
+        static canOutputTo(building) {
+            return building instanceof Conveyor;
+        }
+        break() {
+            if (this.block.isOverlay)
+                this.level.writeOverlayBuild(this.pos.tileX, this.pos.tileY, null);
+            else
+                this.level.writeBuilding(this.pos.tileX, this.pos.tileY, null);
+        }
+        update(currentFrame) {
+            this.item?.update(currentFrame);
+        }
+        stringID() {
+            return stringifyMeta(this.block.id, this.meta);
+        }
+        centeredPos() {
+            return Pos.fromTileCoords(this.pos.tileX, this.pos.tileY, true);
+        }
+        static display(id, pos, layer) {
+            const block = Buildings.get(id[0]);
+            const textureSize = block.textureSize(id[1]);
+            layer ?? (layer = block.isOverlay ? "overlayBuilds" : "buildings");
+            Gfx.tImage(Gfx.texture(`building/${stringifyMeta(...id)}`), pos.tileX + textureSize[1][0], pos.tileY + textureSize[1][1], ...textureSize[0], Gfx.layers[layer]);
+        }
+        display(currentFrame, layer = this.block.isOverlay ? "overlayBuilds" : "buildings") {
+            Building.display([this.block.id, this.meta], this.pos, layer);
+            this.block.drawer?.(this, currentFrame);
+            if (this.item instanceof Item && this.block.displaysItem) {
+                this.item.display(currentFrame);
+            }
+        }
+        hasItem() {
+            if (this.item)
+                return this.item;
+            return null;
+        }
+        removeItem() {
+            if (this.item) {
+                let temp = this.item;
+                this.item = null;
+                return temp;
+            }
+            return null;
+        }
+        acceptsItemFromSide(side) {
+            return this.block.acceptsItems;
+        }
+        outputsItemToSide(side) {
+            return this.block.outputsItems;
+        }
+        buildAt(direction) {
+            return this.level.buildingAtTile(this.pos.tileX + direction.vec[0], this.pos.tileY + direction.vec[1]);
+        }
+        buildAtOffset(offset) {
+            return this.level.buildingAtTile(this.pos.tileX + offset[0], this.pos.tileY + offset[1]);
+        }
+        spawnItem(id) {
+            for (const direction of Direction) {
+                const build = this.buildAt(direction);
+                if (build && this.block.canOutputTo(build) &&
+                    this.outputsItemToSide(direction) && build.acceptsItemFromSide(direction.opposite) && build.acceptItem(new Item((this.pos.tileX + 0.5 + direction.vec[0] * 0.6) * consts.TILE_SIZE, (this.pos.tileY + 0.5 + direction.vec[1] * 0.6) * consts.TILE_SIZE, id), direction.opposite))
+                    return true;
+            }
             return false;
         }
-    }
-    export() {
-        return {
-            x: this.pos.tileX,
-            y: this.pos.tileY,
-            id: this.block.id,
-            meta: this.meta,
-            item: this.item?.export() ?? null
-        };
-    }
-    static read(buildingData, level) {
-        const build = new this(buildingData.x, buildingData.y, buildingData.meta, level);
-        if (buildingData.item)
-            build.item = Item.read(buildingData.item);
-        return build;
-    }
-}
-Building.outputsItems = false;
-Building.acceptsItems = false;
-Building.immutable = false;
-Building.isOverlay = false;
-Building.displaysItem = false;
-Building.drawer = null;
-class BuildingWithRecipe extends Building {
-    constructor(tileX, tileY, meta, level) {
-        super(tileX, tileY, meta, level);
-        this.timer = -1;
-        this.recipe = null;
-        this.items = [];
-        if (this.constructor === BuildingWithRecipe)
-            throw new Error("Cannot initialize abstract class BuildingWithRecipe");
-    }
-    acceptItem(item) {
-        for (let i = 0; i < this.block.recipeMaxInputs; i++) {
-            if (!this.items[i] && !this.items.map(item => item.id).includes(item.id)) {
-                for (let recipe of this.block.recipeType.recipes) {
-                    if (!recipe.inputs)
-                        continue;
-                    if (!this.items.map(item => recipe.inputs.includes(item.id)).includes(false) && recipe.inputs.includes(item.id)) {
-                        this.items[i] = item;
-                        if (recipe.inputs.length == i + 1) {
-                            this.setRecipe(recipe);
-                        }
-                        return true;
-                    }
-                }
+        acceptItem(item, side) {
+            if (this.item === null && this.block.acceptsItems && (side == null || this.acceptsItemFromSide(side))) {
+                this.item = item;
+                return true;
+            }
+            else {
                 return false;
             }
         }
-        return false;
-    }
-    hasItem() {
-        return null;
-    }
-    removeItem() {
-        return null;
-    }
-    setRecipe(recipe) {
-        if (!(recipe.inputs instanceof Array))
-            throw new ShouldNotBePossibleError("tried to set invalid recipe");
-        this.recipe = recipe;
-        this.timer = recipe.duration;
-    }
-    update() {
-        if (this.timer > 0) {
-            this.timer--;
+        export() {
+            return {
+                x: this.pos.tileX,
+                y: this.pos.tileY,
+                id: this.block.id,
+                meta: this.meta,
+                item: this.item?.export() ?? null
+            };
         }
-        else if (this.timer == 0 && this.recipe) {
-            if (this.spawnItem(this.recipe.outputs[0])) {
-                this.timer = -1;
-                this.items = [];
-                this.recipe = null;
+        static read(buildingData, level) {
+            const build = new this(buildingData.x, buildingData.y, buildingData.meta, level);
+            if (buildingData.item)
+                build.item = Item.read(buildingData.item);
+            return build;
+        }
+    };
+    __setFunctionName(_classThis, "Building");
+    (() => {
+        __esDecorate(null, _classDescriptor = { value: _classThis }, _classDecorators, { kind: "class", name: _classThis.name }, null, _classExtraInitializers);
+        Building = _classThis = _classDescriptor.value;
+    })();
+    _classThis.outputsItems = false;
+    _classThis.acceptsItems = false;
+    _classThis.immutable = false;
+    _classThis.isOverlay = false;
+    _classThis.displaysItem = false;
+    _classThis.drawer = null;
+    (() => {
+        __runInitializers(_classThis, _classExtraInitializers);
+    })();
+    return Building = _classThis;
+})();
+let BuildingWithRecipe = (() => {
+    let _classDecorators_1 = [Abstract];
+    let _classDescriptor_1;
+    let _classExtraInitializers_1 = [];
+    let _classThis_1;
+    var BuildingWithRecipe = _classThis_1 = class extends Building {
+        constructor(tileX, tileY, meta, level) {
+            super(tileX, tileY, meta, level);
+            this.timer = -1;
+            this.recipe = null;
+            this.items = [];
+        }
+        acceptItem(item) {
+            for (let i = 0; i < this.block.recipeMaxInputs; i++) {
+                if (!this.items[i] && !this.items.map(item => item.id).includes(item.id)) {
+                    for (let recipe of this.block.recipeType.recipes) {
+                        if (!recipe.inputs)
+                            continue;
+                        if (!this.items.map(item => recipe.inputs.includes(item.id)).includes(false) && recipe.inputs.includes(item.id)) {
+                            this.items[i] = item;
+                            if (recipe.inputs.length == i + 1) {
+                                this.setRecipe(recipe);
+                            }
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+            }
+            return false;
+        }
+        hasItem() {
+            return null;
+        }
+        removeItem() {
+            return null;
+        }
+        setRecipe(recipe) {
+            if (!(recipe.inputs instanceof Array))
+                throw new ShouldNotBePossibleError("tried to set invalid recipe");
+            this.recipe = recipe;
+            this.timer = recipe.duration;
+        }
+        update() {
+            if (this.timer > 0) {
+                this.timer--;
+            }
+            else if (this.timer == 0 && this.recipe) {
+                if (this.spawnItem(this.recipe.outputs[0])) {
+                    this.timer = -1;
+                    this.items = [];
+                    this.recipe = null;
+                }
             }
         }
-    }
-    static makeDrawer(drawer, ...drawers) {
-        return ((build, currentFrame) => {
-            if (build.recipe) {
-                Gfx.layer("buildings");
-                drawer(build, getAnimationData(1 - (build.timer) / build.recipe.duration), currentFrame);
-            }
-            drawers.forEach(d => d(build, currentFrame));
-            BuildingWithRecipe.makeDrawer((build, e, currentFrame) => { build.recipe; });
-        });
-    }
-    static progressDrawer() {
-        return ((build, currentFrame) => {
-            if (build.recipe) {
-                Gfx.layer("buildings");
-                Gfx.fillColor("blue");
-                Gfx.tEllipse(...build.centeredPos().tile, 0.3, 0.3, 0, 0, (1 - (build.timer) / build.recipe.duration) * 2 * Math.PI);
-            }
-        });
-    }
-    static outputDrawer() {
-        return ((build, currentFrame) => {
-            if (build.recipe) {
-                Item.display(build.recipe.outputs[0], build.centeredPos());
-            }
-        });
-    }
-}
-BuildingWithRecipe.outputsItems = true;
-BuildingWithRecipe.acceptsItems = true;
-BuildingWithRecipe.recipeMaxInputs = 3;
+        static makeDrawer(drawer, ...drawers) {
+            return ((build, currentFrame) => {
+                if (build.recipe) {
+                    Gfx.layer("buildings");
+                    drawer(build, getAnimationData(1 - (build.timer) / build.recipe.duration), currentFrame);
+                }
+                drawers.forEach(d => d(build, currentFrame));
+                BuildingWithRecipe.makeDrawer((build, e, currentFrame) => { build.recipe; });
+            });
+        }
+        static progressDrawer() {
+            return ((build, currentFrame) => {
+                if (build.recipe) {
+                    Gfx.layer("buildings");
+                    Gfx.fillColor("blue");
+                    Gfx.tEllipse(...build.centeredPos().tile, 0.3, 0.3, 0, 0, (1 - (build.timer) / build.recipe.duration) * 2 * Math.PI);
+                }
+            });
+        }
+        static outputDrawer() {
+            return ((build, currentFrame) => {
+                if (build.recipe) {
+                    Item.display(build.recipe.outputs[0], build.centeredPos());
+                }
+            });
+        }
+    };
+    __setFunctionName(_classThis_1, "BuildingWithRecipe");
+    (() => {
+        __esDecorate(null, _classDescriptor_1 = { value: _classThis_1 }, _classDecorators_1, { kind: "class", name: _classThis_1.name }, null, _classExtraInitializers_1);
+        BuildingWithRecipe = _classThis_1 = _classDescriptor_1.value;
+    })();
+    _classThis_1.outputsItems = true;
+    _classThis_1.acceptsItems = true;
+    _classThis_1.recipeMaxInputs = 3;
+    (() => {
+        __runInitializers(_classThis_1, _classExtraInitializers_1);
+    })();
+    return BuildingWithRecipe = _classThis_1;
+})();
 class Miner extends Building {
     constructor(tileX, tileY, meta, level) {
         super(tileX, tileY, meta, level);

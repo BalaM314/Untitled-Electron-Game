@@ -700,6 +700,7 @@ interface BlockDrawer<T> {
 	(build:T, currentFrame:CurrentFrame):void;
 }
 
+@Abstract
 class Building {
 	static outputsItems = false;
 	static acceptsItems = false;
@@ -825,8 +826,8 @@ class Building {
 	}
 	/**Must be called with a "this" context obtained from Buildings.get(id). */
 	static read(buildingData:BuildingData, level:Level):Building {
-		//"this" refers to the superclass that read() was called on, which should be Buildings.get(id)
-		//This is done because superclasses may want to override the read() method, so you have to Buildings.get() anyway.
+		//"this" refers to the subclass that read() was called on, which should be Buildings.get(id)
+		//This is done because subclasses may want to override the read() method, so you have to Buildings.get() anyway.
 		const build = new this(buildingData.x, buildingData.y, buildingData.meta, level);
 		if(buildingData.item) build.item = Item.read(buildingData.item);
 		return build;
@@ -834,7 +835,7 @@ class Building {
 }
 
 
-
+@Abstract
 class BuildingWithRecipe extends Building {
 	timer: number = -1;
 	recipe: Recipe | null = null;
@@ -846,7 +847,6 @@ class BuildingWithRecipe extends Building {
 	block!:typeof BuildingWithRecipe;
 	constructor(tileX:number, tileY:number, meta:BuildingMeta, level:Level){
 		super(tileX, tileY, meta, level);
-		if(this.constructor === BuildingWithRecipe) throw new Error("Cannot initialize abstract class BuildingWithRecipe");
 	}
 	acceptItem(item:Item):boolean {
 		for(let i = 0; i < this.block.recipeMaxInputs; i ++){

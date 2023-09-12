@@ -265,6 +265,14 @@ class WindowedMean {
 
 }
 
+function Abstract<TClass extends new (...args:any[]) => any>(input:TClass, context:ClassDecoratorContext<TClass>):TClass {
+	return class __temp extends input {
+		constructor(...args:any[]){
+			super(...args);
+			if(this.constructor === __temp) throw new Error(`Cannot construct abstract class ${input.name}`);
+		}
+	}
+}
 
 /**
  * Drawing Functions

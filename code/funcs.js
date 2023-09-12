@@ -216,6 +216,15 @@ class WindowedMean {
         return sumXMinusMeanSquared / windowSize;
     }
 }
+function Abstract(input, context) {
+    return class __temp extends input {
+        constructor(...args) {
+            super(...args);
+            if (this.constructor === __temp)
+                throw new Error(`Cannot construct abstract class ${input.name}`);
+        }
+    };
+}
 var RectMode;
 (function (RectMode) {
     RectMode[RectMode["CENTER"] = 0] = "CENTER";
