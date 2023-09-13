@@ -23,7 +23,9 @@ const names = {
         "base_lathe": "Lathe",
         "base_multiblock_secondary": "Multiblock Secondary",
         "base_assembler": "Assembler",
-        "base_null": "[D] No Building"
+        "base_null": "[D] No Building",
+        "base_arc_tower": "Arc Tower",
+        "base_power_source": "Power Source"
     },
     item: {
         "base_null": "Debug Item",
@@ -92,6 +94,9 @@ const consts = {
     ups: 60,
     scrollSpeed: 5,
     fastScrollSpeed: 20,
+};
+const Mathf = {
+    TWO_PI: Math.PI * 2,
 };
 const keybinds = extend()({
     move: {

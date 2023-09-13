@@ -1561,3 +1561,31 @@ class ItemModule {
         return (stack[1] += amountTransferred) == maxCapacity;
     }
 }
+class PowerSource extends Building {
+    getMaxPowerProduction() {
+        return this.block.production;
+    }
+}
+PowerSource.production = 100;
+PowerSource.drawer = function (build, currentFrame) {
+    Gfx.layer("overlay");
+    const e = getAnimationData(currentFrame.frame % 60 / 60);
+    Gfx.fillColor("yellow");
+    Gfx.tEllipse(...build.pos.tileC, 0.5 + 0.3 * e.sin, 0.5 + 0.3 * e.sin);
+};
+class ArcTower extends Building {
+    getRequestedPower() {
+        return this.block.consumption;
+    }
+}
+ArcTower.consumption = 100;
+ArcTower.radius = 5;
+ArcTower.color = "white";
+ArcTower.drawer = function (build, currentFrame) {
+    const theta = random(Mathf.TWO_PI);
+    const arcPos = [build.block.radius * Math.cos(theta) + build.pos.tileXCentered, build.block.radius * Math.sin(theta) + build.pos.tileYCentered];
+    Gfx.layer("overlay");
+    Gfx.strokeColor(build.block.color);
+    Gfx.lineWidth(3);
+    Gfx.tLine(...build.pos.tileC, ...arcPos);
+};

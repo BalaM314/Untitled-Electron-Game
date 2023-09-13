@@ -1584,6 +1584,37 @@ class ItemModule {
 	
 }
 
+class PowerSource extends Building implements PowerProducer {
+	block!: typeof PowerSource;
+	static production: number = 100;
+	getMaxPowerProduction():number {
+		return this.block.production;
+	}
+	static drawer = function(build:Building, currentFrame:CurrentFrame){
+		Gfx.layer("overlay");
+		const e = getAnimationData(currentFrame.frame % 60 / 60);
+		Gfx.fillColor("yellow");
+		Gfx.tEllipse(...build.pos.tileC, 0.5 + 0.3 * e.sin, 0.5 + 0.3 * e.sin);
+	};
+}
+
+class ArcTower extends Building implements PowerConsumer {
+	block!: typeof ArcTower;
+	static consumption:number = 100;
+	static radius = 5;
+	static color = "white";
+	getRequestedPower():number {
+		return this.block.consumption;
+	}
+	static drawer:any = function(build:ArcTower, currentFrame:CurrentFrame){
+		const theta = random(Mathf.TWO_PI);
+		const arcPos = [build.block.radius * Math.cos(theta) + build.pos.tileXCentered, build.block.radius * Math.sin(theta) + build.pos.tileYCentered] as const;
+		Gfx.layer("overlay");
+		Gfx.strokeColor(build.block.color);
+		Gfx.lineWidth(3);
+		Gfx.tLine(...build.pos.tileC, ...arcPos);
+	};
+}
 
 interface PowerProducer extends Building {
 	/**
