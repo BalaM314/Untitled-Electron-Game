@@ -306,6 +306,9 @@ class Pos {
     get tile() {
         return [this.tileXExact, this.tileYExact];
     }
+    get tileC() {
+        return [this.tileXCentered, this.tileYCentered];
+    }
     get pixelXCenteredInTile() {
         return Pos.tileToPixel(this.tileX, true);
     }
@@ -317,6 +320,12 @@ class Pos {
     }
     get tileY() {
         return Pos.pixelToTile(this.pixelY);
+    }
+    get tileXCentered() {
+        return Pos.pixelToTile(this.pixelX) + 0.5;
+    }
+    get tileYCentered() {
+        return Pos.pixelToTile(this.pixelY) + 0.5;
     }
     get tileXExact() {
         return Pos.pixelToTileExact(this.pixelX);

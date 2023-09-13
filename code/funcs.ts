@@ -57,9 +57,9 @@ function round(amount:number, places = 0):number {
 function percentage(amount:number, places = 0):string {
 	return `${round(amount * 100, places)}%`;
 }
-
-function random(min:number, max:number): number;
-function random<T>(list:T, max?:null): number;
+function random(max:number):number;
+function random(min:number, max:number):number;
+function random<T>(list:T[]):T;
 
 /**Chooses a random number between min and max, or selects a random element from an array. */
 function random(min:any, max?:any):any{
@@ -370,6 +370,9 @@ class Pos {
 	get tile():[x:number, y:number] {
 		return [this.tileXExact, this.tileYExact];
 	}
+	get tileC():[x:number, y:number] {
+		return [this.tileXCentered, this.tileYCentered];
+	}
 	get pixelXCenteredInTile(){
 		return Pos.tileToPixel(this.tileX, true);
 	}
@@ -381,6 +384,12 @@ class Pos {
 	}
 	get tileY(){
 		return Pos.pixelToTile(this.pixelY);
+	}
+	get tileXCentered(){
+		return Pos.pixelToTile(this.pixelX) + 0.5;
+	}
+	get tileYCentered(){
+		return Pos.pixelToTile(this.pixelY) + 0.5;
 	}
 	get tileXExact(){
 		return Pos.pixelToTileExact(this.pixelX);
