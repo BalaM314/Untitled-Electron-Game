@@ -682,6 +682,7 @@ let Building = (() => {
             Gfx.tImage(Gfx.texture(`building/${stringifyMeta(...id)}`), pos.tileX + textureSize[1][0], pos.tileY + textureSize[1][1], ...textureSize[0], Gfx.layers[layer]);
         }
         display(currentFrame, layer = this.block.isOverlay ? "overlayBuilds" : "buildings") {
+            Gfx.layer(layer);
             Building.display([this.block.id, this.meta], this.pos, layer);
             this.block.drawer?.(this, currentFrame);
             if (this.item instanceof Item && this.block.displaysItem) {

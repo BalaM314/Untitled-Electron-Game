@@ -761,6 +761,7 @@ class Building {
 		);
 	}
 	display(currentFrame:CurrentFrame, layer:(keyof typeof Gfx.layers) = this.block.isOverlay ? "overlayBuilds" : "buildings"){
+		Gfx.layer(layer);
 		Building.display([this.block.id, this.meta], this.pos, layer);
 		this.block.drawer?.(this, currentFrame);
 		if(this.item instanceof Item && this.block.displaysItem){
@@ -1582,3 +1583,20 @@ class ItemModule {
 	}
 	
 }
+
+
+interface PowerProducer extends Building {
+	/**
+	 * Called between preUpdate and update.
+	 * @returns the maximum power that this building can produce on this tick.
+	**/
+	getMaxPowerProduction():number;
+}
+interface PowerConsumer extends Building {
+	/**
+	 * Called between preUpdate and update.
+	 * @returns the amount of power that this building wants on this tick.
+	 **/
+	getRequestedPower():number;
+}
+
