@@ -1561,7 +1561,25 @@ class ItemModule {
         return (stack[1] += amountTransferred) == maxCapacity;
     }
 }
+class PowerGrid {
+    constructor() {
+        this.producers = [];
+        this.consumers = [];
+    }
+    updatePower() {
+        const powerRequested = this.consumers.reduce((acc, p) => acc + p.getRequestedPower(), 0);
+        const maxProduction = this.producers.reduce((acc, p) => acc + p.getMaxPowerProduction(), 0);
+        const load = Math.min(powerRequested / maxProduction, 1);
+        const satisfaction = Math.min(maxProduction / powerRequested, 1);
+        this.producers.forEach(p => p.load = load);
+        this.consumers.forEach(c => c.satisfaction = satisfaction);
+    }
+}
 class PowerSource extends Building {
+    constructor() {
+        super(...arguments);
+        this.load = 0;
+    }
     getMaxPowerProduction() {
         return this.block.production;
     }
@@ -1571,9 +1589,15 @@ PowerSource.drawer = function (build, currentFrame) {
     Gfx.layer("overlay");
     const e = getAnimationData(currentFrame.frame % 60 / 60);
     Gfx.fillColor("yellow");
+    Gfx.alpha(build.load);
     Gfx.tEllipse(...build.pos.tileC, 0.5 + 0.3 * e.sin, 0.5 + 0.3 * e.sin);
+    Gfx.alpha(1);
 };
 class ArcTower extends Building {
+    constructor() {
+        super(...arguments);
+        this.satisfaction = 0;
+    }
     getRequestedPower() {
         return this.block.consumption;
     }
@@ -1583,9 +1607,14 @@ ArcTower.radius = 5;
 ArcTower.color = "white";
 ArcTower.drawer = function (build, currentFrame) {
     const theta = random(Mathf.TWO_PI);
-    const arcPos = [build.block.radius * Math.cos(theta) + build.pos.tileXCentered, build.block.radius * Math.sin(theta) + build.pos.tileYCentered];
+    const rad = build.block.radius * build.satisfaction;
+    const arcPos = [rad * Math.cos(theta) + build.pos.tileXCentered, rad * Math.sin(theta) + build.pos.tileYCentered];
     Gfx.layer("overlay");
     Gfx.strokeColor(build.block.color);
+    Gfx.lineWidth(5);
+    Gfx.alpha(0.5);
+    Gfx.tLine(...build.pos.tileC, ...arcPos);
     Gfx.lineWidth(3);
+    Gfx.alpha(1);
     Gfx.tLine(...build.pos.tileC, ...arcPos);
 };

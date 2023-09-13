@@ -1584,22 +1584,40 @@ class ItemModule {
 	
 }
 
+class PowerGrid {
+	//not scalable, TODO optimize (quadtree, etc)
+	producers: PowerProducer[] = [];
+	consumers: PowerConsumer[] = [];
+	updatePower(){
+		const powerRequested = this.consumers.reduce((acc, p) => acc + p.getRequestedPower(), 0);
+		const maxProduction = this.producers.reduce((acc, p) => acc + p.getMaxPowerProduction(), 0);
+		const load = Math.min(powerRequested / maxProduction, 1);
+		const satisfaction = Math.min(maxProduction / powerRequested, 1);
+		this.producers.forEach(p => p.load = load);
+		this.consumers.forEach(c => c.satisfaction = satisfaction);
+	}
+}
+
 class PowerSource extends Building implements PowerProducer {
 	block!: typeof PowerSource;
+	load:number = 0;
 	static production: number = 100;
 	getMaxPowerProduction():number {
 		return this.block.production;
 	}
-	static drawer = function(build:Building, currentFrame:CurrentFrame){
+	static drawer:any = function(build:PowerSource, currentFrame:CurrentFrame){
 		Gfx.layer("overlay");
 		const e = getAnimationData(currentFrame.frame % 60 / 60);
 		Gfx.fillColor("yellow");
+		Gfx.alpha(build.load);
 		Gfx.tEllipse(...build.pos.tileC, 0.5 + 0.3 * e.sin, 0.5 + 0.3 * e.sin);
+		Gfx.alpha(1);
 	};
 }
 
 class ArcTower extends Building implements PowerConsumer {
 	block!: typeof ArcTower;
+	satisfaction:number = 0;
 	static consumption:number = 100;
 	static radius = 5;
 	static color = "white";
@@ -1608,10 +1626,15 @@ class ArcTower extends Building implements PowerConsumer {
 	}
 	static drawer:any = function(build:ArcTower, currentFrame:CurrentFrame){
 		const theta = random(Mathf.TWO_PI);
-		const arcPos = [build.block.radius * Math.cos(theta) + build.pos.tileXCentered, build.block.radius * Math.sin(theta) + build.pos.tileYCentered] as const;
+		const rad = build.block.radius * build.satisfaction;
+		const arcPos = [rad * Math.cos(theta) + build.pos.tileXCentered, rad * Math.sin(theta) + build.pos.tileYCentered] as const;
 		Gfx.layer("overlay");
 		Gfx.strokeColor(build.block.color);
+		Gfx.lineWidth(5);
+		Gfx.alpha(0.5);
+		Gfx.tLine(...build.pos.tileC, ...arcPos);
 		Gfx.lineWidth(3);
+		Gfx.alpha(1);
 		Gfx.tLine(...build.pos.tileC, ...arcPos);
 	};
 }
@@ -1622,6 +1645,8 @@ interface PowerProducer extends Building {
 	 * @returns the maximum power that this building can produce on this tick.
 	**/
 	getMaxPowerProduction():number;
+	/** Gets set during power update, after getMaxPowerProduction is called. */
+	load:number;
 }
 interface PowerConsumer extends Building {
 	/**
@@ -1629,5 +1654,7 @@ interface PowerConsumer extends Building {
 	 * @returns the amount of power that this building wants on this tick.
 	 **/
 	getRequestedPower():number;
+	/** Gets set during power update, after getRequestedPower is called. */
+	satisfaction:number;
 }
 
