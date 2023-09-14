@@ -11,6 +11,8 @@ class Level {
 	storage = new Map<string, Chunk>();
 	format: string;
 	uuid: string;
+	//TODO TEMP
+	grid = new PowerGrid();
 	constructor(public seed:number){
 		this.format = consts.VERSION;
 		this.uuid = Math.random().toString().substring(2);
@@ -224,6 +226,9 @@ class Level {
 					tileX, tileY,
 					block.changeMeta(buildingID[1], tileX, tileY, this), this
 				);
+				//TODO TEMP
+				if(building instanceof PowerConsumer) this.grid.consumers.push(building);
+				else if(building instanceof PowerProducer) this.grid.producers.push(building);
 				if(building instanceof OverlayBuild){
 					return this.writeOverlayBuild(tileX, tileY, building);
 				} else {
@@ -237,6 +242,9 @@ class Level {
 	}
 
 	update(currentFrame:CurrentFrame){
+		//TODO pre-tick
+		//TODO Groups.build
+		this.grid.updatePower();
 		for(let chunk of this.storage.values()){
 			chunk.update(currentFrame);
 		}
@@ -831,6 +839,9 @@ class Building {
 		//This is done because subclasses may want to override the read() method, so you have to Buildings.get() anyway.
 		const build = new this(buildingData.x, buildingData.y, buildingData.meta, level);
 		if(buildingData.item) build.item = Item.read(buildingData.item);
+		//TODO TEMP
+		if(build instanceof PowerConsumer) level.grid.consumers.push(build);
+		else if(build instanceof PowerProducer) level.grid.producers.push(build);
 		return build;
 	}
 }

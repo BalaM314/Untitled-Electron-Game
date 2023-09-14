@@ -42,6 +42,7 @@ class Level {
         this.seed = seed;
         this.resources = {};
         this.storage = new Map();
+        this.grid = new PowerGrid();
         this.format = consts.VERSION;
         this.uuid = Math.random().toString().substring(2);
     }
@@ -208,6 +209,10 @@ class Level {
             }
             else {
                 const building = new block(tileX, tileY, block.changeMeta(buildingID[1], tileX, tileY, this), this);
+                if (building instanceof PowerConsumer)
+                    this.grid.consumers.push(building);
+                else if (building instanceof PowerProducer)
+                    this.grid.producers.push(building);
                 if (building instanceof OverlayBuild) {
                     return this.writeOverlayBuild(tileX, tileY, building);
                 }
@@ -222,6 +227,7 @@ class Level {
         }
     }
     update(currentFrame) {
+        this.grid.updatePower();
         for (let chunk of this.storage.values()) {
             chunk.update(currentFrame);
         }
@@ -745,6 +751,10 @@ let Building = (() => {
             const build = new this(buildingData.x, buildingData.y, buildingData.meta, level);
             if (buildingData.item)
                 build.item = Item.read(buildingData.item);
+            if (build instanceof PowerConsumer)
+                level.grid.consumers.push(build);
+            else if (build instanceof PowerProducer)
+                level.grid.producers.push(build);
             return build;
         }
     };
