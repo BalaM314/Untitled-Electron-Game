@@ -1574,12 +1574,48 @@ class PowerGrid {
         this.producers.forEach(p => p.load = load);
         this.consumers.forEach(c => c.satisfaction = satisfaction);
     }
+    removeProducer(build) {
+        const index = this.producers.indexOf(build);
+        if (index == -1)
+            return false;
+        this.producers.splice(index, 1);
+        build.load = 0;
+    }
+    removeConsumer(build) {
+        const index = this.consumers.indexOf(build);
+        if (index == -1)
+            return false;
+        this.consumers.splice(index, 1);
+        build.satisfaction = 0;
+    }
 }
-class PowerSource extends Building {
+class PowerBuilding extends Building {
+    constructor() {
+        super(...arguments);
+        this.grid = null;
+    }
+}
+class PowerProducer extends PowerBuilding {
     constructor() {
         super(...arguments);
         this.load = 0;
     }
+    break() {
+        super.break();
+        this.grid?.removeProducer(this);
+    }
+}
+class PowerConsumer extends PowerBuilding {
+    constructor() {
+        super(...arguments);
+        this.satisfaction = 0;
+    }
+    break() {
+        super.break();
+        this.grid?.removeConsumer(this);
+    }
+}
+class PowerSource extends PowerProducer {
     getMaxPowerProduction() {
         return this.block.production;
     }
@@ -1593,11 +1629,7 @@ PowerSource.drawer = function (build, currentFrame) {
     Gfx.tEllipse(...build.pos.tileC, 0.5 + 0.3 * e.sin, 0.5 + 0.3 * e.sin);
     Gfx.alpha(1);
 };
-class ArcTower extends Building {
-    constructor() {
-        super(...arguments);
-        this.satisfaction = 0;
-    }
+class ArcTower extends PowerConsumer {
     getRequestedPower() {
         return this.block.consumption;
     }

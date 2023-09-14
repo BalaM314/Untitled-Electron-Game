@@ -1585,7 +1585,7 @@ class ItemModule {
 }
 
 class PowerGrid {
-	//not scalable, TODO optimize (quadtree, etc)
+	//array not scalable, TODO optimize (quadtree, etc)
 	producers: PowerProducer[] = [];
 	consumers: PowerConsumer[] = [];
 	updatePower(){
@@ -1596,11 +1596,52 @@ class PowerGrid {
 		this.producers.forEach(p => p.load = load);
 		this.consumers.forEach(c => c.satisfaction = satisfaction);
 	}
+	removeProducer(build:PowerProducer){
+		const index = this.producers.indexOf(build);
+		if(index == -1) return false;
+		this.producers.splice(index, 1);
+		build.load = 0;
+	}
+	removeConsumer(build:PowerConsumer){
+		const index = this.consumers.indexOf(build);
+		if(index == -1) return false;
+		this.consumers.splice(index, 1);
+		build.satisfaction = 0;
+	}
 }
 
-class PowerSource extends Building implements PowerProducer {
-	block!: typeof PowerSource;
+abstract class PowerBuilding extends Building {
+	grid:PowerGrid | null = null;
+}
+abstract class PowerProducer extends PowerBuilding {
+	/** Gets set during power update, after getMaxPowerProduction is called. */
 	load:number = 0;
+	/**
+	 * Called between preUpdate and update.
+	 * @returns the maximum power that this building can produce on this tick.
+	**/
+	abstract getMaxPowerProduction():number;
+	break(){
+		super.break();
+		this.grid?.removeProducer(this);
+	}
+}
+abstract class PowerConsumer extends PowerBuilding {
+	/** Gets set during power update, after getRequestedPower is called. */
+	satisfaction:number = 0;
+	/**
+	 * Called between preUpdate and update.
+	 * @returns the amount of power that this building wants on this tick.
+	 **/
+	abstract getRequestedPower():number;
+	break(){
+		super.break();
+		this.grid?.removeConsumer(this);
+	}
+}
+
+class PowerSource extends PowerProducer {
+	block!: typeof PowerSource;
 	static production: number = 100;
 	getMaxPowerProduction():number {
 		return this.block.production;
@@ -1615,9 +1656,8 @@ class PowerSource extends Building implements PowerProducer {
 	};
 }
 
-class ArcTower extends Building implements PowerConsumer {
+class ArcTower extends PowerConsumer {
 	block!: typeof ArcTower;
-	satisfaction:number = 0;
 	static consumption:number = 100;
 	static radius = 5;
 	static color = "white";
@@ -1639,22 +1679,4 @@ class ArcTower extends Building implements PowerConsumer {
 	};
 }
 
-interface PowerProducer extends Building {
-	/**
-	 * Called between preUpdate and update.
-	 * @returns the maximum power that this building can produce on this tick.
-	**/
-	getMaxPowerProduction():number;
-	/** Gets set during power update, after getMaxPowerProduction is called. */
-	load:number;
-}
-interface PowerConsumer extends Building {
-	/**
-	 * Called between preUpdate and update.
-	 * @returns the amount of power that this building wants on this tick.
-	 **/
-	getRequestedPower():number;
-	/** Gets set during power update, after getRequestedPower is called. */
-	satisfaction:number;
-}
 
