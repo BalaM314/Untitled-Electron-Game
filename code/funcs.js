@@ -440,7 +440,7 @@ function isKey(obj, thing) {
     else
         return thing in obj;
 }
-function is(input) {
+function forceType(input) {
 }
 function extend() {
     return (data) => data;

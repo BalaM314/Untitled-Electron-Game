@@ -516,8 +516,8 @@ function isKey<T extends string>(obj:Record<T, unknown> | Map<T, unknown>, thing
 		return (thing as string) in obj;
 }
 
-/**Asserts that a variable is of a particular type. */
-function is<T>(input:unknown): asserts input is T {
+/**Sets a variable to be of a particular type. */
+function forceType<T>(input:unknown): asserts input is T {
 	//
 }
 

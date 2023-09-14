@@ -43,6 +43,7 @@ class Level {
         this.resources = {};
         this.storage = new Map();
         this.grid = new PowerGrid();
+        this.buildings = new Set();
         this.format = consts.VERSION;
         this.uuid = Math.random().toString().substring(2);
     }
@@ -193,18 +194,22 @@ class Level {
         if (block.canBuildAt(tileX, tileY, this)) {
             trigger(triggerType.placeBuilding, buildingID[0]);
             if (block.prototype instanceof MultiBlockController) {
-                const _block = block;
-                const offsets = MultiBlockController.getOffsetsForSize(..._block.multiblockSize);
+                forceType(block);
+                const offsets = MultiBlockController.getOffsetsForSize(...block.multiblockSize);
                 const multiblockSecondary = Buildings.get("base_multiblock_secondary");
                 for (const [xOffset, yOffset] of offsets) {
                     const buildUnder = this.buildingAtTile(tileX + xOffset, tileY + yOffset);
                     buildUnder?.break();
                 }
-                let controller = new _block(tileX, tileY, buildingID[1], this);
+                let controller = new block(tileX, tileY, buildingID[1], this);
                 controller.secondaries = offsets.map(([x, y]) => new multiblockSecondary(tileX + x, tileY + y, 0, this));
                 controller.secondaries.forEach(secondary => secondary.controller = controller);
                 this.writeBuilding(tileX, tileY, controller);
-                controller.secondaries.forEach(secondary => this.writeBuilding(secondary.pos.tileX, secondary.pos.tileY, secondary));
+                this.buildings.add(controller);
+                controller.secondaries.forEach(secondary => {
+                    this.writeBuilding(secondary.pos.tileX, secondary.pos.tileY, secondary);
+                    this.buildings.add(secondary);
+                });
                 return true;
             }
             else {
@@ -226,6 +231,7 @@ class Level {
     }
     update(currentFrame) {
         this.grid.updatePower();
+        this.buildings.forEach(b => b.update(currentFrame));
         for (let chunk of this.storage.values()) {
             chunk.update(currentFrame);
         }
@@ -350,6 +356,7 @@ class Chunk {
                     console.error(err);
                     throw new Error(`Failed to import building id ${stringifyMeta(buildingData.id, buildingData.meta)} at position ${x},${y} in chunk ${chunkX},${chunkY}. See console for more details.`);
                 }
+                level.buildings.add(tempBuilding);
                 chunk.layers[1][y][x] = tempBuilding;
             }
         }
@@ -376,6 +383,7 @@ class Chunk {
                 if (buildingData.item && numericVersion >= 130) {
                     tempBuilding.item = new Item(buildingData.item.x, buildingData.item.y, buildingData.item.id);
                 }
+                level.buildings.add(tempBuilding);
                 chunk.layers[2][y][x] = tempBuilding;
             }
         }
@@ -383,22 +391,6 @@ class Chunk {
         return chunk;
     }
     update(currentFrame) {
-        if (!this.hasBuildings)
-            return this;
-        for (let i = 0; i < consts.CHUNK_SIZE; i++) {
-            for (let j = 0; j < consts.CHUNK_SIZE; j++) {
-                if (this.layers[1][i][j]) {
-                    this.layers[1][i][j].update(currentFrame);
-                }
-            }
-        }
-        for (let i = 0; i < consts.CHUNK_SIZE; i++) {
-            for (let j = 0; j < consts.CHUNK_SIZE; j++) {
-                if (this.layers[2][i][j]) {
-                    this.layers[2][i][j].update(currentFrame);
-                }
-            }
-        }
         return this;
     }
     tileAt(tileX, tileY) {
