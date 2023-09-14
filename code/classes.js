@@ -209,10 +209,8 @@ class Level {
             }
             else {
                 const building = new block(tileX, tileY, block.changeMeta(buildingID[1], tileX, tileY, this), this);
-                if (building instanceof PowerConsumer)
-                    this.grid.consumers.push(building);
-                else if (building instanceof PowerProducer)
-                    this.grid.producers.push(building);
+                if (building instanceof PowerBuilding)
+                    this.grid.addBuild(building);
                 if (building instanceof OverlayBuild) {
                     return this.writeOverlayBuild(tileX, tileY, building);
                 }
@@ -751,10 +749,8 @@ let Building = (() => {
             const build = new this(buildingData.x, buildingData.y, buildingData.meta, level);
             if (buildingData.item)
                 build.item = Item.read(buildingData.item);
-            if (build instanceof PowerConsumer)
-                level.grid.consumers.push(build);
-            else if (build instanceof PowerProducer)
-                level.grid.producers.push(build);
+            if (build instanceof PowerBuilding)
+                level.grid.addBuild(build);
             return build;
         }
     };
@@ -1584,6 +1580,13 @@ class PowerGrid {
         this.producers.forEach(p => p.load = load);
         this.consumers.forEach(c => c.satisfaction = satisfaction);
     }
+    addBuild(build) {
+        if (build instanceof PowerConsumer)
+            this.consumers.push(build);
+        else if (build instanceof PowerProducer)
+            this.producers.push(build);
+        build.grid = this;
+    }
     removeProducer(build) {
         const index = this.producers.indexOf(build);
         if (index == -1)
@@ -1621,6 +1624,7 @@ class PowerConsumer extends PowerBuilding {
         this.satisfaction = 0;
     }
     break() {
+        debugger;
         super.break();
         this.grid?.removeConsumer(this);
     }
