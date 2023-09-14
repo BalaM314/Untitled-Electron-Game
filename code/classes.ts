@@ -246,7 +246,7 @@ class Level {
 	}
 
 	update(currentFrame:CurrentFrame){
-		//TODO pre-tick
+		this.buildings.forEach(b => b.preUpdate(currentFrame));
 		this.grid.updatePower();
 		this.buildings.forEach(b => b.update(currentFrame));
 		for(let chunk of this.storage.values()){
@@ -754,6 +754,7 @@ class Building {
 		if(this.block.isOverlay) this.level.writeOverlayBuild(this.pos.tileX, this.pos.tileY, null);
 		else this.level.writeBuilding(this.pos.tileX, this.pos.tileY, null);
 	}
+	preUpdate(currentFrame:CurrentFrame){}
 	update(currentFrame:CurrentFrame){
 		this.item?.update(currentFrame);
 	}
@@ -1670,11 +1671,10 @@ class PowerSource extends PowerProducer {
 	}
 	static drawer:any = function(build:PowerSource, currentFrame:CurrentFrame){
 		Gfx.layer("overlay");
-		const e = getAnimationData(currentFrame.frame % 60 / 60);
+		const flashRate = consts.ups / build.load;
+		const sin = Math.sin(Mathf.TWO_PI * (currentFrame.frame % flashRate / flashRate));
 		Gfx.fillColor("yellow");
-		Gfx.alpha(build.load);
-		Gfx.tEllipse(...build.pos.tileC, 0.5 + 0.3 * e.sin, 0.5 + 0.3 * e.sin);
-		Gfx.alpha(1);
+		Gfx.tEllipse(...build.pos.tileC, 0.3 + 0.2 * sin, 0.3 + 0.2 * sin);
 	};
 }
 

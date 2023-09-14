@@ -230,6 +230,7 @@ class Level {
         }
     }
     update(currentFrame) {
+        this.buildings.forEach(b => b.preUpdate(currentFrame));
         this.grid.updatePower();
         this.buildings.forEach(b => b.update(currentFrame));
         for (let chunk of this.storage.values()) {
@@ -662,6 +663,7 @@ let Building = (() => {
             else
                 this.level.writeBuilding(this.pos.tileX, this.pos.tileY, null);
         }
+        preUpdate(currentFrame) { }
         update(currentFrame) {
             this.item?.update(currentFrame);
         }
@@ -1629,11 +1631,10 @@ class PowerSource extends PowerProducer {
 PowerSource.production = 100;
 PowerSource.drawer = function (build, currentFrame) {
     Gfx.layer("overlay");
-    const e = getAnimationData(currentFrame.frame % 60 / 60);
+    const flashRate = consts.ups / build.load;
+    const sin = Math.sin(Mathf.TWO_PI * (currentFrame.frame % flashRate / flashRate));
     Gfx.fillColor("yellow");
-    Gfx.alpha(build.load);
-    Gfx.tEllipse(...build.pos.tileC, 0.5 + 0.3 * e.sin, 0.5 + 0.3 * e.sin);
-    Gfx.alpha(1);
+    Gfx.tEllipse(...build.pos.tileC, 0.3 + 0.2 * sin, 0.3 + 0.2 * sin);
 };
 class ArcTower extends PowerConsumer {
     getRequestedPower() {
