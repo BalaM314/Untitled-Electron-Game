@@ -231,6 +231,7 @@ class Level {
 					tileX, tileY,
 					block.changeMeta(buildingID[1], tileX, tileY, this), this
 				);
+				this.buildings.add(building);
 				//TODO TEMP
 				if(building instanceof PowerBuilding) this.grid.addBuild(building);
 				if(building instanceof OverlayBuild){
@@ -751,6 +752,7 @@ class Building {
 	}
 	/**Called to destroy the building. Should remove all references to it. */
 	break(){
+		this.level.buildings.delete(this);
 		if(this.block.isOverlay) this.level.writeOverlayBuild(this.pos.tileX, this.pos.tileY, null);
 		else this.level.writeBuilding(this.pos.tileX, this.pos.tileY, null);
 	}
@@ -823,6 +825,11 @@ class Building {
 		}
 		return false;
 	}
+	/**
+	 * Attempts to tranfer an item.
+	 * @param side Direction relative to this building. (+x is right, +y is down)
+	 * @returns true if the transfer succeeded and the item was moved, false if it was not moved
+	 */
 	acceptItem(item:Item, side:Direction | null):boolean {
 		if(this.item === null && this.block.acceptsItems && (side == null || this.acceptsItemFromSide(side))){
 			this.item = item;
@@ -1598,7 +1605,9 @@ class ItemModule {
 		this.storage[stack[0]]! -= amountTransferred;
 		return (stack[1] += amountTransferred) == maxCapacity;
 	}
-	
+	merge(from:ItemStack, to:ItemStack){
+		
+	}
 }
 
 class PowerGrid {

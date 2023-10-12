@@ -24,6 +24,24 @@ Tick: decrease timers and spawn items
 
 ## random stuff below
 
+ticking issue
+
+machine 1 -> machine 2
+both machines are full
+
+tick 1: both machines are full and have no outputs
+(output placed)
+tick 2:
+	chance 1:
+	machine 1 updates first, no outputs
+	machine 2 updates, outputs
+	only on the next tick machine 1 will realize it has an output
+	chance 2:
+	machine 2 updates first, outputs
+	machine 1 updates, outputs
+
+not solvable
+
 tick 1:
 generator 1 has a capacity of 50 PU and generator 2 has a capacity of 100 PU
 consumers are requesting a total of 50 PU
