@@ -214,6 +214,7 @@ class Level {
             }
             else {
                 const building = new block(tileX, tileY, block.changeMeta(buildingID[1], tileX, tileY, this), this);
+                this.buildings.add(building);
                 if (building instanceof PowerBuilding)
                     this.grid.addBuild(building);
                 if (building instanceof OverlayBuild) {
@@ -658,6 +659,7 @@ let Building = (() => {
             return building instanceof Conveyor;
         }
         break() {
+            	this.level.buildings.delete(this);
             if (this.block.isOverlay)
                 this.level.writeOverlayBuild(this.pos.tileX, this.pos.tileY, null);
             else
