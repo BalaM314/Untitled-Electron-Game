@@ -1620,7 +1620,6 @@ class PowerConsumer extends PowerBuilding {
         this.satisfaction = 0;
     }
     break() {
-        debugger;
         super.break();
         this.grid?.removeConsumer(this);
     }
