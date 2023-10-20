@@ -1666,7 +1666,6 @@ abstract class PowerConsumer extends PowerBuilding {
 	 **/
 	abstract getRequestedPower():number;
 	break(){
-		debugger;
 		super.break();
 		this.grid?.removeConsumer(this);
 	}
