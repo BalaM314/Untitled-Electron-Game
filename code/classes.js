@@ -659,7 +659,7 @@ let Building = (() => {
             return building instanceof Conveyor;
         }
         break() {
-            	this.level.buildings.delete(this);
+            this.level.buildings.delete(this);
             if (this.block.isOverlay)
                 this.level.writeOverlayBuild(this.pos.tileX, this.pos.tileY, null);
             else
@@ -1562,6 +1562,8 @@ class ItemModule {
         this.storage[stack[0]] -= amountTransferred;
         return (stack[1] += amountTransferred) == maxCapacity;
     }
+    merge(from, to) {
+    }
 }
 class PowerGrid {
     constructor() {
@@ -1638,23 +1640,47 @@ PowerSource.drawer = function (build, currentFrame) {
     Gfx.tEllipse(...build.pos.tileC, 0.3 + 0.2 * sin, 0.3 + 0.2 * sin);
 };
 class ArcTower extends PowerConsumer {
+    constructor() {
+        super(...arguments);
+        this.arcAngle = 0;
+        this.arcAVel = 0;
+        this.arcAAccel = 0;
+    }
     getRequestedPower() {
         return this.block.consumption;
     }
 }
+ArcTower.maxArcAAccel = 0.05;
+ArcTower.maxArcAVel = 0.15;
 ArcTower.consumption = 100;
-ArcTower.radius = 5;
+ArcTower.primaryRadius = 4;
+ArcTower.secondaryRadius = 1.5;
+ArcTower.primaryRadiusRange = [-1, 1];
+ArcTower.secondaryRadiusRange = [-0.25, 0.5];
 ArcTower.color = "white";
 ArcTower.drawer = function (build, currentFrame) {
-    const theta = random(Mathf.TWO_PI);
-    const rad = build.block.radius * build.satisfaction;
-    const arcPos = [rad * Math.cos(theta) + build.pos.tileXCentered, rad * Math.sin(theta) + build.pos.tileYCentered];
+    if (currentFrame.frame % 10 == 0)
+        build.arcAAccel = random(-build.block.maxArcAAccel, build.block.maxArcAAccel);
+    build.arcAVel = constrain(build.arcAVel + build.arcAAccel, -build.block.maxArcAVel, build.block.maxArcAVel);
+    build.arcAngle = (build.arcAngle + build.arcAVel) % Mathf.TWO_PI;
+    const rad = (build.block.primaryRadius + random(...build.block.primaryRadiusRange)) * build.satisfaction;
+    const arcPos = [rad * Math.cos(build.arcAngle) + build.pos.tileXCentered, rad * Math.sin(build.arcAngle) + build.pos.tileYCentered];
+    const srad1 = (build.block.secondaryRadius + random(...build.block.secondaryRadiusRange)) * build.satisfaction;
+    const srad2 = (build.block.secondaryRadius + random(...build.block.secondaryRadiusRange)) * build.satisfaction;
+    const srad1Angle = build.arcAngle + random(-(Math.PI * 2 / 3), Math.PI * 2 / 3);
+    const srad2Angle = build.arcAngle + random(-(Math.PI * 2 / 3), Math.PI * 2 / 3);
+    const sArc1Pos = [arcPos[0] + srad1 * Math.cos(srad1Angle), arcPos[1] + srad1 * Math.sin(srad1Angle)];
+    const sArc2Pos = [arcPos[0] + srad2 * Math.cos(srad2Angle), arcPos[1] + srad2 * Math.sin(srad2Angle)];
     Gfx.layer("overlay");
     Gfx.strokeColor(build.block.color);
     Gfx.lineWidth(5);
     Gfx.alpha(0.5);
     Gfx.tLine(...build.pos.tileC, ...arcPos);
+    Gfx.tLine(...arcPos, ...sArc1Pos);
+    Gfx.tLine(...arcPos, ...sArc2Pos);
     Gfx.lineWidth(3);
     Gfx.alpha(1);
     Gfx.tLine(...build.pos.tileC, ...arcPos);
+    Gfx.tLine(...arcPos, ...sArc1Pos);
+    Gfx.tLine(...arcPos, ...sArc2Pos);
 };

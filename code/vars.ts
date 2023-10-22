@@ -155,6 +155,7 @@ const consts = {
 };
 const Mathf = {
 	TWO_PI: Math.PI * 2,
+	HALF_PI: Math.PI / 2,
 };
 
 

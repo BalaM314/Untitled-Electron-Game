@@ -1688,24 +1688,47 @@ class PowerSource extends PowerProducer {
 
 class ArcTower extends PowerConsumer {
 	block!: typeof ArcTower;
+	arcAngle = 0;
+	arcAVel = 0;
+	arcAAccel = 0;
+	static maxArcAAccel = 0.05;
+	static maxArcAVel = 0.15;
 	static consumption:number = 100;
-	static radius = 5;
+	static primaryRadius = 4;
+	static secondaryRadius = 1.5;
+	static primaryRadiusRange = [-1, 1] as const;
+	static secondaryRadiusRange = [-0.25, 0.5] as const;
 	static color = "white";
 	getRequestedPower():number {
 		return this.block.consumption;
 	}
 	static drawer:any = function(build:ArcTower, currentFrame:CurrentFrame){
-		const theta = random(Mathf.TWO_PI);
-		const rad = build.block.radius * build.satisfaction;
-		const arcPos = [rad * Math.cos(theta) + build.pos.tileXCentered, rad * Math.sin(theta) + build.pos.tileYCentered] as const;
+		if(currentFrame.frame % 10 == 0)
+			build.arcAAccel = random(-build.block.maxArcAAccel, build.block.maxArcAAccel);
+		//update accel 6 times per second
+		build.arcAVel = constrain(build.arcAVel + build.arcAAccel, -build.block.maxArcAVel, build.block.maxArcAVel);
+		build.arcAngle = (build.arcAngle + build.arcAVel) % Mathf.TWO_PI;
+		const rad = (build.block.primaryRadius + random(...build.block.primaryRadiusRange)) * build.satisfaction;
+		const arcPos = [rad * Math.cos(build.arcAngle) + build.pos.tileXCentered, rad * Math.sin(build.arcAngle) + build.pos.tileYCentered] as const;
+		const srad1 = (build.block.secondaryRadius + random(...build.block.secondaryRadiusRange)) * build.satisfaction;
+		const srad2 = (build.block.secondaryRadius + random(...build.block.secondaryRadiusRange)) * build.satisfaction;
+		const srad1Angle = build.arcAngle + random(-(Math.PI * 2 / 3), Math.PI * 2 / 3);
+		const srad2Angle = build.arcAngle + random(-(Math.PI * 2 / 3), Math.PI * 2 / 3);
+		const sArc1Pos = [arcPos[0] + srad1 * Math.cos(srad1Angle), arcPos[1] + srad1 * Math.sin(srad1Angle)] as const;
+		const sArc2Pos = [arcPos[0] + srad2 * Math.cos(srad2Angle), arcPos[1] + srad2 * Math.sin(srad2Angle)] as const;
+
 		Gfx.layer("overlay");
 		Gfx.strokeColor(build.block.color);
 		Gfx.lineWidth(5);
 		Gfx.alpha(0.5);
 		Gfx.tLine(...build.pos.tileC, ...arcPos);
+		Gfx.tLine(...arcPos, ...sArc1Pos);
+		Gfx.tLine(...arcPos, ...sArc2Pos);
 		Gfx.lineWidth(3);
 		Gfx.alpha(1);
 		Gfx.tLine(...build.pos.tileC, ...arcPos);
+		Gfx.tLine(...arcPos, ...sArc1Pos);
+		Gfx.tLine(...arcPos, ...sArc2Pos);
 	};
 }
 
