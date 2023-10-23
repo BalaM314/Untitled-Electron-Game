@@ -478,8 +478,9 @@ function selectID(id) {
     }
 }
 class QuadTree {
-    constructor(span) {
+    constructor(span, depth = 1) {
         this.span = span;
+        this.depth = depth;
         this.elements = [];
         this.nodes = null;
     }
@@ -492,12 +493,12 @@ class QuadTree {
                 }
             }
         }
-        else if (this.elements.length == QuadTree.maxItems) {
+        else if (this.elements.length == QuadTree.maxItems && this.depth < QuadTree.maxDepth) {
             this.nodes = [
-                new QuadTree([this.span[0], this.span[1], this.span[2] / 2, this.span[3] / 2]),
-                new QuadTree([this.span[0], this.span[1] + this.span[2] / 2, this.span[2] / 2, this.span[3] / 2]),
-                new QuadTree([this.span[0] + this.span[2] / 2, this.span[1], this.span[2] / 2, this.span[3] / 2]),
-                new QuadTree([this.span[0] + this.span[2] / 2, this.span[1] + this.span[2] / 2, this.span[2] / 2, this.span[3] / 2]),
+                new QuadTree([this.span[0], this.span[1], this.span[2] / 2, this.span[3] / 2], this.depth + 1),
+                new QuadTree([this.span[0], this.span[1] + this.span[2] / 2, this.span[2] / 2, this.span[3] / 2], this.depth + 1),
+                new QuadTree([this.span[0] + this.span[2] / 2, this.span[1], this.span[2] / 2, this.span[3] / 2], this.depth + 1),
+                new QuadTree([this.span[0] + this.span[2] / 2, this.span[1] + this.span[2] / 2, this.span[2] / 2, this.span[3] / 2], this.depth + 1),
             ];
             for (const el of this.elements) {
                 this.insert(el);
@@ -534,3 +535,4 @@ class QuadTree {
     }
 }
 QuadTree.maxItems = 4;
+QuadTree.maxDepth = 10;

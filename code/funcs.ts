@@ -568,9 +568,10 @@ function selectID(id:RawBuildingID){
 
 class QuadTree<T extends {pos: Pos}> {
 	static maxItems = 4;
+	static maxDepth = 10;
 	elements: T[] = [];
 	nodes: [QuadTree<T>, QuadTree<T>, QuadTree<T>, QuadTree<T>] | null = null;
-	constructor(public span:Rect){}
+	constructor(public span:Rect, public depth:number = 1){}
 	insert(element:T){
 		if(this.nodes){
 			//Determine the correct subtree
@@ -581,13 +582,13 @@ class QuadTree<T extends {pos: Pos}> {
 			}
 			//if this for loop doesn't finish, then this is the wrong quadtree
 			//probably fine to do nothing
-		} else if(this.elements.length == QuadTree.maxItems){
+		} else if(this.elements.length == QuadTree.maxItems && this.depth < QuadTree.maxDepth){
 			//Convert to nodes
 			this.nodes = [
-				new QuadTree([this.span[0], this.span[1], this.span[2] / 2, this.span[3] / 2]),
-				new QuadTree([this.span[0], this.span[1] + this.span[2] / 2, this.span[2] / 2, this.span[3] / 2]),
-				new QuadTree([this.span[0] + this.span[2] / 2, this.span[1], this.span[2] / 2, this.span[3] / 2]),
-				new QuadTree([this.span[0] + this.span[2] / 2, this.span[1] + this.span[2] / 2, this.span[2] / 2, this.span[3] / 2]),
+				new QuadTree([this.span[0], this.span[1], this.span[2] / 2, this.span[3] / 2], this.depth + 1),
+				new QuadTree([this.span[0], this.span[1] + this.span[2] / 2, this.span[2] / 2, this.span[3] / 2], this.depth + 1),
+				new QuadTree([this.span[0] + this.span[2] / 2, this.span[1], this.span[2] / 2, this.span[3] / 2], this.depth + 1),
+				new QuadTree([this.span[0] + this.span[2] / 2, this.span[1] + this.span[2] / 2, this.span[2] / 2, this.span[3] / 2], this.depth + 1),
 			];
 			for(const el of this.elements){
 				this.insert(el);
