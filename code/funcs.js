@@ -477,3 +477,60 @@ function selectID(id) {
         image.classList.add("selected");
     }
 }
+class QuadTree {
+    constructor(span) {
+        this.span = span;
+        this.elements = [];
+        this.nodes = null;
+    }
+    insert(element) {
+        if (this.nodes) {
+            for (const node of this.nodes) {
+                if (node.contains(element)) {
+                    node.insert(element);
+                    break;
+                }
+            }
+        }
+        else if (this.elements.length == QuadTree.maxItems) {
+            this.nodes = [
+                new QuadTree([this.span[0], this.span[1], this.span[2] / 2, this.span[3] / 2]),
+                new QuadTree([this.span[0], this.span[1] + this.span[2] / 2, this.span[2] / 2, this.span[3] / 2]),
+                new QuadTree([this.span[0] + this.span[2] / 2, this.span[1], this.span[2] / 2, this.span[3] / 2]),
+                new QuadTree([this.span[0] + this.span[2] / 2, this.span[1] + this.span[2] / 2, this.span[2] / 2, this.span[3] / 2]),
+            ];
+            for (const el of this.elements) {
+                this.insert(el);
+            }
+            this.insert(element);
+            this.elements = [];
+        }
+        else {
+            this.elements.push(element);
+        }
+    }
+    each(cons) {
+        if (this.nodes)
+            this.nodes.forEach(n => n.each(cons));
+        else
+            this.elements.forEach(e => cons(e));
+    }
+    intersect(rect, cons) {
+        if (this.nodes) {
+            for (const node of this.nodes) {
+                if (Intersector.rectsIntersect(node.span, rect))
+                    node.intersect(rect, cons);
+            }
+        }
+        else {
+            for (const el of this.elements) {
+                if (Intersector.pointInRect(el.pos.pixel, rect))
+                    cons(el);
+            }
+        }
+    }
+    contains(el) {
+        return Intersector.pointInRect(el.pos.pixel, this.span);
+    }
+}
+QuadTree.maxItems = 4;

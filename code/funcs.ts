@@ -563,3 +563,56 @@ function selectID(id:RawBuildingID){
 		image.classList.add("selected");
 	}
 }
+
+class QuadTree<T extends {pos: Pos}> {
+	static maxItems = 4;
+	elements: T[] = [];
+	nodes: [QuadTree<T>, QuadTree<T>, QuadTree<T>, QuadTree<T>] | null = null;
+	constructor(public span:Rect){}
+	insert(element:T){
+		if(this.nodes){
+			//Determine the correct subtree
+			for(const node of this.nodes){ //is this fine? O(log n)
+				if(node.contains(element)){
+					node.insert(element); break;
+				}
+			}
+			//if this for loop doesn't finish, then this is the wrong quadtree
+			//probably fine to do nothing
+		} else if(this.elements.length == QuadTree.maxItems){
+			//Convert to nodes
+			this.nodes = [
+				new QuadTree([this.span[0], this.span[1], this.span[2] / 2, this.span[3] / 2]),
+				new QuadTree([this.span[0], this.span[1] + this.span[2] / 2, this.span[2] / 2, this.span[3] / 2]),
+				new QuadTree([this.span[0] + this.span[2] / 2, this.span[1], this.span[2] / 2, this.span[3] / 2]),
+				new QuadTree([this.span[0] + this.span[2] / 2, this.span[1] + this.span[2] / 2, this.span[2] / 2, this.span[3] / 2]),
+			];
+			for(const el of this.elements){
+				this.insert(el);
+			}
+			this.insert(element);
+			this.elements = [];
+		} else {
+			this.elements.push(element);
+		}
+	}
+	each(cons:(element:T) => unknown){
+		if(this.nodes) this.nodes.forEach(n => n.each(cons));
+		else this.elements.forEach(e => cons(e));
+		//else, empty quadtree
+	}
+	intersect(rect:Rect, cons:(element:T) => unknown){
+		if(this.nodes){
+			for(const node of this.nodes!){
+				if(Intersector.rectsIntersect(node.span, rect)) node.intersect(rect, cons);
+			}
+		} else {
+			for(const el of this.elements){
+				if(Intersector.pointInRect(el.pos.pixel, rect)) cons(el);
+			}
+		}
+	}
+	contains(el:T){
+		return Intersector.pointInRect(el.pos.pixel, this.span);
+	}
+}
