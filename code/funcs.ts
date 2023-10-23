@@ -209,11 +209,13 @@ class Button {
 }
 
 class Intersector {
+	/** The bottom left edges of the rect are inclusive, but the top right edges are exclusive. */
 	static pointInRect([x, y]:PosT, [rX, rY, rW, rH]:Rect){
-		return x > rX && x < (rX + rW) && y > rY && y < (rY + rH);
+		return x >= rX && x < (rX + rW) && y >= rY && y < (rY + rH);
 	}
+	/** All edges and corners of the rect are inclusive. */
 	static rectsIntersect([aX, aY, aW, aH]:Rect, [bX, bY, bW, bH]:Rect){
-		return bX < aX + aW && aX < bX + bW && bY < aY + aH && aY < bY + bH;
+		return bX <= aX + aW && aX <= bX + bW && bY <= aY + aH && aY <= bY + bH;
 	}
 }
 

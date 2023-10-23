@@ -168,10 +168,10 @@ class Button {
 }
 class Intersector {
     static pointInRect([x, y], [rX, rY, rW, rH]) {
-        return x > rX && x < (rX + rW) && y > rY && y < (rY + rH);
+        return x >= rX && x < (rX + rW) && y >= rY && y < (rY + rH);
     }
     static rectsIntersect([aX, aY, aW, aH], [bX, bY, bW, bH]) {
-        return bX < aX + aW && aX < bX + bW && bY < aY + aH && aY < bY + bH;
+        return bX <= aX + aW && aX <= bX + bW && bY <= aY + aH && aY <= bY + bH;
     }
 }
 class WindowedMean {
