@@ -496,9 +496,9 @@ class QuadTree {
         else if (this.elements.length == QuadTree.maxItems && this.depth < QuadTree.maxDepth) {
             this.nodes = [
                 new QuadTree([this.span[0], this.span[1], this.span[2] / 2, this.span[3] / 2], this.depth + 1),
-                new QuadTree([this.span[0], this.span[1] + this.span[2] / 2, this.span[2] / 2, this.span[3] / 2], this.depth + 1),
+                new QuadTree([this.span[0], this.span[1] + this.span[3] / 2, this.span[2] / 2, this.span[3] / 2], this.depth + 1),
                 new QuadTree([this.span[0] + this.span[2] / 2, this.span[1], this.span[2] / 2, this.span[3] / 2], this.depth + 1),
-                new QuadTree([this.span[0] + this.span[2] / 2, this.span[1] + this.span[2] / 2, this.span[2] / 2, this.span[3] / 2], this.depth + 1),
+                new QuadTree([this.span[0] + this.span[2] / 2, this.span[1] + this.span[3] / 2, this.span[2] / 2, this.span[3] / 2], this.depth + 1),
             ];
             for (const el of this.elements) {
                 this.insert(el);
@@ -533,6 +533,37 @@ class QuadTree {
     contains(el) {
         return Intersector.pointInRect(el.pos.pixel, this.span);
     }
+    display() {
+        Gfx.fillColor(`hsl(${(this.depth - 1) * 35}, 100%, 50%)`);
+        Gfx.rect(...this.span.map(a => a * QuadTree.displayScale));
+        Gfx.strokeColor("white");
+        Gfx.lineRect(...this.span.map(a => a * QuadTree.displayScale));
+        if (this.nodes) {
+            for (const node of this.nodes)
+                node.display();
+        }
+        else {
+            Gfx.fillColor("blue");
+            for (const el of this.elements) {
+                Gfx.ellipse(...el.pos.pixel.map(a => a * QuadTree.displayScale), 2.5, 2.5);
+            }
+        }
+    }
+    static setShowcaseMode() {
+        let tree = new QuadTree([0, 0, 300, 180]);
+        cancelAnimationFrame(Game.animationFrame);
+        Gfx.layer("overlay");
+        Gfx.fillColor("black");
+        Gfx.rect(0, 0, innerWidth, innerHeight);
+        tree.display();
+        state[Game.state].onmousedown = () => {
+            tree.insert({
+                pos: Pos.fromPixelCoords(...Input.mouse.map(a => a / QuadTree.displayScale))
+            });
+            tree.display();
+        };
+    }
 }
 QuadTree.maxItems = 4;
 QuadTree.maxDepth = 10;
+QuadTree.displayScale = 4;
