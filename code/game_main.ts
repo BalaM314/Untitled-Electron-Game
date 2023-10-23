@@ -470,24 +470,10 @@ let state: {
 			}
 		},
 		onkeydown(e){
-			//If you pressed a number or function key, draw a box around the building you selected.
-			if(!isNaN(parseInt(e.key))){
-				for(let x of toolbarEl.children){
-					x.classList.remove("selected");
-				}
-				(toolbarEl.children[parseInt(e.key) - 1] as HTMLElement)?.classList.add("selected");
-			}
-			if(!isNaN(parseInt(e.key[1]))){
-				for(let x of toolbarEl.children){
-					x.classList.remove("selected");
-				}
-				(toolbarEl.children[parseInt(e.key[1]) + 8] as HTMLElement)?.classList.add("selected");
-			}
-
 			//Easter egg
 			if(e.key == "Enter" && Input.lastKeysPressed.join(", ") == 
 				["ArrowUp", "ArrowUp", "ArrowDown", "ArrowDown", "ArrowLeft", "ArrowRight", "ArrowLeft", "ArrowRight", "b", "a", "Enter"].join(", ")
-				){
+			){
 				window.open("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
 				for(let [key, value] of Object.entries(level1.resources)){
 					level1.resources[key] = Infinity;

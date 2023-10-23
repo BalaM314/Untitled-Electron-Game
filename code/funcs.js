@@ -469,3 +469,11 @@ function makeRebindButton(y, buttonID, buttonName, defaultKey) {
         }
     });
 }
+function selectID(id) {
+    placedBuilding.type = id;
+    const image = document.querySelector(`img#${id}`);
+    if (image) {
+        toolbarIcons.forEach(i => i.classList.remove("selected"));
+        image.classList.add("selected");
+    }
+}

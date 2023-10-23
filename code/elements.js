@@ -11,6 +11,7 @@ let alertmessage = getElement("alertmessage", HTMLDivElement);
 let alertexit = getElement("alertexit", HTMLDivElement);
 let alertbox = getElement("alertbox", HTMLDivElement);
 const toolbarEl = getElement("toolbar", HTMLDivElement);
+const toolbarIcons = [...toolbarEl.children];
 const clickcapture = getElement("clickcapture", HTMLDivElement);
 const errorBackground = getElement("error_background", HTMLDivElement);
 const loadingBackground = getElement("loading_background", HTMLDivElement);

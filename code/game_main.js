@@ -393,18 +393,6 @@ let state = {
             }
         },
         onkeydown(e) {
-            if (!isNaN(parseInt(e.key))) {
-                for (let x of toolbarEl.children) {
-                    x.classList.remove("selected");
-                }
-                toolbarEl.children[parseInt(e.key) - 1]?.classList.add("selected");
-            }
-            if (!isNaN(parseInt(e.key[1]))) {
-                for (let x of toolbarEl.children) {
-                    x.classList.remove("selected");
-                }
-                toolbarEl.children[parseInt(e.key[1]) + 8]?.classList.add("selected");
-            }
             if (e.key == "Enter" && Input.lastKeysPressed.join(", ") ==
                 ["ArrowUp", "ArrowUp", "ArrowDown", "ArrowDown", "ArrowLeft", "ArrowRight", "ArrowLeft", "ArrowRight", "b", "a", "Enter"].join(", ")) {
                 window.open("https://www.youtube.com/watch?v=dQw4w9WgXcQ");

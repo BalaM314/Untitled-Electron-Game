@@ -355,7 +355,7 @@ function getLegacyRawBuildingID(buildingID:LegacyBuildingID):LegacyRawBuildingID
 }
 
 
-
+//TODO PosTuple
 class Pos {
 	private constructor(public pixelX:number, public pixelY:number){}
 	static fromPixelCoords(x:number, y:number){
@@ -554,4 +554,13 @@ function makeRebindButton(y:number, buttonID: [string, string], buttonName:strin
 				(prompt(`Rebind ${buttonName.toLowerCase()} to:`) ?? defaultKey).toLowerCase().substring(0,1);
 		}
 	})
+}
+
+function selectID(id:RawBuildingID){
+	placedBuilding.type = id;
+	const image = document.querySelector(`img#${id}`);
+	if(image){
+		toolbarIcons.forEach(i => i.classList.remove("selected"));
+		image.classList.add("selected");
+	}
 }
