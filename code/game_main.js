@@ -44,7 +44,7 @@ function registerEventHandlers() {
         e.preventDefault();
     };
     window.onkeydown = (e) => {
-        if (e.ctrlKey && (e.key.match(/^[wK]$/) || e.key.match(/^[ertuni1-9]$/i)) || e.key.match(/^f[5]$/i)) {
+        if (e.ctrlKey && (e.key.match(/^[wK]$/) || e.key.match(/^[ertuni1-9]$/i)) || e.key.match(/^f(5|11)$/i)) {
             return;
         }
         e.preventDefault();
