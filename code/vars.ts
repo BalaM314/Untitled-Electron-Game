@@ -79,7 +79,7 @@ type Direction = {
 	num: number;
 	opposite: Direction;
 	string: string;
-	vec: [x:number, y:number];
+	vec: PosT;
 }
 //I miss java enums
 const Direction: {

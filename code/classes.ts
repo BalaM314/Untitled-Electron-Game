@@ -64,7 +64,7 @@ class Level {
 		);
 	}
 	generateNecessaryChunks(){
-		let [chunkX, chunkY] = Camera.unproject(0, 0).map(Pos.pixelToChunk) as [number, number]
+		let [chunkX, chunkY] = Camera.unproject(0, 0).map(Pos.pixelToChunk);
 		const xOffsets = [0, 1, 2, 3, 4];
 		const yOffsets = [0, 1, 2];
 		for(const xOffset of xOffsets){
@@ -744,7 +744,7 @@ class Building {
 		return level.tileAtByTile(tileX, tileY) != "base_water";
 	}
 	/**Returns texture size and offset given meta. */
-	static textureSize(meta:number):[size:[number, number], offset:[number, number]] {
+	static textureSize(meta:number):TextureInfo {
 		return [[1, 1], [0, 0]];
 	}
 	static canOutputTo(building:Building | null){
@@ -808,7 +808,7 @@ class Building {
 	buildAt(direction:Direction):Building | null {
 		return this.level.buildingAtTile(this.pos.tileX + direction.vec[0], this.pos.tileY + direction.vec[1]);
 	}
-	buildAtOffset(offset:[x:number, y:number]):Building | null {
+	buildAtOffset(offset:PosT):Building | null {
 		return this.level.buildingAtTile(this.pos.tileX + offset[0], this.pos.tileY + offset[1]);
 	}
 	spawnItem(id:ItemID){
@@ -1296,28 +1296,28 @@ class Extractor extends OverlayBuild {
 	static speed = 1;
 	static outputsItems = true;
 	block!:typeof Extractor;
-	outputOffset: [x:number, y:number] = this.block.getOutputTile(this.meta)
-	static textureSize(meta:BuildingMeta){
+	outputOffset:PosT = this.block.getOutputTile(this.meta);
+	static textureSize(meta:BuildingMeta):TextureInfo {
 		switch(meta){
-			case 0: return [[2, 1], [0, 0]] as [size:[number, number], offset:[number, number]];
-			case 1: return [[1, 2], [0, 0]] as [size:[number, number], offset:[number, number]];
-			case 2: return [[2, 1], [-1, 0]] as [size:[number, number], offset:[number, number]];
-			case 3: return [[1, 2], [0, -1]] as [size:[number, number], offset:[number, number]];
-			case 4: return [[3, 1], [0, 0]] as [size:[number, number], offset:[number, number]];
-			case 5: return [[1, 3], [0, 0]] as [size:[number, number], offset:[number, number]];
-			case 6: return [[3, 1], [-2, 0]] as [size:[number, number], offset:[number, number]];
-			case 7: return [[1, 3], [0, -2]] as [size:[number, number], offset:[number, number]];
-			case 8: return [[4, 1], [0, 0]] as [size:[number, number], offset:[number, number]];
-			case 9: return [[1, 4], [0, 0]] as [size:[number, number], offset:[number, number]];
-			case 10: return [[4, 1], [-3, 0]] as [size:[number, number], offset:[number, number]];
-			case 11: return [[1, 4], [0, -3]] as [size:[number, number], offset:[number, number]];
-			default: return [[1, 1], [0, 0]] as [size:[number, number], offset:[number, number]];
+			case 0: return [[2, 1], [0, 0]];
+			case 1: return [[1, 2], [0, 0]];
+			case 2: return [[2, 1], [-1, 0]];
+			case 3: return [[1, 2], [0, -1]];
+			case 4: return [[3, 1], [0, 0]];
+			case 5: return [[1, 3], [0, 0]];
+			case 6: return [[3, 1], [-2, 0]];
+			case 7: return [[1, 3], [0, -2]];
+			case 8: return [[4, 1], [0, 0]];
+			case 9: return [[1, 4], [0, 0]];
+			case 10: return [[4, 1], [-3, 0]];
+			case 11: return [[1, 4], [0, -3]];
+			default: return [[1, 1], [0, 0]];
 		}
 	}
 	static getID(type:RawBuildingID, direction:Direction, modifier:number):BuildingIDWithMeta {
 		return [type, (modifier * 4) + direction.num] as BuildingIDWithMeta;
 	}
-	static getOutputTile(meta:BuildingMeta):[x:number, y:number] {
+	static getOutputTile(meta:BuildingMeta):PosT {
 		switch(meta){
 			case 0: return [1, 0];
 			case 1: return [0, 1];
@@ -1484,12 +1484,12 @@ class ResourceAcceptor extends Building {
 class MultiBlockController extends BuildingWithRecipe {
 	block!: typeof MultiBlockController;
 	secondaries: MultiBlockSecondary[] = [];
-	static multiblockSize = [2, 2] as [number, number];
-	static textureSize(meta: number) {
-		return [this.multiblockSize, [0, 0]] as [size: [number, number], offset: [number, number]];
+	static multiblockSize:PosT = [2, 2];
+	static textureSize(meta:number):TextureInfo {
+		return [this.multiblockSize, [0, 0]];
 	}
 	static getOffsetsForSize(width:number, height:number){
-		let offsets = new Array<[x:number, y:number]>();
+		let offsets = new Array<PosT>(width * height - 1);
 		for(let i = 0; i < width; i ++){
 			for(let j = 0; j < height; j ++){
 				if(i == 0 && j == 0) continue;
@@ -1499,7 +1499,10 @@ class MultiBlockController extends BuildingWithRecipe {
 		return offsets;
 	}
 	centeredPos(){
-		return Pos.fromTileCoords(this.pos.tileX + this.block.multiblockSize[0] / 2, this.pos.tileY + this.block.multiblockSize[1] / 2, false);
+		return Pos.fromTileCoords(
+			this.pos.tileX + this.block.multiblockSize[0] / 2,
+			this.pos.tileY + this.block.multiblockSize[1] / 2, false
+		);
 	}
 	break(){
 		this.secondaries.forEach(secondary => secondary.break(true));

@@ -337,7 +337,7 @@ let state = {
             ctxItems.clear();
             ctxOverlays.clear();
             level1.display(currentFrame);
-            level1.displayGhostBuilding(...Camera.unproject(Input.mouseX, Input.mouseY).map(Pos.pixelToTile), placedBuilding.ID, currentFrame);
+            level1.displayGhostBuilding(...(Camera.unproject(Input.mouseX, Input.mouseY).map(Pos.pixelToTile)), placedBuilding.ID, currentFrame);
             if (keybinds.display.show_tooltip.isHeld()) {
                 level1.displayTooltip(Input.mouseX, Input.mouseY, currentFrame);
             }
@@ -357,7 +357,7 @@ let state = {
             if (Game.paused)
                 return;
             if (e.ctrlKey && e.button == 0) {
-                level1.buildingAtPixel(...(Camera.unproject(e.x, e.y)))?.acceptItem(new Item(...Camera.unproject(e.x, e.y).map(c => Pos.tileToPixel(Pos.pixelToTile(c), true)), "base_null"), null);
+                level1.buildingAtPixel(...(Camera.unproject(e.x, e.y)))?.acceptItem(new Item(...(Camera.unproject(e.x, e.y).map(c => Pos.tileToPixel(Pos.pixelToTile(c), true))), "base_null"), null);
             }
         },
         onmouseheld() {
@@ -366,7 +366,7 @@ let state = {
             if (!Input.latestMouseEvent)
                 return;
             if (!(Input.keysHeld.has("control") || keybinds.placement.break_building.isHeld()) && placedBuilding.ID[0] != "base_null") {
-                level1.buildBuilding(...Camera.unproject(Input.latestMouseEvent.x, Input.latestMouseEvent.y).map(Pos.pixelToTile), placedBuilding.ID);
+                level1.buildBuilding(...(Camera.unproject(Input.latestMouseEvent.x, Input.latestMouseEvent.y).map(Pos.pixelToTile)), placedBuilding.ID);
             }
         },
         onkeyheld(currentframe) {
@@ -389,7 +389,7 @@ let state = {
             }
             if (keybinds.placement.break_building.isHeld()) {
                 currentframe.redraw = true;
-                level1.breakBuilding(...Camera.unproject(Input.mouseX, Input.mouseY).map(Pos.pixelToTile));
+                level1.breakBuilding(...(Camera.unproject(Input.mouseX, Input.mouseY).map(Pos.pixelToTile)));
             }
         },
         onkeydown(e) {

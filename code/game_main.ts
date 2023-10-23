@@ -397,7 +397,7 @@ let state: {
 		
 			
 			level1.displayGhostBuilding(
-				...(Camera.unproject(Input.mouseX, Input.mouseY).map(Pos.pixelToTile) as [number, number]),
+				...(Camera.unproject(Input.mouseX, Input.mouseY).map(Pos.pixelToTile)),
 				placedBuilding.ID, currentFrame
 			);
 			if(keybinds.display.show_tooltip.isHeld()){
@@ -428,7 +428,7 @@ let state: {
 				level1.buildingAtPixel(
 					...(Camera.unproject(e.x, e.y))
 				)?.acceptItem(new Item(
-					...(Camera.unproject(e.x, e.y).map(c => Pos.tileToPixel(Pos.pixelToTile(c), true)) as [number, number]),
+					...(Camera.unproject(e.x, e.y).map(c => Pos.tileToPixel(Pos.pixelToTile(c), true))),
 					"base_null"
 				), null);
 			}
@@ -438,7 +438,7 @@ let state: {
 			if(!Input.latestMouseEvent) return;
 			if(!(Input.keysHeld.has("control") || keybinds.placement.break_building.isHeld()) && placedBuilding.ID[0] != "base_null"){
 				level1.buildBuilding(
-					...(Camera.unproject(Input.latestMouseEvent.x, Input.latestMouseEvent.y).map(Pos.pixelToTile) as [number, number]),
+					...(Camera.unproject(Input.latestMouseEvent.x, Input.latestMouseEvent.y).map(Pos.pixelToTile)),
 					placedBuilding.ID
 				);
 			}
@@ -465,7 +465,7 @@ let state: {
 			if(keybinds.placement.break_building.isHeld()){
 				currentframe.redraw = true;
 				level1.breakBuilding(
-					...(Camera.unproject(Input.mouseX, Input.mouseY).map(Pos.pixelToTile) as [number, number])
+					...(Camera.unproject(Input.mouseX, Input.mouseY).map(Pos.pixelToTile))
 				);
 			}
 		},

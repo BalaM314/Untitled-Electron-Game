@@ -161,9 +161,13 @@ interface Array<T> {
 	 * Sorts an array, with a callback that ranks elements with a number.
 	 */
 	sort2: (callback: (value:T) => number) => void;
+	map<TThis extends Array<T>, U>(this: TThis, fn: (v: T) => U): { [K in keyof TThis]: U }
 }
 
 interface CanvasRenderingContext2D {
 	/**Clears a ctx. */
 	clear: () => void;
 }
+
+type PosT = [x:number, y:number];
+type TextureInfo = [size:[width:number, height:number], offset:[x:number, height:number]];

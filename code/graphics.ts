@@ -89,19 +89,19 @@ class Camera {
 		const [x, y, w, h] = this.visibleRect();
 		return Intersector.rectsIntersect(rect, [x - cullingMargin, y - cullingMargin, w + cullingMargin * 2, h + cullingMargin * 2]);
 	}
-	static isPointVisible(point:[x:number, y:number], cullingMargin:number = 0){
+	static isPointVisible(point:PosT, cullingMargin:number = 0){
 		const [x, y, w, h] = this.visibleRect();
 		return Intersector.pointInRect(point, [x - cullingMargin, y - cullingMargin, w + cullingMargin * 2, h + cullingMargin * 2]);
 	}
 	/**Converts world coordinates to screen coordinates, where [0,0] is at the top left. */
-	static project(x:number, y:number):[x:number, y:number]{
+	static project(x:number, y:number):PosT {
 		return [
 			((x + this.scrollX) * this.zoomLevel) + this.width / 2,
 			((y + this.scrollY) * this.zoomLevel) + this.height / 2
 		];
 	}
 	/**Converts screen coordinates to world coordinates. */
-	static unproject(x:number, y:number):[x:number, y:number]{
+	static unproject(x:number, y:number):PosT {
 		return [
 			(x - this.width / 2) / this.zoomLevel - this.scrollX,
 			(y - this.height / 2) / this.zoomLevel - this.scrollY

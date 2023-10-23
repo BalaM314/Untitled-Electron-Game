@@ -209,7 +209,7 @@ class Button {
 }
 
 class Intersector {
-	static pointInRect([x, y]:[x:number, y:number], [rX, rY, rW, rH]:Rect){
+	static pointInRect([x, y]:PosT, [rX, rY, rW, rH]:Rect){
 		return x > rX && x < (rX + rW) && y > rY && y < (rY + rH);
 	}
 	static rectsIntersect([aX, aY, aW, aH]:Rect, [bX, bY, bW, bH]:Rect){
@@ -355,7 +355,6 @@ function getLegacyRawBuildingID(buildingID:LegacyBuildingID):LegacyRawBuildingID
 }
 
 
-//TODO PosTuple
 class Pos {
 	private constructor(public pixelX:number, public pixelY:number){}
 	static fromPixelCoords(x:number, y:number){
@@ -364,13 +363,13 @@ class Pos {
 	static fromTileCoords(x:number, y:number, centered:boolean){
 		return new Pos(this.tileToPixel(x, centered), this.tileToPixel(y, centered));
 	}
-	get pixel():[x:number, y:number] {
+	get pixel():PosT {
 		return [this.pixelX, this.pixelY];
 	}
-	get tile():[x:number, y:number] {
+	get tile():PosT {
 		return [this.tileXExact, this.tileYExact];
 	}
-	get tileC():[x:number, y:number] {
+	get tileC():PosT {
 		return [this.tileXCentered, this.tileYCentered];
 	}
 	get pixelXCenteredInTile(){
