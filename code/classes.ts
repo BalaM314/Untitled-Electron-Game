@@ -1633,8 +1633,6 @@ class ItemModule {
 type FluidStack = [type:Fluid | null, amount:number, capacity:number];
 class Fluid {
 
-	static water = new Fluid("water");
-
 	id:number;
 
 	private static _id = 1;
@@ -1668,6 +1666,10 @@ class Fluid {
 		stack[1] += amountTransferred;
 		return amountTransferred;
 	}
+}
+
+const Fluids = {
+	water: new Fluid("water"),
 }
 
 class Tank extends Building {
@@ -1731,7 +1733,7 @@ class Pump extends Building {
 		return level.tileAtByTile(tileX, tileY) == "base_water";
 	}
 	update(){
-		Fluid.fill(this.fluid!, Fluid.water, this.block.productionSpeed);
+		Fluid.fill(this.fluid!, Fluids.water, this.block.productionSpeed);
 		this.dumpFluid(this.block.outputSpeed);
 	}
 }

@@ -1616,9 +1616,11 @@ class Fluid {
         return amountTransferred;
     }
 }
-Fluid.water = new Fluid("water");
 Fluid._id = 1;
 Fluid.all = [];
+const Fluids = {
+    water: new Fluid("water"),
+};
 class Tank extends Building {
     constructor(x, y, meta, level) {
         super(x, y, meta, level);
@@ -1671,7 +1673,7 @@ class Pump extends Building {
         return level.tileAtByTile(tileX, tileY) == "base_water";
     }
     update() {
-        Fluid.fill(this.fluid, Fluid.water, this.block.productionSpeed);
+        Fluid.fill(this.fluid, Fluids.water, this.block.productionSpeed);
         this.dumpFluid(this.block.outputSpeed);
     }
 }
