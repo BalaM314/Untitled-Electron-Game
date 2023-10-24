@@ -445,8 +445,8 @@ function forceType(input) {
 function extend() {
     return (data) => data;
 }
-function never() {
-    throw new Error(`Unreachable code was reached!`);
+function crash(message = `Unreachable code was reached!`) {
+    throw new Error(message);
 }
 function makeRebindButton(y, buttonID, buttonName, defaultKey) {
     const keybind = keybinds[buttonID[0]]?.[buttonID[1]];

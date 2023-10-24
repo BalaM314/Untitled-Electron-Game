@@ -95,7 +95,7 @@ class Gfx {
         this.ctx = this.layers.overlay;
     }
     static layer(k) {
-        this.ctx = this.layers[k];
+        this.ctx = this.layers[k] ?? crash(`Invalid layer ${k}`);
         this.alpha(1);
     }
     static lerp(from, to, f) {

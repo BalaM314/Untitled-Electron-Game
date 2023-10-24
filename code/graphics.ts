@@ -111,7 +111,6 @@ class Camera {
 
 class Gfx {
 
-	//TODO fix layers
 	static layers = {
 		tile: null! as CanvasRenderingContext2D,
 		buildings: null! as CanvasRenderingContext2D,
@@ -135,7 +134,7 @@ class Gfx {
 		this.ctx = this.layers.overlay;
 	}
 	static layer(k:keyof typeof this.layers){
-		this.ctx = this.layers[k];
+		this.ctx = this.layers[k] ?? crash(`Invalid layer ${k}`);
 		this.alpha(1);
 	}
 	static lerp(from:[r:number, g:number, b:number], to:[r:number, g:number, b:number], f:number):[r:number, g:number, b:number]{

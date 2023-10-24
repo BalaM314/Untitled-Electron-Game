@@ -526,8 +526,8 @@ function extend<Struct>() {
 	return <T extends Struct>(data:T) => data;
 }
 
-function never():never {
-	throw new Error(`Unreachable code was reached!`);
+function crash(message = `Unreachable code was reached!`):never {
+	throw new Error(message);
 }
 
 function makeRebindButton(y:number, buttonID: [string, string], buttonName:string, defaultKey: string){
