@@ -34,7 +34,10 @@ const names: {
 		"base_assembler": "Assembler",
 		"base_null": "[D] No Building",
 		"base_arc_tower": "Arc Tower",
-		"base_power_source": "Power Source"
+		"base_power_source": "Power Source",
+		"base_pipe": "Pipe",
+		"base_pump": "Pump",
+		"base_tank": "Tank",
 	},
 	item: {
 		"base_null": "Debug Item",

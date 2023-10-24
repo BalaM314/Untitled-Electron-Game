@@ -131,3 +131,6 @@ Buildings.register("base_multiblock_secondary", MultiBlockSecondary);
 Buildings.register("base_assembler", MultiBlockController, { recipeType: recipes.base_assembling, multiblockSize: [2, 2], drawer: BuildingWithRecipe.outputDrawer(), secondary: Buildings.get("base_multiblock_secondary") });
 Buildings.register("base_arc_tower", ArcTower);
 Buildings.register("base_power_source", PowerSource);
+Buildings.register("base_pipe", Pipe);
+Buildings.register("base_pump", Pump);
+Buildings.register("base_tank", Tank);
