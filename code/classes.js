@@ -1481,7 +1481,7 @@ class MultiBlockController extends BuildingWithRecipe {
         return [this.multiblockSize, [0, 0]];
     }
     static getOffsetsForSize(width, height) {
-        let offsets = new Array(width * height - 1);
+        let offsets = [];
         for (let i = 0; i < width; i++) {
             for (let j = 0; j < height; j++) {
                 if (i == 0 && j == 0)
