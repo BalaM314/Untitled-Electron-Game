@@ -196,13 +196,12 @@ class Level {
             if (block.prototype instanceof MultiBlockController) {
                 forceType(block);
                 const offsets = MultiBlockController.getOffsetsForSize(...block.multiblockSize);
-                const multiblockSecondary = Buildings.get("base_multiblock_secondary");
                 for (const [xOffset, yOffset] of offsets) {
                     const buildUnder = this.buildingAtTile(tileX + xOffset, tileY + yOffset);
                     buildUnder?.break();
                 }
                 let controller = new block(tileX, tileY, buildingID[1], this);
-                controller.secondaries = offsets.map(([x, y]) => new multiblockSecondary(tileX + x, tileY + y, 0, this));
+                controller.secondaries = offsets.map(([x, y]) => new block.secondary(tileX + x, tileY + y, 0, this));
                 controller.secondaries.forEach(secondary => secondary.controller = controller);
                 this.writeBuilding(tileX, tileY, controller);
                 this.buildings.add(controller);
@@ -917,7 +916,7 @@ class Conveyor extends Building {
             case Direction.down: return [
                 0x03, 0x08, 0x04, 0x0C, 0x10, 0x12, 0x13, 0x14, 0x16, 0x18, 0x1A, 0x1B,
             ].includes(this.meta);
-            default: never();
+            default: crash();
         }
     }
     outputsItemToSide(side) {
@@ -934,7 +933,7 @@ class Conveyor extends Building {
             case Direction.down: return [
                 1, 6, 7, 14, 15, 21, 25
             ].includes(this.meta);
-            default: never();
+            default: crash();
         }
     }
     static outputSide(meta) {
@@ -1446,6 +1445,33 @@ class ResourceAcceptor extends Building {
 }
 ResourceAcceptor.immutable = true;
 ResourceAcceptor.acceptsItems = true;
+class MultiBlockSecondary extends Building {
+    constructor() {
+        super(...arguments);
+        this.controller = null;
+    }
+    acceptItem(item) {
+        return this.controller?.acceptItem(item) ?? false;
+    }
+    break(isRecursive) {
+        if (!isRecursive) {
+            this.controller?.break();
+        }
+        else {
+            this.controller = null;
+            super.break();
+        }
+    }
+    display(currentFrame) {
+    }
+    update() {
+        if (!(this.controller instanceof MultiBlockController)) {
+            this.break();
+        }
+    }
+}
+MultiBlockSecondary.outputsItems = true;
+MultiBlockSecondary.acceptsItems = true;
 class MultiBlockController extends BuildingWithRecipe {
     constructor() {
         super(...arguments);
@@ -1508,33 +1534,7 @@ class MultiBlockController extends BuildingWithRecipe {
     }
 }
 MultiBlockController.multiblockSize = [2, 2];
-class MultiBlockSecondary extends Building {
-    constructor() {
-        super(...arguments);
-        this.controller = null;
-    }
-    acceptItem(item) {
-        return this.controller?.acceptItem(item) ?? false;
-    }
-    break(isRecursive) {
-        if (!isRecursive) {
-            this.controller?.break();
-        }
-        else {
-            this.controller = null;
-            super.break();
-        }
-    }
-    display(currentFrame) {
-    }
-    update() {
-        if (!(this.controller instanceof MultiBlockController)) {
-            this.break();
-        }
-    }
-}
-MultiBlockSecondary.outputsItems = true;
-MultiBlockSecondary.acceptsItems = true;
+MultiBlockController.secondary = MultiBlockSecondary;
 class ItemModule {
     constructor(maxCapacity = 10) {
         this.maxCapacity = maxCapacity;

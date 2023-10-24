@@ -202,8 +202,6 @@ class Level {
 				//Multiblock handling
 				forceType<typeof MultiBlockController>(block);
 				const offsets = MultiBlockController.getOffsetsForSize(...block.multiblockSize);
-				//todo dubious
-				const multiblockSecondary = Buildings.get("base_multiblock_secondary") as typeof MultiBlockSecondary;
 				
 				//Break all the buildings under
 				for(const [xOffset, yOffset] of offsets){
@@ -214,7 +212,7 @@ class Level {
 				
 				//Create buildings
 				let controller = new block(tileX, tileY, buildingID[1], this);
-				controller.secondaries = offsets.map(([x, y]) => new multiblockSecondary(tileX + x, tileY + y, 0, this));
+				controller.secondaries = offsets.map(([x, y]) => new block.secondary(tileX + x, tileY + y, 0, this));
 				//Link buildings
 				controller.secondaries.forEach(secondary => secondary.controller = controller);
 				//Write buildings
@@ -1011,7 +1009,7 @@ class Conveyor extends Building {
 			case Direction.down: return [
 				0x03, 0x08, 0x04, 0x0C, 0x10, 0x12, 0x13, 0x14, 0x16, 0x18, 0x1A, 0x1B,
 			].includes(this.meta);
-			default: never();
+			default: crash();
 		}
 	}
 	outputsItemToSide(side:Direction):boolean {
@@ -1029,7 +1027,7 @@ class Conveyor extends Building {
 			case Direction.down: return [
 				1, 6, 7, 14, 15, 21, 25
 			].includes(this.meta);
-			default: never();
+			default: crash();
 		}
 	}
 	/**Not sure if this function is a good idea? */
@@ -1480,10 +1478,37 @@ class ResourceAcceptor extends Building {
 	}
 }
 
+class MultiBlockSecondary extends Building {
+	/**Assigned in buildBuilding */
+	controller: MultiBlockController | null = null;
+	static outputsItems = true;
+	static acceptsItems = true;
+	acceptItem(item: Item):boolean {
+		return this.controller?.acceptItem(item) ?? false;
+	}
+	break(isRecursive?:boolean){
+		if(!isRecursive){
+			this.controller?.break();
+		} else {
+			this.controller = null;
+			super.break();
+		}
+	}
+	display(currentFrame:CurrentFrame){
+		//Do nothing, the controller is responsible for displaying
+	}
+	update(){
+		if(!(this.controller instanceof MultiBlockController)){
+			this.break();
+		}
+	}
+}
+
 class MultiBlockController extends BuildingWithRecipe {
 	block!: typeof MultiBlockController;
 	secondaries: MultiBlockSecondary[] = [];
 	static multiblockSize:PosT = [2, 2];
+	static secondary = MultiBlockSecondary;
 	static textureSize(meta:number):TextureInfo {
 		return [this.multiblockSize, [0, 0]];
 	}
@@ -1543,32 +1568,6 @@ class MultiBlockController extends BuildingWithRecipe {
 			}
 		}
 		return false;
-	}
-}
-
-class MultiBlockSecondary extends Building {
-	/**Assigned in buildBuilding */
-	controller: MultiBlockController | null = null;
-	static outputsItems = true;
-	static acceptsItems = true;
-	acceptItem(item: Item):boolean {
-		return this.controller?.acceptItem(item) ?? false;
-	}
-	break(isRecursive?:boolean){
-		if(!isRecursive){
-			this.controller?.break();
-		} else {
-			this.controller = null;
-			super.break();
-		}
-	}
-	display(currentFrame:CurrentFrame){
-		//Do nothing, the controller is responsible for displaying
-	}
-	update(){
-		if(!(this.controller instanceof MultiBlockController)){
-			this.break();
-		}
 	}
 }
 
