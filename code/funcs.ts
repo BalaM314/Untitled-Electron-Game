@@ -563,6 +563,8 @@ function selectID(id:RawBuildingID){
 	if(image){
 		toolbarIcons.forEach(i => i.classList.remove("selected"));
 		image.classList.add("selected");
+	} else if(id == "base_null"){
+		toolbarIcons.forEach(i => i.classList.remove("selected"));
 	}
 }
 
