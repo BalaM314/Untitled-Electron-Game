@@ -13,7 +13,7 @@ class Level {
 	uuid: string;
 	//TODO TEMP
 	grid = new PowerGrid();
-	buildings = new Set<Building>();
+	buildings = new QuadTreeI<Building>();
 	constructor(public seed:number){
 		this.format = consts.VERSION;
 		this.uuid = Math.random().toString().substring(2);

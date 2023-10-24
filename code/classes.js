@@ -43,7 +43,7 @@ class Level {
         this.resources = {};
         this.storage = new Map();
         this.grid = new PowerGrid();
-        this.buildings = new Set();
+        this.buildings = new QuadTreeI();
         this.format = consts.VERSION;
         this.uuid = Math.random().toString().substring(2);
     }
