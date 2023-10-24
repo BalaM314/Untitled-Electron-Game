@@ -707,6 +707,8 @@ interface BlockDrawer<T> {
 class Building {
 	static outputsItems = false;
 	static acceptsItems = false;
+	static outputsFluids = false;
+	static acceptsFluids = false;
 	static id:RawBuildingID;
 	/**Whether this building cannot be placed or broken.*/
 	static immutable = false;
@@ -737,6 +739,9 @@ class Building {
 		return [[1, 1], [0, 0]];
 	}
 	static canOutputTo(building:Building | null){
+		return building instanceof Conveyor;
+	}
+	static canOutputFluidTo(building:Building | null){
 		return building instanceof Conveyor;
 	}
 	/**Called to destroy the building. Should remove all references to it. */
@@ -794,6 +799,14 @@ class Building {
 	outputsItemToSide(side:Direction):boolean {
 		return this.block.outputsItems;
 	}
+	/**Whether a building can ever accept items from a particular side. */
+	acceptsFluidFromSide(side:Direction):boolean {
+		return this.block.acceptsFluids;
+	}
+	/**Whether a building can ever output items to a particular side. */
+	outputsFluidToSide(side:Direction):boolean {
+		return this.block.outputsFluids;
+	}
 	buildAt(direction:Direction):Building | null {
 		return this.level.buildingAtTile(this.pos.tileX + direction.vec[0], this.pos.tileY + direction.vec[1]);
 	}
@@ -826,6 +839,21 @@ class Building {
 		} else {
 			return false;
 		}
+	}
+	dumpFluid(){
+		if(this.fluid && this.fluid[1] > 0){
+			for(const direction of Direction){
+				const build = this.buildAt(direction);
+				if(
+					build && this.block.canOutputFluidTo(build) &&
+					this.outputsFluidToSide(direction) && build.acceptsFluidFromSide(direction.opposite)
+				) build.acceptFluid(this.fluid);
+			}
+		}
+	}
+	acceptFluid(stack:FluidStack){
+		if(this.fluid)
+			Fluid.merge(stack, this.fluid);
 	}
 	export():BuildingData {
 		return {

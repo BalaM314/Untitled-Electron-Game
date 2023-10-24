@@ -652,6 +652,9 @@ let Building = (() => {
         static canOutputTo(building) {
             return building instanceof Conveyor;
         }
+        static canOutputFluidTo(building) {
+            return building instanceof Conveyor;
+        }
         break() {
             this.level.buildings.delete(this);
             if (this.block.isOverlay)
@@ -702,6 +705,12 @@ let Building = (() => {
         outputsItemToSide(side) {
             return this.block.outputsItems;
         }
+        acceptsFluidFromSide(side) {
+            return this.block.acceptsFluids;
+        }
+        outputsFluidToSide(side) {
+            return this.block.outputsFluids;
+        }
         buildAt(direction) {
             return this.level.buildingAtTile(this.pos.tileX + direction.vec[0], this.pos.tileY + direction.vec[1]);
         }
@@ -725,6 +734,20 @@ let Building = (() => {
             else {
                 return false;
             }
+        }
+        dumpFluid() {
+            if (this.fluid && this.fluid[1] > 0) {
+                for (const direction of Direction) {
+                    const build = this.buildAt(direction);
+                    if (build && this.block.canOutputFluidTo(build) &&
+                        this.outputsFluidToSide(direction) && build.acceptsFluidFromSide(direction.opposite))
+                        build.acceptFluid(this.fluid);
+                }
+            }
+        }
+        acceptFluid(stack) {
+            if (this.fluid)
+                Fluid.merge(stack, this.fluid);
         }
         export() {
             return {
@@ -751,6 +774,8 @@ let Building = (() => {
     })();
     _classThis.outputsItems = false;
     _classThis.acceptsItems = false;
+    _classThis.outputsFluids = false;
+    _classThis.acceptsFluids = false;
     _classThis.immutable = false;
     _classThis.isOverlay = false;
     _classThis.displaysItem = false;
