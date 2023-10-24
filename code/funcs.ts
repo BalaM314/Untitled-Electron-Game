@@ -581,35 +581,35 @@ class QuadTree<T extends {pos: Pos}> {
 			new QuadTree([this.span[0] + this.span[2] / 2, this.span[1] + this.span[3] / 2, this.span[2] / 2, this.span[3] / 2], this.depth + 1),
 		];
 		for(const el of this.elements){
-			this.insert(el);
+			this.add(el);
 		}
 		this.elements = [];
 	}
-	insert(element:T):boolean {
+	add(element:T):boolean {
 		if(this.nodes){
 			//Determine the correct subtree
 			for(const node of this.nodes){ //is this fine? O(log n)
 				if(node.contains(element)){
-					node.insert(element); return true;
+					node.add(element); return true;
 				}
 			}
 			//if this for loop finishes, then this is the wrong quadtree
 			return false;
 		} else if(this.elements.length == QuadTree.maxItems && this.depth < QuadTree.maxDepth){
 			this.split();
-			this.insert(element);
+			this.add(element);
 			return true;
 		} else {
 			this.elements.push(element);
 			return true;
 		}
 	}
-	remove(element:T):boolean {
+	delete(element:T):boolean {
 		if(this.nodes){
 			//Determine the correct subtree
 			for(const node of this.nodes){ //is this fine? O(log n)
 				if(node.contains(element)){
-					return node.remove(element);
+					return node.delete(element);
 				}
 			}
 			return false; //wrong quadtree
@@ -620,8 +620,8 @@ class QuadTree<T extends {pos: Pos}> {
 			return true;
 		}
 	}
-	each(cons:(element:T) => unknown){
-		if(this.nodes) this.nodes.forEach(n => n.each(cons));
+	forEach(cons:(element:T) => unknown){
+		if(this.nodes) this.nodes.forEach(n => n.forEach(cons));
 		else this.elements.forEach(e => cons(e));
 		//else, empty quadtree
 	}
@@ -662,7 +662,7 @@ class QuadTree<T extends {pos: Pos}> {
 		Gfx.rect(0, 0, innerWidth, innerHeight);
 		tree.display();
 		state[Game.state].onmousedown = () => {
-			tree.insert({
+			tree.add({
 				pos: Pos.fromPixelCoords(...Input.mouse.map(a => a / QuadTree.displayScale))
 			});
 			tree.display();
@@ -684,13 +684,13 @@ class QuadTreeI<T extends {pos: Pos}> extends QuadTree<T> {
 			...this.regionSize
 		];
 	}
-	insert(element:T){
-		if(super.insert(element)) return true;
+	add(element:T){
+		if(super.add(element)) return true;
 		//no existing nodes can contain the element, so make a new one
 		const node = new QuadTree<T>(
 			QuadTreeI.getRegion(element.pos), 1
 		);
 		this.nodes.push(node);
-		return node.insert(element);
+		return node.add(element);
 	}
 }

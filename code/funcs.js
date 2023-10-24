@@ -492,15 +492,15 @@ class QuadTree {
             new QuadTree([this.span[0] + this.span[2] / 2, this.span[1] + this.span[3] / 2, this.span[2] / 2, this.span[3] / 2], this.depth + 1),
         ];
         for (const el of this.elements) {
-            this.insert(el);
+            this.add(el);
         }
         this.elements = [];
     }
-    insert(element) {
+    add(element) {
         if (this.nodes) {
             for (const node of this.nodes) {
                 if (node.contains(element)) {
-                    node.insert(element);
+                    node.add(element);
                     return true;
                 }
             }
@@ -508,7 +508,7 @@ class QuadTree {
         }
         else if (this.elements.length == QuadTree.maxItems && this.depth < QuadTree.maxDepth) {
             this.split();
-            this.insert(element);
+            this.add(element);
             return true;
         }
         else {
@@ -516,11 +516,11 @@ class QuadTree {
             return true;
         }
     }
-    remove(element) {
+    delete(element) {
         if (this.nodes) {
             for (const node of this.nodes) {
                 if (node.contains(element)) {
-                    return node.remove(element);
+                    return node.delete(element);
                 }
             }
             return false;
@@ -533,9 +533,9 @@ class QuadTree {
             return true;
         }
     }
-    each(cons) {
+    forEach(cons) {
         if (this.nodes)
-            this.nodes.forEach(n => n.each(cons));
+            this.nodes.forEach(n => n.forEach(cons));
         else
             this.elements.forEach(e => cons(e));
     }
@@ -580,7 +580,7 @@ class QuadTree {
         Gfx.rect(0, 0, innerWidth, innerHeight);
         tree.display();
         state[Game.state].onmousedown = () => {
-            tree.insert({
+            tree.add({
                 pos: Pos.fromPixelCoords(...Input.mouse.map(a => a / QuadTree.displayScale))
             });
             tree.display();
@@ -602,12 +602,12 @@ class QuadTreeI extends QuadTree {
             ...this.regionSize
         ];
     }
-    insert(element) {
-        if (super.insert(element))
+    add(element) {
+        if (super.add(element))
             return true;
         const node = new QuadTree(QuadTreeI.getRegion(element.pos), 1);
         this.nodes.push(node);
-        return node.insert(element);
+        return node.add(element);
     }
 }
 QuadTreeI.regionSize = [7680, 7680];
