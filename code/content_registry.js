@@ -128,6 +128,6 @@ Buildings.register("base_wiremill", BuildingWithRecipe, { recipeType: recipes.ba
 Buildings.register("base_compressor", BuildingWithRecipe, { recipeType: recipes.base_compressing, drawer: BuildingWithRecipe.progressDrawer() });
 Buildings.register("base_lathe", BuildingWithRecipe, { recipeType: recipes.base_lathing });
 Buildings.register("base_multiblock_secondary", MultiBlockSecondary);
-Buildings.register("base_assembler", MultiBlockController, { recipeType: recipes.base_assembling, multiblockSize: [2, 2], drawer: BuildingWithRecipe.outputDrawer() });
+Buildings.register("base_assembler", MultiBlockController, { recipeType: recipes.base_assembling, multiblockSize: [2, 2], drawer: BuildingWithRecipe.outputDrawer(), secondary: Buildings.get("base_multiblock_secondary") });
 Buildings.register("base_arc_tower", ArcTower);
 Buildings.register("base_power_source", PowerSource);

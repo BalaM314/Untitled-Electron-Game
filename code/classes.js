@@ -404,28 +404,22 @@ class Chunk {
         return this.layers[2][tileY]?.[tileX] ?? null;
     }
     setTile(tileX, tileY, value) {
-        try {
-            this.tileAt(tileX, tileY);
-        }
-        catch (err) {
+        if (tileX < 0 || tileX >= consts.CHUNK_SIZE || tileY < 0 || tileY >= consts.CHUNK_SIZE)
             return false;
-        }
         this.layers[0][tileY][tileX] = value;
         return true;
     }
     setBuilding(tileX, tileY, value) {
-        if (this.tileAt(tileX, tileY) == null) {
+        if (tileX < 0 || tileX >= consts.CHUNK_SIZE || tileY < 0 || tileY >= consts.CHUNK_SIZE)
             return false;
-        }
         this.layers[1][tileY][tileX] = value;
         if (value instanceof Building)
             this.hasBuildings = true;
         return true;
     }
     setOverlayBuild(tileX, tileY, value) {
-        if (this.tileAt(tileX, tileY) == null) {
+        if (tileX < 0 || tileX >= consts.CHUNK_SIZE || tileY < 0 || tileY >= consts.CHUNK_SIZE)
             return false;
-        }
         this.layers[2][tileY][tileX] = value;
         if (value instanceof Building)
             this.hasBuildings = true;
@@ -1534,7 +1528,6 @@ class MultiBlockController extends BuildingWithRecipe {
     }
 }
 MultiBlockController.multiblockSize = [2, 2];
-MultiBlockController.secondary = MultiBlockSecondary;
 class ItemModule {
     constructor(maxCapacity = 10) {
         this.maxCapacity = maxCapacity;

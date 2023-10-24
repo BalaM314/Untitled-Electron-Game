@@ -459,26 +459,18 @@ class Chunk {
 		return this.layers[2][tileY]?.[tileX] ?? null;
 	}
 	setTile(tileX:number, tileY:number, value:TileID):boolean {
-		try {
-			this.tileAt(tileX, tileY);
-		} catch(err){
-			return false;
-		}
+		if(tileX < 0 || tileX >= consts.CHUNK_SIZE || tileY < 0 || tileY >= consts.CHUNK_SIZE) return false;
 		this.layers[0][tileY][tileX] = value;
 		return true;
 	}
 	setBuilding(tileX:number, tileY:number, value:Building | null):boolean {
-		if(this.tileAt(tileX, tileY) == null){
-			return false;
-		}
+		if(tileX < 0 || tileX >= consts.CHUNK_SIZE || tileY < 0 || tileY >= consts.CHUNK_SIZE) return false;
 		this.layers[1][tileY][tileX] = value;
 		if(value instanceof Building) this.hasBuildings = true;
 		return true;
 	}
 	setOverlayBuild(tileX:number, tileY:number, value:OverlayBuild | null):boolean {
-		if(this.tileAt(tileX, tileY) == null){
-			return false;
-		}
+		if(tileX < 0 || tileX >= consts.CHUNK_SIZE || tileY < 0 || tileY >= consts.CHUNK_SIZE) return false;
 		this.layers[2][tileY][tileX] = value;
 		if(value instanceof Building) this.hasBuildings = true;
 		return true;
@@ -1506,7 +1498,7 @@ class MultiBlockController extends BuildingWithRecipe {
 	block!: typeof MultiBlockController;
 	secondaries: MultiBlockSecondary[] = [];
 	static multiblockSize:PosT = [2, 2];
-	static secondary = MultiBlockSecondary;
+	static secondary:typeof MultiBlockSecondary;
 	static textureSize(meta:number):TextureInfo {
 		return [this.multiblockSize, [0, 0]];
 	}
