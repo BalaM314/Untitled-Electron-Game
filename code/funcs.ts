@@ -599,6 +599,22 @@ class QuadTree<T extends {pos: Pos}> {
 			this.elements.push(element);
 		}
 	}
+	remove(element:T):boolean {
+		if(this.nodes){
+			//Determine the correct subtree
+			for(const node of this.nodes){ //is this fine? O(log n)
+				if(node.contains(element)){
+					return node.remove(element);
+				}
+			}
+			return false; //wrong quadtree
+		} else {
+			const index = this.elements.indexOf(element);
+			if(index == -1) return false;
+			this.elements.splice(index, 1);
+			return true;
+		}
+	}
 	each(cons:(element:T) => unknown){
 		if(this.nodes) this.nodes.forEach(n => n.each(cons));
 		else this.elements.forEach(e => cons(e));

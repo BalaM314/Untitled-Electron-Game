@@ -510,6 +510,23 @@ class QuadTree {
             this.elements.push(element);
         }
     }
+    remove(element) {
+        if (this.nodes) {
+            for (const node of this.nodes) {
+                if (node.contains(element)) {
+                    return node.remove(element);
+                }
+            }
+            return false;
+        }
+        else {
+            const index = this.elements.indexOf(element);
+            if (index == -1)
+                return false;
+            this.elements.splice(index, 1);
+            return true;
+        }
+    }
     each(cons) {
         if (this.nodes)
             this.nodes.forEach(n => n.each(cons));
