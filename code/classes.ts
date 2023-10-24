@@ -840,20 +840,20 @@ class Building {
 			return false;
 		}
 	}
-	dumpFluid(){
+	dumpFluid(maxThroughput:number){
 		if(this.fluid && this.fluid[1] > 0){
 			for(const direction of Direction){
 				const build = this.buildAt(direction);
 				if(
 					build && this.block.canOutputFluidTo(build) &&
 					this.outputsFluidToSide(direction) && build.acceptsFluidFromSide(direction.opposite)
-				) build.acceptFluid(this.fluid);
+				) build.acceptFluid(this.fluid, maxThroughput); //TODO refactor lots of stuff, TODO allow max input and max output for each building
 			}
 		}
 	}
-	acceptFluid(stack:FluidStack){
+	acceptFluid(stack:FluidStack, maxThroughput:number){
 		if(this.fluid)
-			Fluid.merge(stack, this.fluid);
+			Fluid.merge(stack, this.fluid, maxThroughput);
 	}
 	export():BuildingData {
 		return {
@@ -1649,18 +1649,92 @@ class Fluid {
 	 * Moves fluid from `from` to `to`.
 	 * @returns the amount of fluid moved.
 	 */
-	static merge(from:FluidStack, to:FluidStack):number {
+	static merge(from:FluidStack, to:FluidStack, maxThroughput = Infinity):number {
 		if(from[0] == null || from[1] == 0) return 0; //from is empty
 		if(to[0] === null) to[0] = from[0]; //set fluid
 		else if(from[0] !== to[0]) return 0; //fluids are different
 		const remainingSpace = to[2] - to[1];
-		const amountTransferred = Math.min(remainingSpace, from[1]);
+		const amountTransferred = Math.min(remainingSpace, from[1], maxThroughput);
 		from[1] -= amountTransferred;
 		to[1] += amountTransferred;
 		return amountTransferred;
 	}
+	static fill(stack:FluidStack, type:Fluid, amount:number){
+		if(type == null || amount == 0) return 0;
+		if(stack[0] === null) stack[0] = type;
+		else return 0;
+		const remainingSpace = stack[2] - stack[1];
+		const amountTransferred = Math.min(remainingSpace, amount);
+		stack[1] += amountTransferred;
+		return amountTransferred;
+	}
 }
 
+class Tank extends Building {
+	static capacity = 2000;
+	static maxOutput = 10;
+	block!:typeof Tank;
+	
+	constructor(x:number, y:number, meta:BuildingMeta, level:Level){
+		super(x, y, meta, level);
+		this.fluid = [null, 0, this.block.capacity];
+	}
+	update(currentFrame:CurrentFrame){
+		this.dumpFluid(this.block.maxOutput);
+	}
+	
+}
+class Pipe extends Building {
+	static capacity = 30;
+	static throughput = 1;
+	block!: typeof Pipe;
+	outputSide:Direction = Pipe.outputSide(this.meta);
+	constructor(x:number, y:number, meta:BuildingMeta, level:Level){
+		super(x, y, meta, level);
+		this.fluid = [null, 0, this.block.capacity];
+	}
+	static outputSide(meta:BuildingMeta):Direction {
+		switch(meta){
+			case 0: return Direction.right;
+			case 1: return Direction.down;
+			case 2: return Direction.left;
+			case 3: return Direction.up;
+			default: crash(`Invalid meta ${meta}`);
+		}
+	}
+	static canOutputFluidTo(building:Building){
+		return true;
+	}
+	outputsFluidToSide(side:Direction){
+		return side === this.outputSide;
+	}
+	update(currentFrame:CurrentFrame){
+		this.dumpFluid(this.block.throughput);
+	}
+	dumpFluid(maxThroughput:number){
+		const build = this.buildAt(this.outputSide);
+		if(build && build.acceptsFluidFromSide(this.outputSide.opposite))
+			build.acceptFluid(this.fluid!, maxThroughput);
+	}
+}
+
+class Pump extends Building {
+	static productionSpeed = 2;
+	static outputSpeed = 10;
+	static capacity = 100;
+	block!: typeof Pump;
+	constructor(x:number, y:number, meta:BuildingMeta, level:Level){
+		super(x, y, meta, level);
+		this.fluid = [null, 0, this.block.capacity];
+	}
+	static canBuildAt(tileX:number, tileY:number, level:Level):boolean {
+		return level.tileAtByTile(tileX, tileY) == "base_water";
+	}
+	update(){
+		Fluid.fill(this.fluid!, Fluid.water, this.block.productionSpeed);
+		this.dumpFluid(this.block.outputSpeed);
+	}
+}
 
 
 // class SingleFluidModule {
@@ -1824,18 +1898,4 @@ class ArcTower extends PowerConsumer {
 		Gfx.tLine(...arcPos, ...sArc1Pos);
 		Gfx.tLine(...arcPos, ...sArc2Pos);
 	};
-}
-
-
-class Pump extends Building {
-	static productionSpeed = 1;
-	constructor(tileX:number, tileY:number, meta:BuildingMeta, level:Level){
-		super(tileX, tileY, meta, level);
-	}
-	static canBuildAt(tileX:number, tileY:number, level:Level):boolean {
-		return level.tileAtByTile(tileX, tileY) == "base_water";
-	}
-	update(){
-		
-	}
 }

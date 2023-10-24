@@ -1,3 +1,4 @@
+
 class ContentRegistry<K, T extends new (...args:any[]) => {}> {
 	private contentMap = new Map<K, T>();
 	constructor(){}
@@ -113,6 +114,7 @@ const recipes:Recipes = {
 		]
 	}
 };
+
 const Buildings = new ContentRegistry<RawBuildingID, typeof Building>();
 Buildings.register("base_conveyor", Conveyor);
 Buildings.register("base_miner", Miner);
