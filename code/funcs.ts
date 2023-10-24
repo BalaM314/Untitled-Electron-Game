@@ -567,8 +567,8 @@ function selectID(id:RawBuildingID){
 }
 
 class QuadTree<T extends {pos: Pos}> {
-	static maxItems = 4;
-	static maxDepth = 10;
+	static maxItems = 64;
+	static maxDepth = 8;
 	elements: T[] = [];
 	nodes: QuadTree<T>[] | null = null;
 	constructor(public span:Rect, public depth:number = 1){}
@@ -620,19 +620,27 @@ class QuadTree<T extends {pos: Pos}> {
 			return true;
 		}
 	}
-	forEach(cons:(element:T) => unknown){
-		if(this.nodes) this.nodes.forEach(n => n.forEach(cons));
-		else this.elements.forEach(e => cons(e));
-		//else, empty quadtree
+	forEach(cons:(element:T) => unknown, thisArg?:any){
+		if(this.nodes){
+			this.nodes[0].forEach(cons, thisArg);
+			this.nodes[1].forEach(cons, thisArg);
+			this.nodes[2].forEach(cons, thisArg);
+			this.nodes[3].forEach(cons, thisArg);
+		} else {
+			for(let i = 0; i < this.elements.length; i ++){
+				cons.call(thisArg, this.elements[i]);
+			}
+		}
 	}
 	intersect(rect:Rect, cons:(element:T) => unknown){
 		if(this.nodes){
-			for(const node of this.nodes){
-				if(Intersector.rectsIntersect(node.span, rect)) node.intersect(rect, cons);
-			}
+			if(Intersector.rectsIntersect(this.nodes[0].span, rect)) this.nodes[0].intersect(rect, cons);
+			if(Intersector.rectsIntersect(this.nodes[1].span, rect)) this.nodes[1].intersect(rect, cons);
+			if(Intersector.rectsIntersect(this.nodes[2].span, rect)) this.nodes[2].intersect(rect, cons);
+			if(Intersector.rectsIntersect(this.nodes[3].span, rect)) this.nodes[3].intersect(rect, cons);
 		} else {
-			for(const el of this.elements){
-				if(Intersector.pointInRect(el.pos.pixel, rect)) cons(el);
+			for(let i = 0; i < this.elements.length; i ++){
+				if(Intersector.pointInRect(this.elements[i].pos.pixel, rect)) cons(this.elements[i]);
 			}
 		}
 	}
@@ -672,7 +680,7 @@ class QuadTree<T extends {pos: Pos}> {
 
 /** Quad tree infinite */
 class QuadTreeI<T extends {pos: Pos}> extends QuadTree<T> {
-	static regionSize = [7680, 7680] as const; //16x16 chunks
+	static regionSize = [3840, 3840] as const; //8x8 chunks
 	nodes: QuadTree<T>[] = []; //Note: all nodes are stored in an array, so this will cause slowness if there are a large number of nodes
 	constructor(){
 		super([-Infinity, -Infinity, Infinity, Infinity]);
@@ -692,5 +700,16 @@ class QuadTreeI<T extends {pos: Pos}> extends QuadTree<T> {
 		);
 		this.nodes.push(node);
 		return node.add(element);
+	}
+	forEach(cons:(element:T) => unknown, thisArg?:any){
+		for(let i = 0; i < this.nodes.length; i ++){
+			this.nodes[i].forEach(cons, thisArg);
+		}
+	}
+	intersect(rect:Rect, cons:(element:T) => unknown){
+		for(let i = 0; i < this.nodes.length; i ++){
+			if(Intersector.rectsIntersect(this.nodes[i].span, rect))
+				this.nodes[i].intersect(rect, cons);
+		}
 	}
 }

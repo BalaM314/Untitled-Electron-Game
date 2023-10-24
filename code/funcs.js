@@ -533,23 +533,34 @@ class QuadTree {
             return true;
         }
     }
-    forEach(cons) {
-        if (this.nodes)
-            this.nodes.forEach(n => n.forEach(cons));
-        else
-            this.elements.forEach(e => cons(e));
+    forEach(cons, thisArg) {
+        if (this.nodes) {
+            this.nodes[0].forEach(cons, thisArg);
+            this.nodes[1].forEach(cons, thisArg);
+            this.nodes[2].forEach(cons, thisArg);
+            this.nodes[3].forEach(cons, thisArg);
+        }
+        else {
+            for (let i = 0; i < this.elements.length; i++) {
+                cons.call(thisArg, this.elements[i]);
+            }
+        }
     }
     intersect(rect, cons) {
         if (this.nodes) {
-            for (const node of this.nodes) {
-                if (Intersector.rectsIntersect(node.span, rect))
-                    node.intersect(rect, cons);
-            }
+            if (Intersector.rectsIntersect(this.nodes[0].span, rect))
+                this.nodes[0].intersect(rect, cons);
+            if (Intersector.rectsIntersect(this.nodes[1].span, rect))
+                this.nodes[1].intersect(rect, cons);
+            if (Intersector.rectsIntersect(this.nodes[2].span, rect))
+                this.nodes[2].intersect(rect, cons);
+            if (Intersector.rectsIntersect(this.nodes[3].span, rect))
+                this.nodes[3].intersect(rect, cons);
         }
         else {
-            for (const el of this.elements) {
-                if (Intersector.pointInRect(el.pos.pixel, rect))
-                    cons(el);
+            for (let i = 0; i < this.elements.length; i++) {
+                if (Intersector.pointInRect(this.elements[i].pos.pixel, rect))
+                    cons(this.elements[i]);
             }
         }
     }
@@ -587,8 +598,8 @@ class QuadTree {
         };
     }
 }
-QuadTree.maxItems = 4;
-QuadTree.maxDepth = 10;
+QuadTree.maxItems = 64;
+QuadTree.maxDepth = 8;
 QuadTree.displayScale = 4;
 class QuadTreeI extends QuadTree {
     constructor() {
@@ -609,5 +620,16 @@ class QuadTreeI extends QuadTree {
         this.nodes.push(node);
         return node.add(element);
     }
+    forEach(cons, thisArg) {
+        for (let i = 0; i < this.nodes.length; i++) {
+            this.nodes[i].forEach(cons, thisArg);
+        }
+    }
+    intersect(rect, cons) {
+        for (let i = 0; i < this.nodes.length; i++) {
+            if (Intersector.rectsIntersect(this.nodes[i].span, rect))
+                this.nodes[i].intersect(rect, cons);
+        }
+    }
 }
-QuadTreeI.regionSize = [7680, 7680];
+QuadTreeI.regionSize = [3840, 3840];
