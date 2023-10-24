@@ -633,6 +633,7 @@ let Building = (() => {
             this.meta = meta;
             this.level = level;
             this.item = null;
+            this.fluid = null;
             this.block = this.constructor;
             this.pos = Pos.fromTileCoords(x, y, false);
         }
@@ -1558,6 +1559,29 @@ class ItemModule {
     merge(from, to) {
     }
 }
+class Fluid {
+    constructor(name) {
+        this.name = name;
+        this.id = Fluid._id++;
+        Fluid.all[this.id] = this;
+    }
+    static merge(from, to) {
+        if (from[0] == null || from[1] == 0)
+            return 0;
+        if (to[0] === null)
+            to[0] = from[0];
+        else if (from[0] !== to[0])
+            return 0;
+        const remainingSpace = to[2] - to[1];
+        const amountTransferred = Math.min(remainingSpace, from[1]);
+        from[1] -= amountTransferred;
+        to[1] += amountTransferred;
+        return amountTransferred;
+    }
+}
+Fluid.water = new Fluid("water");
+Fluid._id = 1;
+Fluid.all = [];
 class PowerGrid {
     constructor() {
         this.producers = [];
@@ -1677,3 +1701,14 @@ ArcTower.drawer = function (build, currentFrame) {
     Gfx.tLine(...arcPos, ...sArc1Pos);
     Gfx.tLine(...arcPos, ...sArc2Pos);
 };
+class Pump extends Building {
+    constructor(tileX, tileY, meta, level) {
+        super(tileX, tileY, meta, level);
+    }
+    static canBuildAt(tileX, tileY, level) {
+        return level.tileAtByTile(tileX, tileY) == "base_water";
+    }
+    update() {
+    }
+}
+Pump.productionSpeed = 1;

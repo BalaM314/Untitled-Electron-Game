@@ -715,6 +715,7 @@ class Building {
 	static drawer:BlockDrawer<Building> | null = null;
 
 	item: Item | null = null;
+	fluid: FluidStack | null = null;
 	pos:Pos;
 	//https://www.typescriptlang.org/play?#code/CYUwxgNghgTiAEAzArgOzAFwJYHtXzgHMsBnDEGAHgCF4QAPc1YE+DATwAcQdF5rkWCMCypCAPgAUWYAC4yMUYQA08TDhizqqzjBycSsgN4AoeOfgBtAArxR8ANYh2vfgF0A-LP423AbhMAXwBKLQCAenCAFQALUiQ0TFx8GKhWACMQEHwsAFtOCBBc7PJgeChmeAB3DQdWRGgqwpISCHZVKAgMGJxkQhi2GIQwHFB4CBwcOoIQTrbqkCwYYAA6ExNIgEEc1DIKsARXbvjINNY4XRASEtYoeBIlQvh0wWElO1QAWhqYYTXTlr8V4iMTwUwWe4YKDYMB2OQKd4AXngACI0KgoMUyi8hCDCCiAhC9jD7lgAF4gWSoZC5TIweDIgCMhIs6QmYAcDMGpBWI12GBgyHU9LSbC4PD4AlxShZ5kIIAwAElgJJguCIRY4BhkDB8McSCs2TgOSsZLL4IEzBZkJxgNCQKqjJbLSYAawAMJ4ABuzg0dEY2RYQOloPV5mJWFhJG4IDk1NpFC5zKt5kiiuqFQwbBw8FSPvgIkQiAoJTF3FYrj5PpcMFYVSw3QLWCLJdQWejWRYKfgkQAsuwkEsyOVOLocFAwAMqqKMDmwHB7eV4KgQFU1NBAQwmHi1N7ffT6427oXi3A2-cY2UvZ1kAh7N076gG1hOuSKKoXlnutCCzgrqgAHIs1Aa4YHzWdngQO43Q+QYEEICZ0k6e4Rm4NYITTNQF1KJciFIch6RQdBsDwao4kneBkGuVgAHl0gAK3ADAVjOLBCD1HN5RXGBFwfdcznKLNBTbPIoMqMgNDvLN7GgvAmCzXIoE4dCLEiWJ4h+aZuBgYtMHmRBRBAD9kC-IY4AA1h6KorM8DvFpb1kbtMJXWNuVYCBDMgiYqhU8wjQ5ABCbwOG4VxPVQasNHNLZ0hwfN7yGYM3lBN1VCqVIs3TBcIHmadz3iFFRFPOCy0OPh9V5PAFCFWcYBRYysyicUSHnLBOGk1BT1YBtylYFEADFEhI1AUTIyMBniKiQGaEgOkqdNA0ozhcygL13gg1CB31Z4cCECgCkXDyV3KVB2GndhfKWu1yEdbsIQq-yHBWDtY3NZ11hg3tDPpLdA1YKVksIMFuwjWFckMgBlS8qRpOkuQANgABnNR6gtK1wvu480bWuh01TuiwHvZJ7wZXKHOzeoJ1jwsgKEkFFWhwKp6vgcLIpgVQjAvTtvERlYAFYLWCAIaYI+nEDSDAWbZ-dOe52NvAAZiFkWQGIWmYHp9I2M+UmKBZzH3zBUkKW8RkVaAA
 	block = this.constructor as typeof Building;
@@ -1601,6 +1602,80 @@ class ItemModule {
 	}
 }
 
+type FluidStack = [type:Fluid | null, amount:number, capacity:number];
+class Fluid {
+
+	static water = new Fluid("water");
+
+	id:number;
+
+	private static _id = 1;
+	static all:Fluid[] = [];
+	constructor(
+		public name:string,
+	){
+		this.id = Fluid._id ++;
+		Fluid.all[this.id] = this;
+	}
+	/**
+	 * Moves fluid from `from` to `to`.
+	 * @returns the amount of fluid moved.
+	 */
+	static merge(from:FluidStack, to:FluidStack):number {
+		if(from[0] == null || from[1] == 0) return 0; //from is empty
+		if(to[0] === null) to[0] = from[0]; //set fluid
+		else if(from[0] !== to[0]) return 0; //fluids are different
+		const remainingSpace = to[2] - to[1];
+		const amountTransferred = Math.min(remainingSpace, from[1]);
+		from[1] -= amountTransferred;
+		to[1] += amountTransferred;
+		return amountTransferred;
+	}
+}
+
+
+
+// class SingleFluidModule {
+// 	type: Fluid | null = null;
+// 	capacity = 100;
+// 	amount = 0;
+// 	get(id:number){
+// 		if(this.type && this.type.id == id) return this.amount;
+// 		else return 0;
+// 	}
+// 	has(id:number){
+// 		return this.type && this.type.id == id;
+// 	}
+// 	/**
+// 	 * Attempts to grab a FluidStack, mutating it.
+// 	 * @returns whether the FluidStack was fully consumed.
+// 	 **/
+// 	addFrom(stack:FluidStack):boolean {
+// 		if(stack[1] <= 0 || stack[0] == null) return false; //empty
+// 		if(this.type === null) this.type = stack[0];
+// 		else if(this.type != stack[0]) return false; //Different fluids
+		
+// 		const remainingSpace = this.capacity - this.amount;
+// 		const amountTransferred = Math.max(0, Math.min(remainingSpace, stack[1]));
+// 		this.amount += amountTransferred;
+// 		return (stack[1] -= amountTransferred) <= 0;
+// 	}
+// 	/**
+// 	 * Attempts to output to a FluidStack, mutating it.
+// 	 * @returns whether the output stack has been filled.
+// 	 */
+// 	removeTo(stack:FluidStack):boolean {
+// 		if(this.amount <= 0 || this.type == null) return false; //empty
+// 		if(this.type === null) this.type = stack[0];
+// 		else if(this.type != stack[0]) return false; //Different fluids
+// 		const remainingSpace = stack[2] - stack[1];
+// 		const amountTransferred = Math.min(remainingSpace, this.amount);
+// 		this.amount -= amountTransferred;
+// 		stack[1] += amountTransferred;
+// 		return amountTransferred === remainingSpace;
+// 	}
+// }
+
 class PowerGrid {
 	//array is fine, faster iteration than quadtree, deletion is O(n) but that's not that bad
 	producers: PowerProducer[] = [];
@@ -1724,3 +1799,15 @@ class ArcTower extends PowerConsumer {
 }
 
 
+class Pump extends Building {
+	static productionSpeed = 1;
+	constructor(tileX:number, tileY:number, meta:BuildingMeta, level:Level){
+		super(tileX, tileY, meta, level);
+	}
+	static canBuildAt(tileX:number, tileY:number, level:Level):boolean {
+		return level.tileAtByTile(tileX, tileY) == "base_water";
+	}
+	update(){
+		
+	}
+}
