@@ -11,9 +11,8 @@ class Level {
 	storage = new Map<string, Chunk>();
 	format: string;
 	uuid: string;
-	//TODO TEMP
 	grid = new PowerGrid();
-	buildings = new QuadTreeI<Building>();
+	buildings = new Set<Building>();
 	constructor(public seed:number){
 		this.format = consts.VERSION;
 		this.uuid = Math.random().toString().substring(2);
