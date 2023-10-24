@@ -484,30 +484,36 @@ class QuadTree {
         this.elements = [];
         this.nodes = null;
     }
+    split() {
+        this.nodes = [
+            new QuadTree([this.span[0], this.span[1], this.span[2] / 2, this.span[3] / 2], this.depth + 1),
+            new QuadTree([this.span[0], this.span[1] + this.span[3] / 2, this.span[2] / 2, this.span[3] / 2], this.depth + 1),
+            new QuadTree([this.span[0] + this.span[2] / 2, this.span[1], this.span[2] / 2, this.span[3] / 2], this.depth + 1),
+            new QuadTree([this.span[0] + this.span[2] / 2, this.span[1] + this.span[3] / 2, this.span[2] / 2, this.span[3] / 2], this.depth + 1),
+        ];
+        for (const el of this.elements) {
+            this.insert(el);
+        }
+        this.elements = [];
+    }
     insert(element) {
         if (this.nodes) {
             for (const node of this.nodes) {
                 if (node.contains(element)) {
                     node.insert(element);
-                    break;
+                    return true;
                 }
             }
+            return false;
         }
         else if (this.elements.length == QuadTree.maxItems && this.depth < QuadTree.maxDepth) {
-            this.nodes = [
-                new QuadTree([this.span[0], this.span[1], this.span[2] / 2, this.span[3] / 2], this.depth + 1),
-                new QuadTree([this.span[0], this.span[1] + this.span[3] / 2, this.span[2] / 2, this.span[3] / 2], this.depth + 1),
-                new QuadTree([this.span[0] + this.span[2] / 2, this.span[1], this.span[2] / 2, this.span[3] / 2], this.depth + 1),
-                new QuadTree([this.span[0] + this.span[2] / 2, this.span[1] + this.span[3] / 2, this.span[2] / 2, this.span[3] / 2], this.depth + 1),
-            ];
-            for (const el of this.elements) {
-                this.insert(el);
-            }
+            this.split();
             this.insert(element);
-            this.elements = [];
+            return true;
         }
         else {
             this.elements.push(element);
+            return true;
         }
     }
     remove(element) {
@@ -584,3 +590,24 @@ class QuadTree {
 QuadTree.maxItems = 4;
 QuadTree.maxDepth = 10;
 QuadTree.displayScale = 4;
+class QuadTreeI extends QuadTree {
+    constructor() {
+        super([-Infinity, -Infinity, Infinity, Infinity]);
+        this.nodes = [];
+    }
+    static getRegion(pos) {
+        return [
+            Math.floor(pos.pixelX / this.regionSize[0]) * this.regionSize[0],
+            Math.floor(pos.pixelY / this.regionSize[1]) * this.regionSize[1],
+            ...this.regionSize
+        ];
+    }
+    insert(element) {
+        if (super.insert(element))
+            return true;
+        const node = new QuadTree(QuadTreeI.getRegion(element.pos), 1);
+        this.nodes.push(node);
+        return node.insert(element);
+    }
+}
+QuadTreeI.regionSize = [7680, 7680];

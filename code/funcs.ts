@@ -570,33 +570,38 @@ class QuadTree<T extends {pos: Pos}> {
 	static maxItems = 4;
 	static maxDepth = 10;
 	elements: T[] = [];
-	nodes: [QuadTree<T>, QuadTree<T>, QuadTree<T>, QuadTree<T>] | null = null;
+	nodes: QuadTree<T>[] | null = null;
 	constructor(public span:Rect, public depth:number = 1){}
-	insert(element:T){
+	split(){
+		//Convert to nodes
+		this.nodes = [
+			new QuadTree([this.span[0], this.span[1], this.span[2] / 2, this.span[3] / 2], this.depth + 1),
+			new QuadTree([this.span[0], this.span[1] + this.span[3] / 2, this.span[2] / 2, this.span[3] / 2], this.depth + 1),
+			new QuadTree([this.span[0] + this.span[2] / 2, this.span[1], this.span[2] / 2, this.span[3] / 2], this.depth + 1),
+			new QuadTree([this.span[0] + this.span[2] / 2, this.span[1] + this.span[3] / 2, this.span[2] / 2, this.span[3] / 2], this.depth + 1),
+		];
+		for(const el of this.elements){
+			this.insert(el);
+		}
+		this.elements = [];
+	}
+	insert(element:T):boolean {
 		if(this.nodes){
 			//Determine the correct subtree
 			for(const node of this.nodes){ //is this fine? O(log n)
 				if(node.contains(element)){
-					node.insert(element); break;
+					node.insert(element); return true;
 				}
 			}
-			//if this for loop doesn't finish, then this is the wrong quadtree
-			//probably fine to do nothing
+			//if this for loop finishes, then this is the wrong quadtree
+			return false;
 		} else if(this.elements.length == QuadTree.maxItems && this.depth < QuadTree.maxDepth){
-			//Convert to nodes
-			this.nodes = [
-				new QuadTree([this.span[0], this.span[1], this.span[2] / 2, this.span[3] / 2], this.depth + 1),
-				new QuadTree([this.span[0], this.span[1] + this.span[3] / 2, this.span[2] / 2, this.span[3] / 2], this.depth + 1),
-				new QuadTree([this.span[0] + this.span[2] / 2, this.span[1], this.span[2] / 2, this.span[3] / 2], this.depth + 1),
-				new QuadTree([this.span[0] + this.span[2] / 2, this.span[1] + this.span[3] / 2, this.span[2] / 2, this.span[3] / 2], this.depth + 1),
-			];
-			for(const el of this.elements){
-				this.insert(el);
-			}
+			this.split();
 			this.insert(element);
-			this.elements = [];
+			return true;
 		} else {
 			this.elements.push(element);
+			return true;
 		}
 	}
 	remove(element:T):boolean {
@@ -622,7 +627,7 @@ class QuadTree<T extends {pos: Pos}> {
 	}
 	intersect(rect:Rect, cons:(element:T) => unknown){
 		if(this.nodes){
-			for(const node of this.nodes!){
+			for(const node of this.nodes){
 				if(Intersector.rectsIntersect(node.span, rect)) node.intersect(rect, cons);
 			}
 		} else {
@@ -662,5 +667,30 @@ class QuadTree<T extends {pos: Pos}> {
 			});
 			tree.display();
 		}
+	}
+}
+
+/** Quad tree infinite */
+class QuadTreeI<T extends {pos: Pos}> extends QuadTree<T> {
+	static regionSize = [7680, 7680] as const; //16x16 chunks
+	nodes: QuadTree<T>[] = []; //Note: all nodes are stored in an array, so this will cause slowness if there are a large number of nodes
+	constructor(){
+		super([-Infinity, -Infinity, Infinity, Infinity]);
+	}
+	static getRegion(pos:Pos):Rect {
+		return [
+			Math.floor(pos.pixelX / this.regionSize[0]) * this.regionSize[0],
+			Math.floor(pos.pixelY / this.regionSize[1]) * this.regionSize[1],
+			...this.regionSize
+		];
+	}
+	insert(element:T){
+		if(super.insert(element)) return true;
+		//no existing nodes can contain the element, so make a new one
+		const node = new QuadTree<T>(
+			QuadTreeI.getRegion(element.pos), 1
+		);
+		this.nodes.push(node);
+		return node.insert(element);
 	}
 }
