@@ -229,7 +229,6 @@ class Level {
 					block.changeMeta(buildingID[1], tileX, tileY, this), this
 				);
 				this.buildings.add(building);
-				//TODO TEMP
 				if(building instanceof PowerBuilding) this.grid.addBuild(building);
 				if(building instanceof OverlayBuild){
 					return this.writeOverlayBuild(tileX, tileY, building);
@@ -850,7 +849,6 @@ class Building {
 		//This is done because subclasses may want to override the read() method, so you have to Buildings.get() anyway.
 		const build = new this(buildingData.x, buildingData.y, buildingData.meta, level);
 		if(buildingData.item) build.item = Item.read(buildingData.item);
-		//TODO TEMP
 		if(build instanceof PowerBuilding) level.grid.addBuild(build);
 		return build;
 	}
@@ -1612,7 +1610,7 @@ class ItemModule {
 }
 
 class PowerGrid {
-	//array not scalable, TODO optimize (quadtree, etc)
+	//array is fine, faster iteration than quadtree, deletion is O(n) but that's not that bad
 	producers: PowerProducer[] = [];
 	consumers: PowerConsumer[] = [];
 	updatePower(){
