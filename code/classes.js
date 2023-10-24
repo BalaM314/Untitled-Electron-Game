@@ -1632,6 +1632,12 @@ class Tank extends Building {
 }
 Tank.capacity = 2000;
 Tank.maxOutput = 10;
+Tank.drawer = function (build, currentFrame) {
+    Gfx.layer("overlayBuilds");
+    Gfx.fillColor("blue");
+    Gfx.alpha(build.fluid[1] / build.block.capacity);
+    Gfx.tRect(...build.pos.tileC, 0.8, 0.8, RectMode.CENTER);
+};
 class Pipe extends Building {
     constructor(x, y, meta, level) {
         super(x, y, meta, level);
@@ -1664,6 +1670,12 @@ class Pipe extends Building {
 }
 Pipe.capacity = 30;
 Pipe.throughput = 1;
+Pipe.drawer = function (build, currentFrame) {
+    Gfx.layer("overlayBuilds");
+    Gfx.fillColor("blue");
+    Gfx.alpha(build.fluid[1] / build.block.capacity);
+    Gfx.tRect(...build.pos.tileC, 0.8, 0.8, RectMode.CENTER);
+};
 class Pump extends Building {
     constructor(x, y, meta, level) {
         super(x, y, meta, level);
@@ -1680,6 +1692,12 @@ class Pump extends Building {
 Pump.productionSpeed = 2;
 Pump.outputSpeed = 10;
 Pump.capacity = 100;
+Pump.drawer = function (build, currentFrame) {
+    Gfx.layer("overlayBuilds");
+    Gfx.fillColor("blue");
+    Gfx.alpha(build.fluid[1] / build.block.capacity);
+    Gfx.tRect(...build.pos.tileC, 0.8, 0.8, RectMode.CENTER);
+};
 class PowerGrid {
     constructor() {
         this.producers = [];

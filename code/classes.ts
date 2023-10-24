@@ -1684,7 +1684,12 @@ class Tank extends Building {
 	update(currentFrame:CurrentFrame){
 		this.dumpFluid(this.block.maxOutput);
 	}
-	
+	static drawer:any = function(build:Pump, currentFrame:CurrentFrame){
+		Gfx.layer("overlayBuilds");
+		Gfx.fillColor("blue");
+		Gfx.alpha(build.fluid![1] / build.block.capacity);
+		Gfx.tRect(...build.pos.tileC, 0.8, 0.8, RectMode.CENTER);
+	};
 }
 class Pipe extends Building {
 	static capacity = 30;
@@ -1718,6 +1723,12 @@ class Pipe extends Building {
 		if(build && build.acceptsFluidFromSide(this.outputSide.opposite))
 			build.acceptFluid(this.fluid!, maxThroughput);
 	}
+	static drawer:any = function(build:Pump, currentFrame:CurrentFrame){
+		Gfx.layer("overlayBuilds");
+		Gfx.fillColor("blue");
+		Gfx.alpha(build.fluid![1] / build.block.capacity);
+		Gfx.tRect(...build.pos.tileC, 0.8, 0.8, RectMode.CENTER);
+	};
 }
 
 class Pump extends Building {
@@ -1736,6 +1747,12 @@ class Pump extends Building {
 		Fluid.fill(this.fluid!, Fluids.water, this.block.productionSpeed);
 		this.dumpFluid(this.block.outputSpeed);
 	}
+	static drawer:any = function(build:Pump, currentFrame:CurrentFrame){
+		Gfx.layer("overlayBuilds");
+		Gfx.fillColor("blue");
+		Gfx.alpha(build.fluid![1] / build.block.capacity);
+		Gfx.tRect(...build.pos.tileC, 0.8, 0.8, RectMode.CENTER);
+	};
 }
 
 

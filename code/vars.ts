@@ -203,7 +203,10 @@ const keybinds = extend<Keybinds>()({
 		type_11: new Keybind("f1", [], () => selectID("base_lathe")),
 		type_12: new Keybind("f2", [], () => selectID("base_assembler")),
 		type_13: new Keybind("f3", [], () => selectID("base_arc_tower")),
-		type_14: new Keybind("f4", [], () => selectID("base_power_source")),		
+		type_14: new Keybind("f4", [], () => selectID("base_power_source")),
+		type_15: new Keybind("f6", [], () => selectID("base_pipe")),
+		type_16: new Keybind("f7", [], () => selectID("base_pump")),
+		type_17: new Keybind("f8", [], () => selectID("base_tank")),		
 		type_0: new Keybind("0", [], () => selectID("base_null")),
 	},
 	display: {
