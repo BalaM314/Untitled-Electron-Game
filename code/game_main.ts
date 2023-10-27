@@ -384,14 +384,11 @@ let state: {
 				return;
 			}
 
-			if(currentFrame.redraw){
-				ctxTiles.clear();
+			for(const ctx of ctxs){
+				if(ctx == ctxTiles){
+					if(currentFrame.redraw) ctx.clear(); //Only clear the tiles ctx if redrawing
+				} else ctx.clear();
 			}
-			ctxGBuilds.clear();
-			ctxBuilds.clear();
-			ctxOBuilds.clear();
-			ctxItems.clear();
-			ctxOverlays.clear();
 		
 			level1.display(currentFrame);
 		

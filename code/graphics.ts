@@ -111,23 +111,19 @@ class Camera {
 
 class Gfx {
 
-	static layers = {
-		tile: null! as CanvasRenderingContext2D,
-		buildings: null! as CanvasRenderingContext2D,
-		overlayBuilds: null! as CanvasRenderingContext2D,
-		ghostBuilds: null! as CanvasRenderingContext2D,
-		items: null! as CanvasRenderingContext2D,
-		overlay: null! as CanvasRenderingContext2D,
-	};
+	static layers:Record<
+		"tile" | "buildingsUnder" | "buildings" | "overlayBuilds" | "ghostBuilds" | "items" | "overlay",
+	CanvasRenderingContext2D> = null!;
 	static textures:Record<string, Texture> = {};
 	static rectMode:RectMode = RectMode.CORNER;
 	static ctx:CanvasRenderingContext2D = null!;
 	static init(){
 		this.layers = {
 			tile: ctxTiles,
+			ghostBuilds: ctxGBuilds,
+			buildingsUnder: ctxBuildsUnder,
 			buildings: ctxBuilds,
 			overlayBuilds: ctxOBuilds,
-			ghostBuilds: ctxGBuilds,
 			items: ctxItems,
 			overlay: ctxOverlays,
 		};

@@ -328,14 +328,14 @@ let state = {
                 Game.forceRedraw = true;
                 return;
             }
-            if (currentFrame.redraw) {
-                ctxTiles.clear();
+            for (const ctx of ctxs) {
+                if (ctx == ctxTiles) {
+                    if (currentFrame.redraw)
+                        ctx.clear();
+                }
+                else
+                    ctx.clear();
             }
-            ctxGBuilds.clear();
-            ctxBuilds.clear();
-            ctxOBuilds.clear();
-            ctxItems.clear();
-            ctxOverlays.clear();
             level1.display(currentFrame);
             level1.displayGhostBuilding(...(Camera.unproject(Input.mouseX, Input.mouseY).map(Pos.pixelToTile)), placedBuilding.ID, currentFrame);
             if (keybinds.display.show_tooltip.isHeld()) {

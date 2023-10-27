@@ -86,9 +86,10 @@ class Gfx {
     static init() {
         this.layers = {
             tile: ctxTiles,
+            ghostBuilds: ctxGBuilds,
+            buildingsUnder: ctxBuildsUnder,
             buildings: ctxBuilds,
             overlayBuilds: ctxOBuilds,
-            ghostBuilds: ctxGBuilds,
             items: ctxItems,
             overlay: ctxOverlays,
         };
@@ -192,14 +193,7 @@ class Gfx {
         _ctx.fill();
     }
 }
-Gfx.layers = {
-    tile: null,
-    buildings: null,
-    overlayBuilds: null,
-    ghostBuilds: null,
-    items: null,
-    overlay: null,
-};
+Gfx.layers = null;
 Gfx.textures = {};
 Gfx.rectMode = RectMode.CORNER;
 Gfx.ctx = null;
