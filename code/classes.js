@@ -665,6 +665,8 @@ let Building = (() => {
         preUpdate(currentFrame) { }
         update(currentFrame) {
             this.item?.update(currentFrame);
+            if (this.block.outputsFluids)
+                this.dumpFluid();
         }
         stringID() {
             return stringifyMeta(this.block.id, this.meta);
@@ -711,6 +713,12 @@ let Building = (() => {
         outputsFluidToSide(side) {
             return this.block.outputsFluids;
         }
+        fluidInputSpeed(from) {
+            return this.block.fluidInputSpeed;
+        }
+        fluidOutputSpeed(to) {
+            return this.block.fluidOutputSpeed;
+        }
         buildAt(direction) {
             return this.level.buildingAtTile(this.pos.tileX + direction.vec[0], this.pos.tileY + direction.vec[1]);
         }
@@ -741,13 +749,13 @@ let Building = (() => {
                     const build = this.buildAt(direction);
                     if (build && this.block.canOutputFluidTo(build) &&
                         this.outputsFluidToSide(direction) && build.acceptsFluidFromSide(direction.opposite))
-                        build.acceptFluid(this.fluid, this.block.fluidOutputSpeed);
+                        build.acceptFluid(this.fluid, this.fluidOutputSpeed(build), this);
                 }
             }
         }
-        acceptFluid(stack, maxThroughput) {
+        acceptFluid(stack, maxThroughput, from) {
             if (this.fluid)
-                Fluid.merge(stack, this.fluid, Math.min(maxThroughput, this.block.fluidInputSpeed));
+                Fluid.merge(stack, this.fluid, Math.min(maxThroughput, this.fluidInputSpeed(from)));
         }
         export() {
             return {
@@ -1629,9 +1637,6 @@ class Tank extends Building {
         super(x, y, meta, level);
         this.fluid = [null, 0, this.block.fluidCapacity];
     }
-    update(currentFrame) {
-        this.dumpFluid();
-    }
 }
 Tank.fluidCapacity = 2000;
 Tank.fluidOutputSpeed = 10;
@@ -1670,9 +1675,6 @@ class Pipe extends Building {
     outputsFluidToSide(side) {
         return side === this.outputSide;
     }
-    update(currentFrame) {
-        this.dumpFluid();
-    }
 }
 Pipe.fluidCapacity = 30;
 Pipe.outputsFluids = true;
@@ -1691,9 +1693,9 @@ class Pump extends Building {
     static canBuildAt(tileX, tileY, level) {
         return level.tileAtByTile(tileX, tileY) == "base_water";
     }
-    update() {
+    update(currentFrame) {
         Fluid.fill(this.fluid, Fluids.water, this.block.productionSpeed);
-        this.dumpFluid();
+        super.update(currentFrame);
     }
 }
 Pump.productionSpeed = 2;

@@ -756,6 +756,7 @@ class Building {
 	preUpdate(currentFrame:CurrentFrame){}
 	update(currentFrame:CurrentFrame){
 		this.item?.update(currentFrame);
+		if(this.block.outputsFluids) this.dumpFluid();
 	}
 	stringID(){
 		return stringifyMeta(this.block.id, this.meta);
@@ -810,6 +811,12 @@ class Building {
 	outputsFluidToSide(side:Direction):boolean {
 		return this.block.outputsFluids;
 	}
+	fluidInputSpeed(from:Building){
+		return this.block.fluidInputSpeed;
+	}
+	fluidOutputSpeed(to:Building){
+		return this.block.fluidOutputSpeed;
+	}
 	buildAt(direction:Direction):Building | null {
 		return this.level.buildingAtTile(this.pos.tileX + direction.vec[0], this.pos.tileY + direction.vec[1]);
 	}
@@ -850,13 +857,13 @@ class Building {
 				if(
 					build && this.block.canOutputFluidTo(build) &&
 					this.outputsFluidToSide(direction) && build.acceptsFluidFromSide(direction.opposite)
-				) build.acceptFluid(this.fluid, this.block.fluidOutputSpeed); //TODO refactor lots of stuff
+				) build.acceptFluid(this.fluid, this.fluidOutputSpeed(build), this); //TODO refactor lots of stuff
 			}
 		}
 	}
-	acceptFluid(stack:FluidStack, maxThroughput:number){
+	acceptFluid(stack:FluidStack, maxThroughput:number, from:Building){
 		if(this.fluid)
-			Fluid.merge(stack, this.fluid, Math.min(maxThroughput, this.block.fluidInputSpeed));
+			Fluid.merge(stack, this.fluid, Math.min(maxThroughput, this.fluidInputSpeed(from)));
 	}
 	export():BuildingData {
 		return {
@@ -1686,9 +1693,6 @@ class Tank extends Building {
 		super(x, y, meta, level);
 		this.fluid = [null, 0, this.block.fluidCapacity];
 	}
-	update(currentFrame:CurrentFrame){
-		this.dumpFluid();
-	}
 	static drawer:any = function(build:Tank, currentFrame:CurrentFrame){
 		Gfx.layer("buildingsUnder");
 		Gfx.fillColor("blue");
@@ -1727,9 +1731,6 @@ class Pipe extends Building {
 	outputsFluidToSide(side:Direction){
 		return side === this.outputSide;
 	}
-	update(currentFrame:CurrentFrame){
-		this.dumpFluid();
-	}
 	static drawer:any = function(build:Pipe, currentFrame:CurrentFrame){
 		Gfx.layer("buildingsUnder");
 		Gfx.fillColor("blue");
@@ -1751,9 +1752,9 @@ class Pump extends Building {
 	static canBuildAt(tileX:number, tileY:number, level:Level):boolean {
 		return level.tileAtByTile(tileX, tileY) == "base_water";
 	}
-	update(){
+	update(currentFrame:CurrentFrame){
 		Fluid.fill(this.fluid!, Fluids.water, this.block.productionSpeed);
-		this.dumpFluid();
+		super.update(currentFrame);
 	}
 	static drawer:any = function(build:Pump, currentFrame:CurrentFrame){
 		Gfx.layer("buildingsUnder");
