@@ -742,7 +742,7 @@ class Building {
 		return building instanceof Conveyor;
 	}
 	static canOutputFluidTo(building:Building | null){
-		return building instanceof Conveyor;
+		return building instanceof Pipe;
 	}
 	/**Called to destroy the building. Should remove all references to it. */
 	break(){
@@ -1659,8 +1659,8 @@ class Fluid {
 	}
 	static fill(stack:FluidStack, type:Fluid, amount:number){
 		if(type == null || amount == 0) return 0;
-		if(stack[0] === null) stack[0] = type;
-		else return 0;
+		if(stack[0] === null) stack[0] = type; //set fluid
+		else if(stack[0] !== type) return 0; //different fluid
 		const remainingSpace = stack[2] - stack[1];
 		const amountTransferred = Math.min(remainingSpace, amount);
 		stack[1] += amountTransferred;
@@ -1675,6 +1675,8 @@ const Fluids = {
 class Tank extends Building {
 	static capacity = 2000;
 	static maxOutput = 10;
+	static acceptsFluids = true;
+	static outputsFluids = true;
 	block!:typeof Tank;
 	
 	constructor(x:number, y:number, meta:BuildingMeta, level:Level){
@@ -1685,7 +1687,7 @@ class Tank extends Building {
 		this.dumpFluid(this.block.maxOutput);
 	}
 	static drawer:any = function(build:Pump, currentFrame:CurrentFrame){
-		Gfx.layer("overlayBuilds");
+		Gfx.layer("tile");
 		Gfx.fillColor("blue");
 		Gfx.alpha(build.fluid![1] / build.block.capacity);
 		Gfx.tRect(...build.pos.tileC, 0.8, 0.8, RectMode.CENTER);
@@ -1694,11 +1696,16 @@ class Tank extends Building {
 class Pipe extends Building {
 	static capacity = 30;
 	static throughput = 1;
+	static outputsFluids = true;
+	static acceptsFluids = true;
 	block!: typeof Pipe;
 	outputSide:Direction = Pipe.outputSide(this.meta);
 	constructor(x:number, y:number, meta:BuildingMeta, level:Level){
 		super(x, y, meta, level);
 		this.fluid = [null, 0, this.block.capacity];
+	}
+	static getID(type:RawBuildingID, direction:Direction, modifier:number):BuildingIDWithMeta {
+		return [type, direction.num] as BuildingIDWithMeta;
 	}
 	static outputSide(meta:BuildingMeta):Direction {
 		switch(meta){
@@ -1712,6 +1719,9 @@ class Pipe extends Building {
 	static canOutputFluidTo(building:Building){
 		return true;
 	}
+	acceptsFluidFromSide(side:Direction){
+		return side != this.outputSide;
+	}
 	outputsFluidToSide(side:Direction){
 		return side === this.outputSide;
 	}
@@ -1724,7 +1734,7 @@ class Pipe extends Building {
 			build.acceptFluid(this.fluid!, maxThroughput);
 	}
 	static drawer:any = function(build:Pump, currentFrame:CurrentFrame){
-		Gfx.layer("overlayBuilds");
+		Gfx.layer("tile");
 		Gfx.fillColor("blue");
 		Gfx.alpha(build.fluid![1] / build.block.capacity);
 		Gfx.tRect(...build.pos.tileC, 0.8, 0.8, RectMode.CENTER);
@@ -1735,6 +1745,7 @@ class Pump extends Building {
 	static productionSpeed = 2;
 	static outputSpeed = 10;
 	static capacity = 100;
+	static outputsFluids = true;
 	block!: typeof Pump;
 	constructor(x:number, y:number, meta:BuildingMeta, level:Level){
 		super(x, y, meta, level);
@@ -1748,7 +1759,7 @@ class Pump extends Building {
 		this.dumpFluid(this.block.outputSpeed);
 	}
 	static drawer:any = function(build:Pump, currentFrame:CurrentFrame){
-		Gfx.layer("overlayBuilds");
+		Gfx.layer("tile");
 		Gfx.fillColor("blue");
 		Gfx.alpha(build.fluid![1] / build.block.capacity);
 		Gfx.tRect(...build.pos.tileC, 0.8, 0.8, RectMode.CENTER);

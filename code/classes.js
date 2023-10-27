@@ -653,7 +653,7 @@ let Building = (() => {
             return building instanceof Conveyor;
         }
         static canOutputFluidTo(building) {
-            return building instanceof Conveyor;
+            return building instanceof Pipe;
         }
         break() {
             this.level.buildings.delete(this);
@@ -1608,7 +1608,7 @@ class Fluid {
             return 0;
         if (stack[0] === null)
             stack[0] = type;
-        else
+        else if (stack[0] !== type)
             return 0;
         const remainingSpace = stack[2] - stack[1];
         const amountTransferred = Math.min(remainingSpace, amount);
@@ -1632,8 +1632,10 @@ class Tank extends Building {
 }
 Tank.capacity = 2000;
 Tank.maxOutput = 10;
+Tank.acceptsFluids = true;
+Tank.outputsFluids = true;
 Tank.drawer = function (build, currentFrame) {
-    Gfx.layer("overlayBuilds");
+    Gfx.layer("tile");
     Gfx.fillColor("blue");
     Gfx.alpha(build.fluid[1] / build.block.capacity);
     Gfx.tRect(...build.pos.tileC, 0.8, 0.8, RectMode.CENTER);
@@ -1643,6 +1645,9 @@ class Pipe extends Building {
         super(x, y, meta, level);
         this.outputSide = Pipe.outputSide(this.meta);
         this.fluid = [null, 0, this.block.capacity];
+    }
+    static getID(type, direction, modifier) {
+        return [type, direction.num];
     }
     static outputSide(meta) {
         switch (meta) {
@@ -1655,6 +1660,9 @@ class Pipe extends Building {
     }
     static canOutputFluidTo(building) {
         return true;
+    }
+    acceptsFluidFromSide(side) {
+        return side != this.outputSide;
     }
     outputsFluidToSide(side) {
         return side === this.outputSide;
@@ -1670,8 +1678,10 @@ class Pipe extends Building {
 }
 Pipe.capacity = 30;
 Pipe.throughput = 1;
+Pipe.outputsFluids = true;
+Pipe.acceptsFluids = true;
 Pipe.drawer = function (build, currentFrame) {
-    Gfx.layer("overlayBuilds");
+    Gfx.layer("tile");
     Gfx.fillColor("blue");
     Gfx.alpha(build.fluid[1] / build.block.capacity);
     Gfx.tRect(...build.pos.tileC, 0.8, 0.8, RectMode.CENTER);
@@ -1692,8 +1702,9 @@ class Pump extends Building {
 Pump.productionSpeed = 2;
 Pump.outputSpeed = 10;
 Pump.capacity = 100;
+Pump.outputsFluids = true;
 Pump.drawer = function (build, currentFrame) {
-    Gfx.layer("overlayBuilds");
+    Gfx.layer("tile");
     Gfx.fillColor("blue");
     Gfx.alpha(build.fluid[1] / build.block.capacity);
     Gfx.tRect(...build.pos.tileC, 0.8, 0.8, RectMode.CENTER);
