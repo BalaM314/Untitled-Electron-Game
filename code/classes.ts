@@ -1704,6 +1704,8 @@ class Pipe extends Building {
 	static fluidCapacity = 30;
 	static outputsFluids = true;
 	static acceptsFluids = true;
+	/** Fluid IO speed to and from pipes is multiplied by this amount. */
+	static pipeSpeedMult = 1.1;
 	block!: typeof Pipe;
 	outputSide:Direction = Pipe.outputSide(this.meta);
 	constructor(x:number, y:number, meta:BuildingMeta, level:Level){
@@ -1730,6 +1732,12 @@ class Pipe extends Building {
 	}
 	outputsFluidToSide(side:Direction){
 		return side === this.outputSide;
+	}
+	fluidInputSpeed(from:Building){
+		return (from instanceof Pipe ? this.block.pipeSpeedMult : 1) * this.block.fluidInputSpeed;
+	}
+	fluidOutputSpeed(to:Building){
+		return (to instanceof Pipe ? this.block.pipeSpeedMult : 1) * this.block.fluidOutputSpeed;
 	}
 	static drawer:any = function(build:Pipe, currentFrame:CurrentFrame){
 		Gfx.layer("buildingsUnder");

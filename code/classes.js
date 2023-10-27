@@ -1675,10 +1675,17 @@ class Pipe extends Building {
     outputsFluidToSide(side) {
         return side === this.outputSide;
     }
+    fluidInputSpeed(from) {
+        return (from instanceof Pipe ? this.block.pipeSpeedMult : 1) * this.block.fluidInputSpeed;
+    }
+    fluidOutputSpeed(to) {
+        return (to instanceof Pipe ? this.block.pipeSpeedMult : 1) * this.block.fluidOutputSpeed;
+    }
 }
 Pipe.fluidCapacity = 30;
 Pipe.outputsFluids = true;
 Pipe.acceptsFluids = true;
+Pipe.pipeSpeedMult = 1.1;
 Pipe.drawer = function (build, currentFrame) {
     Gfx.layer("buildingsUnder");
     Gfx.fillColor("blue");
