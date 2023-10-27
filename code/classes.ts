@@ -709,6 +709,9 @@ class Building {
 	static acceptsItems = false;
 	static outputsFluids = false;
 	static acceptsFluids = false;
+	static fluidCapacity = 100;
+	static fluidInputSpeed = 1;
+	static fluidOutputSpeed = 1;
 	static id:RawBuildingID;
 	/**Whether this building cannot be placed or broken.*/
 	static immutable = false;
@@ -840,20 +843,20 @@ class Building {
 			return false;
 		}
 	}
-	dumpFluid(maxThroughput:number){
+	dumpFluid(){
 		if(this.fluid && this.fluid[1] > 0){
 			for(const direction of Direction){
 				const build = this.buildAt(direction);
 				if(
 					build && this.block.canOutputFluidTo(build) &&
 					this.outputsFluidToSide(direction) && build.acceptsFluidFromSide(direction.opposite)
-				) build.acceptFluid(this.fluid, maxThroughput); //TODO refactor lots of stuff, TODO allow max input and max output for each building
+				) build.acceptFluid(this.fluid, this.block.fluidOutputSpeed); //TODO refactor lots of stuff
 			}
 		}
 	}
 	acceptFluid(stack:FluidStack, maxThroughput:number){
 		if(this.fluid)
-			Fluid.merge(stack, this.fluid, maxThroughput);
+			Fluid.merge(stack, this.fluid, Math.min(maxThroughput, this.block.fluidInputSpeed));
 	}
 	export():BuildingData {
 		return {
@@ -1673,36 +1676,35 @@ const Fluids = {
 }
 
 class Tank extends Building {
-	static capacity = 2000;
-	static maxOutput = 10;
+	static fluidCapacity = 2000;
+	static fluidOutputSpeed = 10;
 	static acceptsFluids = true;
 	static outputsFluids = true;
 	block!:typeof Tank;
 	
 	constructor(x:number, y:number, meta:BuildingMeta, level:Level){
 		super(x, y, meta, level);
-		this.fluid = [null, 0, this.block.capacity];
+		this.fluid = [null, 0, this.block.fluidCapacity];
 	}
 	update(currentFrame:CurrentFrame){
-		this.dumpFluid(this.block.maxOutput);
+		this.dumpFluid();
 	}
-	static drawer:any = function(build:Pump, currentFrame:CurrentFrame){
+	static drawer:any = function(build:Tank, currentFrame:CurrentFrame){
 		Gfx.layer("buildingsUnder");
 		Gfx.fillColor("blue");
-		Gfx.alpha(build.fluid![1] / build.block.capacity);
+		Gfx.alpha(build.fluid![1] / build.block.fluidCapacity);
 		Gfx.tRect(...build.pos.tileC, 0.8, 0.8, RectMode.CENTER);
 	};
 }
 class Pipe extends Building {
-	static capacity = 30;
-	static throughput = 1;
+	static fluidCapacity = 30;
 	static outputsFluids = true;
 	static acceptsFluids = true;
 	block!: typeof Pipe;
 	outputSide:Direction = Pipe.outputSide(this.meta);
 	constructor(x:number, y:number, meta:BuildingMeta, level:Level){
 		super(x, y, meta, level);
-		this.fluid = [null, 0, this.block.capacity];
+		this.fluid = [null, 0, this.block.fluidCapacity];
 	}
 	static getID(type:RawBuildingID, direction:Direction, modifier:number):BuildingIDWithMeta {
 		return [type, direction.num] as BuildingIDWithMeta;
@@ -1726,42 +1728,37 @@ class Pipe extends Building {
 		return side === this.outputSide;
 	}
 	update(currentFrame:CurrentFrame){
-		this.dumpFluid(this.block.throughput);
+		this.dumpFluid();
 	}
-	dumpFluid(maxThroughput:number){
-		const build = this.buildAt(this.outputSide);
-		if(build && build.acceptsFluidFromSide(this.outputSide.opposite))
-			build.acceptFluid(this.fluid!, maxThroughput);
-	}
-	static drawer:any = function(build:Pump, currentFrame:CurrentFrame){
+	static drawer:any = function(build:Pipe, currentFrame:CurrentFrame){
 		Gfx.layer("buildingsUnder");
 		Gfx.fillColor("blue");
-		Gfx.alpha(build.fluid![1] / build.block.capacity);
+		Gfx.alpha(build.fluid![1] / build.block.fluidCapacity);
 		Gfx.tRect(...build.pos.tileC, 0.8, 0.8, RectMode.CENTER);
 	};
 }
 
 class Pump extends Building {
 	static productionSpeed = 2;
-	static outputSpeed = 10;
-	static capacity = 100;
+	static fluidOutputSpeed = 10;
+	static fluidCapacity = 100;
 	static outputsFluids = true;
 	block!: typeof Pump;
 	constructor(x:number, y:number, meta:BuildingMeta, level:Level){
 		super(x, y, meta, level);
-		this.fluid = [null, 0, this.block.capacity];
+		this.fluid = [null, 0, this.block.fluidCapacity];
 	}
 	static canBuildAt(tileX:number, tileY:number, level:Level):boolean {
 		return level.tileAtByTile(tileX, tileY) == "base_water";
 	}
 	update(){
 		Fluid.fill(this.fluid!, Fluids.water, this.block.productionSpeed);
-		this.dumpFluid(this.block.outputSpeed);
+		this.dumpFluid();
 	}
 	static drawer:any = function(build:Pump, currentFrame:CurrentFrame){
 		Gfx.layer("buildingsUnder");
 		Gfx.fillColor("blue");
-		Gfx.alpha(build.fluid![1] / build.block.capacity);
+		Gfx.alpha(build.fluid![1] / build.block.fluidCapacity);
 		Gfx.tRect(...build.pos.tileC, 0.8, 0.8, RectMode.CENTER);
 	};
 }

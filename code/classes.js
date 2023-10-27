@@ -735,19 +735,19 @@ let Building = (() => {
                 return false;
             }
         }
-        dumpFluid(maxThroughput) {
+        dumpFluid() {
             if (this.fluid && this.fluid[1] > 0) {
                 for (const direction of Direction) {
                     const build = this.buildAt(direction);
                     if (build && this.block.canOutputFluidTo(build) &&
                         this.outputsFluidToSide(direction) && build.acceptsFluidFromSide(direction.opposite))
-                        build.acceptFluid(this.fluid, maxThroughput);
+                        build.acceptFluid(this.fluid, this.block.fluidOutputSpeed);
                 }
             }
         }
         acceptFluid(stack, maxThroughput) {
             if (this.fluid)
-                Fluid.merge(stack, this.fluid, maxThroughput);
+                Fluid.merge(stack, this.fluid, Math.min(maxThroughput, this.block.fluidInputSpeed));
         }
         export() {
             return {
@@ -776,6 +776,9 @@ let Building = (() => {
     _classThis.acceptsItems = false;
     _classThis.outputsFluids = false;
     _classThis.acceptsFluids = false;
+    _classThis.fluidCapacity = 100;
+    _classThis.fluidInputSpeed = 1;
+    _classThis.fluidOutputSpeed = 1;
     _classThis.immutable = false;
     _classThis.isOverlay = false;
     _classThis.displaysItem = false;
@@ -1624,27 +1627,27 @@ const Fluids = {
 class Tank extends Building {
     constructor(x, y, meta, level) {
         super(x, y, meta, level);
-        this.fluid = [null, 0, this.block.capacity];
+        this.fluid = [null, 0, this.block.fluidCapacity];
     }
     update(currentFrame) {
-        this.dumpFluid(this.block.maxOutput);
+        this.dumpFluid();
     }
 }
-Tank.capacity = 2000;
-Tank.maxOutput = 10;
+Tank.fluidCapacity = 2000;
+Tank.fluidOutputSpeed = 10;
 Tank.acceptsFluids = true;
 Tank.outputsFluids = true;
 Tank.drawer = function (build, currentFrame) {
     Gfx.layer("buildingsUnder");
     Gfx.fillColor("blue");
-    Gfx.alpha(build.fluid[1] / build.block.capacity);
+    Gfx.alpha(build.fluid[1] / build.block.fluidCapacity);
     Gfx.tRect(...build.pos.tileC, 0.8, 0.8, RectMode.CENTER);
 };
 class Pipe extends Building {
     constructor(x, y, meta, level) {
         super(x, y, meta, level);
         this.outputSide = Pipe.outputSide(this.meta);
-        this.fluid = [null, 0, this.block.capacity];
+        this.fluid = [null, 0, this.block.fluidCapacity];
     }
     static getID(type, direction, modifier) {
         return [type, direction.num];
@@ -1668,45 +1671,39 @@ class Pipe extends Building {
         return side === this.outputSide;
     }
     update(currentFrame) {
-        this.dumpFluid(this.block.throughput);
-    }
-    dumpFluid(maxThroughput) {
-        const build = this.buildAt(this.outputSide);
-        if (build && build.acceptsFluidFromSide(this.outputSide.opposite))
-            build.acceptFluid(this.fluid, maxThroughput);
+        this.dumpFluid();
     }
 }
-Pipe.capacity = 30;
-Pipe.throughput = 1;
+Pipe.fluidCapacity = 30;
 Pipe.outputsFluids = true;
 Pipe.acceptsFluids = true;
 Pipe.drawer = function (build, currentFrame) {
     Gfx.layer("buildingsUnder");
     Gfx.fillColor("blue");
-    Gfx.alpha(build.fluid[1] / build.block.capacity);
+    Gfx.alpha(build.fluid[1] / build.block.fluidCapacity);
     Gfx.tRect(...build.pos.tileC, 0.8, 0.8, RectMode.CENTER);
 };
 class Pump extends Building {
     constructor(x, y, meta, level) {
         super(x, y, meta, level);
-        this.fluid = [null, 0, this.block.capacity];
+        this.fluid = [null, 0, this.block.fluidCapacity];
     }
     static canBuildAt(tileX, tileY, level) {
         return level.tileAtByTile(tileX, tileY) == "base_water";
     }
     update() {
         Fluid.fill(this.fluid, Fluids.water, this.block.productionSpeed);
-        this.dumpFluid(this.block.outputSpeed);
+        this.dumpFluid();
     }
 }
 Pump.productionSpeed = 2;
-Pump.outputSpeed = 10;
-Pump.capacity = 100;
+Pump.fluidOutputSpeed = 10;
+Pump.fluidCapacity = 100;
 Pump.outputsFluids = true;
 Pump.drawer = function (build, currentFrame) {
     Gfx.layer("buildingsUnder");
     Gfx.fillColor("blue");
-    Gfx.alpha(build.fluid[1] / build.block.capacity);
+    Gfx.alpha(build.fluid[1] / build.block.fluidCapacity);
     Gfx.tRect(...build.pos.tileC, 0.8, 0.8, RectMode.CENTER);
 };
 class PowerGrid {
