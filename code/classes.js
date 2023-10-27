@@ -1635,7 +1635,7 @@ Tank.maxOutput = 10;
 Tank.acceptsFluids = true;
 Tank.outputsFluids = true;
 Tank.drawer = function (build, currentFrame) {
-    Gfx.layer("tile");
+    Gfx.layer("buildingsUnder");
     Gfx.fillColor("blue");
     Gfx.alpha(build.fluid[1] / build.block.capacity);
     Gfx.tRect(...build.pos.tileC, 0.8, 0.8, RectMode.CENTER);
@@ -1681,7 +1681,7 @@ Pipe.throughput = 1;
 Pipe.outputsFluids = true;
 Pipe.acceptsFluids = true;
 Pipe.drawer = function (build, currentFrame) {
-    Gfx.layer("tile");
+    Gfx.layer("buildingsUnder");
     Gfx.fillColor("blue");
     Gfx.alpha(build.fluid[1] / build.block.capacity);
     Gfx.tRect(...build.pos.tileC, 0.8, 0.8, RectMode.CENTER);
@@ -1704,7 +1704,7 @@ Pump.outputSpeed = 10;
 Pump.capacity = 100;
 Pump.outputsFluids = true;
 Pump.drawer = function (build, currentFrame) {
-    Gfx.layer("tile");
+    Gfx.layer("buildingsUnder");
     Gfx.fillColor("blue");
     Gfx.alpha(build.fluid[1] / build.block.capacity);
     Gfx.tRect(...build.pos.tileC, 0.8, 0.8, RectMode.CENTER);

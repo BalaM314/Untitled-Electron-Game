@@ -1687,7 +1687,7 @@ class Tank extends Building {
 		this.dumpFluid(this.block.maxOutput);
 	}
 	static drawer:any = function(build:Pump, currentFrame:CurrentFrame){
-		Gfx.layer("tile");
+		Gfx.layer("buildingsUnder");
 		Gfx.fillColor("blue");
 		Gfx.alpha(build.fluid![1] / build.block.capacity);
 		Gfx.tRect(...build.pos.tileC, 0.8, 0.8, RectMode.CENTER);
@@ -1734,7 +1734,7 @@ class Pipe extends Building {
 			build.acceptFluid(this.fluid!, maxThroughput);
 	}
 	static drawer:any = function(build:Pump, currentFrame:CurrentFrame){
-		Gfx.layer("tile");
+		Gfx.layer("buildingsUnder");
 		Gfx.fillColor("blue");
 		Gfx.alpha(build.fluid![1] / build.block.capacity);
 		Gfx.tRect(...build.pos.tileC, 0.8, 0.8, RectMode.CENTER);
@@ -1759,7 +1759,7 @@ class Pump extends Building {
 		this.dumpFluid(this.block.outputSpeed);
 	}
 	static drawer:any = function(build:Pump, currentFrame:CurrentFrame){
-		Gfx.layer("tile");
+		Gfx.layer("buildingsUnder");
 		Gfx.fillColor("blue");
 		Gfx.alpha(build.fluid![1] / build.block.capacity);
 		Gfx.tRect(...build.pos.tileC, 0.8, 0.8, RectMode.CENTER);
