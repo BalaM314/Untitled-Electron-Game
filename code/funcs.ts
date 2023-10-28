@@ -95,6 +95,10 @@ function constrain(x:number, min:number, max:number){
 	return x;
 }
 
+function map(value:number, from1:number, from2:number, to1:number, to2:number){
+	return ((value - from1) / (from2 - from1)) * (to2 - to1) + to1;
+}
+
 
 function assert(x:any){
 	if(!x){

@@ -79,6 +79,9 @@ function constrain(x, min, max) {
         return min;
     return x;
 }
+function map(value, from1, from2, to1, to2) {
+    return ((value - from1) / (from2 - from1)) * (to2 - to1) + to1;
+}
 function assert(x) {
     if (!x) {
         throw new AssertionFailedError(x);
