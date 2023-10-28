@@ -775,7 +775,8 @@ let Building = (() => {
                 y: this.pos.tileY,
                 id: this.block.id,
                 meta: this.meta,
-                item: this.item?.export() ?? null
+                item: this.item?.export() ?? null,
+                fluid: this.fluid ? [this.fluid[0]?.id ?? null, this.fluid[1]] : null,
             };
         }
         static read(buildingData, level) {
@@ -784,6 +785,8 @@ let Building = (() => {
                 build.item = Item.read(buildingData.item);
             if (build instanceof PowerBuilding)
                 level.grid.addBuild(build);
+            if (buildingData.fluid && this.fluidCapacity)
+                build.fluid = [Fluid.byID(buildingData.fluid[0]), buildingData.fluid[1], this.fluidCapacity];
             return build;
         }
     };
@@ -1638,6 +1641,9 @@ class Fluid {
         const amountTransferred = Math.min(remainingSpace, amount);
         stack[1] += amountTransferred;
         return amountTransferred;
+    }
+    static byID(id) {
+        return id ? Fluid.all[id] : null;
     }
 }
 Fluid._id = 1;

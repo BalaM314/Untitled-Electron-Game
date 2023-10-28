@@ -129,6 +129,7 @@ interface BuildingData {
 	id: RawBuildingID;
 	meta: BuildingMeta;
 	item: ItemData | null;
+	fluid?: FluidData | null;
 	inv?: ItemData[];
 }
 
@@ -137,7 +138,7 @@ interface ItemData {
 	y: number;
 	id: ItemID;
 }
-
+type FluidData = [fluidID:number | null, amount:number];
 declare let noise: {
 	seed: (seed:number) => void;
 	perlin2: (x:number, y:number) => number;
