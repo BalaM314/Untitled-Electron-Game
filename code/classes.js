@@ -717,7 +717,7 @@ let Building = (() => {
             return this.block.fluidInputSpeed;
         }
         fluidOutputSpeed(to) {
-            return this.block.fluidOutputSpeed;
+            return this.block.fluidOutputSpeed * constrain((this.pressureOut() - to.pressureIn()) + this.block.fluidExtraPressure, 0, 1);
         }
         buildAt(direction) {
             return this.level.buildingAtTile(this.pos.tileX + direction.vec[0], this.pos.tileY + direction.vec[1]);
@@ -757,6 +757,18 @@ let Building = (() => {
             if (this.fluid)
                 Fluid.merge(stack, this.fluid, Math.min(maxThroughput, this.fluidInputSpeed(from)));
         }
+        pressureOut() {
+            if (!this.fluid)
+                return 0;
+            const fillLevel = this.fluid[1] / this.block.fluidCapacity;
+            return fillLevel;
+        }
+        pressureIn() {
+            if (!this.fluid)
+                return 0;
+            const fillLevel = this.fluid[1] / this.block.fluidCapacity;
+            return fillLevel;
+        }
         export() {
             return {
                 x: this.pos.tileX,
@@ -787,6 +799,7 @@ let Building = (() => {
     _classThis.fluidCapacity = 100;
     _classThis.fluidInputSpeed = 1;
     _classThis.fluidOutputSpeed = 1;
+    _classThis.fluidExtraPressure = 0;
     _classThis.immutable = false;
     _classThis.isOverlay = false;
     _classThis.displaysItem = false;
@@ -1637,9 +1650,21 @@ class Tank extends Building {
         super(x, y, meta, level);
         this.fluid = [null, 0, this.block.fluidCapacity];
     }
+    pressureOut() {
+        const fillLevel = this.fluid[1] / this.block.fluidCapacity;
+        return constrain(map(fillLevel, 0, this.block.pressureOutMaxFill, 0, 1), this.block.pressureOutMin, 1);
+    }
+    pressureIn() {
+        const fillLevel = this.fluid[1] / this.block.fluidCapacity;
+        return constrain(map(fillLevel, this.block.pressureInMaxFill, 1, 0, 1), this.block.pressureInMin, 1);
+    }
 }
-Tank.fluidCapacity = 2000;
+Tank.fluidCapacity = 200;
 Tank.fluidOutputSpeed = 10;
+Tank.pressureInMin = 0;
+Tank.pressureInMaxFill = 0.8;
+Tank.pressureOutMin = 0.05;
+Tank.pressureOutMaxFill = 0.2;
 Tank.acceptsFluids = true;
 Tank.outputsFluids = true;
 Tank.drawer = function (build, currentFrame) {
@@ -1675,22 +1700,15 @@ class Pipe extends Building {
     outputsFluidToSide(side) {
         return side === this.outputSide;
     }
-    fluidInputSpeed(from) {
-        return (from instanceof Pipe ? this.block.pipeSpeedMult : 1) * this.block.fluidInputSpeed;
-    }
-    fluidOutputSpeed(to) {
-        return (to instanceof Pipe ? this.block.pipeSpeedMult : 1) * this.block.fluidOutputSpeed;
-    }
 }
-Pipe.fluidCapacity = 30;
+Pipe.fluidCapacity = 5;
 Pipe.outputsFluids = true;
 Pipe.acceptsFluids = true;
-Pipe.pipeSpeedMult = 1.1;
+Pipe.fluidExtraPressure = 0.05;
 Pipe.drawer = function (build, currentFrame) {
     Gfx.layer("buildingsUnder");
     Gfx.fillColor("blue");
-    Gfx.alpha(build.fluid[1] / build.block.fluidCapacity);
-    Gfx.tRect(...build.pos.tileC, 0.8, 0.8, RectMode.CENTER);
+    Gfx.tRect(build.pos.tileX, build.pos.tileY + 0.45, build.fluid[1] / build.block.fluidCapacity, 0.1, RectMode.CORNER);
 };
 class Pump extends Building {
     constructor(x, y, meta, level) {

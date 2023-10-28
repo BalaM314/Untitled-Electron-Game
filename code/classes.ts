@@ -712,6 +712,7 @@ class Building {
 	static fluidCapacity = 100;
 	static fluidInputSpeed = 1;
 	static fluidOutputSpeed = 1;
+	static fluidExtraPressure = 0;
 	static id:RawBuildingID;
 	/**Whether this building cannot be placed or broken.*/
 	static immutable = false;
@@ -815,7 +816,11 @@ class Building {
 		return this.block.fluidInputSpeed;
 	}
 	fluidOutputSpeed(to:Building){
-		return this.block.fluidOutputSpeed;
+		return this.block.fluidOutputSpeed * constrain(
+			(this.pressureOut() - to.pressureIn()) + this.block.fluidExtraPressure,
+			//Multiply by the difference in pressure, but add a bit for
+			0, 1
+		);
 	}
 	buildAt(direction:Direction):Building | null {
 		return this.level.buildingAtTile(this.pos.tileX + direction.vec[0], this.pos.tileY + direction.vec[1]);
@@ -864,6 +869,19 @@ class Building {
 	acceptFluid(stack:FluidStack, maxThroughput:number, from:Building){
 		if(this.fluid)
 			Fluid.merge(stack, this.fluid, Math.min(maxThroughput, this.fluidInputSpeed(from)));
+	}
+	/** should be between 0 and 1. */
+	pressureOut(){
+		if(!this.fluid) return 0;
+		const fillLevel = this.fluid[1] / this.block.fluidCapacity;
+		//is this fine?
+		return fillLevel;
+	}
+	/** should be between 0 and 1. */
+	pressureIn(){
+		if(!this.fluid) return 0;
+		const fillLevel = this.fluid[1] / this.block.fluidCapacity;
+		return fillLevel;
 	}
 	export():BuildingData {
 		return {
@@ -1683,8 +1701,16 @@ const Fluids = {
 }
 
 class Tank extends Building {
-	static fluidCapacity = 2000;
+	static fluidCapacity = 200;
 	static fluidOutputSpeed = 10;
+	/** Minimum input pressure, even if the tank is empty the input pressure will be at least this much. */
+	static pressureInMin = 0;
+	/** pressure in uses this fraction of the tank's capacity for scaling. If the tank's fill level is below this amount, the output pressure is `pressureInMin`. */
+	static pressureInMaxFill = 0.8;
+	/** Minimum output pressure, even if the tank is empty the output pressure will be at least this much. */
+	static pressureOutMin = 0.05;
+	/** pressure out uses this fraction of the tank's capacity for scaling. If the tank's fill level is above this amount, the output pressure is max. */
+	static pressureOutMaxFill = 0.2;
 	static acceptsFluids = true;
 	static outputsFluids = true;
 	block!:typeof Tank;
@@ -1692,6 +1718,18 @@ class Tank extends Building {
 	constructor(x:number, y:number, meta:BuildingMeta, level:Level){
 		super(x, y, meta, level);
 		this.fluid = [null, 0, this.block.fluidCapacity];
+	}
+	pressureOut(){
+		//we could also use fluidExtraPressure = 1 to force max pressure, but that would allow even empty tanks to do max pressure
+		const fillLevel = this.fluid![1] / this.block.fluidCapacity;
+		//scale pressure to 20% of the tank's capacity, so if it is more than 20% full the tank will output at full speed
+		//maybe use a max pressure of 2 to allow full speed output even to full pipes?
+		return constrain(map(fillLevel, 0, this.block.pressureOutMaxFill, 0, 1), this.block.pressureOutMin, 1);
+	}
+	pressureIn(){
+		const fillLevel = this.fluid![1] / this.block.fluidCapacity;
+		//scale pressure to 20% of the tank's capacity, so if it is more than 20% full the tank will output at full speed
+		return constrain(map(fillLevel, this.block.pressureInMaxFill, 1, 0, 1), this.block.pressureInMin, 1);
 	}
 	static drawer:any = function(build:Tank, currentFrame:CurrentFrame){
 		Gfx.layer("buildingsUnder");
@@ -1701,11 +1739,10 @@ class Tank extends Building {
 	};
 }
 class Pipe extends Building {
-	static fluidCapacity = 30;
+	static fluidCapacity = 5;
 	static outputsFluids = true;
 	static acceptsFluids = true;
-	/** Fluid IO speed to and from pipes is multiplied by this amount. */
-	static pipeSpeedMult = 1.1;
+	static fluidExtraPressure = 0.05;
 	block!: typeof Pipe;
 	outputSide:Direction = Pipe.outputSide(this.meta);
 	constructor(x:number, y:number, meta:BuildingMeta, level:Level){
@@ -1733,17 +1770,10 @@ class Pipe extends Building {
 	outputsFluidToSide(side:Direction){
 		return side === this.outputSide;
 	}
-	fluidInputSpeed(from:Building){
-		return (from instanceof Pipe ? this.block.pipeSpeedMult : 1) * this.block.fluidInputSpeed;
-	}
-	fluidOutputSpeed(to:Building){
-		return (to instanceof Pipe ? this.block.pipeSpeedMult : 1) * this.block.fluidOutputSpeed;
-	}
 	static drawer:any = function(build:Pipe, currentFrame:CurrentFrame){
 		Gfx.layer("buildingsUnder");
 		Gfx.fillColor("blue");
-		Gfx.alpha(build.fluid![1] / build.block.fluidCapacity);
-		Gfx.tRect(...build.pos.tileC, 0.8, 0.8, RectMode.CENTER);
+		Gfx.tRect(build.pos.tileX, build.pos.tileY + 0.45, build.fluid![1] / build.block.fluidCapacity, 0.1, RectMode.CORNER);
 	};
 }
 
