@@ -268,7 +268,7 @@ class Level {
 				(Math.abs(building.item.pos.pixelX - x) < consts.ITEM_SIZE / 2) &&
 				Math.abs(building.item.pos.pixelY - y) < consts.ITEM_SIZE / 2
 			) return names.item[building.item.id]; //tooltip for the item
-			else return names.building[building.block.id]; //tooltip for the building
+			else return building.getTooltip();
 		} else return names.tile[this.tileAtByPixel(x, y)]; //tooltip for the tile
 	}
 	export():LevelData {
@@ -763,6 +763,9 @@ class Building {
 			...textureSize[0],
 			Gfx.layers[layer]
 		);
+	}
+	getTooltip(){
+		return names.building[this.block.id];
 	}
 	display(currentFrame:CurrentFrame, layer:(keyof typeof Gfx.layers) = this.block.isOverlay ? "overlayBuilds" : "buildings"){
 		Gfx.layer(layer);
@@ -1543,6 +1546,10 @@ class MultiBlockSecondary extends Building {
 	}
 	display(currentFrame:CurrentFrame){
 		//Do nothing, the controller is responsible for displaying
+	}
+	getTooltip(){
+		if(this.controller) return names.building[this.controller.block.id];
+		else return names.building[this.block.id];
 	}
 	update(){
 		if(!(this.controller instanceof MultiBlockController)){
