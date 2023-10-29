@@ -173,6 +173,7 @@ let settings = {
     debug: true,
     alwaysLoadSave: true,
     autoSave: true,
+    showExtraPipeInfo: false,
 };
 let Game = {
     texturesReady: false,

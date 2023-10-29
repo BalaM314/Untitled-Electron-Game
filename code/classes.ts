@@ -733,6 +733,7 @@ class Building {
 	cItemOut = 0;
 	/** Counter that specifies which direction to start at when trying to dump fluids. Used for even distribution. */
 	cFluidOut = 3;
+	fluidThroughput = 0;
 	//https://www.typescriptlang.org/play?#code/CYUwxgNghgTiAEAzArgOzAFwJYHtXzgHMsBnDEGAHgCF4QAPc1YE+DATwAcQdF5rkWCMCypCAPgAUWYAC4yMUYQA08TDhizqqzjBycSsgN4AoeOfgBtAArxR8ANYh2vfgF0A-LP423AbhMAXwBKLQCAenCAFQALUiQ0TFx8GKhWACMQEHwsAFtOCBBc7PJgeChmeAB3DQdWRGgqwpISCHZVKAgMGJxkQhi2GIQwHFB4CBwcOoIQTrbqkCwYYAA6ExNIgEEc1DIKsARXbvjINNY4XRASEtYoeBIlQvh0wWElO1QAWhqYYTXTlr8V4iMTwUwWe4YKDYMB2OQKd4AXngACI0KgoMUyi8hCDCCiAhC9jD7lgAF4gWSoZC5TIweDIgCMhIs6QmYAcDMGpBWI12GBgyHU9LSbC4PD4AlxShZ5kIIAwAElgJJguCIRY4BhkDB8McSCs2TgOSsZLL4IEzBZkJxgNCQKqjJbLSYAawAMJ4ABuzg0dEY2RYQOloPV5mJWFhJG4IDk1NpFC5zKt5kiiuqFQwbBw8FSPvgIkQiAoJTF3FYrj5PpcMFYVSw3QLWCLJdQWejWRYKfgkQAsuwkEsyOVOLocFAwAMqqKMDmwHB7eV4KgQFU1NBAQwmHi1N7ffT6427oXi3A2-cY2UvZ1kAh7N076gG1hOuSKKoXlnutCCzgrqgAHIs1Aa4YHzWdngQO43Q+QYEEICZ0k6e4Rm4NYITTNQF1KJciFIch6RQdBsDwao4kneBkGuVgAHl0gAK3ADAVjOLBCD1HN5RXGBFwfdcznKLNBTbPIoMqMgNDvLN7GgvAmCzXIoE4dCLEiWJ4h+aZuBgYtMHmRBRBAD9kC-IY4AA1h6KorM8DvFpb1kbtMJXWNuVYCBDMgiYqhU8wjQ5ABCbwOG4VxPVQasNHNLZ0hwfN7yGYM3lBN1VCqVIs3TBcIHmadz3iFFRFPOCy0OPh9V5PAFCFWcYBRYysyicUSHnLBOGk1BT1YBtylYFEADFEhI1AUTIyMBniKiQGaEgOkqdNA0ozhcygL13gg1CB31Z4cCECgCkXDyV3KVB2GndhfKWu1yEdbsIQq-yHBWDtY3NZ11hg3tDPpLdA1YKVksIMFuwjWFckMgBlS8qRpOkuQANgABnNR6gtK1wvu480bWuh01TuiwHvZJ7wZXKHOzeoJ1jwsgKEkFFWhwKp6vgcLIpgVQjAvTtvERlYAFYLWCAIaYI+nEDSDAWbZ-dOe52NvAAZiFkWQGIWmYHp9I2M+UmKBZzH3zBUkKW8RkVaAA
 	block = this.constructor as typeof Building;
 	constructor(x:number, y:number, public readonly meta:BuildingMeta, public level:Level){
@@ -873,6 +874,7 @@ class Building {
 	}
 	dumpFluid(){
 		if(this.fluid && this.fluid[1] > 0){
+			this.fluidThroughput = 0;
 			for(let i = 0; i < Direction.number; i ++){
 				if(++this.cFluidOut > 3) this.cFluidOut = 0;
 				const direction = Direction.all[this.cFluidOut];
@@ -881,15 +883,16 @@ class Building {
 					build && this.block.canOutputFluidTo(build) &&
 					this.outputsFluidToSide(direction) && build.acceptsFluidFromSide(direction.opposite)
 				){
-					build.acceptFluid(this.fluid, this.fluidOutputSpeed(build), this);
-					break;
+					this.fluidThroughput = build.acceptFluid(this.fluid, this.fluidOutputSpeed(build), this)!;
+					return;
 				}
 			}
 		}
 	}
-	acceptFluid(stack:FluidStack, maxThroughput:number, from:Building){
+	acceptFluid(stack:FluidStack, maxThroughput:number, from:Building):number | null {
 		if(this.fluid)
-			Fluid.merge(stack, this.fluid, Math.min(maxThroughput, this.fluidInputSpeed(from)));
+			return Fluid.merge(stack, this.fluid, Math.min(maxThroughput, this.fluidInputSpeed(from)));
+		return null;
 	}
 	/** should be between 0 and 1. */
 	pressureOut(){
@@ -1742,15 +1745,24 @@ class Pipe extends Building {
 		return side === this.outputSide;
 	}
 	static drawer:any = function(build:Pipe, currentFrame:CurrentFrame){
+		const fillFract = build.fluid![1] / build.block.fluidCapacity;
 		Gfx.layer("buildingsUnder");
 		Gfx.fillColor("blue");
-		const fillFract = build.fluid![1] / build.block.fluidCapacity;
 		Gfx.alpha(fillFract);
 		Gfx.tRect(...build.pos.tileC, 0.65 + +build.outputSide.horizontal * 0.35, 0.65 + +build.outputSide.vertical * 0.35, RectMode.CENTER);
-		if(build.outputSide.horizontal)
-			Gfx.tRect(build.pos.tileX, build.pos.tileY + 0.9, fillFract, 0.1, RectMode.CORNER);
-		else
-			Gfx.tRect(build.pos.tileX, build.pos.tileY + 1 - fillFract, 0.1, fillFract, RectMode.CORNER);
+		Gfx.alpha(1);
+		if(settings.showExtraPipeInfo){
+			const throughputFract = build.fluidThroughput / build.block.fluidOutputSpeed;
+			if(build.outputSide.horizontal)
+				Gfx.tRect(build.pos.tileX, build.pos.tileY + 0.9, fillFract, 0.1, RectMode.CORNER);
+			else
+				Gfx.tRect(build.pos.tileX, build.pos.tileY + 1 - fillFract, 0.1, fillFract, RectMode.CORNER);
+			Gfx.fillColor("yellow");
+			if(build.outputSide.horizontal)
+				Gfx.tRect(build.pos.tileX, build.pos.tileY, throughputFract, 0.1, RectMode.CORNER);
+			else
+				Gfx.tRect(build.pos.tileX + 0.9, build.pos.tileY + 1 - throughputFract, 0.1, throughputFract, RectMode.CORNER);
+		}
 	};
 }
 

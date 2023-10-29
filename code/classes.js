@@ -643,6 +643,7 @@ let Building = (() => {
             this.fluid = null;
             this.cItemOut = 0;
             this.cFluidOut = 3;
+            this.fluidThroughput = 0;
             this.block = this.constructor;
             this.pos = Pos.fromTileCoords(x, y, false);
             if (this.block.fluidCapacity)
@@ -759,6 +760,7 @@ let Building = (() => {
         }
         dumpFluid() {
             if (this.fluid && this.fluid[1] > 0) {
+                this.fluidThroughput = 0;
                 for (let i = 0; i < Direction.number; i++) {
                     if (++this.cFluidOut > 3)
                         this.cFluidOut = 0;
@@ -766,15 +768,16 @@ let Building = (() => {
                     const build = this.buildAt(direction);
                     if (build && this.block.canOutputFluidTo(build) &&
                         this.outputsFluidToSide(direction) && build.acceptsFluidFromSide(direction.opposite)) {
-                        build.acceptFluid(this.fluid, this.fluidOutputSpeed(build), this);
-                        break;
+                        this.fluidThroughput = build.acceptFluid(this.fluid, this.fluidOutputSpeed(build), this);
+                        return;
                     }
                 }
             }
         }
         acceptFluid(stack, maxThroughput, from) {
             if (this.fluid)
-                Fluid.merge(stack, this.fluid, Math.min(maxThroughput, this.fluidInputSpeed(from)));
+                return Fluid.merge(stack, this.fluid, Math.min(maxThroughput, this.fluidInputSpeed(from)));
+            return null;
         }
         pressureOut() {
             if (!this.fluid)
@@ -1687,15 +1690,24 @@ Pipe.outputsFluids = true;
 Pipe.acceptsFluids = true;
 Pipe.fluidExtraPressure = 0.05;
 Pipe.drawer = function (build, currentFrame) {
+    const fillFract = build.fluid[1] / build.block.fluidCapacity;
     Gfx.layer("buildingsUnder");
     Gfx.fillColor("blue");
-    const fillFract = build.fluid[1] / build.block.fluidCapacity;
     Gfx.alpha(fillFract);
     Gfx.tRect(...build.pos.tileC, 0.65 + +build.outputSide.horizontal * 0.35, 0.65 + +build.outputSide.vertical * 0.35, RectMode.CENTER);
-    if (build.outputSide.horizontal)
-        Gfx.tRect(build.pos.tileX, build.pos.tileY + 0.9, fillFract, 0.1, RectMode.CORNER);
-    else
-        Gfx.tRect(build.pos.tileX, build.pos.tileY + 1 - fillFract, 0.1, fillFract, RectMode.CORNER);
+    Gfx.alpha(1);
+    if (settings.showExtraPipeInfo) {
+        const throughputFract = build.fluidThroughput / build.block.fluidOutputSpeed;
+        if (build.outputSide.horizontal)
+            Gfx.tRect(build.pos.tileX, build.pos.tileY + 0.9, fillFract, 0.1, RectMode.CORNER);
+        else
+            Gfx.tRect(build.pos.tileX, build.pos.tileY + 1 - fillFract, 0.1, fillFract, RectMode.CORNER);
+        Gfx.fillColor("yellow");
+        if (build.outputSide.horizontal)
+            Gfx.tRect(build.pos.tileX, build.pos.tileY, throughputFract, 0.1, RectMode.CORNER);
+        else
+            Gfx.tRect(build.pos.tileX + 0.9, build.pos.tileY + 1 - throughputFract, 0.1, throughputFract, RectMode.CORNER);
+    }
 };
 class Pump extends Building {
     static canBuildAt(tileX, tileY, level) {
