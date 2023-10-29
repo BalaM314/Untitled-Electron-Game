@@ -98,6 +98,9 @@ copperWire.name = Copper Wire
 stator.name = Stator
 rotor.name = Rotor
 motor.name = Motor
+
+[fluid]
+water.name = Water
 `, "base_");
 
 

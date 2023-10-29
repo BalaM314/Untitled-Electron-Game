@@ -106,6 +106,9 @@ copperWire.name = Copper Wire
 stator.name = Stator
 rotor.name = Rotor
 motor.name = Motor
+
+[fluid]
+water.name = Water
 `, "base_");
 const Direction = (() => {
     let right = { num: 0, string: "right", vec: [1, 0], horizontal: true, vertical: false };

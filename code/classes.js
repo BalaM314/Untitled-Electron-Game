@@ -676,8 +676,11 @@ let Building = (() => {
             layer ?? (layer = block.isOverlay ? "overlayBuilds" : "buildings");
             Gfx.tImage(Gfx.texture(`building/${stringifyMeta(...id)}`), pos.tileX + textureSize[1][0], pos.tileY + textureSize[1][1], ...textureSize[0], Gfx.layers[layer]);
         }
+        displayName() {
+            return bundle.get(`building.${this.block.id}.name`);
+        }
         getTooltip() {
-            return tooltip(bundle.get(`building.${this.block.id}.name`), this.tooltipProperties());
+            return tooltip(this.displayName(), this.tooltipProperties());
         }
         tooltipProperties() {
             return {
@@ -881,6 +884,12 @@ let BuildingWithRecipe = (() => {
                     this.recipe = null;
                 }
             }
+        }
+        tooltipProperties() {
+            return {
+                ...super.tooltipProperties(),
+                Progress: this.recipe ? `${this.recipe.duration - this.timer} / ${this.recipe.duration}` : ""
+            };
         }
         static makeDrawer(drawer, ...drawers) {
             return ((build, currentFrame) => {
@@ -1467,6 +1476,12 @@ class StorageBuilding extends Building {
         else
             return false;
     }
+    tooltipProperties() {
+        return {
+            ...super.tooltipProperties(),
+            Storage: `${this.inventory.length} / ${this.block.capacity}`
+        };
+    }
     export() {
         let inv = [];
         if (this.inventory) {
@@ -1525,10 +1540,11 @@ class MultiBlockSecondary extends Building {
     }
     display(currentFrame) {
     }
-    getTooltip() {
-        const id = this.controller?.block.id ?? this.block.id;
-        const description = bundle.get(`building.${id}.description`, "");
-        return `${bundle.get(`building.${id}.name`)}<div style="font-size: 70%">${description ? description + "<br>" : ""}ID: ${id}</div>`;
+    displayName() {
+        return bundle.get(`building.${this.controller?.block.id ?? this.block.id}.name`);
+    }
+    tooltipProperties() {
+        return this.controller?.tooltipProperties() ?? {};
     }
     update() {
         if (!(this.controller instanceof MultiBlockController)) {
@@ -1639,6 +1655,13 @@ class Tank extends Building {
         const fillLevel = this.fluid[1] / this.block.fluidCapacity;
         return constrain(map(fillLevel, this.block.pressureInMaxFill, 1, 0, 1), this.block.pressureInMin, 1);
     }
+    tooltipProperties() {
+        return {
+            ...super.tooltipProperties(),
+            Storage: `${round(this.fluid[1], 3)} / ${this.block.fluidCapacity}`,
+            Fluid: this.fluid[0] ? bundle.get(`fluid.${this.fluid[0].id}.name`, "") : "Empty"
+        };
+    }
 }
 Tank.fluidCapacity = 600;
 Tank.fluidOutputSpeed = 10;
@@ -1680,6 +1703,14 @@ class Pipe extends Building {
     }
     outputsFluidToSide(side) {
         return side === this.outputSide;
+    }
+    tooltipProperties() {
+        return {
+            ...super.tooltipProperties(),
+            "Fill level": `${round(this.fluid[1], 3)} / ${this.block.fluidCapacity}`,
+            Fluid: this.fluid[0] ? bundle.get(`fluid.${this.fluid[0].id}.name`, "") : "Empty",
+            Throughput: round(this.fluidThroughput, 5).toString()
+        };
     }
 }
 Pipe.fluidCapacity = 5;

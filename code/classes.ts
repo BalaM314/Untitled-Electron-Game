@@ -776,8 +776,11 @@ class Building {
 			Gfx.layers[layer]
 		);
 	}
+	displayName(){
+		return bundle.get(`building.${this.block.id}.name`);
+	}
 	getTooltip(){
-		return tooltip(bundle.get(`building.${this.block.id}.name`), this.tooltipProperties());
+		return tooltip(this.displayName(), this.tooltipProperties());
 	}
 	tooltipProperties():Record<string, string> {
 		return {
@@ -982,6 +985,12 @@ class BuildingWithRecipe extends Building {
 				this.recipe = null;
 			}
 		}
+	}
+	tooltipProperties(){
+		return {
+			...super.tooltipProperties(),
+			Progress: this.recipe ? `${this.recipe.duration - this.timer} / ${this.recipe.duration}` : ""
+		};
 	}
 	static makeDrawer<T extends BuildingWithRecipe>(drawer:(build:T, e:AnimationData, currentFrame:CurrentFrame) => void, ...drawers:BlockDrawer<T>[]){
 		return ((build:T, currentFrame:CurrentFrame) => {
@@ -1508,6 +1517,12 @@ class StorageBuilding extends Building {
 			return true;
 		} else return false;
 	}
+	tooltipProperties(){
+		return {
+			...super.tooltipProperties(),
+			Storage: `${this.inventory.length} / ${this.block.capacity}`
+		};
+	}
 	export():BuildingData {
 		let inv:ItemData[] = [];
 		if(this.inventory){
@@ -1565,10 +1580,11 @@ class MultiBlockSecondary extends Building {
 	display(currentFrame:CurrentFrame){
 		//Do nothing, the controller is responsible for displaying
 	}
-	getTooltip(){
-		const id = this.controller?.block.id ?? this.block.id;
-		const description = bundle.get(`building.${id}.description`, "");
-		return `${bundle.get(`building.${id}.name`)}<div style="font-size: 70%">${description ? description + "<br>" : ""}ID: ${id}</div>`;
+	displayName(){
+		return bundle.get(`building.${this.controller?.block.id ?? this.block.id}.name`);
+	}
+	tooltipProperties(){
+		return this.controller?.tooltipProperties() ?? {};
 	}
 	update(){
 		if(!(this.controller instanceof MultiBlockController)){
@@ -1709,6 +1725,13 @@ class Tank extends Building {
 		//scale pressure to 20% of the tank's capacity, so if it is more than 20% full the tank will output at full speed
 		return constrain(map(fillLevel, this.block.pressureInMaxFill, 1, 0, 1), this.block.pressureInMin, 1);
 	}
+	tooltipProperties(){
+		return {
+			...super.tooltipProperties(),
+			Storage: `${round(this.fluid![1], 3)} / ${this.block.fluidCapacity}`,
+			Fluid: this.fluid![0] ? bundle.get(`fluid.${this.fluid![0].id}.name`, "") : "Empty"
+		};
+	}
 	static drawer:any = function(build:Tank, currentFrame:CurrentFrame){
 		Gfx.layer("buildingsUnder");
 		Gfx.fillColor("blue");
@@ -1743,6 +1766,14 @@ class Pipe extends Building {
 	}
 	outputsFluidToSide(side:Direction){
 		return side === this.outputSide;
+	}
+	tooltipProperties(){
+		return {
+			...super.tooltipProperties(),
+			"Fill level": `${round(this.fluid![1], 3)} / ${this.block.fluidCapacity}`,
+			Fluid: this.fluid![0] ? bundle.get(`fluid.${this.fluid![0].id}.name`, "") : "Empty",
+			Throughput: round(this.fluidThroughput, 5).toString()
+		};
 	}
 	static drawer:any = function(build:Pipe, currentFrame:CurrentFrame){
 		const fillFract = build.fluid![1] / build.block.fluidCapacity;
