@@ -267,9 +267,17 @@ class Level {
 				//and it's under the cursor
 				(Math.abs(building.item.pos.pixelX - x) < consts.ITEM_SIZE / 2) &&
 				Math.abs(building.item.pos.pixelY - y) < consts.ITEM_SIZE / 2
-			) return names.item[building.item.id]; //tooltip for the item
+			){
+				const id = building.item.id;
+				const description = bundle.get(`item.${id}.description`, "");
+				return `${bundle.get(`item.${id}.name`)}<div style="font-size: 70%">${description ? description + "<br>" : ""}ID: ${id}</div>`;
+			}
 			else return building.getTooltip();
-		} else return names.tile[this.tileAtByPixel(x, y)]; //tooltip for the tile
+		} else {
+			const tileID = this.tileAtByPixel(x, y);
+			const description = bundle.get(`tile.${tileID}.description`, "");
+			return `${bundle.get(`tile.${tileID}.name`)}<div style="font-size: 70%">${description ? description + "<br>" : ""}ID: ${tileID}</div>`;
+		}
 	}
 	export():LevelData {
 		//Exports the level's data to JSON.
@@ -765,7 +773,8 @@ class Building {
 		);
 	}
 	getTooltip(){
-		return names.building[this.block.id];
+		const description = bundle.get(`building.${this.block.id}.description`, "");
+		return `${bundle.get(`building.${this.block.id}.name`)}<div style="font-size: 70%">${description ? description + "<br>" : ""}ID: ${this.block.id}</div>`;
 	}
 	display(currentFrame:CurrentFrame, layer:(keyof typeof Gfx.layers) = this.block.isOverlay ? "overlayBuilds" : "buildings"){
 		Gfx.layer(layer);
@@ -1548,8 +1557,9 @@ class MultiBlockSecondary extends Building {
 		//Do nothing, the controller is responsible for displaying
 	}
 	getTooltip(){
-		if(this.controller) return names.building[this.controller.block.id];
-		else return names.building[this.block.id];
+		const id = this.controller?.block.id ?? this.block.id;
+		const description = bundle.get(`building.${id}.description`, "");
+		return `${bundle.get(`building.${id}.name`)}<div style="font-size: 70%">${description ? description + "<br>" : ""}ID: ${id}</div>`;
 	}
 	update(){
 		if(!(this.controller instanceof MultiBlockController)){

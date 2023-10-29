@@ -396,11 +396,11 @@ let state: {
 				placedBuilding.ID, currentFrame
 			);
 			if(keybinds.display.show_tooltip.isHeld()){
-				tooltipbox.innerText = level1.getTooltip(...Camera.unproject(...Input.mouse));
+				tooltipbox.innerHTML = level1.getTooltip(...Camera.unproject(...Input.mouse));
 				tooltipbox.style.setProperty("--x", `${Input.mouseX}px`);
 				tooltipbox.style.setProperty("--y", `${Input.mouseY}px`);
 			} else {
-				tooltipbox.innerText = "";
+				tooltipbox.innerHTML = "";
 				tooltipbox.style.setProperty("--x", "-1000px");
 				tooltipbox.style.setProperty("--y", "-1000px");
 			}
