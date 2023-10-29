@@ -92,6 +92,8 @@ const Direction: {
 	down: Direction;
 	left: Direction;
 	up: Direction;
+	all: Direction[];
+	number: number;
 	[Symbol.iterator](): IterableIterator<Direction>;
 } = (() => {
 	let right:any = { num: 0, string: "right", vec: [1, 0]};
@@ -109,7 +111,9 @@ const Direction: {
 			yield down;
 			yield left;
 			yield up;
-		}
+		},
+		all: [right, down, left, up],
+		number: 4
 	};
 })();
 

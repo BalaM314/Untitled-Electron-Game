@@ -729,6 +729,10 @@ class Building {
 	item: Item | null = null;
 	fluid: FluidStack | null = null;
 	pos:Pos;
+	/** Counter that specifies which direction to start at when trying to dump items. Used for even distribution. */
+	cItemOut = 0;
+	/** Counter that specifies which direction to start at when trying to dump fluids. Used for even distribution. */
+	cFluidOut = 3;
 	//https://www.typescriptlang.org/play?#code/CYUwxgNghgTiAEAzArgOzAFwJYHtXzgHMsBnDEGAHgCF4QAPc1YE+DATwAcQdF5rkWCMCypCAPgAUWYAC4yMUYQA08TDhizqqzjBycSsgN4AoeOfgBtAArxR8ANYh2vfgF0A-LP423AbhMAXwBKLQCAenCAFQALUiQ0TFx8GKhWACMQEHwsAFtOCBBc7PJgeChmeAB3DQdWRGgqwpISCHZVKAgMGJxkQhi2GIQwHFB4CBwcOoIQTrbqkCwYYAA6ExNIgEEc1DIKsARXbvjINNY4XRASEtYoeBIlQvh0wWElO1QAWhqYYTXTlr8V4iMTwUwWe4YKDYMB2OQKd4AXngACI0KgoMUyi8hCDCCiAhC9jD7lgAF4gWSoZC5TIweDIgCMhIs6QmYAcDMGpBWI12GBgyHU9LSbC4PD4AlxShZ5kIIAwAElgJJguCIRY4BhkDB8McSCs2TgOSsZLL4IEzBZkJxgNCQKqjJbLSYAawAMJ4ABuzg0dEY2RYQOloPV5mJWFhJG4IDk1NpFC5zKt5kiiuqFQwbBw8FSPvgIkQiAoJTF3FYrj5PpcMFYVSw3QLWCLJdQWejWRYKfgkQAsuwkEsyOVOLocFAwAMqqKMDmwHB7eV4KgQFU1NBAQwmHi1N7ffT6427oXi3A2-cY2UvZ1kAh7N076gG1hOuSKKoXlnutCCzgrqgAHIs1Aa4YHzWdngQO43Q+QYEEICZ0k6e4Rm4NYITTNQF1KJciFIch6RQdBsDwao4kneBkGuVgAHl0gAK3ADAVjOLBCD1HN5RXGBFwfdcznKLNBTbPIoMqMgNDvLN7GgvAmCzXIoE4dCLEiWJ4h+aZuBgYtMHmRBRBAD9kC-IY4AA1h6KorM8DvFpb1kbtMJXWNuVYCBDMgiYqhU8wjQ5ABCbwOG4VxPVQasNHNLZ0hwfN7yGYM3lBN1VCqVIs3TBcIHmadz3iFFRFPOCy0OPh9V5PAFCFWcYBRYysyicUSHnLBOGk1BT1YBtylYFEADFEhI1AUTIyMBniKiQGaEgOkqdNA0ozhcygL13gg1CB31Z4cCECgCkXDyV3KVB2GndhfKWu1yEdbsIQq-yHBWDtY3NZ11hg3tDPpLdA1YKVksIMFuwjWFckMgBlS8qRpOkuQANgABnNR6gtK1wvu480bWuh01TuiwHvZJ7wZXKHOzeoJ1jwsgKEkFFWhwKp6vgcLIpgVQjAvTtvERlYAFYLWCAIaYI+nEDSDAWbZ-dOe52NvAAZiFkWQGIWmYHp9I2M+UmKBZzH3zBUkKW8RkVaAA
 	block = this.constructor as typeof Building;
 	constructor(x:number, y:number, public readonly meta:BuildingMeta, public level:Level){
@@ -869,12 +873,17 @@ class Building {
 	}
 	dumpFluid(){
 		if(this.fluid && this.fluid[1] > 0){
-			for(const direction of Direction){
+			for(let i = 0; i < Direction.number; i ++){
+				if(++this.cFluidOut > 3) this.cFluidOut = 0;
+				const direction = Direction.all[this.cFluidOut];
 				const build = this.buildAt(direction);
 				if(
 					build && this.block.canOutputFluidTo(build) &&
 					this.outputsFluidToSide(direction) && build.acceptsFluidFromSide(direction.opposite)
-				) build.acceptFluid(this.fluid, this.fluidOutputSpeed(build), this);
+				){
+					build.acceptFluid(this.fluid, this.fluidOutputSpeed(build), this);
+					break;
+				}
 			}
 		}
 	}
@@ -1671,8 +1680,9 @@ class ItemModule {
 
 
 class Tank extends Building {
-	static fluidCapacity = 200;
+	static fluidCapacity = 600;
 	static fluidOutputSpeed = 10;
+	static fluidInputSpeed = 10;
 	/** Minimum input pressure, even if the tank is empty the input pressure will be at least this much. */
 	static pressureInMin = 0;
 	/** pressure in uses this fraction of the tank's capacity for scaling. If the tank's fill level is below this amount, the output pressure is `pressureInMin`. */

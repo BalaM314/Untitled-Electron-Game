@@ -65,7 +65,9 @@ const Direction = (() => {
             yield down;
             yield left;
             yield up;
-        }
+        },
+        all: [right, down, left, up],
+        number: 4
     };
 })();
 var triggerType;

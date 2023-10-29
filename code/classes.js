@@ -641,6 +641,8 @@ let Building = (() => {
             this.level = level;
             this.item = null;
             this.fluid = null;
+            this.cItemOut = 0;
+            this.cFluidOut = 3;
             this.block = this.constructor;
             this.pos = Pos.fromTileCoords(x, y, false);
             if (this.block.fluidCapacity)
@@ -757,11 +759,16 @@ let Building = (() => {
         }
         dumpFluid() {
             if (this.fluid && this.fluid[1] > 0) {
-                for (const direction of Direction) {
+                for (let i = 0; i < Direction.number; i++) {
+                    if (++this.cFluidOut > 3)
+                        this.cFluidOut = 0;
+                    const direction = Direction.all[this.cFluidOut];
                     const build = this.buildAt(direction);
                     if (build && this.block.canOutputFluidTo(build) &&
-                        this.outputsFluidToSide(direction) && build.acceptsFluidFromSide(direction.opposite))
+                        this.outputsFluidToSide(direction) && build.acceptsFluidFromSide(direction.opposite)) {
                         build.acceptFluid(this.fluid, this.fluidOutputSpeed(build), this);
+                        break;
+                    }
                 }
             }
         }
@@ -1633,8 +1640,9 @@ class Tank extends Building {
         return constrain(map(fillLevel, this.block.pressureInMaxFill, 1, 0, 1), this.block.pressureInMin, 1);
     }
 }
-Tank.fluidCapacity = 200;
+Tank.fluidCapacity = 600;
 Tank.fluidOutputSpeed = 10;
+Tank.fluidInputSpeed = 10;
 Tank.pressureInMin = 0;
 Tank.pressureInMaxFill = 0.8;
 Tank.pressureOutMin = 0.05;
