@@ -81,8 +81,10 @@ tank.name = Tank
 [item]
 null.name = Debug Item
 coalOre.name = Coal Ore
+coalOre.description = Can be converted into Coal by a Furnace.
 coal.name = Coal
 ironOre.name = Iron Ore
+ironOre.description = Can be smelted into Iron by a Furnace.
 ironIngot.name = Iron Ingot
 ironPlate.name = Iron Plate
 ironRod.name = Iron Rod
@@ -90,6 +92,7 @@ steelIngot.name = Steel Ingot
 steelPlate.name = Steel Plate
 steelRod.name = Steel Rod
 copperOre.name = Copper Ore
+copperOre.description = Can be smelted into Copper by a Furnace.
 copperIngot.name = Copper Ingot
 copperWire.name = Copper Wire
 stator.name = Stator
@@ -281,6 +284,7 @@ let settings = {
 	alwaysLoadSave: true,
 	autoSave: true,
 	showExtraPipeInfo: false,
+	showIDsInTooltips: false,
 };
 let Game: {
 	texturesReady: boolean;

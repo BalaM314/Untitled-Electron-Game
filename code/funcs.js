@@ -451,6 +451,18 @@ function extend() {
 function crash(message = `Unreachable code was reached!`) {
     throw new Error(message);
 }
+function tooltip(title, properties) {
+    const props = [];
+    for (const [k, v] of Object.entries(properties)) {
+        if (v.trim().length > 0) {
+            if (k.startsWith("_"))
+                props.push(v.trim());
+            else
+                props.push(`${k}: ${v.trim()}`);
+        }
+    }
+    return `${title}<div style="font-size: 70%;">${props.join("<br/>")}</div>`;
+}
 function makeRebindButton(y, buttonID, buttonName, defaultKey) {
     const keybind = keybinds[buttonID[0]]?.[buttonID[1]];
     if (!keybind)

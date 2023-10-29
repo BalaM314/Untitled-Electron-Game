@@ -249,16 +249,20 @@ class Level {
                 (Math.abs(building.item.pos.pixelX - x) < consts.ITEM_SIZE / 2) &&
                 Math.abs(building.item.pos.pixelY - y) < consts.ITEM_SIZE / 2) {
                 const id = building.item.id;
-                const description = bundle.get(`item.${id}.description`, "");
-                return `${bundle.get(`item.${id}.name`)}<div style="font-size: 70%">${description ? description + "<br>" : ""}ID: ${id}</div>`;
+                return tooltip(bundle.get(`item.${id}.name`), {
+                    _description: bundle.get(`item.${id}.description`, ""),
+                    id: settings.showIDsInTooltips ? id : ""
+                });
             }
             else
                 return building.getTooltip();
         }
         else {
-            const tileID = this.tileAtByPixel(x, y);
-            const description = bundle.get(`tile.${tileID}.description`, "");
-            return `${bundle.get(`tile.${tileID}.name`)}<div style="font-size: 70%">${description ? description + "<br>" : ""}ID: ${tileID}</div>`;
+            const id = this.tileAtByPixel(x, y);
+            return tooltip(bundle.get(`tile.${id}.name`), {
+                _description: bundle.get(`tile.${id}.description`, ""),
+                id: settings.showIDsInTooltips ? id : ""
+            });
         }
     }
     export() {
@@ -673,8 +677,13 @@ let Building = (() => {
             Gfx.tImage(Gfx.texture(`building/${stringifyMeta(...id)}`), pos.tileX + textureSize[1][0], pos.tileY + textureSize[1][1], ...textureSize[0], Gfx.layers[layer]);
         }
         getTooltip() {
-            const description = bundle.get(`building.${this.block.id}.description`, "");
-            return `${bundle.get(`building.${this.block.id}.name`)}<div style="font-size: 70%">${description ? description + "<br>" : ""}ID: ${this.block.id}</div>`;
+            return tooltip(bundle.get(`building.${this.block.id}.name`), this.tooltipProperties());
+        }
+        tooltipProperties() {
+            return {
+                _description: bundle.get(`building.${this.block.id}.description`, ""),
+                id: settings.showIDsInTooltips ? this.block.id : ""
+            };
         }
         display(currentFrame, layer = this.block.isOverlay ? "overlayBuilds" : "buildings") {
             Gfx.layer(layer);

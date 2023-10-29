@@ -534,6 +534,17 @@ function crash(message = `Unreachable code was reached!`):never {
 	throw new Error(message);
 }
 
+function tooltip(title:string, properties:Record<string, string>){
+	const props:string[] = [];
+	for(const [k, v] of Object.entries(properties)){
+		if(v.trim().length > 0){
+			if(k.startsWith("_")) props.push(v.trim());
+			else props.push(`${k}: ${v.trim()}`);
+		}
+	}
+	return `${title}<div style="font-size: 70%;">${props.join("<br/>")}</div>`;
+}
+
 function makeRebindButton(y:number, buttonID: [string, string], buttonName:string, defaultKey: string){
 	const keybind = (<any>keybinds)[buttonID[0]]?.[buttonID[1]] as Keybind | null;
 	if(!keybind) throw new Error(`Invalid rebind button ${buttonID[0]}.${buttonID[1]}`);
