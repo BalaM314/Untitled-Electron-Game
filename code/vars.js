@@ -4,7 +4,15 @@ class I18NBundle {
         this.mapping = new Map(text);
     }
     static read(text, prefix) {
-        return new I18NBundle(text.split("\n").map((l) => {
+        const entries = [];
+        let _type = null;
+        for (const l of text.split(/\r?\n/g).map(l => l.trim())) {
+            if (l.match(/^\[\w+\]$/)) {
+                _type = l.slice(1, -1);
+                continue;
+            }
+            else if (l.length == 0)
+                continue;
             const line = l.split(/ ?= ?/);
             if (line.length == 2 && line[0].length > 0 && line[1].length > 0) {
                 const [key, value] = line;
@@ -12,71 +20,78 @@ class I18NBundle {
                 if (parts.length == 3 && parts.every(p => p.length > 0)) {
                     const [type, name, prop] = parts;
                     if (prefix)
-                        return [`${type}.${prefix}${name}.${prop}`, value];
+                        entries.push([`${type}.${prefix}${name}.${prop}`, value]);
                     else
-                        return [key, value];
+                        entries.push([key, value]);
+                }
+                else if (parts.length == 2 && parts.every(p => p.length > 0) && _type != null) {
+                    const [name, prop] = parts;
+                    if (prefix)
+                        entries.push([`${_type}.${prefix}${name}.${prop}`, value]);
+                    else
+                        entries.push([`${_type}.${name}.${prop}`, value]);
                 }
                 else
                     crash(`I18NBundle: Invalid key "${key}"`);
             }
             else
                 crash(`I18NBundle: Invalid line "${l}"`);
-        }));
+        }
+        return new I18NBundle(entries);
     }
     get(key, fallback = `???${key}???`) {
         return this.mapping.get(key) ?? fallback;
     }
 }
-const names = {
-    tile: {
-        "base_grass": "Grass",
-        "base_stone": "Stone",
-        "base_water": "Water",
-        "base_ore_coal": "Coal Ore Node",
-        "base_ore_iron": "Iron Ore Node",
-        "base_ore_copper": "Copper Ore Node",
-        "base_null": "Null Tile"
-    },
-    building: {
-        "base_conveyor": "Conveyor Belt",
-        "base_miner": "Miner",
-        "base_trash_can": "Trash Can",
-        "base_furnace": "Furnace",
-        "base_extractor": "Extractor",
-        "base_chest": "Storage",
-        "base_alloy_smelter": "Alloy Smelter",
-        "base_resource_acceptor": "Resource Acceptor",
-        "base_wiremill": "Wiremill",
-        "base_compressor": "Compressor",
-        "base_lathe": "Lathe",
-        "base_multiblock_secondary": "[ERR!] Multiblock Secondary",
-        "base_assembler": "Assembler",
-        "base_null": "[ERR!] No Building",
-        "base_arc_tower": "Arc Tower",
-        "base_power_source": "Power Source",
-        "base_pipe": "Pipe",
-        "base_pump": "Pump",
-        "base_tank": "Tank",
-    },
-    item: {
-        "base_null": "Debug Item",
-        "base_coalOre": "Coal Ore",
-        "base_coal": "Coal",
-        "base_ironOre": "Iron Ore",
-        "base_ironIngot": "Iron Ingot",
-        "base_ironPlate": "Iron Plate",
-        "base_ironRod": "Iron Rod",
-        "base_steelIngot": "Steel Ingot",
-        "base_steelPlate": "Steel Plate",
-        "base_steelRod": "Steel Rod",
-        "base_copperOre": "Copper Ore",
-        "base_copperIngot": "Copper Ingot",
-        "base_copperWire": "Copper Wire",
-        "base_stator": "Stator",
-        "base_rotor": "Rotor",
-        "base_motor": "Motor"
-    }
-};
+const bundle = I18NBundle.read(`\
+[tile]
+grass.name = Grass
+stone.name = Stone
+water.name = Water
+ore_coal.name = Coal Ore Node
+ore_iron.name = Iron Ore Node
+ore_copper.name = Copper Ore Node
+null.name = [ERR!] Null Tile
+
+[building]
+conveyor.name = Conveyor Belt
+miner.name = Miner
+trash_can.name = Trash Can
+furnace.name = Furnace
+extractor.name = Extractor
+chest.name = Storage
+alloy_smelter.name = Alloy Smelter
+resource_acceptor.name = Resource Acceptor
+wiremill.name = Wiremill
+compressor.name = Compressor
+lathe.name = Lathe
+multiblock_secondary.name = [ERR!] Multiblock Secondary
+assembler.name = Assembler
+null.name = [ERR!] No Building
+arc_tower.name = Arc Tower
+power_source.name = Power Source
+pipe.name = Pipe
+pump.name = Pump
+tank.name = Tank
+
+[item]
+null.name = Debug Item
+coalOre.name = Coal Ore
+coal.name = Coal
+ironOre.name = Iron Ore
+ironIngot.name = Iron Ingot
+ironPlate.name = Iron Plate
+ironRod.name = Iron Rod
+steelIngot.name = Steel Ingot
+steelPlate.name = Steel Plate
+steelRod.name = Steel Rod
+copperOre.name = Copper Ore
+copperIngot.name = Copper Ingot
+copperWire.name = Copper Wire
+stator.name = Stator
+rotor.name = Rotor
+motor.name = Motor
+`, "base_");
 const Direction = (() => {
     let right = { num: 0, string: "right", vec: [1, 0], horizontal: true, vertical: false };
     let down = { num: 1, string: "down", vec: [0, 1], horizontal: false, vertical: true };
