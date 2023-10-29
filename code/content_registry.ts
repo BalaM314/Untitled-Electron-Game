@@ -1,5 +1,6 @@
 
-class ContentRegistry<K, T extends new (...args:any[]) => {}> {
+/** Content registry where the content is a class. */
+class ContentRegistryC<K, T extends new (...args:any[]) => {}> {
 	private contentMap = new Map<K, T>();
 	constructor(){}
 	register<B extends T>(id:K, ctor:B, props:{
@@ -16,6 +17,24 @@ class ContentRegistry<K, T extends new (...args:any[]) => {}> {
 	}
 }
 
+/** Content registry for when the content is a class instance. */
+class ContentRegistryI<K extends string, T extends Content<string>> {
+	private stringContentMap = new Map<K, T>();
+	private numberContentMap = [] as T[];
+	register(content:T){
+		this.stringContentMap.set(content.id as K, content);
+		this.numberContentMap[content.nid] = content;
+	}
+	get(id:K):T;
+	get(id:number):T;
+	get(id:null):null;
+	get(id:K | number | null):T | null;
+	get(id:K | number | null):T | null {
+		if(typeof id == "number") return this.numberContentMap[id] ?? crash(`No content with id ${id} exists.`);
+		else if(id == null) return null;
+		else return this.stringContentMap.get(id) ?? crash(`No content with id ${id} exists.`);
+	}
+}
 
 const recipes:Recipes = {
 	base_mining: {
@@ -115,7 +134,10 @@ const recipes:Recipes = {
 	}
 };
 
-const Buildings = new ContentRegistry<RawBuildingID, typeof Building>();
+const Fluids = new ContentRegistryI<FluidID, Fluid>();
+Fluids.register(new Fluid("base_water"));
+
+const Buildings = new ContentRegistryC<RawBuildingID, typeof Building>();
 Buildings.register("base_conveyor", Conveyor);
 Buildings.register("base_miner", Miner);
 Buildings.register("base_trash_can", TrashCan);
@@ -135,5 +157,5 @@ Buildings.register("base_assembler", MultiBlockController, { recipeType: recipes
 Buildings.register("base_arc_tower", ArcTower);
 Buildings.register("base_power_source", PowerSource);
 Buildings.register("base_pipe", Pipe);
-Buildings.register("base_pump", Pump);
+Buildings.register("base_pump", Pump, { outputFluid: Fluids.get("base_water") });
 Buildings.register("base_tank", Tank);

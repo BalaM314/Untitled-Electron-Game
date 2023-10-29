@@ -78,6 +78,8 @@ type ItemID =
 	"base_motor"
 ;
 
+type FluidID = "base_water";
+
 type Direction = {
 	num: number;
 	opposite: Direction;

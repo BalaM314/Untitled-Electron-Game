@@ -786,7 +786,7 @@ let Building = (() => {
             if (build instanceof PowerBuilding)
                 level.grid.addBuild(build);
             if (buildingData.fluid && this.fluidCapacity)
-                build.fluid = [Fluid.byID(buildingData.fluid[0]), buildingData.fluid[1], this.fluidCapacity];
+                build.fluid = [Fluids.get(buildingData.fluid[0]), buildingData.fluid[1], this.fluidCapacity];
             return build;
         }
     };
@@ -1611,46 +1611,6 @@ class ItemModule {
     merge(from, to) {
     }
 }
-class Fluid {
-    constructor(name) {
-        this.name = name;
-        this.id = Fluid._id++;
-        Fluid.all[this.id] = this;
-    }
-    static merge(from, to, maxThroughput = Infinity) {
-        if (from[0] == null || from[1] == 0)
-            return 0;
-        if (to[0] === null)
-            to[0] = from[0];
-        else if (from[0] !== to[0])
-            return 0;
-        const remainingSpace = to[2] - to[1];
-        const amountTransferred = Math.min(remainingSpace, from[1], maxThroughput);
-        from[1] -= amountTransferred;
-        to[1] += amountTransferred;
-        return amountTransferred;
-    }
-    static fill(stack, type, amount) {
-        if (type == null || amount == 0)
-            return 0;
-        if (stack[0] === null)
-            stack[0] = type;
-        else if (stack[0] !== type)
-            return 0;
-        const remainingSpace = stack[2] - stack[1];
-        const amountTransferred = Math.min(remainingSpace, amount);
-        stack[1] += amountTransferred;
-        return amountTransferred;
-    }
-    static byID(id) {
-        return id ? Fluid.all[id] : null;
-    }
-}
-Fluid._id = 1;
-Fluid.all = [];
-const Fluids = {
-    water: new Fluid("water"),
-};
 class Tank extends Building {
     constructor(x, y, meta, level) {
         super(x, y, meta, level);
@@ -1725,7 +1685,7 @@ class Pump extends Building {
         return level.tileAtByTile(tileX, tileY) == "base_water";
     }
     update(currentFrame) {
-        Fluid.fill(this.fluid, Fluids.water, this.block.productionSpeed);
+        Fluid.fill(this.fluid, this.block.outputFluid, this.block.productionSpeed);
         super.update(currentFrame);
     }
 }

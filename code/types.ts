@@ -138,7 +138,7 @@ interface ItemData {
 	y: number;
 	id: ItemID;
 }
-type FluidData = [fluidID:number | null, amount:number];
+type FluidData = [fluidID:FluidID | null, amount:number];
 declare let noise: {
 	seed: (seed:number) => void;
 	perlin2: (x:number, y:number) => number;

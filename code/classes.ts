@@ -900,7 +900,7 @@ class Building {
 		const build = new this(buildingData.x, buildingData.y, buildingData.meta, level);
 		if(buildingData.item) build.item = Item.read(buildingData.item);
 		if(build instanceof PowerBuilding) level.grid.addBuild(build);
-		if(buildingData.fluid && this.fluidCapacity) build.fluid = [Fluid.byID(buildingData.fluid[0]), buildingData.fluid[1], this.fluidCapacity];
+		if(buildingData.fluid && this.fluidCapacity) build.fluid = [Fluids.get(buildingData.fluid[0]), buildingData.fluid[1], this.fluidCapacity];
 		return build;
 	}
 }
@@ -1621,9 +1621,6 @@ class MultiBlockController extends BuildingWithRecipe {
 }
 
 
-/**A combination of an ItemID and an amount. The amount is frequently mutated by function calls. */
-type ItemStack = [id:ItemID, amount:number];
-
 class ItemModule {
 	storage:Partial<Record<ItemID, number>> = {};
 	constructor(public maxCapacity:number = 10){}
@@ -1660,51 +1657,6 @@ class ItemModule {
 	}
 }
 
-type FluidStack = [type:Fluid | null, amount:number, capacity:number];
-class Fluid {
-
-	id:number;
-
-	private static _id = 1;
-	static all:Fluid[] = [];
-	constructor(
-		public name:string,
-	){
-		this.id = Fluid._id ++;
-		Fluid.all[this.id] = this;
-	}
-	/**
-	 * Moves fluid from `from` to `to`.
-	 * @returns the amount of fluid moved.
-	 */
-	static merge(from:FluidStack, to:FluidStack, maxThroughput = Infinity):number {
-		if(from[0] == null || from[1] == 0) return 0; //from is empty
-		if(to[0] === null) to[0] = from[0]; //set fluid
-		else if(from[0] !== to[0]) return 0; //fluids are different
-		const remainingSpace = to[2] - to[1];
-		const amountTransferred = Math.min(remainingSpace, from[1], maxThroughput);
-		from[1] -= amountTransferred;
-		to[1] += amountTransferred;
-		return amountTransferred;
-	}
-	static fill(stack:FluidStack, type:Fluid, amount:number){
-		if(type == null || amount == 0) return 0;
-		if(stack[0] === null) stack[0] = type; //set fluid
-		else if(stack[0] !== type) return 0; //different fluid
-		const remainingSpace = stack[2] - stack[1];
-		const amountTransferred = Math.min(remainingSpace, amount);
-		stack[1] += amountTransferred;
-		return amountTransferred;
-	}
-	static byID(id:number | null):Fluid | null {
-		//TODO proper content loading, put this on Fluids
-		return id ? Fluid.all[id] : null;
-	}
-}
-
-const Fluids = {
-	water: new Fluid("water"),
-}
 
 class Tank extends Building {
 	static fluidCapacity = 200;
@@ -1788,6 +1740,7 @@ class Pump extends Building {
 	static fluidOutputSpeed = 10;
 	static fluidCapacity = 100;
 	static outputsFluids = true;
+	static outputFluid:Fluid;
 	block!: typeof Pump;
 	constructor(x:number, y:number, meta:BuildingMeta, level:Level){
 		super(x, y, meta, level);
@@ -1797,7 +1750,7 @@ class Pump extends Building {
 		return level.tileAtByTile(tileX, tileY) == "base_water";
 	}
 	update(currentFrame:CurrentFrame){
-		Fluid.fill(this.fluid!, Fluids.water, this.block.productionSpeed);
+		Fluid.fill(this.fluid!, this.block.outputFluid, this.block.productionSpeed);
 		super.update(currentFrame);
 	}
 	static drawer:any = function(build:Pump, currentFrame:CurrentFrame){

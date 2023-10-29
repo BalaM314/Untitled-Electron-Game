@@ -1,5 +1,5 @@
 "use strict";
-class ContentRegistry {
+class ContentRegistryC {
     constructor() {
         this.contentMap = new Map();
     }
@@ -13,6 +13,24 @@ class ContentRegistry {
     }
     get(id) {
         return this.contentMap.get(id) ?? (() => { throw new Error(`Object with id ${id} does not exist.`); })();
+    }
+}
+class ContentRegistryI {
+    constructor() {
+        this.stringContentMap = new Map();
+        this.numberContentMap = [];
+    }
+    register(content) {
+        this.stringContentMap.set(content.id, content);
+        this.numberContentMap[content.nid] = content;
+    }
+    get(id) {
+        if (typeof id == "number")
+            return this.numberContentMap[id] ?? crash(`No content with id ${id} exists.`);
+        else if (id == null)
+            return null;
+        else
+            return this.stringContentMap.get(id) ?? crash(`No content with id ${id} exists.`);
     }
 }
 const recipes = {
@@ -112,7 +130,9 @@ const recipes = {
         ]
     }
 };
-const Buildings = new ContentRegistry();
+const Fluids = new ContentRegistryI();
+Fluids.register(new Fluid("base_water"));
+const Buildings = new ContentRegistryC();
 Buildings.register("base_conveyor", Conveyor);
 Buildings.register("base_miner", Miner);
 Buildings.register("base_trash_can", TrashCan);
@@ -132,5 +152,5 @@ Buildings.register("base_assembler", MultiBlockController, { recipeType: recipes
 Buildings.register("base_arc_tower", ArcTower);
 Buildings.register("base_power_source", PowerSource);
 Buildings.register("base_pipe", Pipe);
-Buildings.register("base_pump", Pump);
+Buildings.register("base_pump", Pump, { outputFluid: Fluids.get("base_water") });
 Buildings.register("base_tank", Tank);
