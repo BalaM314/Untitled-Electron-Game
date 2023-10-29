@@ -1744,7 +1744,13 @@ class Pipe extends Building {
 	static drawer:any = function(build:Pipe, currentFrame:CurrentFrame){
 		Gfx.layer("buildingsUnder");
 		Gfx.fillColor("blue");
-		Gfx.tRect(build.pos.tileX, build.pos.tileY + 0.45, build.fluid![1] / build.block.fluidCapacity, 0.1, RectMode.CORNER);
+		const fillFract = build.fluid![1] / build.block.fluidCapacity;
+		Gfx.alpha(fillFract);
+		Gfx.tRect(...build.pos.tileC, 0.65 + +build.outputSide.horizontal * 0.35, 0.65 + +build.outputSide.vertical * 0.35, RectMode.CENTER);
+		if(build.outputSide.horizontal)
+			Gfx.tRect(build.pos.tileX, build.pos.tileY + 0.9, fillFract, 0.1, RectMode.CORNER);
+		else
+			Gfx.tRect(build.pos.tileX, build.pos.tileY + 1 - fillFract, 0.1, fillFract, RectMode.CORNER);
 	};
 }
 

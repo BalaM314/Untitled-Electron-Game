@@ -85,6 +85,8 @@ type Direction = {
 	opposite: Direction;
 	string: string;
 	vec: PosT;
+	horizontal: boolean;
+	vertical: boolean;
 }
 //I miss java enums
 const Direction: {
@@ -96,10 +98,10 @@ const Direction: {
 	number: number;
 	[Symbol.iterator](): IterableIterator<Direction>;
 } = (() => {
-	let right:any = { num: 0, string: "right", vec: [1, 0]};
-	let down:any = { num: 1, string: "down", vec: [0, 1]};
-	let left:any = { num: 2, string: "left", vec: [-1, 0]};
-	let up:any = { num: 3, string: "up", vec: [0, -1]};
+	let right:any = { num: 0, string: "right", vec: [1, 0], horizontal: true, vertical: false};
+	let down:any = { num: 1, string: "down", vec: [0, 1], horizontal: false, vertical: true};
+	let left:any = { num: 2, string: "left", vec: [-1, 0], horizontal: true, vertical: false};
+	let up:any = { num: 3, string: "up", vec: [0, -1], horizontal: false, vertical: true};
 	right.opposite = left;
 	left.opposite = right;
 	down.opposite = up;
