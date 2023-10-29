@@ -1,4 +1,32 @@
 "use strict";
+class I18NBundle {
+    constructor(text) {
+        this.mapping = new Map(text);
+    }
+    static read(text, prefix) {
+        return new I18NBundle(text.split("\n").map((l) => {
+            const line = l.split(/ ?= ?/);
+            if (line.length == 2 && line[0].length > 0 && line[1].length > 0) {
+                const [key, value] = line;
+                const parts = key.split(".");
+                if (parts.length == 3 && parts.every(p => p.length > 0)) {
+                    const [type, name, prop] = parts;
+                    if (prefix)
+                        return [`${type}.${prefix}${name}.${prop}`, value];
+                    else
+                        return [key, value];
+                }
+                else
+                    crash(`I18NBundle: Invalid key "${key}"`);
+            }
+            else
+                crash(`I18NBundle: Invalid line "${l}"`);
+        }));
+    }
+    get(key, fallback = `???${key}???`) {
+        return this.mapping.get(key) ?? fallback;
+    }
+}
 const names = {
     tile: {
         "base_grass": "Grass",

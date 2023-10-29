@@ -1,3 +1,31 @@
+
+class I18NBundle {
+	mapping:Map<string, string>;
+	constructor(text:[key:string, value:string][]){
+		this.mapping = new Map(text);
+	}
+	static read(text:string, prefix?:string){
+		return new I18NBundle(
+			text.split("\n").map((l):[string, string] => {
+				const line = l.split(/ ?= ?/);
+				if(line.length == 2 && line[0].length > 0 && line[1].length > 0){
+					const [key, value] = line;
+					const parts = key.split(".");
+					if(parts.length == 3 && parts.every(p => p.length > 0)){
+						const [type, name, prop] = parts;
+						if(prefix) return [`${type}.${prefix}${name}.${prop}`, value];
+						else return [key, value];
+					} else crash(`I18NBundle: Invalid key "${key}"`)
+				} else crash(`I18NBundle: Invalid line "${l}"`);
+			})
+		);
+	}
+	get(key:string, fallback = `???${key}???`){
+		return this.mapping.get(key) ?? fallback;
+	}
+	//format?
+}
+
 const names: {
 	tile: {
 		[P in TileID]: string;
@@ -58,6 +86,7 @@ const names: {
 		"base_motor": "Motor"
 	}
 };
+
 
 type ItemID =
 	"base_null" |
