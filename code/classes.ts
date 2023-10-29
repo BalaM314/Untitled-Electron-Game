@@ -384,6 +384,12 @@ class Chunk {
 						meta: +(_buildingData as LegacyBuildingData).id >> 8
 					}
 					//aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa I am still looking forward to beta when I can throw out these garbage formats
+				} else if(numericVersion < 310 && (_buildingData as BuildingData).fluid) {
+					const fluid = (_buildingData as BuildingData).fluid as any;
+					buildingData = {
+						..._buildingData,
+						fluid: [Fluids.get(fluid[0] as number - 1).id, fluid[1]]
+					} as BuildingData;
 				} else buildingData = _buildingData as BuildingData;
 				let tempBuilding:Building;
 				try {

@@ -347,6 +347,13 @@ class Chunk {
                         meta: +_buildingData.id >> 8
                     };
                 }
+                else if (numericVersion < 310 && _buildingData.fluid) {
+                    const fluid = _buildingData.fluid;
+                    buildingData = {
+                        ..._buildingData,
+                        fluid: [Fluids.get(fluid[0] - 1).id, fluid[1]]
+                    };
+                }
                 else
                     buildingData = _buildingData;
                 let tempBuilding;
