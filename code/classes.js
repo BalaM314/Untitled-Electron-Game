@@ -1496,10 +1496,9 @@ class MultiBlockSecondary extends Building {
     acceptItem(item) {
         return this.controller?.acceptItem(item) ?? false;
     }
-    break(isRecursive) {
-        if (!isRecursive) {
-            this.controller?.break();
-        }
+    break(isRecursive = false) {
+        if (this.controller && !isRecursive)
+            this.controller.break();
         else {
             this.controller = null;
             super.break();
