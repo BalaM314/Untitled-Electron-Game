@@ -733,6 +733,8 @@ class Building {
 	block = this.constructor as typeof Building;
 	constructor(x:number, y:number, public readonly meta:BuildingMeta, public level:Level){
 		this.pos = Pos.fromTileCoords(x, y, false);
+		if(this.block.fluidCapacity) //initialize fluid stack
+			this.fluid = [null, 0, this.block.fluidCapacity];
 	}
 	static changeMeta(meta:BuildingMeta, tileX:number, tileY:number, level:Level):BuildingMeta {
 		return meta;
@@ -818,13 +820,17 @@ class Building {
 	outputsFluidToSide(side:Direction):boolean {
 		return this.block.outputsFluids;
 	}
+	/** This can vary based on power, eg for transit pumps */
+	fluidExtraPressure(){
+		return this.block.fluidExtraPressure;
+	}
 	fluidInputSpeed(from:Building){
 		return this.block.fluidInputSpeed;
 	}
 	fluidOutputSpeed(to:Building){
 		return this.block.fluidOutputSpeed * constrain(
-			(this.pressureOut() - to.pressureIn()) + this.block.fluidExtraPressure,
-			//Multiply by the difference in pressure, but add a bit for
+			(this.pressureOut() - to.pressureIn()) + this.fluidExtraPressure(),
+			//Multiply by the difference in pressure, but maybe add a bit
 			0, 1
 		);
 	}
@@ -868,7 +874,7 @@ class Building {
 				if(
 					build && this.block.canOutputFluidTo(build) &&
 					this.outputsFluidToSide(direction) && build.acceptsFluidFromSide(direction.opposite)
-				) build.acceptFluid(this.fluid, this.fluidOutputSpeed(build), this); //TODO refactor lots of stuff
+				) build.acceptFluid(this.fluid, this.fluidOutputSpeed(build), this);
 			}
 		}
 	}
@@ -1678,11 +1684,6 @@ class Tank extends Building {
 	static acceptsFluids = true;
 	static outputsFluids = true;
 	block!:typeof Tank;
-	
-	constructor(x:number, y:number, meta:BuildingMeta, level:Level){
-		super(x, y, meta, level);
-		this.fluid = [null, 0, this.block.fluidCapacity];
-	}
 	pressureOut(){
 		//we could also use fluidExtraPressure = 1 to force max pressure, but that would allow even empty tanks to do max pressure
 		const fillLevel = this.fluid![1] / this.block.fluidCapacity;
@@ -1709,10 +1710,6 @@ class Pipe extends Building {
 	static fluidExtraPressure = 0.05;
 	block!: typeof Pipe;
 	outputSide:Direction = Pipe.outputSide(this.meta);
-	constructor(x:number, y:number, meta:BuildingMeta, level:Level){
-		super(x, y, meta, level);
-		this.fluid = [null, 0, this.block.fluidCapacity];
-	}
 	static getID(type:RawBuildingID, direction:Direction, modifier:number):BuildingIDWithMeta {
 		return [type, direction.num] as BuildingIDWithMeta;
 	}
@@ -1748,10 +1745,6 @@ class Pump extends Building {
 	static outputsFluids = true;
 	static outputFluid:Fluid;
 	block!: typeof Pump;
-	constructor(x:number, y:number, meta:BuildingMeta, level:Level){
-		super(x, y, meta, level);
-		this.fluid = [null, 0, this.block.fluidCapacity];
-	}
 	static canBuildAt(tileX:number, tileY:number, level:Level):boolean {
 		return level.tileAtByTile(tileX, tileY) == "base_water";
 	}

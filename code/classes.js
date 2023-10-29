@@ -643,6 +643,8 @@ let Building = (() => {
             this.fluid = null;
             this.block = this.constructor;
             this.pos = Pos.fromTileCoords(x, y, false);
+            if (this.block.fluidCapacity)
+                this.fluid = [null, 0, this.block.fluidCapacity];
         }
         static changeMeta(meta, tileX, tileY, level) {
             return meta;
@@ -720,11 +722,14 @@ let Building = (() => {
         outputsFluidToSide(side) {
             return this.block.outputsFluids;
         }
+        fluidExtraPressure() {
+            return this.block.fluidExtraPressure;
+        }
         fluidInputSpeed(from) {
             return this.block.fluidInputSpeed;
         }
         fluidOutputSpeed(to) {
-            return this.block.fluidOutputSpeed * constrain((this.pressureOut() - to.pressureIn()) + this.block.fluidExtraPressure, 0, 1);
+            return this.block.fluidOutputSpeed * constrain((this.pressureOut() - to.pressureIn()) + this.fluidExtraPressure(), 0, 1);
         }
         buildAt(direction) {
             return this.level.buildingAtTile(this.pos.tileX + direction.vec[0], this.pos.tileY + direction.vec[1]);
@@ -1619,10 +1624,6 @@ class ItemModule {
     }
 }
 class Tank extends Building {
-    constructor(x, y, meta, level) {
-        super(x, y, meta, level);
-        this.fluid = [null, 0, this.block.fluidCapacity];
-    }
     pressureOut() {
         const fillLevel = this.fluid[1] / this.block.fluidCapacity;
         return constrain(map(fillLevel, 0, this.block.pressureOutMaxFill, 0, 1), this.block.pressureOutMin, 1);
@@ -1647,10 +1648,9 @@ Tank.drawer = function (build, currentFrame) {
     Gfx.tRect(...build.pos.tileC, 0.8, 0.8, RectMode.CENTER);
 };
 class Pipe extends Building {
-    constructor(x, y, meta, level) {
-        super(x, y, meta, level);
+    constructor() {
+        super(...arguments);
         this.outputSide = Pipe.outputSide(this.meta);
-        this.fluid = [null, 0, this.block.fluidCapacity];
     }
     static getID(type, direction, modifier) {
         return [type, direction.num];
@@ -1684,10 +1684,6 @@ Pipe.drawer = function (build, currentFrame) {
     Gfx.tRect(build.pos.tileX, build.pos.tileY + 0.45, build.fluid[1] / build.block.fluidCapacity, 0.1, RectMode.CORNER);
 };
 class Pump extends Building {
-    constructor(x, y, meta, level) {
-        super(x, y, meta, level);
-        this.fluid = [null, 0, this.block.fluidCapacity];
-    }
     static canBuildAt(tileX, tileY, level) {
         return level.tileAtByTile(tileX, tileY) == "base_water";
     }
