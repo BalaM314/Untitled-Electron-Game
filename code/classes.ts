@@ -258,43 +258,18 @@ class Level {
 		}
 		
 	}
-	displayTooltip(mousex:number, mousey:number, currentframe:CurrentFrame){
-		if(!currentframe.tooltip){return;}
-		const [x, y] = Camera.unproject(mousex, mousey);
-		Gfx.layer("overlay");
-		Gfx.font("16px monospace");
+	getTooltip(x:number, y:number):string {
 		let building = this.buildingAtPixel(x, y);
 		if(building instanceof Building){
-			let buildingID = building.block.id;
-			if(building.block.displaysItem && building.item){
-				let item = this.buildingAtPixel(x, y)!.item;
-				if(item && (Math.abs(item.pos.pixelX - x) < consts.ITEM_SIZE / 2) && Math.abs(item.pos.pixelY - y) < consts.ITEM_SIZE / 2){
-					//If the item is within 8 pixels of the cursor
-					Gfx.fillColor("#0033CC");
-					Gfx.rect(mousex, mousey, (names.item[item.id] ?? item.id).length * 10, 16);
-					Gfx.strokeColor("#000000");
-					Gfx.lineRect(mousex, mousey, (names.item[item.id] ?? item.id).length * 10, 16);
-					Gfx.fillColor("#FFFFFF");
-					Gfx.text((names.item[item.id] ?? item.id), mousex + 2, mousey + 10);
-					return;
-				}
-			}
-			Gfx.fillColor("#0033CC");
-			Gfx.rect(mousex, mousey, (names.building[buildingID] ?? buildingID).length * 10, 16);
-			Gfx.strokeColor("#000000");
-			Gfx.lineRect(mousex, mousey, (names.building[buildingID] ?? buildingID).length * 10, 16);
-			Gfx.fillColor("#FFFFFF");
-			Gfx.text((names.building[buildingID] ?? buildingID), mousex + 2, mousey + 10);
-			return;
-		}
-		let tileID = this.tileAtByPixel(x, y);
-		Gfx.fillColor("#0033CC");
-		Gfx.rect(mousex, mousey, (names.tile[tileID] ?? tileID).length * 10, 16);
-		Gfx.strokeColor("#000000");
-		Gfx.lineRect(mousex, mousey, (names.tile[tileID] ?? tileID).length * 10, 16);
-		Gfx.fillColor("#FFFFFF");
-		Gfx.text((names.tile[tileID] ?? tileID), mousex + 2, mousey + 10);
-		return;
+			if(
+				//If there's an item
+				building.block.displaysItem && building.item &&
+				//and it's under the cursor
+				(Math.abs(building.item.pos.pixelX - x) < consts.ITEM_SIZE / 2) &&
+				Math.abs(building.item.pos.pixelY - y) < consts.ITEM_SIZE / 2
+			) return names.item[building.item.id]; //tooltip for the item
+			else return names.building[building.block.id]; //tooltip for the building
+		} else return names.tile[this.tileAtByPixel(x, y)]; //tooltip for the tile
 	}
 	export():LevelData {
 		//Exports the level's data to JSON.

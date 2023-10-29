@@ -242,44 +242,18 @@ class Level {
             chunk.display(currentframe);
         }
     }
-    displayTooltip(mousex, mousey, currentframe) {
-        if (!currentframe.tooltip) {
-            return;
-        }
-        const [x, y] = Camera.unproject(mousex, mousey);
-        Gfx.layer("overlay");
-        Gfx.font("16px monospace");
+    getTooltip(x, y) {
         let building = this.buildingAtPixel(x, y);
         if (building instanceof Building) {
-            let buildingID = building.block.id;
-            if (building.block.displaysItem && building.item) {
-                let item = this.buildingAtPixel(x, y).item;
-                if (item && (Math.abs(item.pos.pixelX - x) < consts.ITEM_SIZE / 2) && Math.abs(item.pos.pixelY - y) < consts.ITEM_SIZE / 2) {
-                    Gfx.fillColor("#0033CC");
-                    Gfx.rect(mousex, mousey, (names.item[item.id] ?? item.id).length * 10, 16);
-                    Gfx.strokeColor("#000000");
-                    Gfx.lineRect(mousex, mousey, (names.item[item.id] ?? item.id).length * 10, 16);
-                    Gfx.fillColor("#FFFFFF");
-                    Gfx.text((names.item[item.id] ?? item.id), mousex + 2, mousey + 10);
-                    return;
-                }
-            }
-            Gfx.fillColor("#0033CC");
-            Gfx.rect(mousex, mousey, (names.building[buildingID] ?? buildingID).length * 10, 16);
-            Gfx.strokeColor("#000000");
-            Gfx.lineRect(mousex, mousey, (names.building[buildingID] ?? buildingID).length * 10, 16);
-            Gfx.fillColor("#FFFFFF");
-            Gfx.text((names.building[buildingID] ?? buildingID), mousex + 2, mousey + 10);
-            return;
+            if (building.block.displaysItem && building.item &&
+                (Math.abs(building.item.pos.pixelX - x) < consts.ITEM_SIZE / 2) &&
+                Math.abs(building.item.pos.pixelY - y) < consts.ITEM_SIZE / 2)
+                return names.item[building.item.id];
+            else
+                return names.building[building.block.id];
         }
-        let tileID = this.tileAtByPixel(x, y);
-        Gfx.fillColor("#0033CC");
-        Gfx.rect(mousex, mousey, (names.tile[tileID] ?? tileID).length * 10, 16);
-        Gfx.strokeColor("#000000");
-        Gfx.lineRect(mousex, mousey, (names.tile[tileID] ?? tileID).length * 10, 16);
-        Gfx.fillColor("#FFFFFF");
-        Gfx.text((names.tile[tileID] ?? tileID), mousex + 2, mousey + 10);
-        return;
+        else
+            return names.tile[this.tileAtByPixel(x, y)];
     }
     export() {
         let chunkOutput = {};

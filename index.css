@@ -133,3 +133,19 @@ canvas {
 	right: 5%;
 	bottom: 5%;
 }
+#tooltipbox {
+	--x: -1000px;
+	--y: -1000px;
+	z-index: 14;
+	position: absolute;
+	top: var(--y);
+	left: var(--x);
+	border: 4px solid #393C;
+	border-radius: 2px;
+	user-select: none;
+	font-size: 150%;
+	font-family: sans-serif;
+	color: white;
+	background-color: #55E8;
+	padding: 2px 5px;
+}
