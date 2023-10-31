@@ -1016,12 +1016,13 @@ class BuildingWithRecipe extends Building {
 	static progressDrawer<T extends BuildingWithRecipe>(){
 		return ((build:T, currentFrame:CurrentFrame) => {
 			if(build.recipe){
+				const [w, h] = build.block.textureSize(build.meta)[0];
 				Gfx.layer("buildings");
 				Gfx.fillColor("darkblue");
 				//numbers are fractions with denominator 64 (size of the building texture)
-				Gfx.tRect(build.pos.tileX + 0.125, build.pos.tileY + 0.125, 0.75, 0.0625, RectMode.CORNER);
+				Gfx.tRect(build.pos.tileX + 0.125 * w, build.pos.tileY + 0.125 * h, 0.75 * w, 0.0625 * h, RectMode.CORNER);
 				Gfx.fillColor("cyan");
-				Gfx.tRect(build.pos.tileX + 0.125, build.pos.tileY + 0.125, (1 - build.timer / build.recipe.duration) * 0.75, 0.0625, RectMode.CORNER);
+				Gfx.tRect(build.pos.tileX + 0.125 * w, build.pos.tileY + 0.125 * h, (1 - build.timer / build.recipe.duration) * 0.75 * w, 0.0625 * h, RectMode.CORNER);
 			}
 		}) as BlockDrawer<Building>;
 	}
