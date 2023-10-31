@@ -1004,12 +1004,24 @@ class BuildingWithRecipe extends Building {
 		//This is an unsafe cast
 		//The issue is that static properties can't reference this in their type declaration, so I can't tell typescript that a (T extends BuildingWithRecipe)'s drawer won't get called with something other than a T (so it only accepts BuildingDrawer<Building>) without adding an extra line of boilerplate to each class.
 	}
-	static progressDrawer<T extends BuildingWithRecipe>(){
+	static progressDrawerOld<T extends BuildingWithRecipe>(){
 		return ((build:T, currentFrame:CurrentFrame) => {
 			if(build.recipe){
 				Gfx.layer("buildings");
 				Gfx.fillColor("blue");
 				Gfx.tEllipse(...build.centeredPos().tile, 0.3, 0.3, 0, 0, (1 - (build.timer) / build.recipe.duration) * 2 * Math.PI);
+			}
+		}) as BlockDrawer<Building>;
+	}
+	static progressDrawer<T extends BuildingWithRecipe>(){
+		return ((build:T, currentFrame:CurrentFrame) => {
+			if(build.recipe){
+				Gfx.layer("buildings");
+				Gfx.fillColor("darkblue");
+				//numbers are fractions with denominator 64 (size of the building texture)
+				Gfx.tRect(build.pos.tileX + 0.125, build.pos.tileY + 0.125, 0.75, 0.0625, RectMode.CORNER);
+				Gfx.fillColor("cyan");
+				Gfx.tRect(build.pos.tileX + 0.125, build.pos.tileY + 0.125, (1 - build.timer / build.recipe.duration) * 0.75, 0.0625, RectMode.CORNER);
 			}
 		}) as BlockDrawer<Building>;
 	}

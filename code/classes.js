@@ -901,12 +901,23 @@ let BuildingWithRecipe = (() => {
                 BuildingWithRecipe.makeDrawer((build, e, currentFrame) => { build.recipe; });
             });
         }
-        static progressDrawer() {
+        static progressDrawerOld() {
             return ((build, currentFrame) => {
                 if (build.recipe) {
                     Gfx.layer("buildings");
                     Gfx.fillColor("blue");
                     Gfx.tEllipse(...build.centeredPos().tile, 0.3, 0.3, 0, 0, (1 - (build.timer) / build.recipe.duration) * 2 * Math.PI);
+                }
+            });
+        }
+        static progressDrawer() {
+            return ((build, currentFrame) => {
+                if (build.recipe) {
+                    Gfx.layer("buildings");
+                    Gfx.fillColor("darkblue");
+                    Gfx.tRect(build.pos.tileX + 0.125, build.pos.tileY + 0.125, 0.75, 0.0625, RectMode.CORNER);
+                    Gfx.fillColor("cyan");
+                    Gfx.tRect(build.pos.tileX + 0.125, build.pos.tileY + 0.125, (1 - build.timer / build.recipe.duration) * 0.75, 0.0625, RectMode.CORNER);
                 }
             });
         }
