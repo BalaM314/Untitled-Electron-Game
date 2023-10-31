@@ -52,9 +52,9 @@ water.description = Buildings can't be built on water.
 ore_coal.name = Coal Ore Node
 ore_coal.description = Ore nodes are infinite, and can be mined with a miner.
 ore_iron.name = Iron Ore Node
-ore_coal.description = Ore nodes are infinite, and can be mined with a miner.
+ore_iron.description = Ore nodes are infinite, and can be mined with a miner.
 ore_copper.name = Copper Ore Node
-ore_coal.description = Ore nodes are infinite, and can be mined with a miner.
+ore_copper.description = Ore nodes are infinite, and can be mined with a miner.
 null.name = [ERR!] Null Tile
 
 [building]
