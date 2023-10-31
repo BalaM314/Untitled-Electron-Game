@@ -730,33 +730,3 @@ class QuadTreeI<T extends {pos: Pos}> extends QuadTree<T> {
 		}
 	}
 }
-
-type EffectParams = AnimationData;
-
-class ParticleEffect {
-	lifetime = 60;
-	drawer: (args:EffectParams) => unknown;
-	constructor(args:Partial<ParticleEffect>){
-		Object.assign(this, args); //very safe
-	}
-	display(progress:number){
-		this.drawer(getAnimationData(progress / this.lifetime));
-	}
-	static display(data:EffectData){
-		data.type.display(Date.now() - data.createdAt);
-	}
-}
-
-const Fx = {
-	smoke: new ParticleEffect({
-		lifetime: 80,
-		drawer({inc}){
-			//something
-		},
-	})
-}
-
-interface EffectData {
-	type: ParticleEffect;
-	createdAt: number;
-}

@@ -296,3 +296,47 @@ class Gfx {
 		_ctx.fill();
 	}
 }
+
+interface EffectParams extends AnimationData {
+	pos: Pos;
+	createdAt: number;
+}
+
+class ParticleEffect {
+	lifetime = 60;
+	//assertion: set in Object.assign
+	drawer!: (args:EffectParams) => unknown;
+	static effects = new Set<EffectData>();
+	constructor(args:Partial<ParticleEffect> & Pick<ParticleEffect, "drawer">){
+		Object.assign(this, args); //very safe
+	}
+	display(data:EffectData){
+		this.drawer({
+			...getAnimationData((Date.now() - data.createdAt) / this.lifetime),
+			pos: data.pos,
+			createdAt: data.createdAt
+		});
+	}
+	static displayAll(){
+		this.effects.forEach(e => {
+			if(Date.now() >= e.createdAt + e.type.lifetime) this.effects.delete(e);
+			else e.type.display(e);
+		});
+	}
+}
+
+const Fx = {
+	smoke: new ParticleEffect({
+		lifetime: 80,
+		drawer({inc}){
+			//something
+		},
+	})
+}
+
+interface EffectData {
+	type: ParticleEffect;
+	createdAt: number;
+	pos: Pos;
+}
+

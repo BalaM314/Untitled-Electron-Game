@@ -1,8 +1,8 @@
 "use strict";
 function getAnimationData(fin) {
     return {
-        in: fin,
-        out: 1 - fin,
+        inc: fin,
+        dec: 1 - fin,
         sin: Math.sin(Math.PI * 2 * fin),
         cos: Math.cos(Math.PI * 2 * fin),
     };
@@ -197,3 +197,32 @@ Gfx.layers = null;
 Gfx.textures = {};
 Gfx.rectMode = RectMode.CORNER;
 Gfx.ctx = null;
+class ParticleEffect {
+    constructor(args) {
+        this.lifetime = 60;
+        Object.assign(this, args);
+    }
+    display(data) {
+        this.drawer({
+            ...getAnimationData((Date.now() - data.createdAt) / this.lifetime),
+            pos: data.pos,
+            createdAt: data.createdAt
+        });
+    }
+    static displayAll() {
+        this.effects.forEach(e => {
+            if (Date.now() >= e.createdAt + e.type.lifetime)
+                this.effects.delete(e);
+            else
+                e.type.display(e);
+        });
+    }
+}
+ParticleEffect.effects = new Set();
+const Fx = {
+    smoke: new ParticleEffect({
+        lifetime: 80,
+        drawer({ inc }) {
+        },
+    })
+};
