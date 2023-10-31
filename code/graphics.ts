@@ -12,16 +12,16 @@ interface Texture extends UnloadedTexture {
 
 interface AnimationData {
 	/**0 to 1 */
-	in:number;
-	out:number;
+	inc:number;
+	dec:number;
 	sin:number;
 	cos:number;
 }
 
 function getAnimationData(fin:number){
 	return {
-		in: fin,
-		out: 1 - fin,
+		inc: fin,
+		dec: 1 - fin,
 		sin: Math.sin(Math.PI * 2 * fin),
 		cos: Math.cos(Math.PI * 2 * fin),
 	};

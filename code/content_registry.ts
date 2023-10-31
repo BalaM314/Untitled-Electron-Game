@@ -3,7 +3,7 @@
 class ContentRegistryC<K, T extends new (...args:any[]) => {}> {
 	private contentMap = new Map<K, T>();
 	constructor(){}
-	register<B extends T>(id:K, ctor:B, props:{
+	register<B extends T>(id:K, ctor:B, props:{ //TODO don't reimpl Partial<T>
 		[P in keyof B]?: B[P];
 	} = {}) {
 		let clazz = Object.assign(class extends ctor {}, {
