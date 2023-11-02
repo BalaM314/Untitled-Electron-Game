@@ -303,7 +303,7 @@ interface EffectParams extends AnimationData {
 }
 
 class ParticleEffect {
-	lifetime = 60;
+	lifetime = 1000;
 	//assertion: set in Object.assign
 	drawer!: (args:EffectParams) => unknown;
 	static effects = new Set<EffectData>();
@@ -317,7 +317,15 @@ class ParticleEffect {
 			createdAt: data.createdAt
 		});
 	}
+	at(pos:Pos){
+		ParticleEffect.effects.add({
+			type: this,
+			createdAt: Date.now(),
+			pos
+		});
+	}
 	static displayAll(){
+		Gfx.layer("overlay");//todo effects layer
 		this.effects.forEach(e => {
 			if(Date.now() >= e.createdAt + e.type.lifetime) this.effects.delete(e);
 			else e.type.display(e);
@@ -327,9 +335,11 @@ class ParticleEffect {
 
 const Fx = {
 	smoke: new ParticleEffect({
-		lifetime: 80,
-		drawer({inc}){
-			//something
+		lifetime: 1500,
+		drawer({inc, dec, pos}){
+			Gfx.alpha(dec);
+			Gfx.fillColor("gray");
+			Gfx.tEllipse(...pos.tile, 0.2 + inc * 0.5, 0.2 + inc * 0.5);
 		},
 	})
 }

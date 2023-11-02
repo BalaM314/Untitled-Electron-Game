@@ -44,7 +44,7 @@ function registerEventHandlers() {
         e.preventDefault();
     };
     window.onkeydown = (e) => {
-        if ((e.ctrlKey && e.key.match(/^[wertuniWERTUNI1234567890!@#$%^&*()]$/)) || e.key.match(/^f(5|11)$/i)) {
+        if ((e.ctrlKey && e.key.match(/^[wertuniWERTUNIK1234567890!@#$%^&*()]$/)) || e.key.match(/^f(5|11)$/i)) {
             return;
         }
         e.preventDefault();
@@ -337,6 +337,7 @@ let state = {
                     ctx.clear();
             }
             level1.display(currentFrame);
+            ParticleEffect.displayAll();
             level1.displayGhostBuilding(...(Camera.unproject(...Input.mouse).map(Pos.pixelToTile)), placedBuilding.ID, currentFrame);
             if (keybinds.display.show_tooltip.isHeld()) {
                 tooltipbox.innerHTML = level1.getTooltip(...Camera.unproject(...Input.mouse));

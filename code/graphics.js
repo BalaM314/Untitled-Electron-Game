@@ -199,7 +199,7 @@ Gfx.rectMode = RectMode.CORNER;
 Gfx.ctx = null;
 class ParticleEffect {
     constructor(args) {
-        this.lifetime = 60;
+        this.lifetime = 1000;
         Object.assign(this, args);
     }
     display(data) {
@@ -209,7 +209,15 @@ class ParticleEffect {
             createdAt: data.createdAt
         });
     }
+    at(pos) {
+        ParticleEffect.effects.add({
+            type: this,
+            createdAt: Date.now(),
+            pos
+        });
+    }
     static displayAll() {
+        Gfx.layer("overlay");
         this.effects.forEach(e => {
             if (Date.now() >= e.createdAt + e.type.lifetime)
                 this.effects.delete(e);
@@ -221,8 +229,11 @@ class ParticleEffect {
 ParticleEffect.effects = new Set();
 const Fx = {
     smoke: new ParticleEffect({
-        lifetime: 80,
-        drawer({ inc }) {
+        lifetime: 1500,
+        drawer({ inc, dec, pos }) {
+            Gfx.alpha(dec);
+            Gfx.fillColor("gray");
+            Gfx.tEllipse(...pos.tile, 0.2 + inc * 0.5, 0.2 + inc * 0.5);
         },
     })
 };
