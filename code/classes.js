@@ -825,6 +825,7 @@ let Building = (() => {
     _classThis.isOverlay = false;
     _classThis.displaysItem = false;
     _classThis.drawer = null;
+    _classThis.craftEffect = null;
     (() => {
         __runInitializers(_classThis, _classExtraInitializers);
     })();
@@ -879,6 +880,7 @@ let BuildingWithRecipe = (() => {
             }
             else if (this.timer == 0 && this.recipe) {
                 if (this.spawnItem(this.recipe.outputs[0])) {
+                    this.block?.craftEffect?.at(this.centeredPos());
                     this.timer = -1;
                     this.items = [];
                     this.recipe = null;

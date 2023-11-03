@@ -712,6 +712,7 @@ class Building {
 	static isOverlay = false;
 	static displaysItem = false;
 	static drawer:BlockDrawer<Building> | null = null;
+	static craftEffect:ParticleEffect | null = null;
 
 	item: Item | null = null;
 	fluid: FluidStack | null = null;
@@ -980,6 +981,7 @@ class BuildingWithRecipe extends Building {
 			this.timer --;
 		} else if(this.timer == 0 && this.recipe){
 			if(this.spawnItem(this.recipe.outputs[0])){
+				this.block?.craftEffect?.at(this.centeredPos());
 				this.timer = -1;
 				this.items = [];
 				this.recipe = null;
