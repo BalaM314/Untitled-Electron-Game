@@ -62,8 +62,8 @@ class Camera {
 	static maxZoom = 5;
 	static scrollX:number = 0;
 	static scrollY:number = 0;
-	static width = window.innerWidth;
-	static height = window.innerHeight;
+	static get width(){return window.innerWidth;}
+	static get height(){return window.innerHeight;}
 	static zoom(scaleFactor:number){
 		scaleFactor = constrain(scaleFactor, 0.9, 1.1);
 		if(this.zoomLevel * scaleFactor < this.minZoom){
