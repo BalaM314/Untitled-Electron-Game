@@ -407,8 +407,9 @@ let state: {
 			}
 			
 			//display overlays
-			ctxOverlays.font = "30px sans-serif";
-			ctxOverlays.fillStyle = "#000000";
+			Gfx.layer("overlay");
+			Gfx.font("30px sans-serif");
+			Gfx.color("black");
 			ctxOverlays.textAlign = "left";
 			ctxOverlays.fillText(
 				Camera.unproject(Input.mouseX, Input.mouseY).map(Pos.pixelToTile).join(","),

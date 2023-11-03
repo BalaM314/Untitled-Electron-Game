@@ -179,6 +179,15 @@ class Gfx {
 	static text(text:string, x:number, y:number) {
 		this.ctx.fillText(text, x, y);
 	}
+	static pText(pixelX:number, pixelY:number, text:string){
+		if(mode == RectMode.CORNER)
+		_ctx.fillRect(
+			(pixelX + Camera.scrollX) * Camera.zoomLevel + Camera.width / 2,
+			(pixelY + Camera.scrollY) * Camera.zoomLevel + Camera.height / 2,
+			width * Camera.zoomLevel,
+			height * Camera.zoomLevel
+		);
+	}
 	static lineRect(x:number, y:number, w:number, h:number, mode:RectMode = this.rectMode, _ctx = this.ctx){
 		if(mode == RectMode.CENTER){
 			_ctx.strokeRect(x - w/2, y - w/2, w, h);
