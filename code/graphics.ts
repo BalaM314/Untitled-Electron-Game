@@ -300,28 +300,34 @@ class Gfx {
 interface EffectParams extends AnimationData {
 	pos: Pos;
 	createdAt: number;
+	color: string;
 }
 
 class ParticleEffect {
 	lifetime = 1000;
+	/** default color */
+	color = "white";
 	//assertion: set in Object.assign
 	drawer!: (args:EffectParams) => unknown;
 	static effects = new Set<EffectData>();
+	private static id = 0;
 	constructor(args:Partial<ParticleEffect> & Pick<ParticleEffect, "drawer">){
 		Object.assign(this, args); //very safe
 	}
 	display(data:EffectData){
 		this.drawer({
 			...getAnimationData((Date.now() - data.createdAt) / this.lifetime),
+			color: data.color,
 			pos: data.pos,
 			createdAt: data.createdAt
 		});
 	}
-	at(pos:Pos){
+	at(pos:Pos, color = this.color){
 		ParticleEffect.effects.add({
 			type: this,
 			createdAt: Date.now(),
-			pos
+			pos, color,
+			id: ++ParticleEffect.id,
 		});
 	}
 	static displayAll(){
@@ -336,10 +342,11 @@ class ParticleEffect {
 const Fx = {
 	smoke: new ParticleEffect({
 		lifetime: 1500,
-		drawer({inc, dec, pos}){
-			Gfx.alpha(dec);
-			Gfx.fillColor("gray");
-			Gfx.tEllipse(...pos.tile, 0.2 + inc * 0.5, 0.2 + inc * 0.5);
+		color: "#555",
+		drawer({inc, dec, pos, color}){
+			Gfx.alpha(0.3 + 0.7 * dec);
+			Gfx.fillColor(color);
+			Gfx.tEllipse(pos.tileXCentered + inc * 0.1, pos.tileYCentered - inc * 0.9, 0.2 + inc * 0.5, 0.2 + inc * 0.5);
 		},
 	})
 }
@@ -348,5 +355,8 @@ interface EffectData {
 	type: ParticleEffect;
 	createdAt: number;
 	pos: Pos;
+	color: string;
+	/** Use this for random seed */
+	id: number;
 }
 
