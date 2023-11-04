@@ -1,10 +1,10 @@
 "use strict";
 function getAnimationData(fin) {
     return {
-        inc: fin,
-        dec: 1 - fin,
-        sin: Math.sin(Math.PI * 2 * fin),
-        cos: Math.cos(Math.PI * 2 * fin),
+        linc: (from = 0, to = 1) => from + fin * (to - from),
+        ldec: (from = 1, to = 0) => from + fin * (to - from),
+        sin: (b = 1, a = 1, c = 0) => a * Math.sin(Math.PI * 2 * b * fin) + c,
+        cos: (b = 1, a = 1, c = 0) => a * Math.cos(Math.PI * 2 * b * fin) + c,
     };
 }
 function loadTexture(t, texturesDiv) {
@@ -235,10 +235,10 @@ const Fx = {
     smoke: new ParticleEffect({
         lifetime: 1500,
         color: "#555",
-        drawer({ inc, dec, pos, color }) {
-            Gfx.alpha(0.3 + 0.7 * dec);
+        drawer({ linc, ldec, pos, color }) {
+            Gfx.alpha(ldec(1, 0.3));
             Gfx.fillColor(color);
-            Gfx.tEllipse(pos.tileXCentered + inc * 0.1, pos.tileYCentered - inc * 0.9, 0.2 + inc * 0.5, 0.2 + inc * 0.5);
+            Gfx.tEllipse(pos.tileXCentered + linc(0, 0.1), pos.tileYCentered - linc(0, 0.9), linc(0.2, 0.7), linc(0.2, 0.7));
         },
     })
 };

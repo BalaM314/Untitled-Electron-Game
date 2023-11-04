@@ -137,7 +137,7 @@ Buildings.register("base_conveyor", Conveyor);
 Buildings.register("base_miner", Miner);
 Buildings.register("base_trash_can", TrashCan);
 Buildings.register("base_furnace", BuildingWithRecipe, { recipeType: recipes.base_smelting, drawer: BuildingWithRecipe.makeDrawer((build, e) => {
-        Gfx.fillColor(...Gfx.lerp([255, 127, 39], [255, 95, 29], e.sin));
+        Gfx.fillColor(...Gfx.lerp([255, 127, 39], [255, 95, 29], e.sin()));
         Gfx.tRect(...build.centeredPos().tile, 0.5, 0.5, RectMode.CENTER);
     }, BuildingWithRecipe.progressDrawer()), craftEffect: Fx.smoke });
 Buildings.register("base_extractor", Extractor);
