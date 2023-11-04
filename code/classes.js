@@ -825,7 +825,6 @@ let Building = (() => {
     _classThis.isOverlay = false;
     _classThis.displaysItem = false;
     _classThis.drawer = null;
-    _classThis.craftEffect = null;
     (() => {
         __runInitializers(_classThis, _classExtraInitializers);
     })();
@@ -880,12 +879,18 @@ let BuildingWithRecipe = (() => {
             }
             else if (this.timer == 0 && this.recipe) {
                 if (this.spawnItem(this.recipe.outputs[0])) {
-                    this.block?.craftEffect?.at(this.centeredPos());
+                    if (this.block.craftEffect)
+                        this.block.craftEffect[0].at(this.centeredPos(), this.block.craftEffect[1]);
                     this.timer = -1;
                     this.items = [];
                     this.recipe = null;
                 }
             }
+        }
+        display(currentFrame, layer) {
+            super.display(currentFrame, layer);
+            if (this.block.runEffect && this.timer > 0 && this.timer % this.block.runEffect[2] == 0 && Math.random() < this.block.runEffect[3])
+                this.block.runEffect[0].at(this.centeredPos(), this.block.runEffect[1]);
         }
         tooltipProperties() {
             return {
@@ -940,6 +945,8 @@ let BuildingWithRecipe = (() => {
     _classThis_1.outputsItems = true;
     _classThis_1.acceptsItems = true;
     _classThis_1.recipeMaxInputs = 3;
+    _classThis_1.craftEffect = null;
+    _classThis_1.runEffect = null;
     (() => {
         __runInitializers(_classThis_1, _classExtraInitializers_1);
     })();

@@ -712,7 +712,6 @@ class Building {
 	static isOverlay = false;
 	static displaysItem = false;
 	static drawer:BlockDrawer<Building> | null = null;
-	static craftEffect:ParticleEffect | null = null;
 
 	item: Item | null = null;
 	fluid: FluidStack | null = null;
@@ -939,6 +938,9 @@ class BuildingWithRecipe extends Building {
 	static acceptsItems = true;
 	static recipeType: {recipes: Recipe[]};
 	static recipeMaxInputs = 3;
+	static craftEffect:[ParticleEffect, color:string] | null = null;
+	/** Warning: spacing should be divisible (or nearly) by the recipe run time. */
+	static runEffect:[ParticleEffect, color:string, spacing:number, chance:number] | null = null;
 	block!:typeof BuildingWithRecipe;
 	constructor(tileX:number, tileY:number, meta:BuildingMeta, level:Level){
 		super(tileX, tileY, meta, level);
@@ -981,12 +983,17 @@ class BuildingWithRecipe extends Building {
 			this.timer --;
 		} else if(this.timer == 0 && this.recipe){
 			if(this.spawnItem(this.recipe.outputs[0])){
-				this.block?.craftEffect?.at(this.centeredPos());
+				if(this.block.craftEffect) this.block.craftEffect[0].at(this.centeredPos(), this.block.craftEffect[1]);
 				this.timer = -1;
 				this.items = [];
 				this.recipe = null;
 			}
 		}
+	}
+	display(currentFrame:CurrentFrame, layer?:keyof typeof Gfx.layers){
+		super.display(currentFrame, layer);
+		if(this.block.runEffect && this.timer > 0 && this.timer % this.block.runEffect[2] == 0 && Math.random() < this.block.runEffect[3])
+			this.block.runEffect[0].at(this.centeredPos(), this.block.runEffect[1]);
 	}
 	tooltipProperties(){
 		return {
