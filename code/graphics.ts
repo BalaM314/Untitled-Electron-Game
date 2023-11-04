@@ -11,9 +11,12 @@ interface Texture extends UnloadedTexture {
 }
 
 interface AnimationData {
-	/**0 to 1 */
+	/** linear from `from` to `to` */
 	linc(from?:number, to?:number):number;
+	/** linear from `from` to `to` */
 	ldec(from?:number, to?:number):number;
+	/** Mostly linear from 0 to `a`, but drops off towards zero using x^`p`. p is 10 by default. */
+	pdec(a:number, p?:number):number;
 	/**
 	 * Sine wave.
 	 * @param b Multiplier for cycles number. Default 1, meaning 1 cycle per second.
@@ -34,6 +37,7 @@ function getAnimationData(fin:number):AnimationData {
 	return {
 		linc:(from = 0, to = 1) => from + fin * (to - from),
 		ldec:(from = 1, to = 0) => from + fin * (to - from), //same function with different defaults lol
+		pdec:(a, p = 10) => 1 - Math.pow(fin - 1 + a ** (1 / p), p) + (a - 1) * fin, //this will definitely not cause performance issues!
 		sin:(b = 1, a = 1, c = 0) => a * Math.sin(Math.PI * 2 * b * fin) + c,
 		cos:(b = 1, a = 1, c = 0) => a * Math.cos(Math.PI * 2 * b * fin) + c,
 	};
@@ -355,8 +359,8 @@ const Fx = {
 	smoke: new ParticleEffect({
 		lifetime: 1500,
 		color: "#555",
-		drawer({linc, ldec, pos, color}){
-			Gfx.alpha(ldec(1, 0.3));
+		drawer({linc, pdec, pos, color}){
+			Gfx.alpha(pdec(0.3, 8));
 			Gfx.fillColor(color);
 			Gfx.tEllipse(pos.tileXCentered + linc(0, 0.1), pos.tileYCentered - linc(0, 0.9), linc(0.2, 0.7), linc(0.2, 0.7));
 		},
