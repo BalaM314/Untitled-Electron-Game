@@ -206,11 +206,13 @@ class ParticleEffect {
         Object.assign(this, args);
     }
     display(data) {
+        data.prand.reset();
         this.drawer({
             ...getAnimationData((Date.now() - data.createdAt) / this.lifetime),
             color: data.color,
             pos: data.pos,
-            createdAt: data.createdAt
+            createdAt: data.createdAt,
+            prand: data.prand
         });
     }
     at(pos, color = this.color) {
@@ -219,6 +221,7 @@ class ParticleEffect {
             createdAt: Date.now(),
             pos, color,
             id: ++ParticleEffect.id,
+            prand: new PseudoRandom(ParticleEffect.id),
         });
     }
     static displayAll() {
@@ -242,5 +245,19 @@ const Fx = {
             Gfx.fillColor(color);
             Gfx.tEllipse(pos.tileXCentered + linc(0, 0.1), pos.tileYCentered - linc(0, 0.9), linc(0.2, 0.7), linc(0.2, 0.7));
         },
-    })
+    }),
+    spark: new ParticleEffect({
+        lifetime: 500,
+        color: "#FFD",
+        drawer({ prand, linc, edec, pos, color }) {
+            Gfx.alpha(edec(5));
+            Gfx.strokeColor(color);
+            Gfx.lineWidth(5);
+            const location = add(add(pos.tile, prand.vec(prand.num(0.4, 0.55))), mul(prand.vec(0.2), linc()));
+            const offset = add(location, prand.vec(0.15));
+            const offset2 = add(location, prand.vec(0.15));
+            Gfx.tLine(...location, ...offset);
+            Gfx.tLine(...location, ...offset2);
+        },
+    }),
 };

@@ -259,6 +259,9 @@ function getElement(id, type) {
 function add(a, b) {
     return [a[0] + b[0], a[1] + b[1]];
 }
+function mul(a, amount) {
+    return [a[0] * amount, a[1] * amount];
+}
 function trigger(type, buildingID, itemID) {
 }
 function _alert(x) {
@@ -654,25 +657,42 @@ class QuadTreeI extends QuadTree {
     }
 }
 QuadTreeI.regionSize = [3840, 3840];
-class Rand {
-    static int(arg0, arg1) {
+class Random {
+    constructor(_rand) {
+        this._rand = _rand;
+    }
+    int(arg0, arg1) {
         if (arg1)
             return Math.floor(this._rand() * (arg1 + 1 - arg0) + arg0);
         else
             return Math.floor(this._rand() * (arg0 + 1));
     }
-    static num(arg0, arg1) {
+    num(arg0, arg1) {
         if (arg1)
             return this._rand() * (arg1 - arg0) + arg0;
         else
             return this._rand() * arg0;
     }
-    static chance(probability) {
+    chance(probability) {
         return this._rand() < probability;
     }
-    static vec(length) {
+    vec(length) {
         const theta = this.num(Mathf.TWO_PI);
         return [length * Math.cos(theta), length * Math.sin(theta)];
     }
 }
-Rand._rand = Math.random;
+class PseudoRandom extends Random {
+    constructor(seed) {
+        super(null);
+        this.seed = seed;
+        this.value = seed + 11111111111111;
+        this._rand = () => {
+            this.value = this.value * 16807 % 16777216;
+            return this.value / 16777216;
+        };
+    }
+    reset() {
+        this.value = this.seed + 11111111111111;
+    }
+}
+const Rand = new Random(Math.random);
