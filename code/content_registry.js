@@ -146,7 +146,7 @@ Buildings.register("base_resource_acceptor", ResourceAcceptor);
 Buildings.register("base_alloy_smelter", BuildingWithRecipe, { recipeType: recipes.base_alloying, drawer: BuildingWithRecipe.progressDrawer(), craftEffect: [Fx.smoke, "#222"] });
 Buildings.register("base_wiremill", BuildingWithRecipe, { recipeType: recipes.base_wiremilling, drawer: BuildingWithRecipe.progressDrawer() });
 Buildings.register("base_compressor", BuildingWithRecipe, { recipeType: recipes.base_compressing, drawer: BuildingWithRecipe.progressDrawer() });
-Buildings.register("base_lathe", BuildingWithRecipe, { recipeType: recipes.base_lathing, drawer: BuildingWithRecipe.progressDrawer() });
+Buildings.register("base_lathe", BuildingWithRecipe, { recipeType: recipes.base_lathing, drawer: BuildingWithRecipe.progressDrawer(), runEffect: [Fx.spark, "#FFC", 20, 0.8] });
 Buildings.register("base_multiblock_secondary", MultiBlockSecondary);
 Buildings.register("base_assembler", MultiBlockController, { recipeType: recipes.base_assembling, multiblockSize: [2, 2], drawer: BuildingWithRecipe.progressDrawer(), secondary: Buildings.get("base_multiblock_secondary") });
 Buildings.register("base_arc_tower", ArcTower);

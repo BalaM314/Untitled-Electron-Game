@@ -93,6 +93,7 @@ class Gfx {
             buildings: ctxBuilds,
             overlayBuilds: ctxOBuilds,
             items: ctxItems,
+            effects: ctxEffects,
             overlay: ctxOverlays,
         };
         this.ctx = this.layers.overlay;
@@ -225,7 +226,7 @@ class ParticleEffect {
         });
     }
     static displayAll() {
-        Gfx.layer("overlay");
+        Gfx.layer("effects");
         this.effects.forEach(e => {
             if (Date.now() >= e.createdAt + e.type.lifetime)
                 this.effects.delete(e);
@@ -253,7 +254,7 @@ const Fx = {
             Gfx.alpha(edec(5));
             Gfx.strokeColor(color);
             Gfx.lineWidth(5);
-            const location = add(add(pos.tile, prand.vec(prand.num(0.4, 0.55))), mul(prand.vec(0.2), linc()));
+            const location = add(add(pos.tile, prand.vec(prand.num(0.4, 0.55))), mul(prand.vec(0), linc()));
             const offset = add(location, prand.vec(0.15));
             const offset2 = add(location, prand.vec(0.15));
             Gfx.tLine(...location, ...offset);
