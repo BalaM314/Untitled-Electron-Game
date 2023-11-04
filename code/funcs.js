@@ -256,6 +256,9 @@ function getElement(id, type) {
     else
         throw new Error(`Element with id ${id} does not exist`);
 }
+function add(a, b) {
+    return [a[0] + b[0], a[1] + b[1]];
+}
 function trigger(type, buildingID, itemID) {
 }
 function _alert(x) {
@@ -651,3 +654,25 @@ class QuadTreeI extends QuadTree {
     }
 }
 QuadTreeI.regionSize = [3840, 3840];
+class Rand {
+    static int(arg0, arg1) {
+        if (arg1)
+            return Math.floor(this._rand() * (arg1 + 1 - arg0) + arg0);
+        else
+            return Math.floor(this._rand() * (arg0 + 1));
+    }
+    static num(arg0, arg1) {
+        if (arg1)
+            return this._rand() * (arg1 - arg0) + arg0;
+        else
+            return this._rand() * arg0;
+    }
+    static chance(probability) {
+        return this._rand() < probability;
+    }
+    static vec(length) {
+        const theta = this.num(Mathf.TWO_PI);
+        return [length * Math.cos(theta), length * Math.sin(theta)];
+    }
+}
+Rand._rand = Math.random;

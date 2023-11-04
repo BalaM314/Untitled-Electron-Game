@@ -4,6 +4,7 @@ function getAnimationData(fin) {
         linc: (from = 0, to = 1) => from + fin * (to - from),
         ldec: (from = 1, to = 0) => from + fin * (to - from),
         pdec: (a, p = 10) => 1 - Math.pow(fin - 1 + a ** (1 / p), p) + (a - 1) * fin,
+        edec: (a, to = 0) => (1 - to) * Math.exp(-a * fin) + to,
         sin: (b = 1, a = 1, c = 0) => a * Math.sin(Math.PI * 2 * b * fin) + c,
         cos: (b = 1, a = 1, c = 0) => a * Math.cos(Math.PI * 2 * b * fin) + c,
     };

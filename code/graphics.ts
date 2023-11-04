@@ -17,6 +17,8 @@ interface AnimationData {
 	ldec(from?:number, to?:number):number;
 	/** Mostly linear from 0 to `a`, but drops off towards zero using x^`p`. p is 10 by default. */
 	pdec(a:number, p?:number):number;
+	/** Sharp decrease at first, then slowly goes towards zero. */
+	edec(a:number, to?:number):number;
 	/**
 	 * Sine wave.
 	 * @param b Multiplier for cycles number. Default 1, meaning 1 cycle per second.
@@ -38,6 +40,7 @@ function getAnimationData(fin:number):AnimationData {
 		linc:(from = 0, to = 1) => from + fin * (to - from),
 		ldec:(from = 1, to = 0) => from + fin * (to - from), //same function with different defaults lol
 		pdec:(a, p = 10) => 1 - Math.pow(fin - 1 + a ** (1 / p), p) + (a - 1) * fin, //this will definitely not cause performance issues!
+		edec:(a, to = 0) => (1 - to) * Math.exp(-a * fin) + to,
 		sin:(b = 1, a = 1, c = 0) => a * Math.sin(Math.PI * 2 * b * fin) + c,
 		cos:(b = 1, a = 1, c = 0) => a * Math.cos(Math.PI * 2 * b * fin) + c,
 	};

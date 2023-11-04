@@ -312,6 +312,10 @@ function getElement<T extends typeof HTMLElement>(id:string, type:T){
 	else throw new Error(`Element with id ${id} does not exist`);
 }
 
+function add(a:PosT, b:PosT):PosT {
+	return [a[0] + b[0], a[1] + b[1]];
+}
+
 /**
  * Game-related functions
  */
@@ -728,5 +732,36 @@ class QuadTreeI<T extends {pos: Pos}> extends QuadTree<T> {
 			if(Intersector.rectsIntersect(this.nodes[i].span, rect))
 				this.nodes[i].intersect(rect, cons);
 		}
+	}
+}
+
+class Rand {
+	private static _rand = Math.random;
+	/** Returns a random integer between 0 and `max` inclusive. */
+	static int(max:number):number;
+	/** Returns a random integer between `min` and `max` inclusive. */
+	static int(min:number, max:number):number;
+	static int(arg0:number, arg1?:number){
+		if(arg1)
+			return Math.floor(this._rand() * (arg1 + 1 - arg0) + arg0);
+		else
+			return Math.floor(this._rand() * (arg0 + 1));
+	}
+	/** Returns a random number between 0 and `max` inclusive. */
+	static num(max:number):number;
+	/** Returns a random number between `min` and `max` inclusive. */
+	static num(min:number, max:number):number;
+	static num(arg0:number, arg1?:number){
+		if(arg1)
+			return this._rand() * (arg1 - arg0) + arg0;
+		else
+			return this._rand() * arg0;
+	}
+	static chance(probability:number){
+		return this._rand() < probability;
+	}
+	static vec(length:number):PosT {
+		const theta = this.num(Mathf.TWO_PI);
+		return [length * Math.cos(theta), length * Math.sin(theta)];
 	}
 }
