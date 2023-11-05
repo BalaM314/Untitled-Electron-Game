@@ -40,5 +40,17 @@ class Fluid extends Content<FluidID> {
 		stack[1] += amountTransferred;
 		return amountTransferred;
 	}
+	/** @returns the amount that can be drained. */
+	static checkDrain(stack:FluidStack, amount:number):number {
+		if(stack[0] == null) return 0;
+		return Math.min(stack[1], amount);
+	}	
+	/** @returns the amount drained. */
+	static drain(stack:FluidStack, amount:number):number {
+		if(stack[0] == null) return 0;
+		const amountDrained = Math.min(stack[1], amount);
+		stack[1] -= amountDrained;
+		return amountDrained;
+	}
 }
 

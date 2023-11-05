@@ -851,6 +851,8 @@ let BuildingWithRecipe = (() => {
                     for (let recipe of this.block.recipeType.recipes) {
                         if (!recipe.inputs)
                             continue;
+                        if (recipe.fluidInputs && (this.block.fluidCapacity == 0 || !this.block.acceptsFluids))
+                            continue;
                         if (!this.items.map(item => recipe.inputs.includes(item.id)).includes(false) && recipe.inputs.includes(item.id)) {
                             this.items[i] = item;
                             if (recipe.inputs.length == i + 1) {
@@ -877,16 +879,34 @@ let BuildingWithRecipe = (() => {
             this.timer = recipe.duration;
         }
         update() {
-            if (this.timer > 0) {
-                this.timer--;
-            }
-            else if (this.timer == 0 && this.recipe) {
-                if (this.spawnItem(this.recipe.outputs[0])) {
-                    if (this.block.craftEffect)
-                        this.block.craftEffect[0].at(this.centeredPos(), this.block.craftEffect[1]);
-                    this.timer = -1;
-                    this.items = [];
-                    this.recipe = null;
+            if (this.recipe) {
+                if (this.timer > 0) {
+                    if (this.recipe.fluidInputs) {
+                        let minSatisfaction = 1;
+                        for (const fluidInput of this.recipe.fluidInputs) {
+                            const amountNeeded = fluidInput[1] / this.recipe.duration;
+                            const amountDrained = Fluid.checkDrain(this.fluid, amountNeeded);
+                            minSatisfaction = Math.min(amountDrained, minSatisfaction);
+                        }
+                        for (const fluidInput of this.recipe.fluidInputs) {
+                            const amountNeeded = fluidInput[1] / this.recipe.duration * minSatisfaction;
+                            if (Fluid.drain(this.fluid, amountNeeded) != amountNeeded)
+                                throw new ShouldNotBePossibleError(`logic error when consuming fluids`);
+                        }
+                        this.timer -= minSatisfaction;
+                    }
+                    else {
+                        this.timer--;
+                    }
+                }
+                else if (this.timer > -1) {
+                    if (this.spawnItem(this.recipe.outputs[0])) {
+                        if (this.block.craftEffect)
+                            this.block.craftEffect[0].at(this.centeredPos(), this.block.craftEffect[1]);
+                        this.timer = -1;
+                        this.items = [];
+                        this.recipe = null;
+                    }
                 }
             }
         }

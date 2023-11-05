@@ -36,4 +36,16 @@ class Fluid extends Content {
         stack[1] += amountTransferred;
         return amountTransferred;
     }
+    static checkDrain(stack, amount) {
+        if (stack[0] == null)
+            return 0;
+        return Math.min(stack[1], amount);
+    }
+    static drain(stack, amount) {
+        if (stack[0] == null)
+            return 0;
+        const amountDrained = Math.min(stack[1], amount);
+        stack[1] -= amountDrained;
+        return amountDrained;
+    }
 }

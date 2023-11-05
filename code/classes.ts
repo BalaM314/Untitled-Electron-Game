@@ -943,7 +943,7 @@ class BuildingWithRecipe extends Building {
 	static recipeType: {recipes: Recipe[]};
 	static recipeMaxInputs = 3;
 	static craftEffect:[ParticleEffect, color:string] | null = null;
-	/** Warning: spacing should be divisible (or nearly) by the recipe run time. */
+	/** Warning: spacing should be divisible (or nearly) by the recipe run time if chance is 1. */
 	static runEffect:[ParticleEffect, color:string, spacing:number, chance:number] | null = null;
 	block!:typeof BuildingWithRecipe;
 	constructor(tileX:number, tileY:number, meta:BuildingMeta, level:Level){
@@ -957,6 +957,7 @@ class BuildingWithRecipe extends Building {
 				for(let recipe of this.block.recipeType.recipes){
 					//for each recipe this building can do
 					if(!recipe.inputs) continue;//If the recipe has no inputs, it cant be the right one
+					if(recipe.fluidInputs && (this.block.fluidCapacity == 0 || !this.block.acceptsFluids)) continue;//recipe requires fluids but this crafter does not support fluids
 					if(!this.items.map(item => recipe.inputs!.includes(item.id)).includes(false) && recipe.inputs.includes(item.id)){
 						//if all of the current items are inputs of the recipe and the item is an input of the recipe
 						this.items[i] = item;
@@ -983,14 +984,30 @@ class BuildingWithRecipe extends Building {
 		this.timer = recipe.duration;
 	}
 	update(){
-		if(this.timer > 0){
-			this.timer --;
-		} else if(this.timer == 0 && this.recipe){
-			if(this.spawnItem(this.recipe.outputs[0])){
-				if(this.block.craftEffect) this.block.craftEffect[0].at(this.centeredPos(), this.block.craftEffect[1]);
-				this.timer = -1;
-				this.items = [];
-				this.recipe = null;
+		if(this.recipe){
+			if(this.timer > 0){
+				if(this.recipe.fluidInputs){
+					let minSatisfaction = 1;
+					for(const fluidInput of this.recipe.fluidInputs){
+						const amountNeeded = fluidInput[1] / this.recipe.duration;
+						const amountDrained = Fluid.checkDrain(this.fluid!, amountNeeded);
+						minSatisfaction = Math.min(amountDrained, minSatisfaction);
+					}
+					for(const fluidInput of this.recipe.fluidInputs){
+						const amountNeeded = fluidInput[1] / this.recipe.duration * minSatisfaction;
+						if(Fluid.drain(this.fluid!, amountNeeded) != amountNeeded) throw new ShouldNotBePossibleError(`logic error when consuming fluids`);
+					}
+					this.timer -= minSatisfaction;
+				} else {
+					this.timer --;
+				}
+			} else if(this.timer > -1){
+				if(this.spawnItem(this.recipe.outputs[0])){
+					if(this.block.craftEffect) this.block.craftEffect[0].at(this.centeredPos(), this.block.craftEffect[1]);
+					this.timer = -1;
+					this.items = [];
+					this.recipe = null;
+				}
 			}
 		}
 	}
