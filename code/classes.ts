@@ -987,10 +987,10 @@ class BuildingWithRecipe extends Building {
 		this.recipe = recipe;
 		this.timer = recipe.duration;
 	}
-	update(){
+	update(currentFrame:CurrentFrame){
 		if(this.recipe){
 			if(this.timer > 0){
-				let minSatisfaction = 1;
+				let minSatisfaction = Math.min(this.timer, 1);
 				if(this.recipe.fluidInputs){
 					for(const fluidInput of this.recipe.fluidInputs){
 						const amountNeeded = fluidInput[1] / this.recipe.duration;
@@ -1003,9 +1003,9 @@ class BuildingWithRecipe extends Building {
 					}
 				}
 				this.timer -= minSatisfaction;
-				if(this.recipe.fluidOutputs){
+				if(this.recipe.fluidOutputs && minSatisfaction > 0){
 					for(const fluidOutput of this.recipe.fluidOutputs){
-						Fluid.fill(this.fluidOut, Fluids.get(fluidOutput[0]), fluidOutput[1]);
+						Fluid.fill(this.fluidOut, Fluids.get(fluidOutput[0]), fluidOutput[1] / this.recipe.duration * minSatisfaction);
 					}
 				}
 			} else if(this.timer > -1){
@@ -1017,6 +1017,7 @@ class BuildingWithRecipe extends Building {
 				}
 			}
 		}
+		super.update(currentFrame);
 	}
 	display(currentFrame:CurrentFrame, layer?:keyof typeof Gfx.layers){
 		super.display(currentFrame, layer);
@@ -1676,11 +1677,11 @@ class MultiBlockController extends BuildingWithRecipe {
 		this.secondaries = [];
 		super.break();
 	}
-	update(){
+	update(currentFrame:CurrentFrame){
 		if(this.secondaries.length != this.block.multiblockSize[0] * this.block.multiblockSize[1] - 1){
 			if(!this.resetSecondaries()) this.break();
 		}
-		super.update();
+		super.update(currentFrame);
 	}
 	/**Attempts to reconnects to secondaries, returning if the attempt succeeded. */
 	resetSecondaries():boolean {
