@@ -323,8 +323,11 @@ function mul(a:PosT, amount:number):PosT {
  * Game-related functions
  */
 
-function trigger(type:triggerType, buildingID?:RawBuildingID, itemID?:ItemID){
-	//nuked
+function trigger<T extends keyof Triggers>(key:T, data:Triggers[T]){
+	switch(key){
+		case "buildingFirstRun":
+			break;
+	}
 }
 
 function _alert(x:string){

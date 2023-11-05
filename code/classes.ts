@@ -181,7 +181,7 @@ class Level {
 		const block = Buildings.get(buildingID[0]);
 
 		//Only overwrite the same building once per build attempt.
-		//Otherwise, you could constantly overwrite a building on every frame you tried to build, which is not good.
+		//Otherwise, you could constantly overwrite a building on every frame you tried to build, which is not good. TODO fix, this doesnt actually work
 		if(block.isOverlay){
 			if(this.overlayBuildAtTile(tileX, tileY)?.block.id == buildingID[0] && this.overlayBuildAtTile(tileX, tileY)?.meta == buildingID[1]){
 				if(!canOverwriteBuilding) return false;
@@ -197,7 +197,6 @@ class Level {
 		}
 
 		if(block.canBuildAt(tileX, tileY, this)){
-			trigger(triggerType.placeBuilding, buildingID[0]);
 			if(block.prototype instanceof MultiBlockController){
 				//Multiblock handling
 				forceType<typeof MultiBlockController>(block);
@@ -222,6 +221,7 @@ class Level {
 					this.writeBuilding(secondary.pos.tileX, secondary.pos.tileY, secondary);
 					this.buildings.add(secondary);
 				});
+				trigger("placeBuilding", {building: controller});
 				return true;
 			} else {
 				const building = new block(
@@ -230,6 +230,7 @@ class Level {
 				);
 				this.buildings.add(building);
 				if(building instanceof PowerBuilding) this.grid.addBuild(building);
+				trigger("placeBuilding", {building});
 				if(building instanceof OverlayBuild){
 					return this.writeOverlayBuild(tileX, tileY, building);
 				} else {
@@ -237,7 +238,7 @@ class Level {
 				}
 			}
 		} else {
-			trigger(triggerType.placeBuildingFail, buildingID[0]);
+			trigger("placeBuildingFail", {pos: Pos.fromTileCoords(tileX, tileY, false), type: block});
 			return false;
 		}
 	}
@@ -1048,6 +1049,7 @@ class BuildingWithRecipe extends Building {
 class Miner extends Building {
 	timer: number;
 	miningItem: ItemID | null = null;
+	ranOnce = false;
 	static outputsItems = true;
 	constructor(tileX:number, tileY:number, meta:BuildingMeta, level:Level){
 		super(tileX, tileY, meta, level);
@@ -1070,7 +1072,10 @@ class Miner extends Building {
 		} else {
 			if(this.spawnItem(this.miningItem)){
 				this.timer = 61;
-				trigger(triggerType.buildingRun, this.block.id, this.miningItem);
+				if(!this.ranOnce){
+					trigger("buildingFirstRun", {building: this});
+					this.ranOnce = true;
+				}
 			}
 		}
 	}

@@ -192,7 +192,6 @@ class Level {
             this.buildingAtTile(tileX, tileY)?.break();
         }
         if (block.canBuildAt(tileX, tileY, this)) {
-            trigger(triggerType.placeBuilding, buildingID[0]);
             if (block.prototype instanceof MultiBlockController) {
                 forceType(block);
                 const offsets = MultiBlockController.getOffsetsForSize(...block.multiblockSize);
@@ -209,6 +208,7 @@ class Level {
                     this.writeBuilding(secondary.pos.tileX, secondary.pos.tileY, secondary);
                     this.buildings.add(secondary);
                 });
+                trigger("placeBuilding", { building: controller });
                 return true;
             }
             else {
@@ -216,6 +216,7 @@ class Level {
                 this.buildings.add(building);
                 if (building instanceof PowerBuilding)
                     this.grid.addBuild(building);
+                trigger("placeBuilding", { building });
                 if (building instanceof OverlayBuild) {
                     return this.writeOverlayBuild(tileX, tileY, building);
                 }
@@ -225,7 +226,7 @@ class Level {
             }
         }
         else {
-            trigger(triggerType.placeBuildingFail, buildingID[0]);
+            trigger("placeBuildingFail", { pos: Pos.fromTileCoords(tileX, tileY, false), type: block });
             return false;
         }
     }
@@ -961,6 +962,7 @@ class Miner extends Building {
     constructor(tileX, tileY, meta, level) {
         super(tileX, tileY, meta, level);
         this.miningItem = null;
+        this.ranOnce = false;
         this.timer = 61;
         for (let recipe of recipes.base_mining.recipes) {
             if (recipe.tile == level.tileAtByTile(tileX, tileY)) {
@@ -982,7 +984,10 @@ class Miner extends Building {
         else {
             if (this.spawnItem(this.miningItem)) {
                 this.timer = 61;
-                trigger(triggerType.buildingRun, this.block.id, this.miningItem);
+                if (!this.ranOnce) {
+                    trigger("buildingFirstRun", { building: this });
+                    this.ranOnce = true;
+                }
             }
         }
     }

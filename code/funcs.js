@@ -262,7 +262,11 @@ function add(a, b) {
 function mul(a, amount) {
     return [a[0] * amount, a[1] * amount];
 }
-function trigger(type, buildingID, itemID) {
+function trigger(key, data) {
+    switch (key) {
+        case "buildingFirstRun":
+            break;
+    }
 }
 function _alert(x) {
     Game.alerts.list.push(x);
