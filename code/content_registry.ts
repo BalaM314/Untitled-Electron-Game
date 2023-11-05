@@ -34,7 +34,7 @@ class ContentRegistryI<K extends string, T extends Content<string>> {
 	}
 }
 
-const recipes:Recipes = {
+const recipes = {
 	base_mining: {
 		recipes: [
 			{
@@ -129,11 +129,22 @@ const recipes:Recipes = {
 				duration: 30
 			}
 		]
+	},
+	base_boiling: {
+		recipes: [
+			{
+				inputs: ["base_coal"],
+				fluidInputs: [["base_water", 1]],
+				fluidOutputs: [["base_steam", 50]],
+				duration: 30
+			}
+		]
 	}
-};
+} satisfies Recipes;
 
 const Fluids = new ContentRegistryI<FluidID, Fluid>();
 Fluids.register(new Fluid("base_water"));
+Fluids.register(new Fluid("base_steam"));
 
 const Buildings = new ContentRegistryC<RawBuildingID, typeof Building>();
 Buildings.register("base_conveyor", Conveyor);
@@ -157,3 +168,4 @@ Buildings.register("base_power_source", PowerSource);
 Buildings.register("base_pipe", Pipe);
 Buildings.register("base_pump", Pump, { outputFluid: Fluids.get("base_water") });
 Buildings.register("base_tank", Tank);
+Buildings.register("base_boiler", BuildingWithRecipe, { recipeType: recipes.base_boiling, fluidCapacity: 100, acceptsFluids: true, outputsFluids: true, fluidExtraPressure: 1, runEffect: [Fx.smoke, "#222", 5, 1] });

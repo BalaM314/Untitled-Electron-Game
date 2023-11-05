@@ -77,6 +77,8 @@ power_source.name = Power Source
 pipe.name = Pipe
 pump.name = Pump
 tank.name = Tank
+boiler.name = Boiler
+boiler.description = Burns coal to heat water into steam.
 
 [item]
 null.name = Debug Item
@@ -101,6 +103,7 @@ motor.name = Motor
 
 [fluid]
 water.name = Water
+steam.name = Steam
 `, "base_");
 
 
@@ -123,7 +126,7 @@ type ItemID =
 	"base_motor"
 ;
 
-type FluidID = "base_water";
+type FluidID = "base_water" | "base_steam";
 
 type Direction = {
 	num: number;
@@ -266,7 +269,8 @@ const keybinds = extend<Keybinds>()({
 		type_14: new Keybind("f4", [], () => selectID("base_power_source")),
 		type_15: new Keybind("f6", [], () => selectID("base_pipe")),
 		type_16: new Keybind("f7", [], () => selectID("base_pump")),
-		type_17: new Keybind("f8", [], () => selectID("base_tank")),		
+		type_17: new Keybind("f8", [], () => selectID("base_tank")),
+		type_18: new Keybind("f9", [], () => selectID("base_boiler")),
 		type_0: new Keybind("0", [], () => selectID("base_null")),
 	},
 	display: {

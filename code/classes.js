@@ -906,7 +906,7 @@ let BuildingWithRecipe = (() => {
                     }
                 }
                 else if (this.timer > -1) {
-                    if (this.recipe.outputs && this.spawnItem(this.recipe.outputs[0])) {
+                    if ((this.recipe.outputs && this.spawnItem(this.recipe.outputs[0])) || !this.recipe.outputs) {
                         if (this.block.craftEffect)
                             this.block.craftEffect[0].at(this.centeredPos(), this.block.craftEffect[1]);
                         this.timer = -1;
