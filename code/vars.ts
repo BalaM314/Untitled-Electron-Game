@@ -164,11 +164,17 @@ const Direction: {
 	};
 })();
 
-enum triggerType {
-	placeBuilding,
-	placeBuildingFail,
-	spawnItem,
-	buildingRun
+type Triggers = {
+	placeBuilding: {
+		building: Building,
+	},
+	placeBuildingFail: {
+		type: typeof Building,
+		pos: Pos,
+	},
+	buildingFirstRun: {
+		building: Building,
+	}
 }
 
 const generation_consts = {

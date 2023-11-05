@@ -328,9 +328,10 @@ class ParticleEffect {
 	lifetime = 1000;
 	/** default color */
 	color = "white";
+	clipSize = 100;
 	//assertion: set in Object.assign
 	drawer!: (args:EffectParams) => unknown;
-	static effects = new Set<EffectData>();
+	static effects = new Set<EffectData>(); //maybe quadtree?
 	private static id = 0;
 	constructor(args:Partial<ParticleEffect> & Pick<ParticleEffect, "drawer">){
 		Object.assign(this, args); //very safe
@@ -355,10 +356,10 @@ class ParticleEffect {
 		});
 	}
 	static displayAll(){
-		Gfx.layer("effects");//todo effects layer
+		Gfx.layer("effects");
 		this.effects.forEach(e => {
 			if(Date.now() >= e.createdAt + e.type.lifetime) this.effects.delete(e);
-			else e.type.display(e);
+			else if(Camera.isPointVisible(e.pos.pixel, e.type.clipSize)) e.type.display(e);
 		});
 	}
 }

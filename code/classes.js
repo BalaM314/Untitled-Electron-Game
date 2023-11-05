@@ -16,10 +16,10 @@ var __esDecorate = (this && this.__esDecorate) || function (ctor, descriptorIn, 
             if (result === null || typeof result !== "object") throw new TypeError("Object expected");
             if (_ = accept(result.get)) descriptor.get = _;
             if (_ = accept(result.set)) descriptor.set = _;
-            if (_ = accept(result.init)) initializers.push(_);
+            if (_ = accept(result.init)) initializers.unshift(_);
         }
         else if (_ = accept(result)) {
-            if (kind === "field") initializers.push(_);
+            if (kind === "field") initializers.unshift(_);
             else descriptor[key] = _;
         }
     }
@@ -810,8 +810,10 @@ let Building = (() => {
     };
     __setFunctionName(_classThis, "Building");
     (() => {
-        __esDecorate(null, _classDescriptor = { value: _classThis }, _classDecorators, { kind: "class", name: _classThis.name }, null, _classExtraInitializers);
+        const _metadata = typeof Symbol === "function" && Symbol.metadata ? Object.create(null) : void 0;
+        __esDecorate(null, _classDescriptor = { value: _classThis }, _classDecorators, { kind: "class", name: _classThis.name, metadata: _metadata }, null, _classExtraInitializers);
         Building = _classThis = _classDescriptor.value;
+        if (_metadata) Object.defineProperty(_classThis, Symbol.metadata, { enumerable: true, configurable: true, writable: true, value: _metadata });
     })();
     _classThis.outputsItems = false;
     _classThis.acceptsItems = false;
@@ -831,11 +833,12 @@ let Building = (() => {
     return Building = _classThis;
 })();
 let BuildingWithRecipe = (() => {
-    let _classDecorators_1 = [Abstract];
-    let _classDescriptor_1;
-    let _classExtraInitializers_1 = [];
-    let _classThis_1;
-    var BuildingWithRecipe = _classThis_1 = class extends Building {
+    let _classDecorators = [Abstract];
+    let _classDescriptor;
+    let _classExtraInitializers = [];
+    let _classThis;
+    let _classSuper = Building;
+    var BuildingWithRecipe = _classThis = class extends _classSuper {
         constructor(tileX, tileY, meta, level) {
             super(tileX, tileY, meta, level);
             this.timer = -1;
@@ -937,20 +940,22 @@ let BuildingWithRecipe = (() => {
             });
         }
     };
-    __setFunctionName(_classThis_1, "BuildingWithRecipe");
+    __setFunctionName(_classThis, "BuildingWithRecipe");
     (() => {
-        __esDecorate(null, _classDescriptor_1 = { value: _classThis_1 }, _classDecorators_1, { kind: "class", name: _classThis_1.name }, null, _classExtraInitializers_1);
-        BuildingWithRecipe = _classThis_1 = _classDescriptor_1.value;
+        const _metadata = typeof Symbol === "function" && Symbol.metadata ? Object.create(_classSuper[Symbol.metadata] ?? null) : void 0;
+        __esDecorate(null, _classDescriptor = { value: _classThis }, _classDecorators, { kind: "class", name: _classThis.name, metadata: _metadata }, null, _classExtraInitializers);
+        BuildingWithRecipe = _classThis = _classDescriptor.value;
+        if (_metadata) Object.defineProperty(_classThis, Symbol.metadata, { enumerable: true, configurable: true, writable: true, value: _metadata });
     })();
-    _classThis_1.outputsItems = true;
-    _classThis_1.acceptsItems = true;
-    _classThis_1.recipeMaxInputs = 3;
-    _classThis_1.craftEffect = null;
-    _classThis_1.runEffect = null;
+    _classThis.outputsItems = true;
+    _classThis.acceptsItems = true;
+    _classThis.recipeMaxInputs = 3;
+    _classThis.craftEffect = null;
+    _classThis.runEffect = null;
     (() => {
-        __runInitializers(_classThis_1, _classExtraInitializers_1);
+        __runInitializers(_classThis, _classExtraInitializers);
     })();
-    return BuildingWithRecipe = _classThis_1;
+    return BuildingWithRecipe = _classThis;
 })();
 class Miner extends Building {
     constructor(tileX, tileY, meta, level) {

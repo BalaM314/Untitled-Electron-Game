@@ -131,13 +131,6 @@ const Direction = (() => {
         number: 4
     };
 })();
-var triggerType;
-(function (triggerType) {
-    triggerType[triggerType["placeBuilding"] = 0] = "placeBuilding";
-    triggerType[triggerType["placeBuildingFail"] = 1] = "placeBuildingFail";
-    triggerType[triggerType["spawnItem"] = 2] = "spawnItem";
-    triggerType[triggerType["buildingRun"] = 3] = "buildingRun";
-})(triggerType || (triggerType = {}));
 const generation_consts = {
     perlin_scale: 2 * Math.PI,
     y_offset: 2031,

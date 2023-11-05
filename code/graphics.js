@@ -204,6 +204,7 @@ class ParticleEffect {
     constructor(args) {
         this.lifetime = 1000;
         this.color = "white";
+        this.clipSize = 100;
         Object.assign(this, args);
     }
     display(data) {
@@ -230,7 +231,7 @@ class ParticleEffect {
         this.effects.forEach(e => {
             if (Date.now() >= e.createdAt + e.type.lifetime)
                 this.effects.delete(e);
-            else
+            else if (Camera.isPointVisible(e.pos.pixel, e.type.clipSize))
                 e.type.display(e);
         });
     }
