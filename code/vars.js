@@ -177,6 +177,7 @@ const keybinds = extend()({
     },
     placement: {
         force_straight_conveyor: new Keybind("shift"),
+        allow_multiple_overwrite: new Keybind("shift"),
         break_building: new Keybind("backspace"),
         modifier_1: new Keybind(",", [], () => { placedBuilding.modifier = 0; }),
         modifier_2: new Keybind(".", [], () => { placedBuilding.modifier = 1; }),
@@ -219,9 +220,16 @@ const Input = {
         return [Input.mouseX, Input.mouseY];
     },
     mouseDown: false,
+    canOverwriteBuilding() {
+        return !this.buildingPlaced || keybinds.placement.allow_multiple_overwrite.isHeld();
+    },
+    buildingPlaced: false,
     latestMouseEvent: null,
     keysHeld: new Set(),
     lastKeysPressed: new Array(11).fill(""),
+    shift: () => Input.keysHeld.has("shift"),
+    alt: () => Input.keysHeld.has("alt"),
+    ctrl: () => Input.keysHeld.has("ctrl"),
 };
 let settings = {
     debug: true,

@@ -16,7 +16,7 @@ function registerEventHandlers(){
 			Input.mouseDown = true;
 		}
 		Input.latestMouseEvent = e;
-		canOverwriteBuilding = true;
+		Input.buildingPlaced = false;
 		if(state[Game.state]){
 			state[Game.state]?.onmousedown?.(e);
 		}
@@ -26,10 +26,10 @@ function registerEventHandlers(){
 			Input.mouseDown = false;
 		}
 		Input.latestMouseEvent = e;
-		canOverwriteBuilding = true;
+		Input.buildingPlaced = false;
 	}
 
-	//For touch screens
+	//For touch screens TODO fix
 	clickcapture.addEventListener("touchstart", (e:any) => {
 		e.x = e.touches[0].clientX;
 		e.y = e.touches[0].clientY;
@@ -40,7 +40,7 @@ function registerEventHandlers(){
 		//Delays by 500ms
 		setTimeout(() => {
 			Input.mouseDown = false;
-			canOverwriteBuilding = true;
+			Input.buildingPlaced = false;
 		}, 500);
 	});
 	clickcapture.addEventListener("touchmove", (e:any) => {
@@ -684,8 +684,6 @@ let placedBuilding: {
 		return Buildings.get(this.type).getID(this.type, this.direction, this.modifier);
 	}
 };
-
-let canOverwriteBuilding = true;
 
 
 /**Called once on page load. */

@@ -12,7 +12,7 @@ function registerEventHandlers() {
             Input.mouseDown = true;
         }
         Input.latestMouseEvent = e;
-        canOverwriteBuilding = true;
+        Input.buildingPlaced = false;
         if (state[Game.state]) {
             state[Game.state]?.onmousedown?.(e);
         }
@@ -22,7 +22,7 @@ function registerEventHandlers() {
             Input.mouseDown = false;
         }
         Input.latestMouseEvent = e;
-        canOverwriteBuilding = true;
+        Input.buildingPlaced = false;
     };
     clickcapture.addEventListener("touchstart", (e) => {
         e.x = e.touches[0].clientX;
@@ -32,7 +32,7 @@ function registerEventHandlers() {
     clickcapture.addEventListener("touchend", (e) => {
         setTimeout(() => {
             Input.mouseDown = false;
-            canOverwriteBuilding = true;
+            Input.buildingPlaced = false;
         }, 500);
     });
     clickcapture.addEventListener("touchmove", (e) => {
@@ -566,7 +566,6 @@ let placedBuilding = {
         return Buildings.get(this.type).getID(this.type, this.direction, this.modifier);
     }
 };
-let canOverwriteBuilding = true;
 function init() {
     try {
         assert(localStorage.getItem("settings"));

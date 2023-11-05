@@ -176,21 +176,20 @@ class Level {
         }
         const block = Buildings.get(buildingID[0]);
         if (block.isOverlay) {
-            if (this.overlayBuildAtTile(tileX, tileY)?.block.id == buildingID[0] && this.overlayBuildAtTile(tileX, tileY)?.meta == buildingID[1]) {
-                if (!canOverwriteBuilding)
-                    return false;
-                canOverwriteBuilding = false;
-            }
+            if (this.overlayBuildAtTile(tileX, tileY)?.block.id == buildingID[0] &&
+                this.overlayBuildAtTile(tileX, tileY)?.meta == buildingID[1] &&
+                !Input.canOverwriteBuilding())
+                return false;
             this.overlayBuildAtTile(tileX, tileY)?.break();
         }
         else {
-            if (this.buildingAtTile(tileX, tileY)?.block.id == buildingID[0] && this.buildingAtTile(tileX, tileY)?.meta == buildingID[1]) {
-                if (!canOverwriteBuilding)
-                    return false;
-                canOverwriteBuilding = false;
-            }
+            if (this.buildingAtTile(tileX, tileY)?.block.id == buildingID[0] &&
+                this.buildingAtTile(tileX, tileY)?.meta == buildingID[1] &&
+                !Input.canOverwriteBuilding())
+                return false;
             this.buildingAtTile(tileX, tileY)?.break();
         }
+        Input.buildingPlaced = true;
         if (block.canBuildAt(tileX, tileY, this)) {
             if (block.prototype instanceof MultiBlockController) {
                 forceType(block);
