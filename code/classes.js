@@ -625,6 +625,7 @@ let Building = (() => {
             this.level = level;
             this.item = null;
             this.fluid = null;
+            this.fluidOut = null;
             this.cItemOut = 0;
             this.cFluidOut = 3;
             this.fluidThroughput = 0;
@@ -755,18 +756,19 @@ let Building = (() => {
             }
         }
         dumpFluid() {
-            if (this.fluid && this.fluid[1] > 0) {
-                this.fluidThroughput = 0;
-                for (let i = 0; i < Direction.number; i++) {
-                    if (++this.cFluidOut > 3)
-                        this.cFluidOut = 0;
-                    const direction = Direction.all[this.cFluidOut];
-                    const build = this.buildAt(direction);
-                    if (build && this.block.canOutputFluidTo(build) &&
-                        this.outputsFluidToSide(direction) && build.acceptsFluidFromSide(direction.opposite)) {
-                        this.fluidThroughput = build.acceptFluid(this.fluid, this.fluidOutputSpeed(build), this);
-                        return;
-                    }
+            const fluid = this.fluidOut ?? this.fluid;
+            if (!fluid || fluid[0] == null || fluid[1] == 0)
+                return;
+            this.fluidThroughput = 0;
+            for (let i = 0; i < Direction.number; i++) {
+                if (++this.cFluidOut > 3)
+                    this.cFluidOut = 0;
+                const direction = Direction.all[this.cFluidOut];
+                const build = this.buildAt(direction);
+                if (build && this.block.canOutputFluidTo(build) &&
+                    this.outputsFluidToSide(direction) && build.acceptsFluidFromSide(direction.opposite)) {
+                    this.fluidThroughput = build.acceptFluid(fluid, this.fluidOutputSpeed(build), this);
+                    return;
                 }
             }
         }
@@ -776,9 +778,10 @@ let Building = (() => {
             return null;
         }
         pressureOut() {
-            if (!this.fluid)
+            const fluid = this.fluidOut ?? this.fluid;
+            if (!fluid)
                 return 0;
-            const fillLevel = this.fluid[1] / this.block.fluidCapacity;
+            const fillLevel = fluid[1] / this.block.fluidCapacity;
             return fillLevel;
         }
         pressureIn() {
@@ -844,6 +847,7 @@ let BuildingWithRecipe = (() => {
             this.timer = -1;
             this.recipe = null;
             this.items = [];
+            this.fluidOut = [null, 0, this.block.fluidCapacity];
         }
         acceptItem(item) {
             for (let i = 0; i < this.block.recipeMaxInputs; i++) {
@@ -881,8 +885,8 @@ let BuildingWithRecipe = (() => {
         update() {
             if (this.recipe) {
                 if (this.timer > 0) {
+                    let minSatisfaction = 1;
                     if (this.recipe.fluidInputs) {
-                        let minSatisfaction = 1;
                         for (const fluidInput of this.recipe.fluidInputs) {
                             const amountNeeded = fluidInput[1] / this.recipe.duration;
                             const amountDrained = Fluid.checkDrain(this.fluid, amountNeeded);
@@ -893,14 +897,16 @@ let BuildingWithRecipe = (() => {
                             if (Fluid.drain(this.fluid, amountNeeded) != amountNeeded)
                                 throw new ShouldNotBePossibleError(`logic error when consuming fluids`);
                         }
-                        this.timer -= minSatisfaction;
                     }
-                    else {
-                        this.timer--;
+                    this.timer -= minSatisfaction;
+                    if (this.recipe.fluidOutputs) {
+                        for (const fluidOutput of this.recipe.fluidOutputs) {
+                            Fluid.fill(this.fluidOut, Fluids.get(fluidOutput[0]), fluidOutput[1]);
+                        }
                     }
                 }
                 else if (this.timer > -1) {
-                    if (this.spawnItem(this.recipe.outputs[0])) {
+                    if (this.recipe.outputs && this.spawnItem(this.recipe.outputs[0])) {
                         if (this.block.craftEffect)
                             this.block.craftEffect[0].at(this.centeredPos(), this.block.craftEffect[1]);
                         this.timer = -1;
@@ -954,7 +960,7 @@ let BuildingWithRecipe = (() => {
         }
         static outputDrawer() {
             return ((build, currentFrame) => {
-                if (build.recipe) {
+                if (build.recipe?.outputs) {
                     Item.display(build.recipe.outputs[0], build.centeredPos());
                 }
             });

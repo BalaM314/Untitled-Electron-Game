@@ -719,6 +719,8 @@ class Building {
 
 	item: Item | null = null;
 	fluid: FluidStack | null = null;
+	/** If set by a subclass, uses this for outputting. */
+	fluidOut: FluidStack | null = null;
 	pos:Pos;
 	/** Counter that specifies which direction to start at when trying to dump items. Used for even distribution. */
 	cItemOut = 0;
@@ -876,19 +878,19 @@ class Building {
 		}
 	}
 	dumpFluid(){
-		if(this.fluid && this.fluid[1] > 0){
-			this.fluidThroughput = 0;
-			for(let i = 0; i < Direction.number; i ++){
-				if(++this.cFluidOut > 3) this.cFluidOut = 0;
-				const direction = Direction.all[this.cFluidOut];
-				const build = this.buildAt(direction);
-				if(
-					build && this.block.canOutputFluidTo(build) &&
-					this.outputsFluidToSide(direction) && build.acceptsFluidFromSide(direction.opposite)
-				){
-					this.fluidThroughput = build.acceptFluid(this.fluid, this.fluidOutputSpeed(build), this)!;
-					return;
-				}
+		const fluid = this.fluidOut ?? this.fluid;
+		if(!fluid || fluid[0] == null || fluid[1] == 0) return;
+		this.fluidThroughput = 0;
+		for(let i = 0; i < Direction.number; i ++){
+			if(++this.cFluidOut > 3) this.cFluidOut = 0;
+			const direction = Direction.all[this.cFluidOut];
+			const build = this.buildAt(direction);
+			if(
+				build && this.block.canOutputFluidTo(build) &&
+				this.outputsFluidToSide(direction) && build.acceptsFluidFromSide(direction.opposite)
+			){
+				this.fluidThroughput = build.acceptFluid(fluid, this.fluidOutputSpeed(build), this)!;
+				return;
 			}
 		}
 	}
@@ -899,8 +901,9 @@ class Building {
 	}
 	/** should be between 0 and 1. */
 	pressureOut(){
-		if(!this.fluid) return 0;
-		const fillLevel = this.fluid[1] / this.block.fluidCapacity;
+		const fluid = this.fluidOut ?? this.fluid;
+		if(!fluid) return 0;
+		const fillLevel = fluid[1] / this.block.fluidCapacity;
 		//is this fine?
 		return fillLevel;
 	}
@@ -938,6 +941,7 @@ class BuildingWithRecipe extends Building {
 	timer: number = -1;
 	recipe: Recipe | null = null;
 	items: Item[] = [];
+	fluidOut: FluidStack = [null, 0, this.block.fluidCapacity];
 	static outputsItems = true;
 	static acceptsItems = true;
 	static recipeType: {recipes: Recipe[]};
@@ -986,8 +990,8 @@ class BuildingWithRecipe extends Building {
 	update(){
 		if(this.recipe){
 			if(this.timer > 0){
+				let minSatisfaction = 1;
 				if(this.recipe.fluidInputs){
-					let minSatisfaction = 1;
 					for(const fluidInput of this.recipe.fluidInputs){
 						const amountNeeded = fluidInput[1] / this.recipe.duration;
 						const amountDrained = Fluid.checkDrain(this.fluid!, amountNeeded);
@@ -997,12 +1001,15 @@ class BuildingWithRecipe extends Building {
 						const amountNeeded = fluidInput[1] / this.recipe.duration * minSatisfaction;
 						if(Fluid.drain(this.fluid!, amountNeeded) != amountNeeded) throw new ShouldNotBePossibleError(`logic error when consuming fluids`);
 					}
-					this.timer -= minSatisfaction;
-				} else {
-					this.timer --;
+				}
+				this.timer -= minSatisfaction;
+				if(this.recipe.fluidOutputs){
+					for(const fluidOutput of this.recipe.fluidOutputs){
+						Fluid.fill(this.fluidOut, Fluids.get(fluidOutput[0]), fluidOutput[1]);
+					}
 				}
 			} else if(this.timer > -1){
-				if(this.spawnItem(this.recipe.outputs[0])){
+				if(this.recipe.outputs && this.spawnItem(this.recipe.outputs[0])){
 					if(this.block.craftEffect) this.block.craftEffect[0].at(this.centeredPos(), this.block.craftEffect[1]);
 					this.timer = -1;
 					this.items = [];
@@ -1058,7 +1065,7 @@ class BuildingWithRecipe extends Building {
 	}
 	static outputDrawer<T extends BuildingWithRecipe>(){
 		return ((build:T, currentFrame:CurrentFrame) => {
-			if(build.recipe){
+			if(build.recipe?.outputs){
 				Item.display(build.recipe.outputs[0], build.centeredPos());
 			}
 		}) as BlockDrawer<Building>;
