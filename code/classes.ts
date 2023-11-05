@@ -181,7 +181,7 @@ class Level {
 		const block = Buildings.get(buildingID[0]);
 
 		//Only overwrite the same building once per build attempt.
-		//Otherwise, you could constantly overwrite a building on every frame you tried to build, which is not good. TODO fix, this doesnt actually work
+		//Otherwise, you could constantly overwrite a building on every frame you tried to build, which is not good.
 		if(block.isOverlay){
 			if(
 				this.overlayBuildAtTile(tileX, tileY)?.block.id == buildingID[0] &&

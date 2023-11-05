@@ -12,7 +12,7 @@ function registerEventHandlers(){
 	clickcapture.onmousedown = (e:MouseEvent) => {
 		//The default action is to bring up a context menu or the scroller thing, not desirable
 		if(e.button) e.preventDefault();
-		if(e.button == 0){
+		if(e.button === 0){
 			Input.mouseDown = true;
 		}
 		Input.latestMouseEvent = e;
@@ -29,19 +29,22 @@ function registerEventHandlers(){
 		Input.buildingPlaced = false;
 	}
 
-	//For touch screens TODO fix
+	//For touch screens
 	clickcapture.addEventListener("touchstart", (e:any) => {
 		e.x = e.touches[0].clientX;
 		e.y = e.touches[0].clientY;
+		e.button = 0;
 		clickcapture.onmousedown?.(e);
 	});
 	clickcapture.addEventListener("touchend", (e:any) => {
 		//When the screen is tapped, touchend is fired immediately after touchstart, leaving no time for buildings to be placed.
-		//Delays by 500ms
+		//Delays by 250ms
+		e.x = e.changedTouches[0].clientX;
+		e.y = e.changedTouches[0].clientY;
+		e.button = 0;
 		setTimeout(() => {
-			Input.mouseDown = false;
-			Input.buildingPlaced = false;
-		}, 500);
+			clickcapture.onmouseup?.(e);
+		}, 250);
 	});
 	clickcapture.addEventListener("touchmove", (e:any) => {
 		e.x = e.touches[0].clientX;
@@ -135,8 +138,6 @@ function registerEventHandlers(){
 				if(confirm("Could not save automatically on page exit because your current world is unrelated to your saved world.\nWould you like to save anyway? This will overwrite your current save!")){
 					localStorage.setItem('save1', JSON.stringify(exportData()));
 					localStorage.removeItem("save-recovered");
-				} else {
-					alert("Sorry there aren't any save slots yet.");
 				}
 			}, 1);
 		}
