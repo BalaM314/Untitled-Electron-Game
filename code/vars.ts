@@ -366,7 +366,7 @@ let Game: {
 let level1:Level = null!;
 const splashes:string[] = [
 	"Get out of my files!",
-	"Remember everyone, the secret to a good game in 2020 is s p l a s h t e x t",
+	`Remember everyone, the secret to a good game in ${new Date().getFullYear()} is s p l a s h t e x t`,
 	"Got any grapes?",
 	"e",
 	"Hello fellow untitled electron game enthusiast, I have made this splash text ridiculously long to the point where it is only actually readable by accessing the game files. w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w Hello fellow untitled electron game enthusiast, I have made this splash text ridiculously long to the point where it is only actually readable by accessing the game files.",
