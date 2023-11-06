@@ -411,18 +411,17 @@ let state: {
 			Gfx.layer("overlay");
 			Gfx.font("30px sans-serif");
 			Gfx.color("black");
-			ctxOverlays.textAlign = "left";
-			ctxOverlays.fillText(
-				Camera.unproject(Input.mouseX, Input.mouseY).map(Pos.pixelToTile).join(","),
+			Gfx.textAlign("left");
+			Gfx.text(
+				Camera.unproject(...Input.mouse).map(Pos.pixelToTile).join(","),
 				10, 100
 			);
 			
 			if(settings.debug){
-				ctxOverlays.fillText("C: " + currentFrame.cps, 10, 150);
-				ctxOverlays.fillText("I: " + currentFrame.ips, 10, 200);
+				Gfx.text(`C:${currentFrame.cps} I:${currentFrame.ips}`, 10, 150);
 			}
 		
-			for(let item of (resourcesEl).children){
+			for(let item of resourcesEl.children){
 				(item as HTMLSpanElement).innerText = (level1.resources[item.id] ?? 0).toString();
 			}
 		},
@@ -440,7 +439,7 @@ let state: {
 		onmouseheld(){
 			if(Game.paused) return;
 			if(!Input.latestMouseEvent) return;
-			if(!(Input.keysHeld.has("control") || keybinds.placement.break_building.isHeld()) && placedBuilding.ID[0] != "base_null"){
+			if(!(Input.ctrl() || keybinds.placement.break_building.isHeld()) && placedBuilding.ID[0] != "base_null"){
 				level1.buildBuilding(
 					...(Camera.unproject(Input.latestMouseEvent.x, Input.latestMouseEvent.y).map(Pos.pixelToTile)),
 					placedBuilding.ID

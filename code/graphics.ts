@@ -200,12 +200,10 @@ class Gfx {
 		this.ctx.fillText(text, x, y);
 	}
 	static pText(pixelX:number, pixelY:number, text:string){
-		if(mode == RectMode.CORNER)
-		_ctx.fillRect(
+		this.ctx.fillText(
 			(pixelX + Camera.scrollX) * Camera.zoomLevel + Camera.width / 2,
 			(pixelY + Camera.scrollY) * Camera.zoomLevel + Camera.height / 2,
-			width * Camera.zoomLevel,
-			height * Camera.zoomLevel
+			text
 		);
 	}
 	static lineRect(x:number, y:number, w:number, h:number, mode:RectMode = this.rectMode, _ctx = this.ctx){
@@ -229,6 +227,9 @@ class Gfx {
 	}
 	static font(font:string) {
 		this.ctx.font = font;
+	}
+	static textAlign(align:"start" | "end" | "left" | "right" | "center") {
+		this.ctx.textAlign = align;
 	}
 	static rect(x:number, y:number, w:number, h:number, mode:RectMode = this.rectMode, _ctx = this.ctx){
 		if(mode == RectMode.CENTER){
