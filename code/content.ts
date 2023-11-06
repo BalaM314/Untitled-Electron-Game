@@ -14,7 +14,7 @@ type ItemStack = [id:ItemID, amount:number];
 type FluidStack = [type:Fluid | null, amount:number, capacity:number];
 class Fluid extends Content<FluidID> {
 
-	constructor(id:FluidID){
+	constructor(id:FluidID, public color:string){
 		super(id);
 	}
 	/**

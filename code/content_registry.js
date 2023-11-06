@@ -133,16 +133,16 @@ const recipes = {
         recipes: [
             {
                 inputs: ["base_coal"],
-                fluidInputs: [["base_water", 1]],
-                fluidOutputs: [["base_steam", 50]],
+                fluidInputs: [["base_water", 5]],
+                fluidOutputs: [["base_steam", 100]],
                 duration: 30
             }
         ]
     }
 };
 const Fluids = new ContentRegistryI();
-Fluids.register(new Fluid("base_water"));
-Fluids.register(new Fluid("base_steam"));
+Fluids.register(new Fluid("base_water", "blue"));
+Fluids.register(new Fluid("base_steam", "white"));
 const Buildings = new ContentRegistryC();
 Buildings.register("base_conveyor", Conveyor);
 Buildings.register("base_miner", Miner);

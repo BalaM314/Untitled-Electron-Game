@@ -134,8 +134,8 @@ const recipes = {
 		recipes: [
 			{
 				inputs: ["base_coal"],
-				fluidInputs: [["base_water", 1]],
-				fluidOutputs: [["base_steam", 50]],
+				fluidInputs: [["base_water", 5]],
+				fluidOutputs: [["base_steam", 100]],
 				duration: 30
 			}
 		]
@@ -143,8 +143,8 @@ const recipes = {
 } satisfies Recipes;
 
 const Fluids = new ContentRegistryI<FluidID, Fluid>();
-Fluids.register(new Fluid("base_water"));
-Fluids.register(new Fluid("base_steam"));
+Fluids.register(new Fluid("base_water", "blue"));
+Fluids.register(new Fluid("base_steam", "white"));
 
 const Buildings = new ContentRegistryC<RawBuildingID, typeof Building>();
 Buildings.register("base_conveyor", Conveyor);

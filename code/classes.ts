@@ -995,7 +995,7 @@ class BuildingWithRecipe extends Building {
 					for(const fluidInput of this.recipe.fluidInputs){
 						const amountNeeded = fluidInput[1] / this.recipe.duration;
 						const amountDrained = Fluid.checkDrain(this.fluid!, amountNeeded);
-						minSatisfaction = Math.min(amountDrained, minSatisfaction);
+						minSatisfaction = Math.min(amountDrained / amountNeeded, minSatisfaction);
 					}
 					for(const fluidInput of this.recipe.fluidInputs){
 						const amountNeeded = fluidInput[1] / this.recipe.duration * minSatisfaction;
@@ -1788,8 +1788,9 @@ class Tank extends Building {
 		};
 	}
 	static drawer:any = function(build:Tank, currentFrame:CurrentFrame){
+		if(!build.fluid![0]) return;
 		Gfx.layer("buildingsUnder");
-		Gfx.fillColor("blue");
+		Gfx.fillColor(build.fluid![0].color);
 		Gfx.alpha(build.fluid![1] / build.block.fluidCapacity);
 		Gfx.tRect(...build.pos.tileC, 0.8, 0.8, RectMode.CENTER);
 	};
@@ -1831,9 +1832,10 @@ class Pipe extends Building {
 		};
 	}
 	static drawer:any = function(build:Pipe, currentFrame:CurrentFrame){
+		if(!build.fluid![0]) return;
 		const fillFract = build.fluid![1] / build.block.fluidCapacity;
 		Gfx.layer("buildingsUnder");
-		Gfx.fillColor("blue");
+		Gfx.fillColor(build.fluid![0].color);
 		Gfx.alpha(fillFract);
 		Gfx.tRect(...build.pos.tileC, 0.65 + +build.outputSide.horizontal * 0.35, 0.65 + +build.outputSide.vertical * 0.35, RectMode.CENTER);
 		Gfx.alpha(1);
@@ -1867,8 +1869,9 @@ class Pump extends Building {
 		super.update(currentFrame);
 	}
 	static drawer:any = function(build:Pump, currentFrame:CurrentFrame){
+		if(!build.fluid![0]) return;
 		Gfx.layer("buildingsUnder");
-		Gfx.fillColor("blue");
+		Gfx.fillColor(build.fluid![0].color);
 		Gfx.alpha(build.fluid![1] / build.block.fluidCapacity);
 		Gfx.tRect(...build.pos.tileC, 0.8, 0.8, RectMode.CENTER);
 	};

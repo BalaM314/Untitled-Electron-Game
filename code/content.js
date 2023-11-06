@@ -8,8 +8,9 @@ class Content {
     }
 }
 class Fluid extends Content {
-    constructor(id) {
+    constructor(id, color) {
         super(id);
+        this.color = color;
     }
     static merge(from, to, maxThroughput = Infinity) {
         if (from[0] == null || from[1] == 0)
