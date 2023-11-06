@@ -1080,6 +1080,15 @@ class BuildingWithRecipe extends Building {
 			}
 		}) as BlockDrawer<Building>;
 	}
+	static drawFluid<T extends BuildingWithRecipe>(offset:PosT, width:number, height:number){
+		return ((build:T, currentFrame:CurrentFrame) => {
+			if(!build.fluid![0]) return;
+			Gfx.layer("buildingsUnder");
+			Gfx.fillColor(build.fluid![0].color);
+			Gfx.alpha(build.fluid![1] / build.block.fluidCapacity);
+			Gfx.tRect(...add(build.pos.tileC, offset), width, height, RectMode.CENTER);
+		}) as BlockDrawer<Building>;
+	}
 }
 
 
@@ -1796,13 +1805,7 @@ class Tank extends Building {
 			Fluid: this.fluid![0] ? bundle.get(`fluid.${this.fluid![0].id}.name`, "") : "Empty"
 		};
 	}
-	static drawer:any = function(build:Tank, currentFrame:CurrentFrame){
-		if(!build.fluid![0]) return;
-		Gfx.layer("buildingsUnder");
-		Gfx.fillColor(build.fluid![0].color);
-		Gfx.alpha(build.fluid![1] / build.block.fluidCapacity);
-		Gfx.tRect(...build.pos.tileC, 0.8, 0.8, RectMode.CENTER);
-	};
+	static drawer:any = BuildingWithRecipe.drawFluid([0, 0], 0.8, 0.8);
 }
 class Pipe extends Building {
 	static fluidCapacity = 5;
@@ -1877,13 +1880,7 @@ class Pump extends Building {
 		Fluid.fill(this.fluid!, this.block.outputFluid, this.block.productionSpeed);
 		super.update(currentFrame);
 	}
-	static drawer:any = function(build:Pump, currentFrame:CurrentFrame){
-		if(!build.fluid![0]) return;
-		Gfx.layer("buildingsUnder");
-		Gfx.fillColor(build.fluid![0].color);
-		Gfx.alpha(build.fluid![1] / build.block.fluidCapacity);
-		Gfx.tRect(...build.pos.tileC, 0.8, 0.8, RectMode.CENTER);
-	};
+	static drawer:any = BuildingWithRecipe.drawFluid([0, 0], 0.8, 0.8);
 }
 
 

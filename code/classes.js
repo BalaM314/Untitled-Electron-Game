@@ -973,6 +973,16 @@ let BuildingWithRecipe = (() => {
                 }
             });
         }
+        static drawFluid(offset, width, height) {
+            return ((build, currentFrame) => {
+                if (!build.fluid[0])
+                    return;
+                Gfx.layer("buildingsUnder");
+                Gfx.fillColor(build.fluid[0].color);
+                Gfx.alpha(build.fluid[1] / build.block.fluidCapacity);
+                Gfx.tRect(...add(build.pos.tileC, offset), width, height, RectMode.CENTER);
+            });
+        }
     };
     __setFunctionName(_classThis, "BuildingWithRecipe");
     (() => {
@@ -1736,14 +1746,7 @@ Tank.pressureOutMin = 0.05;
 Tank.pressureOutMaxFill = 0.2;
 Tank.acceptsFluids = true;
 Tank.outputsFluids = true;
-Tank.drawer = function (build, currentFrame) {
-    if (!build.fluid[0])
-        return;
-    Gfx.layer("buildingsUnder");
-    Gfx.fillColor(build.fluid[0].color);
-    Gfx.alpha(build.fluid[1] / build.block.fluidCapacity);
-    Gfx.tRect(...build.pos.tileC, 0.8, 0.8, RectMode.CENTER);
-};
+Tank.drawer = BuildingWithRecipe.drawFluid([0, 0], 0.8, 0.8);
 class Pipe extends Building {
     constructor() {
         super(...arguments);
@@ -1818,14 +1821,7 @@ Pump.productionSpeed = 2;
 Pump.fluidOutputSpeed = 10;
 Pump.fluidCapacity = 100;
 Pump.outputsFluids = true;
-Pump.drawer = function (build, currentFrame) {
-    if (!build.fluid[0])
-        return;
-    Gfx.layer("buildingsUnder");
-    Gfx.fillColor(build.fluid[0].color);
-    Gfx.alpha(build.fluid[1] / build.block.fluidCapacity);
-    Gfx.tRect(...build.pos.tileC, 0.8, 0.8, RectMode.CENTER);
-};
+Pump.drawer = BuildingWithRecipe.drawFluid([0, 0], 0.8, 0.8);
 class PowerGrid {
     constructor() {
         this.producers = [];
