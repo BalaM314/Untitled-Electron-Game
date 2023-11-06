@@ -990,6 +990,7 @@ class BuildingWithRecipe extends Building {
 					//for each recipe this building can do
 					if(!recipe.inputs) continue;//If the recipe has no inputs, it cant be the right one
 					if(recipe.fluidInputs && (this.block.fluidCapacity == 0 || !this.block.acceptsFluids)) continue;//recipe requires fluids but this crafter does not support fluids
+					if(recipe.powerConsumption && !this.block.consumesPower) continue;//recipe requires power but this building doesn't accept power
 					if(!this.items.map(item => recipe.inputs!.includes(item.id)).includes(false) && recipe.inputs.includes(item.id)){
 						//if all of the current items are inputs of the recipe and the item is an input of the recipe
 						this.items[i] = item;

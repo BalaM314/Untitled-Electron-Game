@@ -75,6 +75,7 @@ interface Recipe {
 	fluidOutputs?: [fluid:FluidID, totalAmount:number][];
 	duration: number;
 	tile?: TileID;
+	powerConsumption?: number;
 }
 
 interface Recipes {

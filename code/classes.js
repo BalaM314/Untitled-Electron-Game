@@ -874,6 +874,8 @@ let BuildingWithRecipe = (() => {
                             continue;
                         if (recipe.fluidInputs && (this.block.fluidCapacity == 0 || !this.block.acceptsFluids))
                             continue;
+                        if (recipe.powerConsumption && !this.block.consumesPower)
+                            continue;
                         if (!this.items.map(item => recipe.inputs.includes(item.id)).includes(false) && recipe.inputs.includes(item.id)) {
                             this.items[i] = item;
                             if (recipe.inputs.length == i + 1) {
