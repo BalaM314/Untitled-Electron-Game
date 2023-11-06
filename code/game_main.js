@@ -477,6 +477,7 @@ function main_loop() {
     catch (err) {
         alert("An error has occurred! Oopsie.\nPlease create an issue on this project's GitHub so I can fix it.\nError message: " + parseError(err));
         ctxs.forEach((ctx) => { ctx.clear(); });
+        errorBackground.style.zIndex = "99999";
         throw err;
     }
     Game.animationFrame = requestAnimationFrame(main_loop);

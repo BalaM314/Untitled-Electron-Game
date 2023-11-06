@@ -1,3 +1,15 @@
+/*
+Z indexes:
+Error background and loading background: 0
+Canvases: 11 - 19
+Click capture: 20
+Tooltip window: 21
+Toolbar: 22
+Resources: 23
+Active alert box: 30
+*/
+
+
 html,body {
 	width: 100%;
 	height: 100%;
@@ -8,16 +20,20 @@ canvas {
 	border-right: 2px dashed green;
 	border-bottom: 2px dashed green;
 	position: absolute;
-	z-index: var(--z);
+	z-index: calc(10 + var(--z));
 }
 
 #error_background {
 	position: absolute;
 	width: 100%;
 	height: 100%;
+	box-sizing: border-box;
 	background-color: red;
 	text-align: center;
-	font-size: 200%;
+	font-size: 250%;
+	padding: 50px 20px;
+	font-family: sans-serif;
+	font-weight: bold;
 	z-index: 0;
 }
 #loading_background {
@@ -40,7 +56,7 @@ canvas {
 	--cell-size: calc(10% - 20px - 1%);
 	background-color: rgba(0, 0, 255, 0.2);
 	border-radius: 5%;
-	z-index: 11;
+	z-index: 22;
 }
 .hidden {
 	margin-top: 10000%;
@@ -52,14 +68,14 @@ canvas {
 	border: 5px ridge green;
 }
 #clickcapture {
-	z-index: 9;
+	z-index: 20;
 	position: absolute;
 	width: 100%;
 	height: 100%;
 }
 #resources {
 	position: absolute;
-	z-index: 10;
+	z-index: 23;
 	margin-left: 40%;
 	margin-right: 40%;
 	width: 20%;
@@ -120,7 +136,7 @@ canvas {
 	animation-name: alertfade;
 	animation-duration: 500ms;
 	animation-fill-mode: both;
-	z-index: 15;
+	z-index: 30;
 }
 #alertmessage {
 	font-size: min(200%, calc(50000% / var(--text-length)));
@@ -136,7 +152,7 @@ canvas {
 #tooltipbox {
 	--x: -1000px;
 	--y: -1000px;
-	z-index: 14;
+	z-index: 21;
 	position: absolute;
 	top: var(--y);
 	left: var(--x);
