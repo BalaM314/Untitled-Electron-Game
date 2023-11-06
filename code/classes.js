@@ -845,6 +845,7 @@ let BuildingWithRecipe = (() => {
         constructor(tileX, tileY, meta, level) {
             super(tileX, tileY, meta, level);
             this.timer = -1;
+            this.runEffectTimer = -1;
             this.recipe = null;
             this.items = [];
             this.fluidOut = [null, 0, this.block.fluidCapacity];
@@ -881,6 +882,7 @@ let BuildingWithRecipe = (() => {
                 throw new ShouldNotBePossibleError("tried to set invalid recipe");
             this.recipe = recipe;
             this.timer = recipe.duration;
+            this.runEffectTimer = recipe.duration;
         }
         update(currentFrame) {
             if (this.recipe) {
@@ -919,8 +921,13 @@ let BuildingWithRecipe = (() => {
         }
         display(currentFrame, layer) {
             super.display(currentFrame, layer);
-            if (this.block.runEffect && this.timer > 0 && this.timer % this.block.runEffect[2] == 0 && Math.random() < this.block.runEffect[3])
-                this.block.runEffect[0].at(this.centeredPos(), this.block.runEffect[1]);
+            if (this.block.runEffect &&
+                this.timer > 0 &&
+                this.timer <= this.runEffectTimer) {
+                if (Math.random() < this.block.runEffect[3])
+                    this.block.runEffect[0].at(this.centeredPos(), this.block.runEffect[1]);
+                this.runEffectTimer -= this.block.runEffect[2];
+            }
         }
         tooltipProperties() {
             return {

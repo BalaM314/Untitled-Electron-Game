@@ -165,4 +165,4 @@ Buildings.register("base_power_source", PowerSource);
 Buildings.register("base_pipe", Pipe);
 Buildings.register("base_pump", Pump, { outputFluid: Fluids.get("base_water") });
 Buildings.register("base_tank", Tank);
-Buildings.register("base_boiler", BuildingWithRecipe, { recipeType: recipes.base_boiling, fluidCapacity: 100, acceptsFluids: true, outputsFluids: true, fluidExtraPressure: 1, runEffect: [Fx.smoke, "#222", 5, 1] });
+Buildings.register("base_boiler", BuildingWithRecipe, { recipeType: recipes.base_boiling, fluidCapacity: 100, acceptsFluids: true, outputsFluids: true, fluidExtraPressure: 1, runEffect: [Fx.smoke, "#222", 15, 1] });

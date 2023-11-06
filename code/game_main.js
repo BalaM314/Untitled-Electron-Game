@@ -351,7 +351,7 @@ let state = {
             }
             Gfx.layer("overlay");
             Gfx.font("30px sans-serif");
-            Gfx.color("black");
+            Gfx.fillColor("black");
             Gfx.textAlign("left");
             Gfx.text(Camera.unproject(...Input.mouse).map(Pos.pixelToTile).join(","), 10, 100);
             if (settings.debug) {

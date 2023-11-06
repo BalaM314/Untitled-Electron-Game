@@ -939,6 +939,7 @@ class Building {
 @Abstract
 class BuildingWithRecipe extends Building {
 	timer: number = -1;
+	runEffectTimer = -1;
 	recipe: Recipe | null = null;
 	items: Item[] = [];
 	fluidOut: FluidStack = [null, 0, this.block.fluidCapacity];
@@ -986,6 +987,7 @@ class BuildingWithRecipe extends Building {
 		if(!(recipe.inputs instanceof Array)) throw new ShouldNotBePossibleError("tried to set invalid recipe");
 		this.recipe = recipe;
 		this.timer = recipe.duration;
+		this.runEffectTimer = recipe.duration;
 	}
 	update(currentFrame:CurrentFrame){
 		if(this.recipe){
@@ -1021,8 +1023,15 @@ class BuildingWithRecipe extends Building {
 	}
 	display(currentFrame:CurrentFrame, layer?:keyof typeof Gfx.layers){
 		super.display(currentFrame, layer);
-		if(this.block.runEffect && this.timer > 0 && this.timer % this.block.runEffect[2] == 0 && Math.random() < this.block.runEffect[3])
-			this.block.runEffect[0].at(this.centeredPos(), this.block.runEffect[1]);
+		if(
+			this.block.runEffect &&
+			this.timer > 0 &&
+			this.timer <= this.runEffectTimer
+		){
+			if(Math.random() < this.block.runEffect[3])
+				this.block.runEffect[0].at(this.centeredPos(), this.block.runEffect[1]);
+			this.runEffectTimer -= this.block.runEffect[2];
+		}
 	}
 	tooltipProperties(){
 		return {
