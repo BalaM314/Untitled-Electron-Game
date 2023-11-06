@@ -310,6 +310,8 @@ let settings = {
 	autoSave: true,
 	showExtraPipeInfo: false,
 	showIDsInTooltips: false,
+	showChunkBorders: false,
+	showTileBorders: false,
 };
 let Game: {
 	texturesReady: boolean;

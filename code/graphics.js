@@ -88,6 +88,7 @@ class Gfx {
     static init() {
         this.layers = {
             tile: ctxTiles,
+            tileOver: ctxTilesOver,
             ghostBuilds: ctxGBuilds,
             buildingsUnder: ctxBuildsUnder,
             buildings: ctxBuilds,

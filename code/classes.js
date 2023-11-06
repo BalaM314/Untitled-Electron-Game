@@ -527,8 +527,9 @@ class Chunk {
                     Gfx.tImage(Gfx.texture(`tile/${tile}`), tileX, tileY, 1, 1);
                 }
             }
-            if (currentframe.debug) {
-                for (let i = 1; i < consts.CHUNK_SIZE; i++) {
+            Gfx.layer("tileOver");
+            if (settings.showTileBorders) {
+                for (let i = 0; i < consts.CHUNK_SIZE; i++) {
                     Gfx.tLine((this.x * consts.CHUNK_SIZE) + i, (this.y * consts.CHUNK_SIZE), (this.x * consts.CHUNK_SIZE) + i, ((this.y + 1) * consts.CHUNK_SIZE));
                     Gfx.tLine((this.x * consts.CHUNK_SIZE), (this.y * consts.CHUNK_SIZE) + i, ((this.x + 1) * consts.CHUNK_SIZE), (this.y * consts.CHUNK_SIZE) + i);
                 }
@@ -544,7 +545,7 @@ class Chunk {
                 this.layers[2][y][x]?.display(currentframe);
             }
         }
-        if (currentframe.debug) {
+        if (settings.showChunkBorders) {
             Gfx.layer("overlay");
             Gfx.strokeColor("#0000FF");
             Gfx.lineWidth(1);

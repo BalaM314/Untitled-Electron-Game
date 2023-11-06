@@ -34,6 +34,13 @@
 			<!-- Dynamically generated through Javascript, see loadTexture(). -->
 		</div>
 		<input id="uploadButton" type="file" accept="application/json" class="hidden"/>
+		<div id="error_background" class="hidden">Oops! If you're seeing this(for more than a second), something went wrong.<br> Please check the dev console(F12 then console) for any red boxes, take a screenshot, and report it to the <a href="https://github.com/BalaM314/Untitled-Electron-Game/issues/new" target="_blank">issue tracker.</a></div>
+		<div id="loading_background">
+			<h1>Loading...</h1>
+			<p>If this screen lasts for more than a few seconds, something may be wrong. Try refreshing the page.</p>
+		</div>
+		<div id="game_background" class="hidden"></div>
+		<canvas id="canvas0" style="--z: 0;" width=1200 height=1200></canvas>
 		<canvas id="canvas1" style="--z: 1;" width=1200 height=1200></canvas>
 		<canvas id="canvas2" style="--z: 2;" width=1200 height=1200></canvas>
 		<canvas id="canvas3" style="--z: 3;" width=1200 height=1200></canvas>
@@ -42,17 +49,13 @@
 		<canvas id="canvas6" style="--z: 6;" width=1200 height=1200></canvas>
 		<canvas id="canvas7" style="--z: 7;" width=1200 height=1200></canvas>
 		<canvas id="canvas8" style="--z: 8;" width=1200 height=1200></canvas>
+		<canvas id="canvas9" style="--z: 9;" width=1200 height=1200></canvas>
 		<div id="clickcapture"></div>
 		<div id="resources" class="hidden">
 			<span id="base_coal">0</span>
 			<span id="base_ironIngot">0</span>
 			<span id="base_copperIngot">0</span>
 			<span id="base_steelIngot">0</span>
-		</div>
-		<div id="error_background" class="hidden">Oops! If you're seeing this(for more than a second), something went wrong.<br> Please check the dev console(F12 then console) for any red boxes, take a screenshot, and report it to the <a href="https://github.com/BalaM314/Untitled-Electron-Game/issues/new" target="_blank">issue tracker.</a></div>
-		<div id="loading_background">
-			<h1>Loading...</h1>
-			<p>If this screen lasts for more than a few seconds, something may be wrong. Try refreshing the page.</p>
 		</div>
 		<div id="toolbar" class="hidden">
 			<img src="assets/textures/building/base_conveyor%230.png" id="base_conveyor" title="Conveyor">

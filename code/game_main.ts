@@ -386,7 +386,7 @@ let state: {
 			}
 
 			for(const ctx of ctxs){
-				if(ctx == ctxTiles){
+				if(ctx == ctxTiles || ctx == ctxTilesOver){
 					if(currentFrame.redraw) ctx.clear(); //Only clear the tiles ctx if redrawing
 				} else ctx.clear();
 			}
@@ -568,6 +568,7 @@ function main_loop(){
 		alert("An error has occurred! Oopsie.\nPlease create an issue on this project's GitHub so I can fix it.\nError message: " + parseError(err));
 		ctxs.forEach((ctx) => {ctx.clear();});
 		errorBackground.style.zIndex = "99999";
+		gameBackground.classList.add("hidden");
 		throw err;
 	}
 	Game.animationFrame = requestAnimationFrame(main_loop);
@@ -692,7 +693,10 @@ let placedBuilding: {
 function init(){
 	try {
 		assert(localStorage.getItem("settings"));
-		settings = JSON.parse(localStorage.getItem("settings")!);
+		const loadedSettings = JSON.parse(localStorage.getItem("settings")!);
+		for(const [k, v] of Object.entries(settings) as [keyof typeof settings, (typeof settings)[keyof typeof settings]][]){
+			if(loadedSettings[k] && typeof loadedSettings[k] == typeof settings[k]) settings[k] = loadedSettings[k];
+		}
 	} catch(err){
 		console.warn("Invalid persistent settings!\nIf this is your first time visiting this site, nothing to worry about.");
 		localStorage.setItem("settings", JSON.stringify(settings));
@@ -722,6 +726,7 @@ function init(){
 	
 	errorBackground.classList.remove("hidden");
 	loadingBackground.classList.add("hidden");
+	gameBackground.classList.remove("hidden");
 	
 	main_loop();
 }
