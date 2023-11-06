@@ -58,11 +58,14 @@ trash_can.name = Trash Can
 furnace.name = Furnace
 furnace.description = Smelts ores into ingots.
 extractor.name = Extractor
+extractor.description = Can be placed on other buildings, and extracts their items. Use comma, period, and slash to change the length.
 chest.name = Storage
+chest.description = Stores items.
 alloy_smelter.name = Alloy Smelter
 alloy_smelter.description = Heats coal with iron ingots to produce steel.
 resource_acceptor.name = Resource Acceptor
 wiremill.name = Wiremill
+wiremill.description = Turns ingots into wires.
 compressor.name = Compressor
 compressor.description = Turns ingots into plates.
 lathe.name = Lathe
@@ -366,7 +369,7 @@ const splashes:string[] = [
 	"Remember everyone, the secret to a good game in 2020 is s p l a s h t e x t",
 	"Got any grapes?",
 	"e",
-	"Hello fellow untitled electron game enthusiast, I have made this splash text ridiculously long to the point where it is only actually readable by accessing the game files. wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww Hello fellow untitled electron game enthusiast, I have made this splash text ridiculously long to the point where it is only actually readable by accessing the game files.",
+	"Hello fellow untitled electron game enthusiast, I have made this splash text ridiculously long to the point where it is only actually readable by accessing the game files. w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w Hello fellow untitled electron game enthusiast, I have made this splash text ridiculously long to the point where it is only actually readable by accessing the game files.",
 	"/execute order 420",
 	"Now a noodle.",
 	"${splash}",
@@ -383,10 +386,8 @@ const splashes:string[] = [
 	"what am i even doing",
 	"Do distribute!",
 	"Do not sell!",
-	"wanna see me speed bridge",
 	"doot doot",
 	"/kill",
-	"Reddit, here we come!",
 	"c148 is still the best lol",
 	"I wonder what this button does!",
 	"Ctrl+W for 420 free diamonds!",
@@ -395,23 +396,13 @@ const splashes:string[] = [
 	".party()!",
 	".play()!",
 	".code()!",
-	"We are number one!",
 	"haha splash text goes brrrrrrr",
-	"Diamonds aren't hot, carbon dioxide is!",
-	"Forge!",
 	"Blue is my favorite colour",
 	"pog",
 	"kthxbai",
 	"No swords!",
 	"1337 is my middle name",
-	"Records on my fingers!",
 	"BURN IT WITH FIRE!!!!!",
-	"Getting ready to show!",
-	"Getting ready to know!",
-	"Getting ready to drop!",
-	"Getting ready to shock!",
-	"Getting ready to freak!",
-	"Getting ready to speak!",
 	"Never gonna give you up!",
 	"Ghostpinged!",
 	"████ ████ ██████e██ ████m ████ne ██",
@@ -437,6 +428,7 @@ const splashes:string[] = [
 	"u r sussy",
 	"Brought to you by BalaM314!",
 	"Brought to you by the letter π",
+	"Dragon free!",
 	"Type the Konami code for a secret!"
 ];
 const raresplashes: string[] = [
