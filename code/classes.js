@@ -945,6 +945,13 @@ let BuildingWithRecipe = (() => {
                 BuildingWithRecipe.makeDrawer((build, e, currentFrame) => { build.recipe; });
             });
         }
+        static combineDrawers(...drawers) {
+            return ((build, currentFrame) => {
+                Gfx.layer("buildings");
+                drawers.forEach(d => d(build, currentFrame));
+                BuildingWithRecipe.makeDrawer((build, e, currentFrame) => { build.recipe; });
+            });
+        }
         static progressDrawerOld() {
             return ((build, currentFrame) => {
                 if (build.recipe) {
@@ -981,6 +988,14 @@ let BuildingWithRecipe = (() => {
                 Gfx.fillColor(build.fluid[0].color);
                 Gfx.alpha(build.fluid[1] / build.block.fluidCapacity);
                 Gfx.tRect(...add(build.pos.tileC, offset), width, height, RectMode.CENTER);
+            });
+        }
+        static drawLayer(texture, width = 1, height = 1, getAlpha = () => 1) {
+            return ((build, currentFrame) => {
+                Gfx.layer("buildings");
+                Gfx.alpha(getAlpha(build));
+                Gfx.tImage(Gfx.texture(texture), ...build.pos.tile, width, height);
+                Gfx.alpha(1);
             });
         }
     };

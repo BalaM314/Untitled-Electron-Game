@@ -201,9 +201,9 @@ class Gfx {
 	}
 	static pText(pixelX:number, pixelY:number, text:string){
 		this.ctx.fillText(
+			text,
 			(pixelX + Camera.scrollX) * Camera.zoomLevel + Camera.width / 2,
-			(pixelY + Camera.scrollY) * Camera.zoomLevel + Camera.height / 2,
-			text
+			(pixelY + Camera.scrollY) * Camera.zoomLevel + Camera.height / 2
 		);
 	}
 	static lineRect(x:number, y:number, w:number, h:number, mode:RectMode = this.rectMode, _ctx = this.ctx){

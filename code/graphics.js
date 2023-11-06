@@ -134,7 +134,7 @@ class Gfx {
         this.ctx.fillText(text, x, y);
     }
     static pText(pixelX, pixelY, text) {
-        this.ctx.fillText((pixelX + Camera.scrollX) * Camera.zoomLevel + Camera.width / 2, (pixelY + Camera.scrollY) * Camera.zoomLevel + Camera.height / 2, text);
+        this.ctx.fillText(text, (pixelX + Camera.scrollX) * Camera.zoomLevel + Camera.width / 2, (pixelY + Camera.scrollY) * Camera.zoomLevel + Camera.height / 2);
     }
     static lineRect(x, y, w, h, mode = this.rectMode, _ctx = this.ctx) {
         if (mode == RectMode.CENTER) {

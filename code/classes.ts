@@ -1051,6 +1051,15 @@ class BuildingWithRecipe extends Building {
 		//This is an unsafe cast
 		//The issue is that static properties can't reference this in their type declaration, so I can't tell typescript that a (T extends BuildingWithRecipe)'s drawer won't get called with something other than a T (so it only accepts BuildingDrawer<Building>) without adding an extra line of boilerplate to each class.
 	}
+	static combineDrawers<T extends BuildingWithRecipe>(...drawers:BlockDrawer<T>[]){
+		return ((build:T, currentFrame:CurrentFrame) => {
+			Gfx.layer("buildings");
+			drawers.forEach(d => d(build, currentFrame));
+			BuildingWithRecipe.makeDrawer((build, e, currentFrame) => {build.recipe});
+		}) as BlockDrawer<Building>;
+		//This is an unsafe cast
+		//The issue is that static properties can't reference this in their type declaration, so I can't tell typescript that a (T extends BuildingWithRecipe)'s drawer won't get called with something other than a T (so it only accepts BuildingDrawer<Building>) without adding an extra line of boilerplate to each class.
+	}
 	static progressDrawerOld<T extends BuildingWithRecipe>(){
 		return ((build:T, currentFrame:CurrentFrame) => {
 			if(build.recipe){
@@ -1087,6 +1096,18 @@ class BuildingWithRecipe extends Building {
 			Gfx.fillColor(build.fluid![0].color);
 			Gfx.alpha(build.fluid![1] / build.block.fluidCapacity);
 			Gfx.tRect(...add(build.pos.tileC, offset), width, height, RectMode.CENTER);
+		}) as BlockDrawer<Building>;
+	}
+	static drawLayer<T extends Building>(texture:string, width = 1, height = 1, getAlpha:(build:T) => number = () => 1) {
+		return ((build:T, currentFrame:CurrentFrame) => {
+			Gfx.layer("buildings");
+			Gfx.alpha(getAlpha(build));
+			Gfx.tImage(
+				Gfx.texture(texture),
+				...build.pos.tile,
+				width, height
+			);
+			Gfx.alpha(1);
 		}) as BlockDrawer<Building>;
 	}
 }
