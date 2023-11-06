@@ -35,6 +35,8 @@ async function loadTextures(textures, texturesDiv) {
         .map(t => [t.id, t]));
 }
 class Camera {
+    static get width() { return window.innerWidth; }
+    static get height() { return window.innerHeight; }
     static zoom(scaleFactor) {
         scaleFactor = constrain(scaleFactor, 0.9, 1.1);
         if (this.zoomLevel * scaleFactor < this.minZoom) {
@@ -82,8 +84,6 @@ Camera.minZoom = 1;
 Camera.maxZoom = 5;
 Camera.scrollX = 0;
 Camera.scrollY = 0;
-Camera.width = window.innerWidth;
-Camera.height = window.innerHeight;
 class Gfx {
     static init() {
         this.layers = {
@@ -133,6 +133,9 @@ class Gfx {
     static text(text, x, y) {
         this.ctx.fillText(text, x, y);
     }
+    static pText(pixelX, pixelY, text) {
+        this.ctx.fillText((pixelX + Camera.scrollX) * Camera.zoomLevel + Camera.width / 2, (pixelY + Camera.scrollY) * Camera.zoomLevel + Camera.height / 2, text);
+    }
     static lineRect(x, y, w, h, mode = this.rectMode, _ctx = this.ctx) {
         if (mode == RectMode.CENTER) {
             _ctx.strokeRect(x - w / 2, y - w / 2, w, h);
@@ -154,6 +157,9 @@ class Gfx {
     }
     static font(font) {
         this.ctx.font = font;
+    }
+    static textAlign(align) {
+        this.ctx.textAlign = align;
     }
     static rect(x, y, w, h, mode = this.rectMode, _ctx = this.ctx) {
         if (mode == RectMode.CENTER) {
