@@ -232,7 +232,7 @@ class Level {
 					block.changeMeta(buildingID[1], tileX, tileY, this), this
 				);
 				this.buildings.add(building);
-				if(building instanceof PowerBuilding) this.grid.addBuild(building);
+				this.grid.addBuilding(building);
 				trigger("placeBuilding", {building});
 				if(building instanceof OverlayBuild){
 					return this.writeOverlayBuild(tileX, tileY, building);
@@ -728,6 +728,14 @@ class Building {
 	/** Counter that specifies which direction to start at when trying to dump fluids. Used for even distribution. */
 	cFluidOut = 3;
 	fluidThroughput = 0;
+	grid:PowerGrid | null = null;
+	static producesPower = false;
+	static consumesPower = false;
+	/** Gets set during power update, after getMaxPowerProduction is called. */
+	powerLoad:number = 0;
+	/** Gets set during power update, after getRequestedPower is called. */
+	powerSatisfaction:number = 0;
+
 	//https://www.typescriptlang.org/play?#code/CYUwxgNghgTiAEAzArgOzAFwJYHtXzgHMsBnDEGAHgCF4QAPc1YE+DATwAcQdF5rkWCMCypCAPgAUWYAC4yMUYQA08TDhizqqzjBycSsgN4AoeOfgBtAArxR8ANYh2vfgF0A-LP423AbhMAXwBKLQCAenCAFQALUiQ0TFx8GKhWACMQEHwsAFtOCBBc7PJgeChmeAB3DQdWRGgqwpISCHZVKAgMGJxkQhi2GIQwHFB4CBwcOoIQTrbqkCwYYAA6ExNIgEEc1DIKsARXbvjINNY4XRASEtYoeBIlQvh0wWElO1QAWhqYYTXTlr8V4iMTwUwWe4YKDYMB2OQKd4AXngACI0KgoMUyi8hCDCCiAhC9jD7lgAF4gWSoZC5TIweDIgCMhIs6QmYAcDMGpBWI12GBgyHU9LSbC4PD4AlxShZ5kIIAwAElgJJguCIRY4BhkDB8McSCs2TgOSsZLL4IEzBZkJxgNCQKqjJbLSYAawAMJ4ABuzg0dEY2RYQOloPV5mJWFhJG4IDk1NpFC5zKt5kiiuqFQwbBw8FSPvgIkQiAoJTF3FYrj5PpcMFYVSw3QLWCLJdQWejWRYKfgkQAsuwkEsyOVOLocFAwAMqqKMDmwHB7eV4KgQFU1NBAQwmHi1N7ffT6427oXi3A2-cY2UvZ1kAh7N076gG1hOuSKKoXlnutCCzgrqgAHIs1Aa4YHzWdngQO43Q+QYEEICZ0k6e4Rm4NYITTNQF1KJciFIch6RQdBsDwao4kneBkGuVgAHl0gAK3ADAVjOLBCD1HN5RXGBFwfdcznKLNBTbPIoMqMgNDvLN7GgvAmCzXIoE4dCLEiWJ4h+aZuBgYtMHmRBRBAD9kC-IY4AA1h6KorM8DvFpb1kbtMJXWNuVYCBDMgiYqhU8wjQ5ABCbwOG4VxPVQasNHNLZ0hwfN7yGYM3lBN1VCqVIs3TBcIHmadz3iFFRFPOCy0OPh9V5PAFCFWcYBRYysyicUSHnLBOGk1BT1YBtylYFEADFEhI1AUTIyMBniKiQGaEgOkqdNA0ozhcygL13gg1CB31Z4cCECgCkXDyV3KVB2GndhfKWu1yEdbsIQq-yHBWDtY3NZ11hg3tDPpLdA1YKVksIMFuwjWFckMgBlS8qRpOkuQANgABnNR6gtK1wvu480bWuh01TuiwHvZJ7wZXKHOzeoJ1jwsgKEkFFWhwKp6vgcLIpgVQjAvTtvERlYAFYLWCAIaYI+nEDSDAWbZ-dOe52NvAAZiFkWQGIWmYHp9I2M+UmKBZzH3zBUkKW8RkVaAA
 	block = this.constructor as typeof Building;
 	constructor(x:number, y:number, public readonly meta:BuildingMeta, public level:Level){
@@ -758,6 +766,10 @@ class Building {
 	/**Called to destroy the building. Should remove all references to it. */
 	break(){
 		this.level.buildings.delete(this);
+		if(this.grid){
+			if(this.block.consumesPower) this.grid.removeConsumer(this);
+			if(this.block.producesPower) this.grid.removeProducer(this);
+		}
 		if(this.block.isOverlay) this.level.writeOverlayBuild(this.pos.tileX, this.pos.tileY, null);
 		else this.level.writeBuilding(this.pos.tileX, this.pos.tileY, null);
 	}
@@ -845,6 +857,20 @@ class Building {
 			0, 1
 		);
 	}
+	/**
+	 * Called between preUpdate and update.
+	 * @returns the maximum power that this building can produce on this tick.
+	**/
+	getMaxPowerProduction():number {
+		throw new Error(`Function "getMaxPowerProduction" not implemented for base class Building.`);
+	}
+	/**
+	 * Called between preUpdate and update.
+	 * @returns the amount of power that this building wants on this tick.
+	 **/
+	getRequestedPower():number {
+		throw new Error(`Function "getRequestedPower" not implemented for base class Building.`);
+	}
 	buildAt(direction:Direction):Building | null {
 		return this.level.buildingAtTile(this.pos.tileX + direction.vec[0], this.pos.tileY + direction.vec[1]);
 	}
@@ -930,7 +956,7 @@ class Building {
 		//This is done because subclasses may want to override the read() method, so you have to Buildings.get() anyway.
 		const build = new this(buildingData.x, buildingData.y, buildingData.meta, level);
 		if(buildingData.item) build.item = Item.read(buildingData.item);
-		if(build instanceof PowerBuilding) level.grid.addBuild(build);
+		level.grid.addBuilding(build);
 		if(buildingData.fluid && this.fluidCapacity) build.fluid = [Fluids.get(buildingData.fluid[0]), buildingData.fluid[1], this.fluidCapacity];
 		return build;
 	}
@@ -1950,85 +1976,59 @@ class Pump extends Building {
 
 class PowerGrid {
 	//array is fine, faster iteration than quadtree, deletion is O(n) but that's not that bad
-	producers: PowerProducer[] = [];
-	consumers: PowerConsumer[] = [];
+	producers: Building[] = [];
+	consumers: Building[] = [];
 	updatePower(){
 		const powerRequested = this.consumers.reduce((acc, p) => acc + p.getRequestedPower(), 0);
 		const maxProduction = this.producers.reduce((acc, p) => acc + p.getMaxPowerProduction(), 0);
 		const load = Math.min(powerRequested / maxProduction, 1);
 		const satisfaction = Math.min(maxProduction / powerRequested, 1);
-		this.producers.forEach(p => p.load = load);
-		this.consumers.forEach(c => c.satisfaction = satisfaction);
+		this.producers.forEach(p => p.powerLoad = load);
+		this.consumers.forEach(c => c.powerSatisfaction = satisfaction);
 	}
-	addBuild(build:PowerBuilding){
-		if(build instanceof PowerConsumer) this.consumers.push(build);
-		else if(build instanceof PowerProducer) this.producers.push(build);
+	addBuilding(build:Building):boolean {
+		if(build.block.consumesPower) this.consumers.push(build);
+		else if(build.block.producesPower) this.producers.push(build);
+		else return false;
 		build.grid = this;
+		return true;
 	}
-	removeProducer(build:PowerProducer){
+	removeProducer(build:Building){
 		const index = this.producers.indexOf(build);
 		if(index == -1) return false;
 		this.producers.splice(index, 1);
-		build.load = 0;
+		build.powerLoad = 0;
 	}
-	removeConsumer(build:PowerConsumer){
+	removeConsumer(build:Building){
 		const index = this.consumers.indexOf(build);
 		if(index == -1) return false;
 		this.consumers.splice(index, 1);
-		build.satisfaction = 0;
+		build.powerSatisfaction = 0;
 	}
 }
 
-abstract class PowerBuilding extends Building {
-	grid:PowerGrid | null = null;
-}
-abstract class PowerProducer extends PowerBuilding {
-	/** Gets set during power update, after getMaxPowerProduction is called. */
-	load:number = 0;
-	/**
-	 * Called between preUpdate and update.
-	 * @returns the maximum power that this building can produce on this tick.
-	**/
-	abstract getMaxPowerProduction():number;
-	break(){
-		super.break();
-		this.grid?.removeProducer(this);
-	}
-}
-abstract class PowerConsumer extends PowerBuilding {
-	/** Gets set during power update, after getRequestedPower is called. */
-	satisfaction:number = 0;
-	/**
-	 * Called between preUpdate and update.
-	 * @returns the amount of power that this building wants on this tick.
-	 **/
-	abstract getRequestedPower():number;
-	break(){
-		super.break();
-		this.grid?.removeConsumer(this);
-	}
-}
-
-class PowerSource extends PowerProducer {
+class PowerSource extends Building {
 	block!: typeof PowerSource;
 	static production: number = 100;
+	static producesPower = true;
 	getMaxPowerProduction():number {
 		return this.block.production;
 	}
 	static drawer:any = function(build:PowerSource, currentFrame:CurrentFrame){
 		Gfx.layer("overlay");
-		const flashRate = consts.ups / build.load;
+		const flashRate = consts.ups / build.powerLoad;
 		const sin = Math.sin(Mathf.TWO_PI * (currentFrame.frame % flashRate / flashRate));
 		Gfx.fillColor("yellow");
 		Gfx.tEllipse(...build.pos.tileC, 0.3 + 0.2 * sin, 0.3 + 0.2 * sin);
 	};
 }
 
-class ArcTower extends PowerConsumer {
+class ArcTower extends Building {
 	block!: typeof ArcTower;
 	arcAngle = 0;
 	arcAVel = 0;
 	arcAAccel = 0;
+	static consumesPower = true;
 	static maxArcAAccel = 0.05;
 	static maxArcAVel = 0.15;
 	static consumption:number = 100;
@@ -2046,10 +2046,10 @@ class ArcTower extends PowerConsumer {
 		//update accel 6 times per second
 		build.arcAVel = constrain(build.arcAVel + build.arcAAccel, -build.block.maxArcAVel, build.block.maxArcAVel);
 		build.arcAngle = (build.arcAngle + build.arcAVel) % Mathf.TWO_PI;
-		const rad = (build.block.primaryRadius + random(...build.block.primaryRadiusRange)) * build.satisfaction;
+		const rad = (build.block.primaryRadius + random(...build.block.primaryRadiusRange)) * build.powerSatisfaction;
 		const arcPos = [rad * Math.cos(build.arcAngle) + build.pos.tileXCentered, rad * Math.sin(build.arcAngle) + build.pos.tileYCentered] as const;
-		const srad1 = (build.block.secondaryRadius + random(...build.block.secondaryRadiusRange)) * build.satisfaction;
-		const srad2 = (build.block.secondaryRadius + random(...build.block.secondaryRadiusRange)) * build.satisfaction;
+		const srad1 = (build.block.secondaryRadius + random(...build.block.secondaryRadiusRange)) * build.powerSatisfaction;
+		const srad2 = (build.block.secondaryRadius + random(...build.block.secondaryRadiusRange)) * build.powerSatisfaction;
 		const srad1Angle = build.arcAngle + random(-(Math.PI * 2 / 3), Math.PI * 2 / 3);
 		const srad2Angle = build.arcAngle + random(-(Math.PI * 2 / 3), Math.PI * 2 / 3);
 		const sArc1Pos = [arcPos[0] + srad1 * Math.cos(srad1Angle), arcPos[1] + srad1 * Math.sin(srad1Angle)] as const;

@@ -213,8 +213,7 @@ class Level {
             else {
                 const building = new block(tileX, tileY, block.changeMeta(buildingID[1], tileX, tileY, this), this);
                 this.buildings.add(building);
-                if (building instanceof PowerBuilding)
-                    this.grid.addBuild(building);
+                this.grid.addBuilding(building);
                 trigger("placeBuilding", { building });
                 if (building instanceof OverlayBuild) {
                     return this.writeOverlayBuild(tileX, tileY, building);
@@ -630,6 +629,9 @@ let Building = (() => {
             this.cItemOut = 0;
             this.cFluidOut = 3;
             this.fluidThroughput = 0;
+            this.grid = null;
+            this.powerLoad = 0;
+            this.powerSatisfaction = 0;
             this.block = this.constructor;
             this.pos = Pos.fromTileCoords(x, y, false);
             if (this.block.fluidCapacity)
@@ -655,6 +657,12 @@ let Building = (() => {
         }
         break() {
             this.level.buildings.delete(this);
+            if (this.grid) {
+                if (this.block.consumesPower)
+                    this.grid.removeConsumer(this);
+                if (this.block.producesPower)
+                    this.grid.removeProducer(this);
+            }
             if (this.block.isOverlay)
                 this.level.writeOverlayBuild(this.pos.tileX, this.pos.tileY, null);
             else
@@ -732,6 +740,12 @@ let Building = (() => {
         fluidOutputSpeed(to) {
             return this.block.fluidOutputSpeed * constrain((this.pressureOut() - to.pressureIn()) + this.fluidExtraPressure(), 0, 1);
         }
+        getMaxPowerProduction() {
+            throw new Error(`Function "getMaxPowerProduction" not implemented for base class Building.`);
+        }
+        getRequestedPower() {
+            throw new Error(`Function "getRequestedPower" not implemented for base class Building.`);
+        }
         buildAt(direction) {
             return this.level.buildingAtTile(this.pos.tileX + direction.vec[0], this.pos.tileY + direction.vec[1]);
         }
@@ -805,8 +819,7 @@ let Building = (() => {
             const build = new this(buildingData.x, buildingData.y, buildingData.meta, level);
             if (buildingData.item)
                 build.item = Item.read(buildingData.item);
-            if (build instanceof PowerBuilding)
-                level.grid.addBuild(build);
+            level.grid.addBuilding(build);
             if (buildingData.fluid && this.fluidCapacity)
                 build.fluid = [Fluids.get(buildingData.fluid[0]), buildingData.fluid[1], this.fluidCapacity];
             return build;
@@ -831,6 +844,8 @@ let Building = (() => {
     _classThis.isOverlay = false;
     _classThis.displaysItem = false;
     _classThis.drawer = null;
+    _classThis.producesPower = false;
+    _classThis.consumesPower = false;
     (() => {
         __runInitializers(_classThis, _classExtraInitializers);
     })();
@@ -1849,71 +1864,49 @@ class PowerGrid {
         const maxProduction = this.producers.reduce((acc, p) => acc + p.getMaxPowerProduction(), 0);
         const load = Math.min(powerRequested / maxProduction, 1);
         const satisfaction = Math.min(maxProduction / powerRequested, 1);
-        this.producers.forEach(p => p.load = load);
-        this.consumers.forEach(c => c.satisfaction = satisfaction);
+        this.producers.forEach(p => p.powerLoad = load);
+        this.consumers.forEach(c => c.powerSatisfaction = satisfaction);
     }
-    addBuild(build) {
-        if (build instanceof PowerConsumer)
+    addBuilding(build) {
+        if (build.block.consumesPower)
             this.consumers.push(build);
-        else if (build instanceof PowerProducer)
+        else if (build.block.producesPower)
             this.producers.push(build);
+        else
+            return false;
         build.grid = this;
+        return true;
     }
     removeProducer(build) {
         const index = this.producers.indexOf(build);
         if (index == -1)
             return false;
         this.producers.splice(index, 1);
-        build.load = 0;
+        build.powerLoad = 0;
     }
     removeConsumer(build) {
         const index = this.consumers.indexOf(build);
         if (index == -1)
             return false;
         this.consumers.splice(index, 1);
-        build.satisfaction = 0;
+        build.powerSatisfaction = 0;
     }
 }
-class PowerBuilding extends Building {
-    constructor() {
-        super(...arguments);
-        this.grid = null;
-    }
-}
-class PowerProducer extends PowerBuilding {
-    constructor() {
-        super(...arguments);
-        this.load = 0;
-    }
-    break() {
-        super.break();
-        this.grid?.removeProducer(this);
-    }
-}
-class PowerConsumer extends PowerBuilding {
-    constructor() {
-        super(...arguments);
-        this.satisfaction = 0;
-    }
-    break() {
-        super.break();
-        this.grid?.removeConsumer(this);
-    }
-}
-class PowerSource extends PowerProducer {
+class PowerSource extends Building {
     getMaxPowerProduction() {
         return this.block.production;
     }
 }
 PowerSource.production = 100;
+PowerSource.producesPower = true;
 PowerSource.drawer = function (build, currentFrame) {
     Gfx.layer("overlay");
-    const flashRate = consts.ups / build.load;
+    const flashRate = consts.ups / build.powerLoad;
     const sin = Math.sin(Mathf.TWO_PI * (currentFrame.frame % flashRate / flashRate));
     Gfx.fillColor("yellow");
     Gfx.tEllipse(...build.pos.tileC, 0.3 + 0.2 * sin, 0.3 + 0.2 * sin);
 };
-class ArcTower extends PowerConsumer {
+class ArcTower extends Building {
     constructor() {
         super(...arguments);
         this.arcAngle = 0;
@@ -1924,6 +1917,7 @@ class ArcTower extends PowerConsumer {
         return this.block.consumption;
     }
 }
+ArcTower.consumesPower = true;
 ArcTower.maxArcAAccel = 0.05;
 ArcTower.maxArcAVel = 0.15;
 ArcTower.consumption = 100;
@@ -1937,10 +1931,10 @@ ArcTower.drawer = function (build, currentFrame) {
         build.arcAAccel = random(-build.block.maxArcAAccel, build.block.maxArcAAccel);
     build.arcAVel = constrain(build.arcAVel + build.arcAAccel, -build.block.maxArcAVel, build.block.maxArcAVel);
     build.arcAngle = (build.arcAngle + build.arcAVel) % Mathf.TWO_PI;
-    const rad = (build.block.primaryRadius + random(...build.block.primaryRadiusRange)) * build.satisfaction;
+    const rad = (build.block.primaryRadius + random(...build.block.primaryRadiusRange)) * build.powerSatisfaction;
     const arcPos = [rad * Math.cos(build.arcAngle) + build.pos.tileXCentered, rad * Math.sin(build.arcAngle) + build.pos.tileYCentered];
-    const srad1 = (build.block.secondaryRadius + random(...build.block.secondaryRadiusRange)) * build.satisfaction;
-    const srad2 = (build.block.secondaryRadius + random(...build.block.secondaryRadiusRange)) * build.satisfaction;
+    const srad1 = (build.block.secondaryRadius + random(...build.block.secondaryRadiusRange)) * build.powerSatisfaction;
+    const srad2 = (build.block.secondaryRadius + random(...build.block.secondaryRadiusRange)) * build.powerSatisfaction;
     const srad1Angle = build.arcAngle + random(-(Math.PI * 2 / 3), Math.PI * 2 / 3);
     const srad2Angle = build.arcAngle + random(-(Math.PI * 2 / 3), Math.PI * 2 / 3);
     const sArc1Pos = [arcPos[0] + srad1 * Math.cos(srad1Angle), arcPos[1] + srad1 * Math.sin(srad1Angle)];
