@@ -878,9 +878,9 @@ class Building {
 		}
 	}
 	dumpFluid(){
+		this.fluidThroughput = 0;
 		const fluid = this.fluidOut ?? this.fluid;
 		if(!fluid || fluid[0] == null || fluid[1] == 0) return;
-		this.fluidThroughput = 0;
 		for(let i = 0; i < Direction.number; i ++){
 			if(++this.cFluidOut > 3) this.cFluidOut = 0;
 			const direction = Direction.all[this.cFluidOut];
@@ -992,7 +992,7 @@ class BuildingWithRecipe extends Building {
 	update(currentFrame:CurrentFrame){
 		if(this.recipe){
 			if(this.timer > 0){
-				let minSatisfaction = Math.min(this.timer, 1);
+				let minSatisfaction = Math.min(this.timer, 1); //todo speed boost
 				if(this.recipe.fluidInputs){
 					for(const fluidInput of this.recipe.fluidInputs){
 						const amountNeeded = fluidInput[1] / this.recipe.duration;
@@ -1001,7 +1001,8 @@ class BuildingWithRecipe extends Building {
 					}
 					for(const fluidInput of this.recipe.fluidInputs){
 						const amountNeeded = fluidInput[1] / this.recipe.duration * minSatisfaction;
-						if(Fluid.drain(this.fluid!, amountNeeded) != amountNeeded) throw new ShouldNotBePossibleError(`logic error when consuming fluids`);
+						const amountDrained = Fluid.drain(this.fluid!, amountNeeded);
+						if(amountDrained - amountNeeded > Number.EPSILON) throw new ShouldNotBePossibleError(`logic error when consuming fluids: needed ${amountNeeded}, got ${amountDrained}`);
 					}
 				}
 				this.timer -= minSatisfaction;
