@@ -126,7 +126,7 @@ function registerEventHandlers(){
 			//If you aren't in-game, just exit
 		}
 
-		if(!localStorage.getItem("save1") || JSON.parse(localStorage.getItem("save1")!)?.metadata?.uuid == level1?.uuid){
+		if(!localStorage.getItem("save1") || (JSON.parse(localStorage.getItem("save1")!) as SaveData).UntitledElectronGame?.level1?.uuid == level1?.uuid){
 			//If there's nothing in save1 or the uuid of save1 and the current level are the same, save
 			localStorage.setItem("save1", JSON.stringify(exportData()));
 		} else {
@@ -625,7 +625,7 @@ function exportData():SaveData {
 		UntitledElectronGame: {
 			metadata: {
 				validationCode: "esrdtfgvczdsret56u7yhgvfcesrythgvfd!",
-				id: level1?.uuid ?? Math.random().toString().substring(2),
+				uuid: level1?.uuid ?? Math.random().toString().substring(2),
 				version: consts.VERSION,
 				timeCreated: new Date().getTime().toString()
 			},
@@ -643,6 +643,7 @@ function importData(rawData:string){
 		
 		let levelData = data.UntitledElectronGame.level1;
 		levelData.version = data.UntitledElectronGame.metadata.version;
+		levelData.uuid = data.UntitledElectronGame.metadata.uuid ?? (<any>data.UntitledElectronGame.metadata).id;
 		assert(levelData.chunks instanceof Object);
 
 

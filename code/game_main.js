@@ -90,7 +90,7 @@ function registerEventHandlers() {
         if (Game.state != "game") {
             return;
         }
-        if (!localStorage.getItem("save1") || JSON.parse(localStorage.getItem("save1"))?.metadata?.uuid == level1?.uuid) {
+        if (!localStorage.getItem("save1") || JSON.parse(localStorage.getItem("save1")).UntitledElectronGame?.level1?.uuid == level1?.uuid) {
             localStorage.setItem("save1", JSON.stringify(exportData()));
         }
         else {
@@ -520,7 +520,7 @@ function exportData() {
         UntitledElectronGame: {
             metadata: {
                 validationCode: "esrdtfgvczdsret56u7yhgvfcesrythgvfd!",
-                id: level1?.uuid ?? Math.random().toString().substring(2),
+                uuid: level1?.uuid ?? Math.random().toString().substring(2),
                 version: consts.VERSION,
                 timeCreated: new Date().getTime().toString()
             },
@@ -535,6 +535,7 @@ function importData(rawData) {
         assert(data.UntitledElectronGame.metadata.validationCode === "esrdtfgvczdsret56u7yhgvfcesrythgvfd!");
         let levelData = data.UntitledElectronGame.level1;
         levelData.version = data.UntitledElectronGame.metadata.version;
+        levelData.uuid = data.UntitledElectronGame.metadata.uuid ?? data.UntitledElectronGame.metadata.id;
         assert(levelData.chunks instanceof Object);
         tempLevel = Level.read(levelData);
         level1 = tempLevel;

@@ -92,7 +92,7 @@ interface SaveData {
 	UntitledElectronGame: {
 		metadata: {
 			validationCode: "esrdtfgvczdsret56u7yhgvfcesrythgvfd!";
-			id: string;
+			uuid: string;
 			version: string;
 			timeCreated: string;
 		};

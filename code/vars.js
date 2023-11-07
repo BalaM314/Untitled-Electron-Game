@@ -176,7 +176,7 @@ const keybinds = extend()({
         save_to_file: new Keybind("s", ["control", "alt", "!shift"], () => {
             download("Untitled-Electron-Game-save.json", JSON.stringify(exportData()));
         }),
-        save: new Keybind("s", ["control", "!alt", "!shift"], () => attemptManualLocalSave),
+        save: new Keybind("s", ["control", "!alt", "!shift"], () => attemptManualLocalSave()),
         load_from_file: new Keybind("o", ["control"], () => {
             uploadButton.click();
         }),
