@@ -262,6 +262,25 @@ function add(a, b) {
 function mul(a, amount) {
     return [a[0] * amount, a[1] * amount];
 }
+function saveExists() {
+    return localStorage.getItem("save1") != null;
+}
+function safeToSave() {
+    if (!saveExists())
+        return true;
+    try {
+        const data = JSON.parse(localStorage.getItem("save1"));
+        assert(data.UntitledElectronGame.metadata.validationCode === "esrdtfgvczdsret56u7yhgvfcesrythgvfd!");
+        return data.UntitledElectronGame.metadata.uuid == level1.uuid || data.UntitledElectronGame.metadata.id == level1.uuid;
+    }
+    catch (err) {
+        return true;
+    }
+}
+function saveToLocalStorage() {
+    localStorage.setItem("save1", JSON.stringify(exportData()));
+    Game.lastSaved = Date.now();
+}
 function trigger(key, data) {
     switch (key) {
         case "buildingFirstRun":

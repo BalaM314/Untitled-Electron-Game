@@ -90,8 +90,8 @@ function registerEventHandlers() {
         if (Game.state != "game") {
             return;
         }
-        if (!localStorage.getItem("save1") || JSON.parse(localStorage.getItem("save1")).UntitledElectronGame?.level1?.uuid == level1?.uuid) {
-            localStorage.setItem("save1", JSON.stringify(exportData()));
+        if (safeToSave()) {
+            saveToLocalStorage();
         }
         else {
             e.preventDefault();
@@ -99,7 +99,7 @@ function registerEventHandlers() {
             localStorage.setItem("save-recovered", JSON.stringify(exportData()));
             setTimeout(() => {
                 if (confirm("Could not save automatically on page exit because your current world is unrelated to your saved world.\nWould you like to save anyway? This will overwrite your current save!")) {
-                    localStorage.setItem('save1', JSON.stringify(exportData()));
+                    saveToLocalStorage();
                     localStorage.removeItem("save-recovered");
                 }
             }, 1);
@@ -490,24 +490,20 @@ function load() {
 		This is a game about building a factory. It's still in early alpha, so there's not much content.
 		There's no good in game tutorial, so to get started check the <a href="https://github.com/BalaM314/Untitled-Electron-Game/wiki/Quickstart-Guide">wiki page</a>.`);
     }
-    if (localStorage.getItem("save1") &&
-        (settings.alwaysLoadSave || confirm("Would you like to load your save?"))) {
+    if (saveExists() &&
+        (settings.alwaysLoadSave || confirm("Would you like to load your save?")))
         importData(localStorage.getItem("save1"));
-    }
-    else {
+    else
         level1 = new Level(314).generate();
-    }
     Game.state = "game";
     Game.forceRedraw = true;
     toolbarEl.classList.remove("hidden");
     resourcesEl.classList.remove("hidden");
     if (settings.autoSave) {
-        if (!localStorage.getItem("save1") ||
-            (JSON.parse(localStorage.getItem("save1")).UntitledElectronGame?.level1?.uuid == level1?.uuid)) {
+        if (safeToSave()) {
             setInterval(() => {
-                localStorage.setItem("save1", JSON.stringify(exportData()));
+                saveToLocalStorage();
                 console.log("Autosaved.");
-                Game.lastSaved = millis();
             }, 30000);
         }
         else {
@@ -546,13 +542,10 @@ function importData(rawData) {
     }
 }
 function attemptManualLocalSave() {
-    if ((!localStorage.getItem("save1")
-        || JSON.parse(localStorage.getItem("save1")).UntitledElectronGame?.level1?.uuid == level1?.uuid)
-        || confirm("Are you sure you want to save? This will overwrite your current saved world which seems to be different!")) {
+    if (safeToSave() || confirm("Are you sure you want to save? This will overwrite your current saved world which seems to be different!")) {
         try {
-            localStorage.setItem("save1", JSON.stringify(exportData()));
+            saveToLocalStorage();
             alert("Saved successfully!");
-            Game.lastSaved = millis();
         }
         catch (err) {
             alert("Failed to save! " + parseError(err));

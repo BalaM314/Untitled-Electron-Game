@@ -323,6 +323,26 @@ function mul(a:PosT, amount:number):PosT {
  * Game-related functions
  */
 
+function saveExists(){
+	return localStorage.getItem("save1") != null;
+}
+
+function safeToSave():boolean {
+	if(!saveExists()) return true;
+	try {
+		const data = JSON.parse(localStorage.getItem("save1")!) as SaveData;
+		assert(data.UntitledElectronGame.metadata.validationCode === "esrdtfgvczdsret56u7yhgvfcesrythgvfd!");
+		return data.UntitledElectronGame.metadata.uuid == level1.uuid || (data.UntitledElectronGame.metadata as any).id == level1.uuid;
+	} catch(err){
+		return true;
+	}
+}
+
+function saveToLocalStorage(){
+	localStorage.setItem("save1", JSON.stringify(exportData()));
+	Game.lastSaved = Date.now();
+}
+
 function trigger<T extends keyof Triggers>(key:T, data:Triggers[T]){
 	switch(key){
 		case "buildingFirstRun":
