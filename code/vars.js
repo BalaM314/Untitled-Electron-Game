@@ -297,7 +297,7 @@ const splashes = [
     "Do not sell!",
     "doot doot",
     "/kill",
-    "c148 is still the best lol",
+    "c418 is still the best lol",
     "I wonder what this button does!",
     "Ctrl+W for 420 free diamonds!",
     "One day, somewhere in the future, my work will be quoted!",
