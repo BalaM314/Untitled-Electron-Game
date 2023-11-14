@@ -311,7 +311,7 @@ let settings = {
 	showExtraPipeInfo: false,
 	showIDsInTooltips: false,
 	showChunkBorders: false,
-	showTileBorders: false,
+	showTileBorders: true,
 };
 let Game: {
 	texturesReady: boolean;
