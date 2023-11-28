@@ -115,6 +115,14 @@ motor.name = Motor
 [fluid]
 water.name = Water
 steam.name = Steam
+
+[objective]
+produceCoal.name = Produce coal
+produceCoal.description = Build a Miner on a coal ore node to produce coal.
+gatherCoal.name = Gather 10 coal
+gatherCoal.description = Get 10 coal to the Center using conveyor belts.
+researchStoneFurnace.name = Research a furnace
+researchStoneFurnace.description = Coal can be used as fuel for many buildings, including furnaces, which can purify iron ore. Building one out of nothing but raw stone will not be easy; it may take a few tries...
 `, "base_");
 const Direction = (() => {
     let right = { num: 0, string: "right", vec: [1, 0], horizontal: true, vertical: false };
