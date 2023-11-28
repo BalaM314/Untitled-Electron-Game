@@ -1930,7 +1930,7 @@ class Pump extends Building {
 		Fluid.fill(this.fluid!, this.block.outputFluid, this.block.productionSpeed);
 		super.update(currentFrame);
 	}
-	static drawer:any = BuildingWithRecipe.drawFluid([0, 0], 0.8, 0.8);
+	static drawer:any = BuildingWithRecipe.drawFluid([0, 0], 0.4, 0.4);
 }
 
 

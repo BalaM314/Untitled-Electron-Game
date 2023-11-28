@@ -1855,7 +1855,7 @@ Pump.productionSpeed = 2;
 Pump.fluidOutputSpeed = 10;
 Pump.fluidCapacity = 100;
 Pump.outputsFluids = true;
-Pump.drawer = BuildingWithRecipe.drawFluid([0, 0], 0.8, 0.8);
+Pump.drawer = BuildingWithRecipe.drawFluid([0, 0], 0.4, 0.4);
 class PowerGrid {
     constructor() {
         this.producers = [];
