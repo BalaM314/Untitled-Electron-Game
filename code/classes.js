@@ -423,6 +423,19 @@ class Chunk {
         return this._generator.next().value;
     }
     generate() {
+        const generation_consts = {
+            perlin_scale: 2 * Math.PI,
+            y_offset: 2031,
+            ore_scale: 3,
+            min_water_chunk_distance: 3,
+            hilly: {
+                terrain_cutoff: 0.01,
+                stone_threshold: 0.7,
+                ore_threshold: 0.8,
+                min_iron_distance: 8,
+                min_copper_distance: 12
+            }
+        };
         let isWet = false;
         let isHilly = false;
         let distanceFromSpawn = Math.sqrt(this.x ** 2 + this.y ** 2);
@@ -434,16 +447,16 @@ class Chunk {
             isHilly = true;
         }
         if (isWet) {
-            for (let row in this.layers[0]) {
-                for (let tile in this.layers[0][row]) {
-                    if (row == "0" || row == "15" || tile == "0" || tile == "15") {
-                        this.layers[0][row][tile] = "base_water";
+            for (let y = 0; y < consts.CHUNK_SIZE; y++) {
+                for (let x = 0; x < consts.CHUNK_SIZE; x++) {
+                    if (y == 0 || y == 15 || x == 0 || x == 15) {
+                        this.layers[0][y][x] = "base_water";
                     }
-                    else if (row == "1" || row == "14" || tile == "1" || tile == "14") {
-                        this.layers[0][row][tile] = this.generator().chance(0.5) ? "base_water" : "base_stone";
+                    else if (y == 1 || y == 14 || x == 1 || x == 14) {
+                        this.layers[0][y][x] = this.generator().chance(0.5) ? "base_water" : "base_stone";
                     }
                     else {
-                        this.layers[0][row][tile] =
+                        this.layers[0][y][x] =
                             this.generator().chance(0.1) ?
                                 (this.generator().chance(0.3) ? "base_ore_iron" : "base_ore_coal")
                                 : "base_stone";
@@ -453,7 +466,7 @@ class Chunk {
         }
         else if (isHilly) {
             let oreToGenerate;
-            let oreRand = this.generator();
+            const oreRand = this.generator();
             if (distanceFromSpawn < generation_consts.hilly.min_iron_distance) {
                 oreToGenerate = "base_ore_coal";
             }
@@ -463,46 +476,41 @@ class Chunk {
             else {
                 oreToGenerate = oreRand.chance(0.5) ? (oreRand.chance(0.25) ? "base_ore_copper" : "base_ore_iron") : "base_ore_coal";
             }
-            for (let row in this.layers[0]) {
-                for (let tile in this.layers[0][row]) {
-                    let noiseHeight = Math.abs(noise.perlin2(((this.x * consts.CHUNK_SIZE) + +tile + this.parent.seed) / generation_consts.perlin_scale, ((this.y * consts.CHUNK_SIZE) + +row + (this.parent.seed + generation_consts.y_offset))
+            for (let y = 0; y < consts.CHUNK_SIZE; y++) {
+                for (let x = 0; x < consts.CHUNK_SIZE; x++) {
+                    const noiseHeight = Math.abs(noise.perlin2(((this.x * consts.CHUNK_SIZE) + x + this.parent.seed) / generation_consts.perlin_scale, ((this.y * consts.CHUNK_SIZE) + y + (this.parent.seed + generation_consts.y_offset))
                         / generation_consts.perlin_scale));
                     if ((noiseHeight + distanceBoost / 2) > generation_consts.hilly.ore_threshold) {
-                        this.layers[0][row][tile] = oreToGenerate;
+                        this.layers[0][y][x] = oreToGenerate;
                     }
                     else if ((noiseHeight + distanceBoost) > generation_consts.hilly.stone_threshold) {
-                        this.layers[0][row][tile] = "base_stone";
+                        this.layers[0][y][x] = "base_stone";
                     }
                     else {
-                        this.layers[0][row][tile] = "base_grass";
+                        this.layers[0][y][x] = "base_grass";
                     }
                 }
             }
         }
         else {
-            for (let row in this.layers[0]) {
-                for (let tile in this.layers[0][row]) {
-                    this.layers[0][row][tile] = "base_grass";
+            for (let y = 0; y < consts.CHUNK_SIZE; y++) {
+                for (let x = 0; x < consts.CHUNK_SIZE; x++) {
+                    this.layers[0][y][x] = "base_grass";
                 }
             }
-            let oreToGenerate;
-            if (distanceFromSpawn < 3) {
-                oreToGenerate = "base_ore_coal";
-            }
-            else {
-                oreToGenerate = (this.generator().chance(0.5)) ? "base_ore_coal" : "base_ore_iron";
-            }
-            let hill_x = Math.floor(this.generator().value * 16);
-            let hill_y = Math.floor(this.generator().value * 16);
-            this.setTile(hill_x, hill_y, oreToGenerate);
-            this.setTile(hill_x + 1, hill_y, "base_stone");
-            this.setTile(hill_x - 1, hill_y, "base_stone");
-            this.setTile(hill_x, hill_y + 1, "base_stone");
-            this.setTile(hill_x, hill_y - 1, "base_stone");
-            this.setTile(hill_x + 1, hill_y + 1, this.generator().chance(0.5) ? "base_grass" : "base_stone");
-            this.setTile(hill_x + 1, hill_y - 1, this.generator().chance(0.5) ? "base_grass" : "base_stone");
-            this.setTile(hill_x - 1, hill_y + 1, this.generator().chance(0.5) ? "base_grass" : "base_stone");
-            this.setTile(hill_x - 1, hill_y - 1, this.generator().chance(0.5) ? "base_grass" : "base_stone");
+            const oreToGenerate = distanceFromSpawn < 3 ? "base_ore_coal"
+                : this.generator().chance(0.5) ? "base_ore_coal" : "base_ore_iron";
+            const hillX = Math.floor(this.generator().value * 16);
+            const hillY = Math.floor(this.generator().value * 16);
+            this.setTile(hillX, hillY, oreToGenerate);
+            this.setTile(hillX + 1, hillY, "base_stone");
+            this.setTile(hillX - 1, hillY, "base_stone");
+            this.setTile(hillX, hillY + 1, "base_stone");
+            this.setTile(hillX, hillY - 1, "base_stone");
+            this.setTile(hillX + 1, hillY + 1, this.generator().chance(0.5) ? "base_grass" : "base_stone");
+            this.setTile(hillX + 1, hillY - 1, this.generator().chance(0.5) ? "base_grass" : "base_stone");
+            this.setTile(hillX - 1, hillY + 1, this.generator().chance(0.5) ? "base_grass" : "base_stone");
+            this.setTile(hillX - 1, hillY - 1, this.generator().chance(0.5) ? "base_grass" : "base_stone");
         }
         return this;
     }

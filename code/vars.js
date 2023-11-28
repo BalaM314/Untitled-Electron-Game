@@ -145,19 +145,6 @@ const Direction = (() => {
         number: 4
     };
 })();
-const generation_consts = {
-    perlin_scale: 2 * Math.PI,
-    y_offset: 2031,
-    ore_scale: 3,
-    min_water_chunk_distance: 3,
-    hilly: {
-        terrain_cutoff: 0.01,
-        stone_threshold: 0.7,
-        ore_threshold: 0.8,
-        min_iron_distance: 8,
-        min_copper_distance: 12
-    }
-};
 const consts = {
     VERSION: "alpha 3.1.0",
     CHUNK_SIZE: 16,

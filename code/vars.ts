@@ -191,29 +191,6 @@ type Triggers = {
 	}
 }
 
-const generation_consts = {
-	//All distance values are in chunks.
-	/**	An irrational number used to scale the perlin noise. The larger the number, the larger the terrain formations.*/
-	perlin_scale: 2 * Math.PI,
-	/** To make the terrain not mirrored diagonally.*/
-	y_offset: 2031,
-	/** Affects how fast the stone/ore gets bigger as you move away from spawn.*/
-	ore_scale: 3,
-	/** The minimum distance from spawn for water chunks to spawn.*/
-	min_water_chunk_distance: 3,
-	hilly: {
-		/** Determins where the hilly(perlin generated) terrain starts. Higher values make it start further away.*/
-		terrain_cutoff: 0.01,
-		/** Determines how high the perlin noise has to go for stone to generate... sort of. See Chunk.generate().*/
-		stone_threshold: 0.7,
-		/** Same as terrain stone threshold but for ore.*/
-		ore_threshold: 0.8,
-		/** Minimum distance from spawn for iron ore to generate.*/
-		min_iron_distance: 8,
-		/** Minimum distance from spawn for copper ore to generate.*/
-		min_copper_distance: 12
-	}
-};
 const consts = {
 	VERSION: "alpha 3.1.0",
 	/**Size of a chunk in tiles. */
