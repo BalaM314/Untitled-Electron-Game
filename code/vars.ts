@@ -329,7 +329,7 @@ let Game: {
 	tutorial: {
 		[index: string]: any
 	};
-	state: "loading" | "title" | "settings" | "settings.keybinds" | "game";
+	sceneName: "loading" | "title" | "settings" | "settings.keybinds" | "game";
 	paused: boolean;
 	splash: {
 		text: string;
@@ -356,7 +356,7 @@ let Game: {
 		
 	},
 	paused: false,
-	state: "loading",
+	sceneName: "loading",
 	splash: {
 		text: "",
 		bounceFunc: Math.sin,

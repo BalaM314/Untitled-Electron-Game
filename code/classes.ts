@@ -1316,7 +1316,7 @@ class Conveyor extends Building {
 				return;
 			}
 			switch(this.meta){
-				//yes I know there's no need to write the ids in hex but why the heck not
+				//todo clean...
 				case 0x00:
 					if(this.item.pos.tileOffsetYCentered)
 						this.item.pos.pixelX += this.block.speed;

@@ -17,8 +17,8 @@ function registerEventHandlers(){
 		}
 		Input.latestMouseEvent = e;
 		Input.buildingPlaced = false;
-		if(state[Game.state]){
-			state[Game.state]?.onmousedown?.(e);
+		if(scenes[Game.sceneName]){
+			scenes[Game.sceneName]?.onmousedown?.(e);
 		}
 	}
 	clickcapture.onmouseup = (e:MouseEvent) => {
@@ -81,8 +81,8 @@ function registerEventHandlers(){
 			}
 		}
 
-		if(state[Game.state]){
-			state[Game.state]?.onkeydown?.(e);
+		if(scenes[Game.sceneName]){
+			scenes[Game.sceneName]?.onkeydown?.(e);
 		}
 
 		//Otherwise prevent default
@@ -121,7 +121,7 @@ function registerEventHandlers(){
 
 	window.onbeforeunload = (e:BeforeUnloadEvent) => {
 		//Page is about to close
-		if(Game.state != "game"){
+		if(Game.sceneName != "game"){
 			return;
 			//If you aren't in-game, just exit
 		}
@@ -166,8 +166,8 @@ function registerEventHandlers(){
 
 //todo fix this VV probably repeating myself a lot
 /**Holds all the function that do things in each game state. */
-let state: {
-	[P in typeof Game.state]: {
+const scenes: {
+	[P in typeof Game.sceneName]: {
 		buttons: Button[],
 		update: (currentFrame:CurrentFrame) => void;
 		display: (currentFrame:CurrentFrame) => void;
@@ -180,7 +180,7 @@ let state: {
 	loading: {
 		buttons: [],
 		update(){
-			if(Game.texturesReady) Game.state = "title";
+			if(Game.texturesReady) Game.sceneName = "title";
 		},
 		display(currentFrame:CurrentFrame){
 			ctxOverlays.clear();
@@ -216,7 +216,7 @@ let state: {
 				label: "Settings",
 				color: "#0000FF",
 				font: "40px sans-serif",
-				onClick: () => {Game.state = "settings";}
+				onClick: () => {Game.sceneName = "settings";}
 			}),
 			new Button({
 				x: () => innerWidth * 0.9,
@@ -242,10 +242,10 @@ let state: {
 			ctxOverlays.fillStyle = "#cccc00";
 			ctxOverlays.font = `${20 + 5*Game.splash.bounceFunc(millis() / 400)}px sans-serif`;
 			ctxOverlays.fillText(Game.splash.text ?? "splash not found! this is actually an error pls report", innerWidth / 2, innerHeight * 0.35);
-			state.title.buttons.forEach(button => button.display(ctxOverlays));
+			scenes.title.buttons.forEach(button => button.display(ctxOverlays));
 		},
 		onmousedown(e:MouseEvent){
-			state.title.buttons.forEach(button => button.handleMouseClick(e));
+			scenes.title.buttons.forEach(button => button.handleMouseClick(e));
 			if(Intersector.pointInRect(Input.mouse, [innerWidth * 0.4, innerHeight * 0.3, innerWidth * 0.2, innerHeight * 0.1]))
 				Game.splash.clickBehavior();
 		}
@@ -290,7 +290,7 @@ let state: {
 				label: "Controls",
 				color: "#0000FF",
 				font: "35px sans-serif",
-				onClick: () => {Game.state = "settings.keybinds"}
+				onClick: () => {Game.sceneName = "settings.keybinds"}
 			}),
 			new Button({
 				x: () => innerWidth * 0.9,
@@ -300,7 +300,7 @@ let state: {
 				label: "❌",
 				color: "#0000FF",
 				font: "40px sans-serif",
-				onClick: () => {Game.state = "title"; localStorage.setItem("settings", JSON.stringify(settings));}
+				onClick: () => {Game.sceneName = "title"; localStorage.setItem("settings", JSON.stringify(settings));}
 			}),
 		],
 		update(){},
@@ -313,10 +313,10 @@ let state: {
 			ctxOverlays.textBaseline = "middle";
 			ctxOverlays.fillStyle = "#000000";
 			ctxOverlays.fillText("Settings", innerWidth / 2, innerHeight * 0.2);
-			state.settings.buttons.forEach(button => button.display(ctxOverlays));
+			scenes.settings.buttons.forEach(button => button.display(ctxOverlays));
 		},
 		onmousedown(e:MouseEvent){
-			state.settings.buttons.forEach(button => button.handleMouseClick(e));
+			scenes.settings.buttons.forEach(button => button.handleMouseClick(e));
 		}
 	},
 	"settings.keybinds": {
@@ -340,7 +340,7 @@ let state: {
 				label: "❌",
 				color: "#0000FF",
 				font: "40px sans-serif",
-				onClick: () => {Game.state = "settings";}
+				onClick: () => {Game.sceneName = "settings";}
 			}),
 		],
 		update(){},
@@ -490,13 +490,13 @@ let state: {
 /**Sets the canvas sizes to the window size. */
 function fixSizes(){
 	//This has to be done dynamically because for some reason setting a canvas to width:100% height:100% makes it glitch out.
-	for(let x of ctxs){
-		if(x.canvas.width != window.innerWidth){
-			x.canvas.width = window.innerWidth;
+	for(const ctx of ctxs){
+		if(ctx.canvas.width != window.innerWidth){
+			ctx.canvas.width = window.innerWidth;
 			Game.forceRedraw = true;
 		}
-		if(x.canvas.height != window.innerHeight){
-			x.canvas.height = window.innerHeight;
+		if(ctx.canvas.height != window.innerHeight){
+			ctx.canvas.height = window.innerHeight;
 			Game.forceRedraw = true;
 		}
 	}
@@ -532,9 +532,9 @@ function main_loop(){
 		fixSizes();
 		window.getSelection()?.empty();
 		
-		let currentState = state[Game.state];
+		let currentState = scenes[Game.sceneName];
 		if(!currentState){
-			throw new InvalidStateError(`Invalid game state "${Game.state}"`);
+			throw new InvalidStateError(`Invalid game state "${Game.sceneName}"`);
 		}
 
 		if(Input.mouseDown){
@@ -547,7 +547,7 @@ function main_loop(){
 		currentState.update(currentFrame);
 		currentState.display(currentFrame);
 		
-		if(Game.state == "game"){
+		if(Game.sceneName == "game"){
 			let frameMS = Date.now() - startFrameTime;
 			Game.stats.frameTimes.add(frameMS);
 			const frameMSLast10 = Game.stats.frameTimes.mean(10, null);
@@ -592,7 +592,7 @@ function load(){
 	) importData(localStorage.getItem("save1")!);
 	else level1 = new Level(314).generate();
 
-	Game.state = "game";
+	Game.sceneName = "game";
 	Game.forceRedraw = true;
 	toolbarEl.classList.remove("hidden");
 	resourcesEl.classList.remove("hidden");
@@ -709,10 +709,13 @@ function init(){
 		alert("It looks like you're trying to play on a phone. Unfortunately, mobile devices are not currently supported.");
 	}
 	
-	Game.splash.text = Math.random() < 0.95 ? splashes[Math.ceil(Math.random() * (splashes.length - 1))] : raresplashes[Math.ceil(Math.random() * (raresplashes.length - 1))];
+	Game.splash.text = Math.random() < 0.95
+		? splashes[Math.ceil(Math.random() * (splashes.length - 1))]
+		: raresplashes[Math.ceil(Math.random() * (raresplashes.length - 1))];
+	//use of incorrect formula is intentional, we want the first splash to never get selected
 	Game.splash.bounceFunc = Math.random() < 0.9 ? Math.sin : Math.tan;
 	if(Game.splash.text == "I wonder what this button does!") Game.splash.clickBehavior = () => window.open("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
-	
+
 	errorBackground.classList.remove("hidden");
 	loadingBackground.classList.add("hidden");
 	gameBackground.classList.remove("hidden");

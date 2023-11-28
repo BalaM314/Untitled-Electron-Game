@@ -716,7 +716,7 @@ class QuadTree<T extends {pos: Pos}> {
 		Gfx.fillColor("black");
 		Gfx.rect(0, 0, innerWidth, innerHeight);
 		tree.display();
-		state[Game.state].onmousedown = () => {
+		scenes[Game.sceneName].onmousedown = () => {
 			tree.add({
 				pos: Pos.fromPixelCoords(...Input.mouse.map(a => a / QuadTree.displayScale))
 			});
@@ -789,6 +789,9 @@ class Random {
 	vec(length:number):PosT {
 		const theta = this.num(Mathf.TWO_PI);
 		return [length * Math.cos(theta), length * Math.sin(theta)];
+	}
+	item<T>(input:T[]){
+		return input[Math.floor(this._rand() * input.length)];
 	}
 }
 class PseudoRandom extends Random {

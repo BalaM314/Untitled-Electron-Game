@@ -263,7 +263,7 @@ let Game = {
     forceRedraw: true,
     tutorial: {},
     paused: false,
-    state: "loading",
+    sceneName: "loading",
     splash: {
         text: "",
         bounceFunc: Math.sin,
