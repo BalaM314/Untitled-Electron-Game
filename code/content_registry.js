@@ -183,10 +183,27 @@ Buildings.register("base_boiler", BuildingWithRecipe, {
     runEffect: [Fx.smoke, "#222", 30, 1],
     drawer: BuildingWithRecipe.combineDrawers(BuildingWithRecipe.drawFluid([0, -0.2], 0.8, 0.4), BuildingWithRecipe.drawLayer("building/base_boiler_fire", 1, 1, b => b.timer >= 0 ? map(b.timer, b.recipe?.duration ?? -1, 0, 1, 0.7) : 0))
 });
-Buildings.register("base_steam_generator", BuildingWithRecipe, {
+Buildings.register("base_steam_generator", MultiBlockController, {
     recipeType: recipes.base_steam_generating,
+    secondary: Buildings.get("base_multiblock_secondary"),
+    multiblockSize: [2, 2],
     fluidCapacity: 30,
     acceptsFluids: true,
     producesPower: true,
     runEffect: [Fx.smoke, "#FFF", 30, 1],
+    drawer: BuildingWithRecipe.makeDrawer((build, e) => {
+        const numLines = 6;
+        const vel = build.efficiency * 0.15;
+        const spokeRadius = 0.8;
+        const spokeWidth = 1;
+        const pos = build.centeredPos().tile;
+        build.num1 = (build.num1 + vel) % Mathf.TWO_PI;
+        Gfx.lineWidth(Camera.zoomLevel * spokeWidth);
+        Gfx.strokeColor("#DDD");
+        for (let i = 0; i < numLines; i++) {
+            const theta = (i / numLines) * Math.PI + build.num1;
+            const offset = [spokeRadius * Math.cos(theta), spokeRadius * Math.sin(theta)];
+            Gfx.tLine(...add(pos, offset), ...add(pos, mul(offset, -1)));
+        }
+    })
 });

@@ -192,10 +192,29 @@ Buildings.register("base_boiler", BuildingWithRecipe, {
 		)
 	)
 });
-Buildings.register("base_steam_generator", BuildingWithRecipe, {
+Buildings.register("base_steam_generator", MultiBlockController, {
 	recipeType: recipes.base_steam_generating,
+	secondary: Buildings.get("base_multiblock_secondary") as typeof MultiBlockSecondary,
+	multiblockSize: [2, 2],
 	fluidCapacity: 30,
 	acceptsFluids: true,
 	producesPower: true,
 	runEffect: [Fx.smoke, "#FFF", 30, 1],
+	drawer: BuildingWithRecipe.makeDrawer((build, e) => {
+		//theta is build.num1
+		const numLines = 6;
+		const vel = build.efficiency * 0.15;
+		const spokeRadius = 0.8;
+		const spokeWidth = 1;
+
+		const pos = build.centeredPos().tile;
+		build.num1 = (build.num1 + vel) % Mathf.TWO_PI;
+		Gfx.lineWidth(Camera.zoomLevel * spokeWidth);
+		Gfx.strokeColor("#DDD");
+		for(let i = 0; i < numLines; i ++){
+			const theta = (i / numLines) * Math.PI + build.num1;
+			const offset:PosT = [spokeRadius * Math.cos(theta), spokeRadius * Math.sin(theta)];
+			Gfx.tLine(...add(pos, offset), ...add(pos, mul(offset, -1)));
+		}
+	})
 });

@@ -37,6 +37,7 @@ var __setFunctionName = (this && this.__setFunctionName) || function (f, name, p
     if (typeof name === "symbol") name = name.description ? "[".concat(name.description, "]") : "";
     return Object.defineProperty(f, "name", { configurable: true, value: prefix ? "".concat(prefix, " ", name) : name });
 };
+var _a;
 class Level {
     constructor(seed) {
         this.seed = seed;
@@ -201,8 +202,9 @@ class Level {
                 let controller = new block(tileX, tileY, buildingID[1], this);
                 controller.secondaries = offsets.map(([x, y]) => new block.secondary(tileX + x, tileY + y, 0, this));
                 controller.secondaries.forEach(secondary => secondary.controller = controller);
-                this.writeBuilding(tileX, tileY, controller);
                 this.buildings.add(controller);
+                this.grid.addBuilding(controller);
+                this.writeBuilding(tileX, tileY, controller);
                 controller.secondaries.forEach(secondary => {
                     this.writeBuilding(secondary.pos.tileX, secondary.pos.tileY, secondary);
                     this.buildings.add(secondary);
@@ -635,9 +637,10 @@ let Building = (() => {
             this.fluid = null;
             this.fluidOut = null;
             this.cItemOut = 0;
-            this.cFluidOut = 3;
+            this.cFluidOut = 0;
             this.fluidThroughput = 0;
             this.grid = null;
+            this.num1 = 0;
             this.powerLoad = 0;
             this.powerSatisfaction = 0;
             this.block = this.constructor;
@@ -1650,8 +1653,8 @@ StorageBuilding.capacity = 64;
 StorageBuilding.acceptsItems = true;
 class ResourceAcceptor extends Building {
     acceptItem(item) {
-        var _a, _b;
-        (_a = this.level.resources)[_b = item.id] ?? (_a[_b] = 0);
+        var _b, _c;
+        (_b = this.level.resources)[_c = item.id] ?? (_b[_c] = 0);
         this.level.resources[item.id]++;
         return true;
     }
@@ -1687,9 +1690,20 @@ class MultiBlockSecondary extends Building {
             this.break();
         }
     }
+    acceptFluid(stack, maxThroughput, from) {
+        return this.controller?.acceptFluid(stack, maxThroughput, from) ?? null;
+    }
+    pressureIn() {
+        return this.controller?.pressureIn() ?? 1;
+    }
+    pressureOut() {
+        return this.controller?.pressureOut() ?? 0;
+    }
 }
 MultiBlockSecondary.outputsItems = true;
 MultiBlockSecondary.acceptsItems = true;
+MultiBlockSecondary.acceptsFluids = true;
+MultiBlockSecondary.outputsFluids = true;
 class MultiBlockController extends BuildingWithRecipe {
     constructor() {
         super(...arguments);
@@ -1725,7 +1739,7 @@ class MultiBlockController extends BuildingWithRecipe {
         super.update(currentFrame);
     }
     resetSecondaries() {
-        let possibleSecondaries = MultiBlockController.getOffsetsForSize(...this.block.multiblockSize)
+        let possibleSecondaries = _a.getOffsetsForSize(...this.block.multiblockSize)
             .map(([xOffset, yOffset]) => this.level.buildingAtTile(this.pos.tileX + xOffset, this.pos.tileY + yOffset));
         for (let possibleSecondary of possibleSecondaries) {
             if (possibleSecondary instanceof MultiBlockSecondary &&
@@ -1750,8 +1764,44 @@ class MultiBlockController extends BuildingWithRecipe {
         }
         return false;
     }
+    dumpFluidAt(fluid, tileX, tileY, direction) {
+        const build = this.level.buildingAtTile(tileX + direction.vec[0], tileY + direction.vec[1]);
+        if (build && this.block.canOutputFluidTo(build) &&
+            this.outputsFluidToSide(direction) && build.acceptsFluidFromSide(direction.opposite)) {
+            this.fluidThroughput = build.acceptFluid(fluid, this.fluidOutputSpeed(build), this);
+            return;
+        }
+    }
+    dumpFluid() {
+        this.fluidThroughput = 0;
+        const fluid = this.fluidOut ?? this.fluid;
+        if (!fluid || fluid[0] == null || fluid[1] == 0)
+            return;
+        const numDirections = 2 * (this.block.multiblockSize[0] + this.block.multiblockSize[1]);
+        for (let i = 0; i < numDirections; i++) {
+            this.dumpFluidAt(fluid, ...this.block.outputPositions[this.cFluidOut]);
+            if (++this.cFluidOut >= numDirections)
+                this.cFluidOut = 0;
+        }
+    }
 }
+_a = MultiBlockController;
 MultiBlockController.multiblockSize = [2, 2];
+MultiBlockController.outputPositions = [];
+(() => {
+    for (let y = 0; y < _a.multiblockSize[0]; y++) {
+        _a.outputPositions.push([_a.multiblockSize[0] - 1, y, Direction.right]);
+    }
+    for (let x = _a.multiblockSize[0] - 1; x >= 0; x--) {
+        _a.outputPositions.push([x, _a.multiblockSize[1] - 1, Direction.down]);
+    }
+    for (let y = _a.multiblockSize[0] - 1; y >= 0; y--) {
+        _a.outputPositions.push([0, y, Direction.left]);
+    }
+    for (let x = 0; x < _a.multiblockSize[0]; x++) {
+        _a.outputPositions.push([x, 0, Direction.up]);
+    }
+})();
 class ItemModule {
     constructor(maxCapacity = 10) {
         this.maxCapacity = maxCapacity;
@@ -1764,18 +1814,18 @@ class ItemModule {
         return this.storage[id] === 0 || this.storage[id] === undefined;
     }
     addFrom(stack) {
-        var _a, _b;
+        var _b, _c;
         const remainingSpace = this.maxCapacity - this.get(stack[0]);
         const amountTransferred = Math.max(0, Math.min(remainingSpace, stack[1]));
-        (_a = this.storage)[_b = stack[0]] ?? (_a[_b] = 0);
+        (_b = this.storage)[_c = stack[0]] ?? (_b[_c] = 0);
         this.storage[stack[0]] += amountTransferred;
         return (stack[1] -= amountTransferred) <= 0;
     }
     removeTo(stack, maxCapacity = Infinity) {
-        var _a, _b;
+        var _b, _c;
         const remainingSpace = maxCapacity - stack[1];
         const amountTransferred = Math.min(remainingSpace, this.get(stack[0]));
-        (_a = this.storage)[_b = stack[0]] ?? (_a[_b] = 0);
+        (_b = this.storage)[_c = stack[0]] ?? (_b[_c] = 0);
         this.storage[stack[0]] -= amountTransferred;
         return (stack[1] += amountTransferred) == maxCapacity;
     }

@@ -1,6 +1,6 @@
 # A list of things I will or will not add in the future.
 
-
+stop passing currentframe everywhere
 
 ### An in game tutorial
 

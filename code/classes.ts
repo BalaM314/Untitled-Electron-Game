@@ -218,8 +218,9 @@ class Level {
 				//Link buildings
 				controller.secondaries.forEach(secondary => secondary.controller = controller);
 				//Write buildings
-				this.writeBuilding(tileX, tileY, controller);
 				this.buildings.add(controller);
+				this.grid.addBuilding(controller);
+				this.writeBuilding(tileX, tileY, controller);
 				controller.secondaries.forEach(secondary => {
 					this.writeBuilding(secondary.pos.tileX, secondary.pos.tileY, secondary);
 					this.buildings.add(secondary);
@@ -747,9 +748,10 @@ class Building {
 	/** Counter that specifies which direction to start at when trying to dump items. Used for even distribution. */
 	cItemOut = 0;
 	/** Counter that specifies which direction to start at when trying to dump fluids. Used for even distribution. */
-	cFluidOut = 3;
+	cFluidOut = 0;
 	fluidThroughput = 0;
 	grid:PowerGrid | null = null;
+	num1 = 0;
 	static producesPower = false;
 	static consumesPower = false;
 	/** Gets set during power update, after getMaxPowerProduction is called. */
@@ -1742,6 +1744,8 @@ class MultiBlockSecondary extends Building {
 	controller: MultiBlockController | null = null;
 	static outputsItems = true;
 	static acceptsItems = true;
+	static acceptsFluids = true;
+	static outputsFluids = true;
 	acceptItem(item: Item):boolean {
 		return this.controller?.acceptItem(item) ?? false;
 	}
@@ -1766,6 +1770,15 @@ class MultiBlockSecondary extends Building {
 			this.break();
 		}
 	}
+	acceptFluid(stack:FluidStack, maxThroughput:number, from:Building):number | null {
+		return this.controller?.acceptFluid(stack, maxThroughput, from) ?? null;
+	}
+	pressureIn():number {
+		return this.controller?.pressureIn() ?? 1;
+	}
+	pressureOut():number {
+		return this.controller?.pressureOut() ?? 0;
+	}
 }
 
 class MultiBlockController extends BuildingWithRecipe {
@@ -1773,6 +1786,21 @@ class MultiBlockController extends BuildingWithRecipe {
 	secondaries: MultiBlockSecondary[] = [];
 	static multiblockSize:PosT = [2, 2];
 	static secondary:typeof MultiBlockSecondary;
+	static outputPositions:[x:number, y:number, direction:Direction][] = [];
+	static {
+		for(let y = 0; y < this.multiblockSize[0]; y ++){
+			this.outputPositions.push([this.multiblockSize[0] - 1, y, Direction.right]);
+		}
+		for(let x = this.multiblockSize[0] - 1; x >= 0; x --){
+			this.outputPositions.push([x, this.multiblockSize[1] - 1, Direction.down]);
+		}
+		for(let y = this.multiblockSize[0] - 1; y >= 0; y --){
+			this.outputPositions.push([0, y, Direction.left]);
+		}
+		for(let x = 0; x < this.multiblockSize[0]; x ++){
+			this.outputPositions.push([x, 0, Direction.up]);
+		}
+	}
 	static textureSize(meta:number):TextureInfo {
 		return [this.multiblockSize, [0, 0]];
 	}
@@ -1832,6 +1860,26 @@ class MultiBlockController extends BuildingWithRecipe {
 			}
 		}
 		return false;
+	}
+	dumpFluidAt(fluid:FluidStack, tileX:number, tileY:number, direction:Direction){
+		const build = this.level.buildingAtTile(tileX + direction.vec[0], tileY + direction.vec[1]);
+		if(
+			build && this.block.canOutputFluidTo(build) &&
+			this.outputsFluidToSide(direction) && build.acceptsFluidFromSide(direction.opposite)
+		){
+			this.fluidThroughput = build.acceptFluid(fluid, this.fluidOutputSpeed(build), this)!;
+			return;
+		}
+	}
+	dumpFluid(){
+		this.fluidThroughput = 0;
+		const fluid = this.fluidOut ?? this.fluid;
+		if(!fluid || fluid[0] == null || fluid[1] == 0) return;
+		const numDirections = 2 * (this.block.multiblockSize[0] + this.block.multiblockSize[1]);
+		for(let i = 0; i < numDirections; i ++){
+			this.dumpFluidAt(fluid, ...this.block.outputPositions[this.cFluidOut]);
+			if(++this.cFluidOut >= numDirections) this.cFluidOut = 0;
+		}
 	}
 }
 

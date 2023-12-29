@@ -306,7 +306,7 @@ class Gfx {
 				height * Camera.zoomLevel
 			);
 	}
-	static tEllipse(tileX:number, tileY:number, width:number, height:number, rotation = 0, startAngle = 0, endAngle = 2 * Math.PI, _ctx = this.ctx){
+	static tEllipse(tileX:number, tileY:number, width:number, height:number = width, rotation = 0, startAngle = 0, endAngle = 2 * Math.PI, _ctx = this.ctx){
 		_ctx.beginPath();
 		_ctx.moveTo(
 			(tileX * consts.TILE_SIZE + Camera.scrollX) * Camera.zoomLevel + Camera.width / 2,
@@ -321,7 +321,7 @@ class Gfx {
 		);
 		_ctx.fill();
 	}
-	static ellipse(x:number, y:number, w:number, h:number, _ctx = this.ctx){
+	static ellipse(x:number, y:number, w:number, h:number = w, _ctx = this.ctx){
 		_ctx.beginPath();
 		_ctx.ellipse(x, y, w, h, 0, 0, Math.PI * 2);
 		_ctx.fill();
@@ -382,7 +382,7 @@ const Fx = {
 		drawer({linc, pdec, pos, color}){
 			Gfx.alpha(pdec(0.3, 8));
 			Gfx.fillColor(color);
-			Gfx.tEllipse(pos.tileXCentered + linc(0, 0.1), pos.tileYCentered - linc(0, 0.9), linc(0.2, 0.7), linc(0.2, 0.7));
+			Gfx.tEllipse(pos.tileXExact + linc(0, 0.1), pos.tileYExact - linc(0, 0.9), linc(0.2, 0.7), linc(0.2, 0.7));
 		},
 	}),
 	spark: new ParticleEffect({
