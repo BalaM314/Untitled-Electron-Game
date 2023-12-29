@@ -991,6 +991,10 @@ class BuildingWithRecipe extends Building {
 	recipe: Recipe | null = null;
 	items: Item[] = [];
 	fluidOut: FluidStack = [null, 0, this.block.fluidCapacity];
+	/** During updatePower and preUpdate, this will be the actual efficiency on the previous tick. During update, this will be the actual efficiency of the block. */
+	efficiency = 0;
+	/** This is the potential efficiency. (for example, if there is low load on a generator but all inputs are full, efficiency will be low but efficiencyp will be 1.) */
+	efficiencyp = 0;
 	static outputsItems = true;
 	static acceptsItems = true;
 	static recipeType: {recipes: Recipe[]};
@@ -1041,19 +1045,36 @@ class BuildingWithRecipe extends Building {
 	update(currentFrame:CurrentFrame){
 		if(this.recipe){
 			if(this.timer > 0){
-				let minSatisfaction = Math.min(this.timer, 1); //todo speed boost
-				if(this.recipe.fluidInputs){
+				let minSatisfaction = Math.min(this.timer, 1); //todolater speed boost
+				//Don't send the timer below zero, this would waste fluid inputs or create extra fluid output
+
+				//Calculate the maximum efficiency
+				if(this.recipe.fluidInputs){ //Fluid check
 					for(const fluidInput of this.recipe.fluidInputs){
 						const amountNeeded = fluidInput[1] / this.recipe.duration;
 						const amountDrained = Fluid.checkDrain(this.fluid!, amountNeeded);
 						minSatisfaction = Math.min(amountDrained / amountNeeded, minSatisfaction);
 					}
-					for(const fluidInput of this.recipe.fluidInputs){
+				}
+				if(this.block.consumesPower && this.recipe.powerConsumption){ //Power check
+					minSatisfaction = Math.min(minSatisfaction, this.powerSatisfaction);
+				}
+				this.efficiencyp = minSatisfaction;
+				if(this.block.producesPower && this.recipe.powerProduction){
+					minSatisfaction = Math.min(minSatisfaction, this.powerLoad); //Load was set in pre update so this is on-time
+				}
+
+				//Drain fluids
+				if(this.recipe.fluidInputs){
+					for(const fluidInput of this.recipe.fluidInputs){ //Actually drain
 						const amountNeeded = fluidInput[1] / this.recipe.duration * minSatisfaction;
 						const amountDrained = Fluid.drain(this.fluid!, amountNeeded);
-						if(amountDrained - amountNeeded > Number.EPSILON) throw new ShouldNotBePossibleError(`logic error when consuming fluids: needed ${amountNeeded}, got ${amountDrained}`);
+						if(amountDrained - amountNeeded > Number.EPSILON * 5) throw new ShouldNotBePossibleError(`logic error when consuming fluids: needed ${amountNeeded}, got ${amountDrained}`);
 					}
 				}
+				//Power production/consumption is handled separately, consumption will be off by one tick
+				
+				this.efficiency = minSatisfaction;
 				this.timer -= minSatisfaction;
 				if(this.recipe.fluidOutputs && minSatisfaction > 0){
 					for(const fluidOutput of this.recipe.fluidOutputs){
@@ -1069,7 +1090,17 @@ class BuildingWithRecipe extends Building {
 				}
 			}
 		}
+		if(this.recipe == null && this.block.recipeType.recipes.length == 1){
+			this.setRecipe(this.block.recipeType.recipes[0]);
+		}
 		super.update(currentFrame);
+	}
+	getMaxPowerProduction():number {
+		return (this.recipe?.powerProduction ?? 0) * this.efficiencyp;
+	}
+	getRequestedPower():number {
+		//Always request full power
+		return (this.recipe?.powerConsumption ?? 0) /* * this.efficiency */;
 	}
 	display(currentFrame:CurrentFrame, layer?:keyof typeof Gfx.layers){
 		super.display(currentFrame, layer);

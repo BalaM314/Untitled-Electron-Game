@@ -63,7 +63,7 @@ type LegacyBuildingID =
 "0xFFFF" ;	//Null
 
 type LegacyRawBuildingID = "0x01" | "0x02" | "0x03" | "0x04" | "0x05" | "0x06" | "0x07" | "0x08" | "0x09" | "0x0A" | "0x0B" | "0x10" | "0x11" | "0xFF";
-type RawBuildingID = "base_conveyor" | "base_miner" | "base_trash_can" | "base_furnace" | "base_extractor" | "base_chest" | "base_alloy_smelter" | "base_resource_acceptor" | "base_wiremill" | "base_compressor" | "base_lathe" | "base_multiblock_secondary" | "base_assembler" | "base_null" | "base_arc_tower" | "base_power_source" | "base_pipe" | "base_pump" | "base_tank" | "base_boiler";
+type RawBuildingID = "base_conveyor" | "base_miner" | "base_trash_can" | "base_furnace" | "base_extractor" | "base_chest" | "base_alloy_smelter" | "base_resource_acceptor" | "base_wiremill" | "base_compressor" | "base_lathe" | "base_multiblock_secondary" | "base_assembler" | "base_null" | "base_arc_tower" | "base_power_source" | "base_pipe" | "base_pump" | "base_tank" | "base_boiler" | "base_steam_generator";
 type BuildingIDWithMeta = [buildingID:RawBuildingID, meta:BuildingMeta];
 type BuildingMeta = number;
 type StringBuildingID = `${RawBuildingID}:${BuildingMeta}`;
@@ -76,6 +76,7 @@ interface Recipe {
 	duration: number;
 	tile?: TileID;
 	powerConsumption?: number;
+	powerProduction?: number;
 }
 
 interface Recipes {

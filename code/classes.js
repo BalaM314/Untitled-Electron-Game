@@ -873,6 +873,8 @@ let BuildingWithRecipe = (() => {
             this.recipe = null;
             this.items = [];
             this.fluidOut = [null, 0, this.block.fluidCapacity];
+            this.efficiency = 0;
+            this.efficiencyp = 0;
         }
         acceptItem(item) {
             for (let i = 0; i < this.block.recipeMaxInputs; i++) {
@@ -920,13 +922,23 @@ let BuildingWithRecipe = (() => {
                             const amountDrained = Fluid.checkDrain(this.fluid, amountNeeded);
                             minSatisfaction = Math.min(amountDrained / amountNeeded, minSatisfaction);
                         }
+                    }
+                    if (this.block.consumesPower && this.recipe.powerConsumption) {
+                        minSatisfaction = Math.min(minSatisfaction, this.powerSatisfaction);
+                    }
+                    this.efficiencyp = minSatisfaction;
+                    if (this.block.producesPower && this.recipe.powerProduction) {
+                        minSatisfaction = Math.min(minSatisfaction, this.powerLoad);
+                    }
+                    if (this.recipe.fluidInputs) {
                         for (const fluidInput of this.recipe.fluidInputs) {
                             const amountNeeded = fluidInput[1] / this.recipe.duration * minSatisfaction;
                             const amountDrained = Fluid.drain(this.fluid, amountNeeded);
-                            if (amountDrained - amountNeeded > Number.EPSILON)
+                            if (amountDrained - amountNeeded > Number.EPSILON * 5)
                                 throw new ShouldNotBePossibleError(`logic error when consuming fluids: needed ${amountNeeded}, got ${amountDrained}`);
                         }
                     }
+                    this.efficiency = minSatisfaction;
                     this.timer -= minSatisfaction;
                     if (this.recipe.fluidOutputs && minSatisfaction > 0) {
                         for (const fluidOutput of this.recipe.fluidOutputs) {
@@ -944,7 +956,16 @@ let BuildingWithRecipe = (() => {
                     }
                 }
             }
+            if (this.recipe == null && this.block.recipeType.recipes.length == 1) {
+                this.setRecipe(this.block.recipeType.recipes[0]);
+            }
             super.update(currentFrame);
+        }
+        getMaxPowerProduction() {
+            return (this.recipe?.powerProduction ?? 0) * this.efficiencyp;
+        }
+        getRequestedPower() {
+            return (this.recipe?.powerConsumption ?? 0);
         }
         display(currentFrame, layer) {
             super.display(currentFrame, layer);
