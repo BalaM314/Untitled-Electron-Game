@@ -14,7 +14,7 @@ natural disaster? unnecessary work to code
 ...you want to go home, some random something caused you to get stranded on the island
 
 boat requires:
-steel hull (steel plating)
+steel hull (lots of steel plates)
 large motors (steel plate for casing, steel rod for shaft)
 diesel generator, fuel? if crude oil processing is cut, then just beam power in from space, or other funny solution
 copper wire

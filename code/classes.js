@@ -854,6 +854,7 @@ let Building = (() => {
     _classThis.immutable = false;
     _classThis.isOverlay = false;
     _classThis.displaysItem = false;
+    _classThis.buildCost = [];
     _classThis.drawer = null;
     _classThis.producesPower = false;
     _classThis.consumesPower = false;
@@ -1072,16 +1073,13 @@ class Miner extends Building {
         this.miningItem = null;
         this.ranOnce = false;
         this.timer = 61;
-        for (let recipe of recipes.base_mining.recipes) {
-            if (recipe.tile == level.tileAtByTile(tileX, tileY)) {
-                this.miningItem = recipe.outputs[0];
-                return;
-            }
-        }
+        const output = recipes.base_mining.recipes.find(r => r.tile == level.tileAtByTile(tileX, tileY))?.outputs[0];
+        if (output)
+            this.miningItem = output;
         console.warn(`Miner cannot mine tile at ${tileX}, ${tileY}`);
     }
     static canBuildAt(tileX, tileY, level) {
-        return level.tileAtByTile(tileX, tileY).split("_")[1] == "ore";
+        return recipes.base_mining.recipes.some(r => r.tile == level.tileAtByTile(tileX, tileY));
     }
     update() {
         if (!this.miningItem)

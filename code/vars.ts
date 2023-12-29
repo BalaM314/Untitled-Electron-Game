@@ -89,7 +89,8 @@ steam_generator.description = Produces electricity from steam.
 null.name = Debug Item
 coalOre.name = Coal Ore
 coalOre.description = Can be converted into Coal by a Furnace.
-coal.name = Coal
+stone.name = Raw Stone
+stoneBrick.name = Stone Brick
 ironOre.name = Iron Ore
 ironOre.description = Can be smelted into Iron by a Furnace.
 ironIngot.name = Iron Ingot
@@ -126,6 +127,8 @@ type ItemID =
 	"base_coal" |
 	"base_ironOre" |
 	"base_ironIngot" |
+	"base_stone" |
+	"base_stoneBrick" |
 	"base_ironPlate" |
 	"base_ironRod" |
 	"base_copperOre" |
