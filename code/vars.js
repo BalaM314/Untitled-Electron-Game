@@ -90,6 +90,8 @@ pump.name = Pump
 tank.name = Tank
 boiler.name = Boiler
 boiler.description = Burns coal to heat water into steam.
+steam_generator.name = Steam Generator
+steam_generator.description = Produces electricity from steam.
 
 [item]
 null.name = Debug Item
@@ -198,12 +200,11 @@ const keybinds = extend()({
         type_10: new Keybind("9", [], () => selectID("base_compressor")),
         type_11: new Keybind("f1", [], () => selectID("base_lathe")),
         type_12: new Keybind("f2", [], () => selectID("base_assembler")),
-        type_13: new Keybind("f3", [], () => selectID("base_arc_tower")),
-        type_14: new Keybind("f4", [], () => selectID("base_power_source")),
-        type_15: new Keybind("f6", [], () => selectID("base_pipe")),
-        type_16: new Keybind("f7", [], () => selectID("base_pump")),
-        type_17: new Keybind("f8", [], () => selectID("base_tank")),
-        type_18: new Keybind("f9", [], () => selectID("base_boiler")),
+        type_13: new Keybind("f3", [], () => selectID("base_pipe")),
+        type_14: new Keybind("f4", [], () => selectID("base_pump")),
+        type_16: new Keybind("f6", [], () => selectID("base_tank")),
+        type_17: new Keybind("f7", [], () => selectID("base_boiler")),
+        type_18: new Keybind("f8", [], () => selectID("base_steam_generator")),
         type_0: new Keybind("0", [], () => selectID("base_null")),
     },
     display: {

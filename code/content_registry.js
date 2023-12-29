@@ -134,11 +134,20 @@ const recipes = {
             {
                 inputs: ["base_coal"],
                 fluidInputs: [["base_water", 5]],
-                fluidOutputs: [["base_steam", 100]],
+                fluidOutputs: [["base_steam", 10]],
                 duration: 30
             }
         ]
-    }
+    },
+    base_steam_generating: {
+        recipes: [
+            {
+                fluidInputs: [["base_steam", 15]],
+                duration: 30,
+                powerProduction: 70
+            }
+        ]
+    },
 };
 const Fluids = new ContentRegistryI();
 Fluids.register(new Fluid("base_water", "blue"));
@@ -165,4 +174,19 @@ Buildings.register("base_power_source", PowerSource);
 Buildings.register("base_pipe", Pipe);
 Buildings.register("base_pump", Pump, { outputFluid: Fluids.get("base_water") });
 Buildings.register("base_tank", Tank);
-Buildings.register("base_boiler", BuildingWithRecipe, { recipeType: recipes.base_boiling, fluidCapacity: 100, acceptsFluids: true, outputsFluids: true, fluidExtraPressure: 1, runEffect: [Fx.smoke, "#222", 30, 1], drawer: BuildingWithRecipe.combineDrawers(BuildingWithRecipe.drawFluid([0, -0.2], 0.8, 0.4), BuildingWithRecipe.drawLayer("building/base_boiler_fire", 1, 1, b => b.timer >= 0 ? map(b.timer, b.recipe?.duration ?? -1, 0, 1, 0.7) : 0)) });
+Buildings.register("base_boiler", BuildingWithRecipe, {
+    recipeType: recipes.base_boiling,
+    fluidCapacity: 10,
+    acceptsFluids: true,
+    outputsFluids: true,
+    fluidExtraPressure: 1,
+    runEffect: [Fx.smoke, "#222", 30, 1],
+    drawer: BuildingWithRecipe.combineDrawers(BuildingWithRecipe.drawFluid([0, -0.2], 0.8, 0.4), BuildingWithRecipe.drawLayer("building/base_boiler_fire", 1, 1, b => b.timer >= 0 ? map(b.timer, b.recipe?.duration ?? -1, 0, 1, 0.7) : 0))
+});
+Buildings.register("base_steam_generator", BuildingWithRecipe, {
+    recipeType: recipes.base_steam_generating,
+    fluidCapacity: 30,
+    acceptsFluids: true,
+    producesPower: true,
+    runEffect: [Fx.smoke, "#FFF", 30, 1],
+});

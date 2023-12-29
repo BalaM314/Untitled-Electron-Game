@@ -906,8 +906,6 @@ let BuildingWithRecipe = (() => {
             return null;
         }
         setRecipe(recipe) {
-            if (!(recipe.inputs instanceof Array))
-                throw new ShouldNotBePossibleError("tried to set invalid recipe");
             this.recipe = recipe;
             this.timer = recipe.duration;
             this.runEffectTimer = recipe.duration;
@@ -956,7 +954,7 @@ let BuildingWithRecipe = (() => {
                     }
                 }
             }
-            if (this.recipe == null && this.block.recipeType.recipes.length == 1) {
+            if (this.recipe == null && this.block.recipeType.recipes.length == 1 && (this.block.recipeType.recipes[0].inputs?.length ?? 0) == 0) {
                 this.setRecipe(this.block.recipeType.recipes[0]);
             }
             super.update(currentFrame);
@@ -980,7 +978,8 @@ let BuildingWithRecipe = (() => {
         tooltipProperties() {
             return {
                 ...super.tooltipProperties(),
-                Progress: this.recipe ? `${this.recipe.duration - this.timer} / ${this.recipe.duration}` : ""
+                Progress: this.recipe ? `${round(this.recipe.duration - this.timer, 2)} / ${this.recipe.duration}` : "",
+                Efficiency: `${round(this.efficiency * 100, 2).toString()}%`,
             };
         }
         static makeDrawer(drawer, ...drawers) {

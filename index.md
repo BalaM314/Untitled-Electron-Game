@@ -4,10 +4,41 @@ Technical document: contains explanations of how bits of the code work.
 
 
 
+## game plan
+you are on an island
+build a boat to leave
+
+why do you want to leave?
+it's dark? no, I don't want the game to be dark
+natural disaster? unnecessary work to code
+...you want to go home, some random something caused you to get stranded on the island
+
+boat requires:
+steel hull (steel plating)
+large motors (steel plate for casing, steel rod for shaft)
+diesel generator, fuel? if crude oil processing is cut, then just beam power in from space, or other funny solution
+copper wire
+steel rods
+iron gears
+propellers
+storage
+(bilge) pump
 
 
+crude oil?
+
+No circuits (no silicon)
+
+small motor: iron magnet(iron ingot), iron rod(iron ingot), copper wire (copper ingot)
+advanced motor:
+	steel rod + lots of copper wire = rotor
+	iron plate + lots of copper wire = stator
+	rotor + stator + copper wire + steel plate = advanced motor
 
 
+changes:
+remove coal ore
+combustion generator? make everything require power?
 
 
 ## tick loop
