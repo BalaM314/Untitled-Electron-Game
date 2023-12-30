@@ -1268,8 +1268,10 @@ class Miner extends Building {
 		super(tileX, tileY, meta, level);
 		this.timer = 61;
 		const output = recipes.base_mining.recipes.find(r => r.tile == level.tileAtByTile(tileX, tileY))?.outputs[0];
-		if(output) this.miningItem = output;
-		else console.warn(`Miner cannot mine tile at ${tileX}, ${tileY}`);
+		if(output){
+			this.miningItem = output;
+			objectives.get("produceStone").satisfy();
+		} else console.warn(`Miner cannot mine tile at ${tileX}, ${tileY}`);
 	}
 	static canBuildAt(tileX:number, tileY:number, level:Level):boolean {
 		return recipes.base_mining.recipes.some(r => r.tile == level.tileAtByTile(tileX, tileY));
@@ -2141,11 +2143,13 @@ class PowerGrid {
 	//array is fine, faster iteration than quadtree, deletion is O(n) but that's not that bad
 	producers: Building[] = [];
 	consumers: Building[] = [];
+	powerRequested = 0;
+	maxProduction = 0;
 	updatePower(){
-		const powerRequested = this.consumers.reduce((acc, p) => acc + p.getRequestedPower(), 0);
-		const maxProduction = this.producers.reduce((acc, p) => acc + p.getMaxPowerProduction(), 0);
-		const load = maxProduction == 0 ? 0 : Math.min(powerRequested / maxProduction, 1);
-		const satisfaction = powerRequested == 0 ? 0 : Math.min(maxProduction / powerRequested, 1);
+		this.powerRequested = this.consumers.reduce((acc, p) => acc + p.getRequestedPower(), 0);
+		this.maxProduction = this.producers.reduce((acc, p) => acc + p.getMaxPowerProduction(), 0);
+		const load = this.maxProduction == 0 ? 0 : Math.min(this.powerRequested / this.maxProduction, 1);
+		const satisfaction = this.powerRequested == 0 ? 0 : Math.min(this.maxProduction / this.powerRequested, 1);
 		this.producers.forEach(p => p.powerLoad = load);
 		this.consumers.forEach(c => c.powerSatisfaction = satisfaction);
 	}

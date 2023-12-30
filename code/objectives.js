@@ -52,6 +52,7 @@ const tech = new TechTree(tree => {
     const extractor = tree.node("building_base_extractor", [["base_ironIngot", 20], ["base_stone", 20]], [conveyor]);
     const chest = tree.node("building_base_chest", [["base_ironIngot", 20], ["base_stone", 20]], [conveyor]);
     const alloy_smelter = tree.node("building_base_alloy_smelter", [["base_stoneBrick", 50], ["base_ironIngot", 50]], [furnace]);
+    const stirling_generator = tree.node("building_base_stirling_generator", [["base_ironIngot", 50], ["base_copperIngot", 30]], [alloy_smelter]);
     const pipe = tree.node("building_base_pipe", [["base_ironIngot", 10]], [conveyor]);
     const pump = tree.node("building_base_pump", [["base_ironIngot", 50], ["base_copperIngot", 30]], [pipe]);
     const tank = tree.node("building_base_tank", [["base_ironIngot", 50], ["base_stone", 50]], [pipe]);
@@ -76,11 +77,11 @@ class Objective {
             this.satisfied = true;
         }
         if (!this.completed && this.satisfied && this.prerequisites.every(o => o.completed)) {
-            this.completed = true;
             this.complete();
         }
     }
     complete() {
+        this.completed = true;
         this.onComplete?.();
     }
     satisfy() {
@@ -94,9 +95,15 @@ class Objective {
     }
 }
 class ResearchObjective extends Objective {
-    constructor(id, prerequisites, node, onComplete) {
+    constructor(id, prerequisites, nodeID, onComplete) {
+        const node = tech.get(nodeID);
         super(id, prerequisites, () => node.unlocked, onComplete);
-        this.node = node;
+    }
+}
+class GatherObjective extends Objective {
+    constructor(id, prerequisites, items, onComplete) {
+        super(id, prerequisites, () => level1.hasResources(items), onComplete);
+        this.items = items;
     }
 }
 class ObjectiveTree {
@@ -116,6 +123,9 @@ class ObjectiveTree {
     getOpt(id) {
         return this.objectivesByID[id] ?? null;
     }
+    update() {
+        this.objectives.forEach(o => o.update());
+    }
     read(data) {
         const completedObjectives = data.split(",");
         for (const objective of completedObjectives) {
@@ -129,7 +139,25 @@ class ObjectiveTree {
     }
 }
 const objectives = new ObjectiveTree(() => {
-    const produceCoal = new Objective("produceCoal");
-    const gatherCoal = new Objective("gatherCoal", [produceCoal], () => level1.hasResources([["base_coal", 10]]));
-    const researchStoneFurnace = new ResearchObjective("researchStoneFurnace", [gatherCoal], tech.get("building_furnace"));
+    const produceStone = new Objective("produceStone");
+    const gatherStone = new GatherObjective("gatherStone", [produceStone], [["base_stone", 100]]);
+    const gatherCoal = new GatherObjective("gatherStone", [gatherStone], [["base_coal", 20]]);
+    const researchStoneFurnace = new ResearchObjective("researchStoneFurnace", [gatherCoal], "building_furnace");
+    const gatherIronIngot = new GatherObjective("gatherIronIngot", [researchStoneFurnace], [["base_ironIngot", 25]]);
+    const gatherCopperIngot = new GatherObjective("gatherCopperIngot", [researchStoneFurnace], [["base_copperIngot", 25]]);
+    const researchExtractor = new ResearchObjective("researchExtractor", [gatherIronIngot], "building_extractor");
+    const gatherStoneBrick = new GatherObjective("gatherStoneBrick", [researchStoneFurnace], [["base_stoneBrick", 25]]);
+    const researchAlloySmelter = new ResearchObjective("researchAlloySmelter", [gatherStoneBrick, gatherIronIngot], "building_alloy_smelter");
+    const gatherSteelIngot = new GatherObjective("gatherSteelIngot", [researchAlloySmelter], [["base_steelIngot", 25]]);
+    const researchStirlingGenerator = new ResearchObjective("researchStirlingGenerator", [gatherCopperIngot, gatherSteelIngot], "building_stirling_generator");
+    const producePower = new Objective("producePower", [researchStirlingGenerator], () => level1.grid.maxProduction > 0);
+    const researchCompressor = new ResearchObjective("researchCompressor", [producePower], "building_compressor");
+    const researchWiremill = new ResearchObjective("researchWiremill", [producePower], "building_wiremill");
+    const researchLathe = new ResearchObjective("researchLathe", [producePower], "building_lathe");
+    const gatherIronPlate = new GatherObjective("gatherIronPlate", [researchCompressor], [["base_ironPlate", 25]]);
+    const researchPipe = new ResearchObjective("researchPipe", [gatherIronPlate], "building_pipe");
+    const researchPump = new ResearchObjective("researchPump", [researchPipe], "building_pump");
+    const researchBoiler = new ResearchObjective("researchBoiler", [researchPump], "building_boiler");
+    const researchSteamGenerator = new ResearchObjective("researchSteamGenerator", [researchBoiler], "building_steam_generator");
+    const activateSteamGenerator = new Objective("activateSteamGenerator", [researchSteamGenerator], () => level1.grid.producers.some(p => p.block === Buildings.get("base_steam_generator") && p.efficiencyp > 0));
 });

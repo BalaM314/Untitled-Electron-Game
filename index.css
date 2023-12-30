@@ -90,7 +90,7 @@ canvas {
 	font-size: 32px;
 	font-family: sans-serif;
 	border: 2px solid gray;
-	background-color: rgba(0, 0, 255, 0.2);
+	background-color: #33F5;
 }
 #resources span {
 	margin-left: 4px;

@@ -87,6 +87,7 @@ const recipes = {
 			{
 				inputs: ["base_copperIngot"],
 				outputs: ["base_copperWire"],
+				powerConsumption: 10,
 				duration: 120
 			}
 		]
@@ -96,11 +97,13 @@ const recipes = {
 			{
 				inputs: ["base_ironIngot"],
 				outputs: ["base_ironPlate"],
-				duration: 60
+				duration: 60,
+				powerConsumption: 10,
 			},{
 				inputs: ["base_steelIngot"],
 				outputs: ["base_steelPlate"],
-				duration: 60
+				duration: 60,
+				powerConsumption: 15,
 			}
 		]
 	},
@@ -109,11 +112,13 @@ const recipes = {
 			{
 				inputs: ["base_ironIngot"],
 				outputs: ["base_ironRod"],
-				duration: 60
+				duration: 60,
+				powerConsumption: 10,
 			},{
 				inputs: ["base_steelIngot"],
 				outputs: ["base_steelRod"],
-				duration: 60
+				duration: 60,
+				powerConsumption: 15,
 			}
 		]
 	},
@@ -122,15 +127,18 @@ const recipes = {
 			{
 				inputs: ["base_steelRod", "base_copperWire"],
 				outputs: ["base_rotor"],
-				duration: 120
+				duration: 120,
+				powerConsumption: 30,
 			},{
 				inputs: ["base_ironPlate", "base_copperWire"],
 				outputs: ["base_stator"],
-				duration: 120
+				duration: 120,
+				powerConsumption: 30,
 			},{
 				inputs: ["base_stator", "base_rotor"],
 				outputs: ["base_motor"],
-				duration: 30
+				duration: 30,
+				powerConsumption: 10,
 			}
 		]
 	},
@@ -144,12 +152,21 @@ const recipes = {
 			}
 		]
 	},
+	base_stirling_generating: {
+		recipes: [
+			{
+				inputs: ["base_coal"],
+				duration: 120,
+				powerProduction: 10
+			}
+		]
+	},
 	base_steam_generating: {
 		recipes: [
 			{
 				fluidInputs: [["base_steam", 15]],
 				duration: 30,
-				powerProduction: 70
+				powerProduction: 120
 			}
 		]
 	},
@@ -211,6 +228,14 @@ Buildings.register("base_resource_acceptor", ResourceAcceptor, {
 Buildings.register("base_alloy_smelter", BuildingWithRecipe, {
 	buildCost: [["base_stoneBrick", 35], ["base_ironIngot", 20]],
 	recipeType: recipes.base_alloying, drawer: BuildingWithRecipe.progressDrawer(), craftEffect: [Fx.smoke, "#222"]
+});
+Buildings.register("base_stirling_generator", BuildingWithRecipe, {
+	buildCost: [["base_stoneBrick", 20], ["base_ironIngot", 35], ["base_copperIngot", 15]],
+	recipeType: recipes.base_stirling_generating,
+	drawer: BuildingWithRecipe.drawLayer<BuildingWithRecipe>(
+		"building/base_boiler_fire", 1, 1,
+		b => b.timer >= 0 ? map(b.timer, b.recipe?.duration ?? -1, 0, 1, 0.7) : 0
+	)
 });
 Buildings.register("base_wiremill", BuildingWithRecipe, {
 	buildCost: [["base_stoneBrick", 20], ["base_ironIngot", 35], ["base_copperIngot", 15]],

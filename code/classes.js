@@ -1140,8 +1140,10 @@ class Miner extends Building {
         this.ranOnce = false;
         this.timer = 61;
         const output = recipes.base_mining.recipes.find(r => r.tile == level.tileAtByTile(tileX, tileY))?.outputs[0];
-        if (output)
+        if (output) {
             this.miningItem = output;
+            objectives.get("produceStone").satisfy();
+        }
         else
             console.warn(`Miner cannot mine tile at ${tileX}, ${tileY}`);
     }
@@ -2006,12 +2008,14 @@ class PowerGrid {
     constructor() {
         this.producers = [];
         this.consumers = [];
+        this.powerRequested = 0;
+        this.maxProduction = 0;
     }
     updatePower() {
-        const powerRequested = this.consumers.reduce((acc, p) => acc + p.getRequestedPower(), 0);
-        const maxProduction = this.producers.reduce((acc, p) => acc + p.getMaxPowerProduction(), 0);
-        const load = maxProduction == 0 ? 0 : Math.min(powerRequested / maxProduction, 1);
-        const satisfaction = powerRequested == 0 ? 0 : Math.min(maxProduction / powerRequested, 1);
+        this.powerRequested = this.consumers.reduce((acc, p) => acc + p.getRequestedPower(), 0);
+        this.maxProduction = this.producers.reduce((acc, p) => acc + p.getMaxPowerProduction(), 0);
+        const load = this.maxProduction == 0 ? 0 : Math.min(this.powerRequested / this.maxProduction, 1);
+        const satisfaction = this.powerRequested == 0 ? 0 : Math.min(this.maxProduction / this.powerRequested, 1);
         this.producers.forEach(p => p.powerLoad = load);
         this.consumers.forEach(c => c.powerSatisfaction = satisfaction);
     }
