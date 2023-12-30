@@ -5,21 +5,39 @@
 
 
 class Level {
-	resources: Partial<Record<ItemID, number>> = {};
-	flashResources: Partial<Record<ItemID, number>> = {};
+	resources: Record<ItemID, number> = Object.fromEntries(ItemIDs.map(id => [id, 0]));
+	resourceDisplayData: Record<ItemID, {
+		shouldShowAlways:boolean;
+		amountRequired:number | null;
+		flashEffect:string | null;
+		flashExpireTime:number;
+	}> = Object.fromEntries(ItemIDs.map(id =>
+		[id, {
+			shouldShowAlways: false,
+			amountRequired: null,
+			flashEffect: null,
+			flashExpireTime: 0,
+		}]
+	));
 	storage = new Map<string, Chunk>();
 	format: string;
 	uuid: string;
 	grid = new PowerGrid();
 	buildings = new Set<Building>();
-	constructor(public seed:number){
+	static startResources:ItemStack[] = [["base_stone", 50]];
+	constructor(public seed:number, applyStartResources:boolean){
 		this.format = consts.VERSION;
 		this.uuid = Math.random().toString().substring(2);
+		if(applyStartResources){
+			for(const [id, amount] of Level.startResources){
+				this.resources[id] = amount;
+			}
+		}
 	}
 	static read(data:LevelData){
 		// Read a level from JSON
 		let {chunks, resources, seed, version, uuid} = data;
-		const level = new Level(seed);
+		const level = new Level(seed, false);
 		if(!Array.isArray(resources)) resources = Object.entries(resources);
 		for(const [item, amount] of resources){
 			if(!isNaN(amount)) level.resources[item] = amount;
@@ -41,10 +59,10 @@ class Level {
 	}
 	generate(){
 		this.generateNecessaryChunks();
-		this.buildBuilding(0, 0, ["base_resource_acceptor", 0]);
-		this.buildBuilding(0, -1, ["base_resource_acceptor", 0]);
-		this.buildBuilding(-1, 0, ["base_resource_acceptor", 0]);
-		this.buildBuilding(-1, -1, ["base_resource_acceptor", 0]);
+		this.buildBuilding(-2, -2, ["base_resource_acceptor", 1]);
+		for(const [x, y] of MultiBlockController.getOffsetsForSize(4, 4)){
+			this.buildBuilding(-2 + x, -2 + y, ["base_resource_acceptor", 0]);
+		}
 		return this;
 	}
 	hasChunk(tileX:number, tileY:number):boolean {
@@ -141,10 +159,10 @@ class Level {
 	}
 	
 	
-	displayGhostBuilding(tileX:number, tileY:number, buildingID:BuildingIDWithMeta, currentframe:CurrentFrame){
+	displayGhostBuilding(tileX:number, tileY:number, buildingID:BuildingIDWithMeta, currentframe:CurrentFrame){ //TODO refactor this method
+		this.resetResourceDisplayData();
 		if(!this.hasChunk(tileX, tileY)) return;
 		Gfx.layer("ghostBuilds");
-		//TODO this should probably be different method
 		if(keybinds.placement.break_building.isHeld()){
 			Gfx.alpha(0.9);
 			Gfx.tImage(Gfx.texture("misc/invalidunderlay"), tileX, tileY, 1, 1);
@@ -158,8 +176,9 @@ class Level {
 		changedID[1] = block.changeMeta(changedID[1], tileX, tileY, this);
 		let textureSize = block.textureSize(buildingID[1]);
 
+
 		//Draw underlay
-		let isError = !block.canBuildAt(tileX, tileY, this) || this.buildingAtTile(tileX, tileY)?.block.immutable || !this.hasResources(block.buildCost, 500);//TOOD cleanup
+		let isError = !this.hasResources(block.buildCost, 100) || !block.canBuildAt(tileX, tileY, this) || this.buildingAtTile(tileX, tileY)?.block.immutable;//TOOD cleanup
 		let underlayTextureSize = textureSize[0][0] == textureSize[0][1] ? textureSize : [[1, 1], [0, 0]];
 		Gfx.tImage(Gfx.texture(isError ? "misc/invalidunderlay" : "misc/ghostunderlay"), tileX + underlayTextureSize[1][0], tileY + underlayTextureSize[1][1], ...underlayTextureSize[0]);
 
@@ -255,15 +274,27 @@ class Level {
 			return false;
 		}
 	}
+	resetResourceDisplayData(){
+		Object.values(level1.resourceDisplayData).forEach(d => {
+			d.flashEffect = null;
+			d.flashExpireTime = 0;
+			d.amountRequired = null;
+		});
+	}
 	hasResources(items:ItemStack[], flashTime = 0){
+		let sufficient = true;
 		for(const [item, amount] of items){
-			level1.resources[item] ??= 0;
-			if(level1.resources[item]! < amount){
-				if(flashTime) level1.flashResources[item] = Date.now() + flashTime;
-				return false;
+			level1.resourceDisplayData[item].amountRequired = amount;
+			if(level1.resources[item] < amount){
+				sufficient = false;
+				if(flashTime){
+					level1.resourceDisplayData[item].flashExpireTime = Date.now() + flashTime;
+					level1.resourceDisplayData[item].flashEffect = "flashing";
+					//If flashTime is set, we might need to set other items to flash
+				} else break; //otherwise break
 			}
 		}
-		return true;
+		return sufficient;
 	}
 	drainResources(items:ItemStack[]){
 		for(const [item, amount] of items){
@@ -1760,6 +1791,9 @@ class StorageBuilding extends Building {
 class ResourceAcceptor extends Building {
 	static immutable = true;
 	static acceptsItems = true;
+	static textureSize(meta:number):TextureInfo {
+		return [[4, 4], [0, 0]];
+	}
 	acceptItem(item:Item){
 		this.level.resources[item.id] ??= 0;
 		this.level.resources[item.id]! ++;

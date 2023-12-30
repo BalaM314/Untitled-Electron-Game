@@ -39,19 +39,29 @@ var __setFunctionName = (this && this.__setFunctionName) || function (f, name, p
 };
 var _a;
 class Level {
-    constructor(seed) {
+    constructor(seed, applyStartResources) {
         this.seed = seed;
-        this.resources = {};
-        this.flashResources = {};
+        this.resources = Object.fromEntries(ItemIDs.map(id => [id, 0]));
+        this.resourceDisplayData = Object.fromEntries(ItemIDs.map(id => [id, {
+                shouldShowAlways: false,
+                amountRequired: null,
+                flashEffect: null,
+                flashExpireTime: 0,
+            }]));
         this.storage = new Map();
         this.grid = new PowerGrid();
         this.buildings = new Set();
         this.format = consts.VERSION;
         this.uuid = Math.random().toString().substring(2);
+        if (applyStartResources) {
+            for (const [id, amount] of Level.startResources) {
+                this.resources[id] = amount;
+            }
+        }
     }
     static read(data) {
         let { chunks, resources, seed, version, uuid } = data;
-        const level = new Level(seed);
+        const level = new Level(seed, false);
         if (!Array.isArray(resources))
             resources = Object.entries(resources);
         for (const [item, amount] of resources) {
@@ -73,10 +83,10 @@ class Level {
     }
     generate() {
         this.generateNecessaryChunks();
-        this.buildBuilding(0, 0, ["base_resource_acceptor", 0]);
-        this.buildBuilding(0, -1, ["base_resource_acceptor", 0]);
-        this.buildBuilding(-1, 0, ["base_resource_acceptor", 0]);
-        this.buildBuilding(-1, -1, ["base_resource_acceptor", 0]);
+        this.buildBuilding(-2, -2, ["base_resource_acceptor", 1]);
+        for (const [x, y] of MultiBlockController.getOffsetsForSize(4, 4)) {
+            this.buildBuilding(-2 + x, -2 + y, ["base_resource_acceptor", 0]);
+        }
         return this;
     }
     hasChunk(tileX, tileY) {
@@ -147,6 +157,7 @@ class Level {
         return false;
     }
     displayGhostBuilding(tileX, tileY, buildingID, currentframe) {
+        this.resetResourceDisplayData();
         if (!this.hasChunk(tileX, tileY))
             return;
         Gfx.layer("ghostBuilds");
@@ -161,7 +172,7 @@ class Level {
         let changedID = [buildingID[0], buildingID[1]];
         changedID[1] = block.changeMeta(changedID[1], tileX, tileY, this);
         let textureSize = block.textureSize(buildingID[1]);
-        let isError = !block.canBuildAt(tileX, tileY, this) || this.buildingAtTile(tileX, tileY)?.block.immutable || !this.hasResources(block.buildCost, 500);
+        let isError = !this.hasResources(block.buildCost, 100) || !block.canBuildAt(tileX, tileY, this) || this.buildingAtTile(tileX, tileY)?.block.immutable;
         let underlayTextureSize = textureSize[0][0] == textureSize[0][1] ? textureSize : [[1, 1], [0, 0]];
         Gfx.tImage(Gfx.texture(isError ? "misc/invalidunderlay" : "misc/ghostunderlay"), tileX + underlayTextureSize[1][0], tileY + underlayTextureSize[1][1], ...underlayTextureSize[0]);
         Gfx.alpha(0.7);
@@ -246,17 +257,28 @@ class Level {
             return false;
         }
     }
+    resetResourceDisplayData() {
+        Object.values(level1.resourceDisplayData).forEach(d => {
+            d.flashEffect = null;
+            d.flashExpireTime = 0;
+            d.amountRequired = null;
+        });
+    }
     hasResources(items, flashTime = 0) {
-        var _b;
+        let sufficient = true;
         for (const [item, amount] of items) {
-            (_b = level1.resources)[item] ?? (_b[item] = 0);
+            level1.resourceDisplayData[item].amountRequired = amount;
             if (level1.resources[item] < amount) {
-                if (flashTime)
-                    level1.flashResources[item] = Date.now() + flashTime;
-                return false;
+                sufficient = false;
+                if (flashTime) {
+                    level1.resourceDisplayData[item].flashExpireTime = Date.now() + flashTime;
+                    level1.resourceDisplayData[item].flashEffect = "flashing";
+                }
+                else
+                    break;
             }
         }
-        return true;
+        return sufficient;
     }
     drainResources(items) {
         var _b;
@@ -325,6 +347,7 @@ class Level {
         };
     }
 }
+Level.startResources = [["base_stone", 50]];
 class Chunk {
     constructor(x, y, parent) {
         this.x = x;
@@ -1694,6 +1717,9 @@ class StorageBuilding extends Building {
 StorageBuilding.capacity = 64;
 StorageBuilding.acceptsItems = true;
 class ResourceAcceptor extends Building {
+    static textureSize(meta) {
+        return [[4, 4], [0, 0]];
+    }
     acceptItem(item) {
         var _b, _c;
         (_b = this.level.resources)[_c = item.id] ?? (_b[_c] = 0);

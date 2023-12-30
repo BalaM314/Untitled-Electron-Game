@@ -122,24 +122,24 @@ researchStoneFurnace.description = Coal can be used as fuel for many buildings, 
 
 
 type ItemID =
-	"base_null" |
-	"base_coalOre" |
-	"base_coal" |
-	"base_ironOre" |
-	"base_ironIngot" |
-	"base_stone" |
-	"base_stoneBrick" |
-	"base_ironPlate" |
-	"base_ironRod" |
-	"base_copperOre" |
-	"base_copperIngot" |
-	"base_copperWire" |
-	"base_steelIngot" |
-	"base_steelPlate" |
-	"base_steelRod" |
-	"base_stator" |
-	"base_rotor" |
-	"base_motor"
+| "base_null"
+| "base_coalOre"
+| "base_coal"
+| "base_ironOre"
+| "base_ironIngot"
+| "base_stone"
+| "base_stoneBrick"
+| "base_ironPlate"
+| "base_ironRod"
+| "base_copperOre"
+| "base_copperIngot"
+| "base_copperWire"
+| "base_steelIngot"
+| "base_steelPlate"
+| "base_steelRod"
+| "base_stator"
+| "base_rotor"
+| "base_motor"
 ;
 
 type FluidID = "base_water" | "base_steam";

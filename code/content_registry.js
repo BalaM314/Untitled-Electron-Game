@@ -153,6 +153,26 @@ const recipes = {
         ]
     },
 };
+const ItemIDs = [
+    "base_null",
+    "base_coalOre",
+    "base_coal",
+    "base_ironOre",
+    "base_ironIngot",
+    "base_stone",
+    "base_stoneBrick",
+    "base_ironPlate",
+    "base_ironRod",
+    "base_copperOre",
+    "base_copperIngot",
+    "base_copperWire",
+    "base_steelIngot",
+    "base_steelPlate",
+    "base_steelRod",
+    "base_stator",
+    "base_rotor",
+    "base_motor",
+];
 const Fluids = new ContentRegistryI();
 Fluids.register(new Fluid("base_water", "blue"));
 Fluids.register(new Fluid("base_steam", "white"));
@@ -164,7 +184,7 @@ Buildings.register("base_miner", Miner, {
     buildCost: [["base_stone", 10]],
 });
 Buildings.register("base_trash_can", TrashCan, {
-    buildCost: [["base_stone", 10]],
+    buildCost: [["base_stone", 12]],
 });
 Buildings.register("base_furnace", BuildingWithRecipe, {
     recipeType: recipes.base_smelting,
@@ -201,7 +221,7 @@ Buildings.register("base_lathe", BuildingWithRecipe, {
 });
 Buildings.register("base_multiblock_secondary", MultiBlockSecondary, {});
 Buildings.register("base_assembler", MultiBlockController, {
-    buildCost: [["base_stoneBrick", 50], ["base_ironIngot", 35], ["base_copperIngot", 25], ["base_ironPlate", 25], ["base_ironRod", 10], ["base_copperWire", 10]],
+    buildCost: [["base_stoneBrick", 50], ["base_ironIngot", 100], ["base_copperIngot", 25], ["base_ironPlate", 25], ["base_ironRod", 10], ["base_copperWire", 10]],
     recipeType: recipes.base_assembling,
     multiblockSize: [2, 2],
     drawer: BuildingWithRecipe.progressDrawer(),
@@ -220,6 +240,7 @@ Buildings.register("base_tank", Tank, {
     buildCost: [["base_ironPlate", 15], ["base_stoneBrick", 15]]
 });
 Buildings.register("base_boiler", BuildingWithRecipe, {
+    buildCost: [["base_ironPlate", 20], ["base_ironIngot", 30], ["base_stoneBrick", 50]],
     recipeType: recipes.base_boiling,
     fluidCapacity: 10,
     acceptsFluids: true,
@@ -229,6 +250,7 @@ Buildings.register("base_boiler", BuildingWithRecipe, {
     drawer: BuildingWithRecipe.combineDrawers(BuildingWithRecipe.drawFluid([0, -0.2], 0.8, 0.4), BuildingWithRecipe.drawLayer("building/base_boiler_fire", 1, 1, b => b.timer >= 0 ? map(b.timer, b.recipe?.duration ?? -1, 0, 1, 0.7) : 0))
 });
 Buildings.register("base_steam_generator", MultiBlockController, {
+    buildCost: [["base_ironPlate", 45], ["base_ironIngot", 90], ["base_stoneBrick", 55], ["base_copperIngot", 10], ["base_copperWire", 40]],
     recipeType: recipes.base_steam_generating,
     secondary: Buildings.get("base_multiblock_secondary"),
     multiblockSize: [2, 2],

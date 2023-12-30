@@ -358,19 +358,27 @@ const scenes = {
                 Gfx.text(`C:${currentFrame.cps} I:${currentFrame.ips}`, 10, 150);
             }
             for (const [id, amount] of Object.entries(level1.resources)) {
-                resourcesItems[id] ?? (resourcesItems[id] = (() => {
-                    const el = document.createElement("span");
-                    el.id = id;
-                    el.style.setProperty("--image-url", `url("assets/textures/item/${id}.png")`);
-                    el.title = f `${bundle.get(`item.${id}.name`)}\n${bundle.get(`item.${id}.description`, "\b")}`;
-                    resourcesEl.appendChild(el);
-                    return el;
-                })());
-                resourcesItems[id].innerText = amount.toString();
-                if (level1.flashResources[id] > Date.now())
-                    resourcesItems[id].classList.add("flashing");
-                else
-                    resourcesItems[id].classList.remove("flashing");
+                const data = level1.resourceDisplayData[id];
+                const shouldDisplay = data.shouldShowAlways || amount > 0 || data.amountRequired != null || (data.flashEffect != null && data.flashExpireTime > Date.now());
+                if (shouldDisplay) {
+                    resourcesItems[id]?.style.setProperty("display", "unset");
+                    resourcesItems[id] ?? (resourcesItems[id] = (() => {
+                        const el = document.createElement("span");
+                        el.id = id;
+                        el.style.setProperty("--image-url", `url("assets/textures/item/${id}.png")`);
+                        el.title = f `${bundle.get(`item.${id}.name`)}\n${bundle.get(`item.${id}.description`, "\b")}`;
+                        resourcesEl.appendChild(el);
+                        return el;
+                    })());
+                    resourcesItems[id].innerText = data.amountRequired ? `${amount.toString()}/${data.amountRequired}` : amount.toString();
+                    if (data.flashEffect && data.flashExpireTime > Date.now())
+                        resourcesItems[id].classList.add(data.flashEffect);
+                    else
+                        resourcesItems[id].classList.forEach(c => resourcesItems[id].classList.remove(c));
+                }
+                else {
+                    resourcesItems[id]?.style.setProperty("display", "none");
+                }
             }
         },
         onmousedown(e) {
@@ -506,7 +514,7 @@ function load() {
         (settings.alwaysLoadSave || confirm("Would you like to load your save?")))
         importData(localStorage.getItem("save1"));
     else
-        level1 = new Level(314).generate();
+        level1 = new Level(314, true).generate();
     Game.sceneName = "game";
     Game.forceRedraw = true;
     toolbarEl.classList.remove("hidden");
