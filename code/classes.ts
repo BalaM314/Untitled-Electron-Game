@@ -559,7 +559,7 @@ class Chunk {
 			min_water_chunk_distance: 3,
 			hilly: {
 				/** Determins where the hilly(perlin generated) terrain starts. Higher values make it start further away.*/
-				terrain_cutoff: 0.01,
+				terrain_cutoff: 0.007,
 				/** Determines how high the perlin noise has to go for stone to generate... sort of. See Chunk.generate().*/
 				stone_threshold: 0.7,
 				/** Same as terrain stone threshold but for ore.*/
@@ -801,6 +801,10 @@ class Building {
 	static displaysItem = false;
 	static buildCost:ItemStack[] = [];
 	static drawer:BlockDrawer<Building> | null = null;
+	static node:TechTreeNode | null = null;
+	static producesPower = false;
+	static consumesPower = false;
+	static hidden = false;
 
 	item: Item | null = null;
 	fluid: FluidStack | null = null;
@@ -814,8 +818,6 @@ class Building {
 	fluidThroughput = 0;
 	grid:PowerGrid | null = null;
 	num1 = 0;
-	static producesPower = false;
-	static consumesPower = false;
 	/** Gets set during power update, after getMaxPowerProduction is called. */
 	powerLoad:number = 0;
 	/** Gets set during power update, after getRequestedPower is called. */
@@ -827,6 +829,9 @@ class Building {
 		this.pos = Pos.fromTileCoords(x, y, false);
 		if(this.block.fluidCapacity) //initialize fluid stack
 			this.fluid = [null, 0, this.block.fluidCapacity];
+	}
+	static unlocked(){
+		return this.node?.unlocked ?? this.hidden;
 	}
 	static changeMeta(meta:BuildingMeta, tileX:number, tileY:number, level:Level):BuildingMeta {
 		return meta;
@@ -1810,6 +1815,7 @@ class MultiBlockSecondary extends Building {
 	static acceptsItems = true;
 	static acceptsFluids = true;
 	static outputsFluids = true;
+	static hidden = true;
 	acceptItem(item: Item):boolean {
 		return this.controller?.acceptItem(item) ?? false;
 	}

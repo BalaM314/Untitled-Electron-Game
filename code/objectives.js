@@ -7,8 +7,14 @@ class TechTreeNode {
         this.unlocked = false;
         this.children = [];
     }
-    unlock() {
+    tryUnlock() {
+        if (!this.prerequisites.every(p => p.unlocked))
+            return false;
+        if (!level1.hasResources(this.cost))
+            return false;
+        level1.drainResources(this.cost);
         this.unlocked = true;
+        return true;
     }
 }
 class TechTree {
@@ -21,6 +27,7 @@ class TechTree {
         const node = new TechTreeNode(id, cost, prerequisites);
         node.unlocked = unlocked;
         this.nodes.push(node);
+        this.nodesByID[id] = node;
         for (const prereq of prerequisites) {
             prereq.children.push(node);
         }
@@ -37,7 +44,9 @@ class TechTree {
     read(data) {
         const completedNodes = data.split(",");
         for (const node of completedNodes) {
-            this.getOpt(node)?.unlock();
+            if (this.getOpt(node)) {
+                this.get(node).unlocked = true;
+            }
         }
     }
     write() {
@@ -71,6 +80,10 @@ class Objective {
         this.onComplete = onComplete;
         this.completed = false;
         this.satisfied = false;
+        if (Objective.tree) {
+            Objective.tree.objectives.push(this);
+            Objective.tree.objectivesByID[id] = this;
+        }
     }
     update() {
         if (!this.satisfied && this.condition?.()) {
@@ -94,9 +107,10 @@ class Objective {
         return bundle.get(`objective.${this.id}.description`);
     }
 }
-class ResearchObjective extends Objective {
+Objective.tree = null;
+class ResearchBuildingObjective extends Objective {
     constructor(id, prerequisites, nodeID, onComplete) {
-        const node = tech.get(nodeID);
+        const node = tech.get("building_base_" + nodeID);
         super(id, prerequisites, () => node.unlocked, onComplete);
     }
 }
@@ -110,12 +124,9 @@ class ObjectiveTree {
     constructor(builder) {
         this.objectives = [];
         this.objectivesByID = {};
-        builder(this);
-    }
-    objective(id, prerequisites, condition, onComplete) {
-        const node = new Objective(id, prerequisites, condition, onComplete);
-        this.objectives.push(node);
-        return node;
+        Objective.tree = this;
+        builder();
+        Objective.tree = null;
     }
     get(id) {
         return this.objectivesByID[id] ?? crash(`Nonexistent objective ${id}`);
@@ -142,22 +153,22 @@ const objectives = new ObjectiveTree(() => {
     const produceStone = new Objective("produceStone");
     const gatherStone = new GatherObjective("gatherStone", [produceStone], [["base_stone", 100]]);
     const gatherCoal = new GatherObjective("gatherStone", [gatherStone], [["base_coal", 20]]);
-    const researchStoneFurnace = new ResearchObjective("researchStoneFurnace", [gatherCoal], "building_furnace");
+    const researchStoneFurnace = new ResearchBuildingObjective("researchStoneFurnace", [gatherCoal], "furnace");
     const gatherIronIngot = new GatherObjective("gatherIronIngot", [researchStoneFurnace], [["base_ironIngot", 25]]);
     const gatherCopperIngot = new GatherObjective("gatherCopperIngot", [researchStoneFurnace], [["base_copperIngot", 25]]);
-    const researchExtractor = new ResearchObjective("researchExtractor", [gatherIronIngot], "building_extractor");
+    const researchExtractor = new ResearchBuildingObjective("researchExtractor", [gatherIronIngot], "extractor");
     const gatherStoneBrick = new GatherObjective("gatherStoneBrick", [researchStoneFurnace], [["base_stoneBrick", 25]]);
-    const researchAlloySmelter = new ResearchObjective("researchAlloySmelter", [gatherStoneBrick, gatherIronIngot], "building_alloy_smelter");
+    const researchAlloySmelter = new ResearchBuildingObjective("researchAlloySmelter", [gatherStoneBrick, gatherIronIngot], "alloy_smelter");
     const gatherSteelIngot = new GatherObjective("gatherSteelIngot", [researchAlloySmelter], [["base_steelIngot", 25]]);
-    const researchStirlingGenerator = new ResearchObjective("researchStirlingGenerator", [gatherCopperIngot, gatherSteelIngot], "building_stirling_generator");
+    const researchStirlingGenerator = new ResearchBuildingObjective("researchStirlingGenerator", [gatherCopperIngot, gatherSteelIngot], "stirling_generator");
     const producePower = new Objective("producePower", [researchStirlingGenerator], () => level1.grid.maxProduction > 0);
-    const researchCompressor = new ResearchObjective("researchCompressor", [producePower], "building_compressor");
-    const researchWiremill = new ResearchObjective("researchWiremill", [producePower], "building_wiremill");
-    const researchLathe = new ResearchObjective("researchLathe", [producePower], "building_lathe");
+    const researchCompressor = new ResearchBuildingObjective("researchCompressor", [producePower], "compressor");
+    const researchWiremill = new ResearchBuildingObjective("researchWiremill", [producePower], "wiremill");
+    const researchLathe = new ResearchBuildingObjective("researchLathe", [producePower], "lathe");
     const gatherIronPlate = new GatherObjective("gatherIronPlate", [researchCompressor], [["base_ironPlate", 25]]);
-    const researchPipe = new ResearchObjective("researchPipe", [gatherIronPlate], "building_pipe");
-    const researchPump = new ResearchObjective("researchPump", [researchPipe], "building_pump");
-    const researchBoiler = new ResearchObjective("researchBoiler", [researchPump], "building_boiler");
-    const researchSteamGenerator = new ResearchObjective("researchSteamGenerator", [researchBoiler], "building_steam_generator");
+    const researchPipe = new ResearchBuildingObjective("researchPipe", [gatherIronPlate], "pipe");
+    const researchPump = new ResearchBuildingObjective("researchPump", [researchPipe], "pump");
+    const researchBoiler = new ResearchBuildingObjective("researchBoiler", [researchPump], "boiler");
+    const researchSteamGenerator = new ResearchBuildingObjective("researchSteamGenerator", [researchBoiler], "steam_generator");
     const activateSteamGenerator = new Objective("activateSteamGenerator", [researchSteamGenerator], () => level1.grid.producers.some(p => p.block === Buildings.get("base_steam_generator") && p.efficiencyp > 0));
 });

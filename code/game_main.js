@@ -105,6 +105,15 @@ function registerEventHandlers() {
             }, 1);
         }
     };
+    for (const block of Buildings) {
+        if (block.hidden)
+            continue;
+        const img = document.createElement("img");
+        img.src = `assets/textures/building/${block.id}%230.png`;
+        img.id = block.id;
+        img.title = f `${bundle.get(`building.${block.id}.name`)}\n${bundle.get(`building.${block.id}.description`, "\b")}`;
+        toolbarEl.appendChild(img);
+    }
     for (let element of toolbarEl.children) {
         element.addEventListener("click", (event) => {
             if (event.target instanceof HTMLImageElement) {
@@ -308,9 +317,10 @@ const scenes = {
         update(currentFrame) {
             if (Game.paused)
                 return;
-            level1.generateNecessaryChunks();
             try {
+                level1.generateNecessaryChunks();
                 level1.update(currentFrame);
+                objectives.update();
             }
             catch (err) {
                 console.error(err);
@@ -356,6 +366,12 @@ const scenes = {
             Gfx.text(Camera.unproject(...Input.mouse).map(Pos.pixelToTile).join(","), 10, 100);
             if (settings.debug) {
                 Gfx.text(`C:${currentFrame.cps} I:${currentFrame.ips}`, 10, 150);
+            }
+            for (const build of Buildings) {
+                if (build.unlocked())
+                    document.querySelector(`img#${build.id}`)?.classList.remove("hidden");
+                else
+                    document.querySelector(`img#${build.id}`)?.classList.add("hidden");
             }
             for (const [id, amount] of Object.entries(level1.resources)) {
                 const data = level1.resourceDisplayData[id];

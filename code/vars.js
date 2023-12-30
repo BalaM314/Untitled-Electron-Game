@@ -72,6 +72,8 @@ chest.description = Stores items.
 alloy_smelter.name = Alloy Smelter
 alloy_smelter.description = Heats coal with iron ingots to produce steel.
 resource_acceptor.name = Hub
+stirling_generator.name = Stirling Generator
+stirling_generator.description = Burns coal to inefficiently produce a small amount of electricity.
 wiremill.name = Wiremill
 wiremill.description = Turns ingots into wires.
 compressor.name = Compressor
@@ -91,7 +93,7 @@ tank.name = Tank
 boiler.name = Boiler
 boiler.description = Burns coal to heat water into steam.
 steam_generator.name = Steam Turbine
-steam_generator.description = Produces electricity from steam.
+steam_generator.description = Produces large amounts of electricity from steam.
 
 [item]
 null.name = Debug Item

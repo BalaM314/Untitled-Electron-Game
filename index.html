@@ -22,6 +22,7 @@
 		<script src="code/graphics.js"></script>
 		<script src="code/content.js"></script>
 		<script src="code/classes.js"></script>
+		<script src="code/objectives.js"></script>
 		<script src="code/content_registry.js"></script>
 		<script src="code/elements.js" defer></script>
 		<script src="code/game_main.js" defer></script>
@@ -51,29 +52,8 @@
 		<canvas id="canvas8" style="--z: 8;" width=1200 height=1200></canvas>
 		<canvas id="canvas9" style="--z: 9;" width=1200 height=1200></canvas>
 		<div id="clickcapture"></div>
-		<div id="resources" class="hidden">
-		</div>
-		<div id="toolbar" class="hidden">
-			<img src="assets/textures/building/base_conveyor%230.png" id="base_conveyor" title="Conveyor">
-			<img src="assets/textures/building/base_miner%230.png" id="base_miner" title="Miner">
-			<img src="assets/textures/building/base_trash_can%230.png" id="base_trash_can" title="Trash can">
-			<img src="assets/textures/building/base_furnace%230.png" id="base_furnace" title="Furnace">
-			<img src="assets/textures/building/base_extractor%230.png" id="base_extractor" title="Extractor">
-			<img src="assets/textures/building/base_chest%230.png" id="base_chest" title="Chest">
-			<img src="assets/textures/building/base_alloy_smelter%230.png" id="base_alloy_smelter" title="Alloy smelter">
-			<img src="assets/textures/building/base_stirling_generator%230.png" id="base_stirling_generator" title="Stirling Generator">
-			<img src="assets/textures/building/base_wiremill%230.png" id="base_wiremill" title="Wiremill">
-			<img src="assets/textures/building/base_compressor%230.png" id="base_compressor" title="Compressor">
-			<img src="assets/textures/building/base_lathe%230.png" id="base_lathe" title="Lathe">
-			<img src="assets/textures/building/base_assembler%230.png" id="base_assembler" title="Assembler">
-			<!-- <img src="assets/textures/building/base_arc_tower%230.png" id="base_arc_tower" title="Arc Tower">
-			<img src="assets/textures/building/base_power_source%230.png" id="base_power_source" title="Power Source"> -->
-			<img src="assets/textures/building/base_pipe%230.png" id="base_pipe" title="Pipe">
-			<img src="assets/textures/building/base_pump%230.png" id="base_pump" title="Pump">
-			<img src="assets/textures/building/base_tank%230.png" id="base_tank" title="Tank">
-			<img src="assets/textures/building/base_boiler%230.png" id="base_boiler" title="Boiler">
-			<img src="assets/textures/building/base_steam_generator%230.png" id="base_steam_generator" title="Steam Generator">
-		</div>
+		<div id="resources" class="hidden"></div>
+		<div id="toolbar" class="hidden"></div>
 		<div id="alertbox">
 			<div id="alertmessage">Alert! Something!</div>
 			<div id="alertexit">Ok</div>

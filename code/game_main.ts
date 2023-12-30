@@ -142,6 +142,14 @@ function registerEventHandlers(){
 			}, 1);
 		}
 	}
+	for(const block of Buildings){
+		if(block.hidden) continue;
+		const img = document.createElement("img");
+		img.src = `assets/textures/building/${block.id}%230.png`;
+		img.id = block.id;
+		img.title = f`${bundle.get(`building.${block.id}.name`)}\n${bundle.get(`building.${block.id}.description`, "\b")}`;
+		toolbarEl.appendChild(img);
+	}
 
 	for(let element of toolbarEl.children){
 		element.addEventListener("click", (event) => {
@@ -363,13 +371,14 @@ const scenes: {
 		buttons: [],
 		update(currentFrame:CurrentFrame){
 			if(Game.paused) return;
-			level1.generateNecessaryChunks();
 			try {
+				level1.generateNecessaryChunks();
 				level1.update(currentFrame);
+				objectives.update();
 			} catch(err){
 				console.error(err);
 				throw new Error(`Error updating world: ${parseError(err)}`);
-			}			
+			}
 		},
 		display(currentFrame:CurrentFrame){
 			//display
@@ -419,6 +428,13 @@ const scenes: {
 			
 			if(settings.debug){
 				Gfx.text(`C:${currentFrame.cps} I:${currentFrame.ips}`, 10, 150);
+			}
+
+			for(const build of Buildings){
+				if(build.unlocked())
+					document.querySelector(`img#${build.id}`)?.classList.remove("hidden");
+				else
+					document.querySelector(`img#${build.id}`)?.classList.add("hidden");
 			}
 		
 			for(const [id, amount] of Object.entries(level1.resources as Record<ItemID, number>)){

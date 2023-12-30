@@ -519,13 +519,11 @@ function makeRebindButton(y, buttonID, buttonName, defaultKey) {
 function selectID(id) {
     placedBuilding.type = id;
     const image = document.querySelector(`img#${id}`);
-    if (image) {
-        toolbarIcons.forEach(i => i.classList.remove("selected"));
+    for (const icon of toolbarEl.children) {
+        icon.classList.remove("selected");
+    }
+    if (image)
         image.classList.add("selected");
-    }
-    else if (id == "base_null") {
-        toolbarIcons.forEach(i => i.classList.remove("selected"));
-    }
 }
 class QuadTree {
     constructor(span, depth = 1) {

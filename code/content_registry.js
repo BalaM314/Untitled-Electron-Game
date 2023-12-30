@@ -8,11 +8,16 @@ class ContentRegistryC {
         }, {
             ...props, id
         });
+        if ("node" in clazz)
+            clazz.node = tech.getOpt(`building_${id}`);
         this.contentMap.set(id, clazz);
         return clazz;
     }
     get(id) {
         return this.contentMap.get(id) ?? (() => { throw new Error(`Object with id ${id} does not exist.`); })();
+    }
+    [Symbol.iterator]() {
+        return this.contentMap.values();
     }
 }
 class ContentRegistryI {
@@ -219,7 +224,9 @@ Buildings.register("base_chest", StorageBuilding, {
     buildCost: [["base_ironIngot", 15], ["base_stoneBrick", 10]],
     capacity: 64
 });
-Buildings.register("base_resource_acceptor", ResourceAcceptor, {});
+Buildings.register("base_resource_acceptor", ResourceAcceptor, {
+    hidden: true,
+});
 Buildings.register("base_alloy_smelter", BuildingWithRecipe, {
     buildCost: [["base_stoneBrick", 35], ["base_ironIngot", 20]],
     recipeType: recipes.base_alloying, drawer: BuildingWithRecipe.progressDrawer(), craftEffect: [Fx.smoke, "#222"]
@@ -241,7 +248,9 @@ Buildings.register("base_lathe", BuildingWithRecipe, {
     buildCost: [["base_stoneBrick", 20], ["base_ironIngot", 35], ["base_copperIngot", 10]],
     recipeType: recipes.base_lathing, drawer: BuildingWithRecipe.progressDrawer(), runEffect: [Fx.spark, "#FFC", 20, 0.8]
 });
-Buildings.register("base_multiblock_secondary", MultiBlockSecondary, {});
+Buildings.register("base_multiblock_secondary", MultiBlockSecondary, {
+    hidden: true,
+});
 Buildings.register("base_assembler", MultiBlockController, {
     buildCost: [["base_stoneBrick", 50], ["base_ironIngot", 100], ["base_copperIngot", 25], ["base_ironPlate", 25], ["base_ironRod", 10], ["base_copperWire", 10]],
     recipeType: recipes.base_assembling,
@@ -249,8 +258,12 @@ Buildings.register("base_assembler", MultiBlockController, {
     drawer: BuildingWithRecipe.progressDrawer(),
     secondary: Buildings.get("base_multiblock_secondary")
 });
-Buildings.register("base_arc_tower", ArcTower, {});
-Buildings.register("base_power_source", PowerSource, {});
+Buildings.register("base_arc_tower", ArcTower, {
+    hidden: true,
+});
+Buildings.register("base_power_source", PowerSource, {
+    hidden: true,
+});
 Buildings.register("base_pipe", Pipe, {
     buildCost: [["base_ironPlate", 1]],
 });

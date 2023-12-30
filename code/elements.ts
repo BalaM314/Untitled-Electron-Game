@@ -15,7 +15,6 @@ const alertexit = getElement("alertexit", HTMLDivElement);
 const alertbox = getElement("alertbox", HTMLDivElement);
 const tooltipbox = getElement("tooltipbox", HTMLDivElement);
 const toolbarEl = getElement("toolbar", HTMLDivElement);
-const toolbarIcons = [...toolbarEl.children];
 const clickcapture = getElement("clickcapture", HTMLDivElement);
 const errorBackground = getElement("error_background", HTMLDivElement);
 const loadingBackground = getElement("loading_background", HTMLDivElement);

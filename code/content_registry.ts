@@ -1,17 +1,22 @@
 
 /** Content registry where the content is a class. */
-class ContentRegistryC<K, T extends new (...args:any[]) => {}> {
+class ContentRegistryC<K, T extends new (...args:any[]) => {}> implements Iterable<T> {
 	private contentMap = new Map<K, T>();
 	constructor(){}
 	register<B extends T>(id:K, ctor:B, props:Partial<Exclude<B, "prototype">> = {}) {
 		let clazz = Object.assign(class extends ctor {}, {
 			...props, id
 		});
+		if("node" in clazz)
+			(clazz as UnlockableContent).node = tech.getOpt(`building_${id}`); //TODO nongeneric: uses "building" but might be something else
 		this.contentMap.set(id, clazz);
 		return clazz;
 	}
 	get(id:K):T {
 		return this.contentMap.get(id) ?? (() => {throw new Error(`Object with id ${id} does not exist.`)})();
+	}
+	[Symbol.iterator]():Iterator<T> {
+		return this.contentMap.values();
 	}
 }
 
@@ -223,7 +228,7 @@ Buildings.register("base_chest", StorageBuilding, {
 	capacity: 64
 });
 Buildings.register("base_resource_acceptor", ResourceAcceptor, {
-
+	hidden: true,
 });
 Buildings.register("base_alloy_smelter", BuildingWithRecipe, {
 	buildCost: [["base_stoneBrick", 35], ["base_ironIngot", 20]],
@@ -249,7 +254,9 @@ Buildings.register("base_lathe", BuildingWithRecipe, {
 	buildCost: [["base_stoneBrick", 20], ["base_ironIngot", 35], ["base_copperIngot", 10]],
 	recipeType: recipes.base_lathing, drawer: BuildingWithRecipe.progressDrawer(), runEffect: [Fx.spark, "#FFC", 20, 0.8]
 });
-Buildings.register("base_multiblock_secondary", MultiBlockSecondary, {});
+Buildings.register("base_multiblock_secondary", MultiBlockSecondary, {
+	hidden: true,
+});
 Buildings.register("base_assembler", MultiBlockController, {
 	buildCost: [["base_stoneBrick", 50], ["base_ironIngot", 100], ["base_copperIngot", 25], ["base_ironPlate", 25], ["base_ironRod", 10], ["base_copperWire", 10]],
 	recipeType: recipes.base_assembling,
@@ -257,8 +264,12 @@ Buildings.register("base_assembler", MultiBlockController, {
 	drawer: BuildingWithRecipe.progressDrawer(),
 	secondary: Buildings.get("base_multiblock_secondary") as typeof MultiBlockSecondary
 });
-Buildings.register("base_arc_tower", ArcTower, {});
-Buildings.register("base_power_source", PowerSource, {});
+Buildings.register("base_arc_tower", ArcTower, {
+	hidden: true,
+});
+Buildings.register("base_power_source", PowerSource, {
+	hidden: true,
+});
 Buildings.register("base_pipe", Pipe, {
 	buildCost: [["base_ironPlate", 1]],
 });

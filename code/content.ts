@@ -8,6 +8,10 @@ class Content<K extends string> {
 	}
 }
 
+interface UnlockableContent {
+	node:TechTreeNode | null;
+}
+
 /**A combination of an ItemID and an amount. The amount is frequently mutated by function calls. */
 type ItemStack = [id:ItemID, amount:number];
 

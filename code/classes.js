@@ -496,7 +496,7 @@ class Chunk {
             ore_scale: 3,
             min_water_chunk_distance: 3,
             hilly: {
-                terrain_cutoff: 0.01,
+                terrain_cutoff: 0.007,
                 stone_threshold: 0.7,
                 ore_threshold: 0.8,
                 min_iron_distance: 8,
@@ -713,6 +713,9 @@ let Building = (() => {
             if (this.block.fluidCapacity)
                 this.fluid = [null, 0, this.block.fluidCapacity];
         }
+        static unlocked() {
+            return this.node?.unlocked ?? this.hidden;
+        }
         static changeMeta(meta, tileX, tileY, level) {
             return meta;
         }
@@ -922,8 +925,10 @@ let Building = (() => {
     _classThis.displaysItem = false;
     _classThis.buildCost = [];
     _classThis.drawer = null;
+    _classThis.node = null;
     _classThis.producesPower = false;
     _classThis.consumesPower = false;
+    _classThis.hidden = false;
     (() => {
         __runInitializers(_classThis, _classExtraInitializers);
     })();
@@ -1774,6 +1779,7 @@ MultiBlockSecondary.outputsItems = true;
 MultiBlockSecondary.acceptsItems = true;
 MultiBlockSecondary.acceptsFluids = true;
 MultiBlockSecondary.outputsFluids = true;
+MultiBlockSecondary.hidden = true;
 class MultiBlockController extends BuildingWithRecipe {
     constructor() {
         super(...arguments);
