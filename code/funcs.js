@@ -492,6 +492,9 @@ function tooltip(title, properties) {
     }
     return `${title}<div style="font-size: 70%;">${props.join("<br/>")}</div>`;
 }
+function f(stringChunks, ...varChunks) {
+    return String.raw({ raw: stringChunks }, ...varChunks).replaceAll(/[\s\S]\u0008/g, "");
+}
 function makeRebindButton(y, buttonID, buttonName, defaultKey) {
     const keybind = keybinds[buttonID[0]]?.[buttonID[1]];
     if (!keybind)

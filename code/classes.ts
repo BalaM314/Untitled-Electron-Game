@@ -6,6 +6,7 @@
 
 class Level {
 	resources: Partial<Record<ItemID, number>> = {};
+	flashResources: Partial<Record<ItemID, number>> = {};
 	storage = new Map<string, Chunk>();
 	format: string;
 	uuid: string;
@@ -17,9 +18,12 @@ class Level {
 	}
 	static read(data:LevelData){
 		// Read a level from JSON
-		const {chunks, resources, seed, version, uuid} = data;
+		let {chunks, resources, seed, version, uuid} = data;
 		const level = new Level(seed);
-		level.resources = resources;
+		if(!Array.isArray(resources)) resources = Object.entries(resources);
+		for(const [item, amount] of resources){
+			if(!isNaN(amount)) level.resources[item] = amount;
+		}
 		level.uuid = uuid;
 		let position, chunkData;
 		try {
@@ -155,7 +159,7 @@ class Level {
 		let textureSize = block.textureSize(buildingID[1]);
 
 		//Draw underlay
-		let isError = !block.canBuildAt(tileX, tileY, this) || this.buildingAtTile(tileX, tileY)?.block.immutable || !this.hasResources(block.buildCost);//TOOD cleanup
+		let isError = !block.canBuildAt(tileX, tileY, this) || this.buildingAtTile(tileX, tileY)?.block.immutable || !this.hasResources(block.buildCost, 500);//TOOD cleanup
 		let underlayTextureSize = textureSize[0][0] == textureSize[0][1] ? textureSize : [[1, 1], [0, 0]];
 		Gfx.tImage(Gfx.texture(isError ? "misc/invalidunderlay" : "misc/ghostunderlay"), tileX + underlayTextureSize[1][0], tileY + underlayTextureSize[1][1], ...underlayTextureSize[0]);
 
@@ -213,12 +217,7 @@ class Level {
 					buildUnder?.break();
 				}
 
-				//Check resource cost
-				if(!this.hasResources(block.buildCost)){
-					//TODO feedback
-					return false;
-				}
-				//Drain resources
+				if(!this.hasResources(block.buildCost, 1500)) return false;
 				this.drainResources(block.buildCost);
 				
 				//Create buildings
@@ -237,9 +236,7 @@ class Level {
 				trigger("placeBuilding", {building: controller});
 				return true;
 			} else {
-				//Check resource cost
-				if(!this.hasResources(block.buildCost)) return false; //TODO feedback
-				//Drain resources
+				if(!this.hasResources(block.buildCost, 1500)) return false;
 				this.drainResources(block.buildCost);
 				const building = new block(
 					tileX, tileY, buildingID[1], this
@@ -258,10 +255,11 @@ class Level {
 			return false;
 		}
 	}
-	hasResources(items:ItemStack[]){
+	hasResources(items:ItemStack[], flashTime = 0){
 		for(const [item, amount] of items){
 			level1.resources[item] ??= 0;
 			if(level1.resources[item]! < amount){
+				if(flashTime) level1.flashResources[item] = Date.now() + flashTime;
 				return false;
 			}
 		}
@@ -333,7 +331,7 @@ class Level {
 
 		return {
 			chunks: chunkOutput,
-			resources: this.resources,
+			resources: Object.entries(this.resources as Record<ItemID, number>).filter(([id, amount]) => amount > 0),
 			seed: this.seed,
 			version: consts.VERSION,
 			uuid: this.uuid
@@ -1240,7 +1238,7 @@ class Miner extends Building {
 		this.timer = 61;
 		const output = recipes.base_mining.recipes.find(r => r.tile == level.tileAtByTile(tileX, tileY))?.outputs[0];
 		if(output) this.miningItem = output;
-		console.warn(`Miner cannot mine tile at ${tileX}, ${tileY}`);
+		else console.warn(`Miner cannot mine tile at ${tileX}, ${tileY}`);
 	}
 	static canBuildAt(tileX:number, tileY:number, level:Level):boolean {
 		return recipes.base_mining.recipes.some(r => r.tile == level.tileAtByTile(tileX, tileY));

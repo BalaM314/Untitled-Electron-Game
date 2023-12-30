@@ -42,6 +42,7 @@ class Level {
     constructor(seed) {
         this.seed = seed;
         this.resources = {};
+        this.flashResources = {};
         this.storage = new Map();
         this.grid = new PowerGrid();
         this.buildings = new Set();
@@ -49,9 +50,14 @@ class Level {
         this.uuid = Math.random().toString().substring(2);
     }
     static read(data) {
-        const { chunks, resources, seed, version, uuid } = data;
+        let { chunks, resources, seed, version, uuid } = data;
         const level = new Level(seed);
-        level.resources = resources;
+        if (!Array.isArray(resources))
+            resources = Object.entries(resources);
+        for (const [item, amount] of resources) {
+            if (!isNaN(amount))
+                level.resources[item] = amount;
+        }
         level.uuid = uuid;
         let position, chunkData;
         try {
@@ -155,7 +161,7 @@ class Level {
         let changedID = [buildingID[0], buildingID[1]];
         changedID[1] = block.changeMeta(changedID[1], tileX, tileY, this);
         let textureSize = block.textureSize(buildingID[1]);
-        let isError = !block.canBuildAt(tileX, tileY, this) || this.buildingAtTile(tileX, tileY)?.block.immutable || !this.hasResources(block.buildCost);
+        let isError = !block.canBuildAt(tileX, tileY, this) || this.buildingAtTile(tileX, tileY)?.block.immutable || !this.hasResources(block.buildCost, 500);
         let underlayTextureSize = textureSize[0][0] == textureSize[0][1] ? textureSize : [[1, 1], [0, 0]];
         Gfx.tImage(Gfx.texture(isError ? "misc/invalidunderlay" : "misc/ghostunderlay"), tileX + underlayTextureSize[1][0], tileY + underlayTextureSize[1][1], ...underlayTextureSize[0]);
         Gfx.alpha(0.7);
@@ -203,9 +209,8 @@ class Level {
                         return false;
                     buildUnder?.break();
                 }
-                if (!this.hasResources(block.buildCost)) {
+                if (!this.hasResources(block.buildCost, 1500))
                     return false;
-                }
                 this.drainResources(block.buildCost);
                 let controller = new block(tileX, tileY, buildingID[1], this);
                 controller.secondaries = offsets.map(([x, y]) => new block.secondary(tileX + x, tileY + y, 0, this));
@@ -221,7 +226,7 @@ class Level {
                 return true;
             }
             else {
-                if (!this.hasResources(block.buildCost))
+                if (!this.hasResources(block.buildCost, 1500))
                     return false;
                 this.drainResources(block.buildCost);
                 const building = new block(tileX, tileY, buildingID[1], this);
@@ -241,11 +246,13 @@ class Level {
             return false;
         }
     }
-    hasResources(items) {
+    hasResources(items, flashTime = 0) {
         var _b;
         for (const [item, amount] of items) {
             (_b = level1.resources)[item] ?? (_b[item] = 0);
             if (level1.resources[item] < amount) {
+                if (flashTime)
+                    level1.flashResources[item] = Date.now() + flashTime;
                 return false;
             }
         }
@@ -311,7 +318,7 @@ class Level {
         }
         return {
             chunks: chunkOutput,
-            resources: this.resources,
+            resources: Object.entries(this.resources).filter(([id, amount]) => amount > 0),
             seed: this.seed,
             version: consts.VERSION,
             uuid: this.uuid
@@ -1112,7 +1119,8 @@ class Miner extends Building {
         const output = recipes.base_mining.recipes.find(r => r.tile == level.tileAtByTile(tileX, tileY))?.outputs[0];
         if (output)
             this.miningItem = output;
-        console.warn(`Miner cannot mine tile at ${tileX}, ${tileY}`);
+        else
+            console.warn(`Miner cannot mine tile at ${tileX}, ${tileY}`);
     }
     static canBuildAt(tileX, tileY, level) {
         return recipes.base_mining.recipes.some(r => r.tile == level.tileAtByTile(tileX, tileY));

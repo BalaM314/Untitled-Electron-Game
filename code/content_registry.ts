@@ -218,11 +218,11 @@ Buildings.register("base_pipe", Pipe, {
 	buildCost: [["base_ironPlate", 1]],
 });
 Buildings.register("base_pump", Pump, {
-	buildCost: [["base_ironPlate", 10], ["base_stoneBrick", 10]],
+	buildCost: [["base_ironPlate", 20], ["base_ironIngot", 15], ["base_stoneBrick", 25]],
 	outputFluid: Fluids.get("base_water")
 });
 Buildings.register("base_tank", Tank, {
-
+	buildCost: [["base_ironPlate", 15], ["base_stoneBrick", 15]]
 });
 Buildings.register("base_boiler", BuildingWithRecipe, {
 	recipeType: recipes.base_boiling,

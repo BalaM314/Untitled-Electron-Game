@@ -89,6 +89,10 @@ type Keybinds = Record<string, Record<string, Keybind>>;
 
 type Rect = [x:number, y:number, width:number, height:number];
 
+interface TagFunction<Tin = string, Tout = string> {
+	(stringChunks: readonly string[], ...varChunks: readonly Tin[]):Tout;
+}
+
 interface SaveData {
 	UntitledElectronGame: {
 		metadata: {
@@ -102,12 +106,8 @@ interface SaveData {
 }
 
 interface LevelData {
-	chunks: {
-		[index: string]: ChunkData
-	};
-	resources: {
-		[index: string]: number;
-	};
+	chunks: Record<string, ChunkData>;
+	resources: ItemStack[];
 	seed: number;
 	uuid: string;
 	version: string;
@@ -176,3 +176,11 @@ interface CanvasRenderingContext2D {
 
 type PosT = [x:number, y:number];
 type TextureInfo = [size:[width:number, height:number], offset:[x:number, height:number]];
+
+interface ObjectConstructor {
+	/**
+	 * Returns an array of key/values of the enumerable properties of an object
+	 * @param o Object that contains the properties and methods. This can be an object that you created or an existing Document Object Model (DOM) object.
+	 */
+	entries<const K extends PropertyKey, T>(o: Record<K, T>): [K, T][];
+}

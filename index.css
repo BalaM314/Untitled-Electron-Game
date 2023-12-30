@@ -83,9 +83,9 @@ canvas {
 #resources {
 	position: absolute;
 	z-index: 23;
-	margin-left: 40%;
-	margin-right: 40%;
-	width: 20%;
+	margin-left: 35%;
+	margin-right: 35%;
+	width: 30%;
 	text-align: center;
 	font-size: 32px;
 	font-family: sans-serif;
@@ -96,6 +96,11 @@ canvas {
 	margin-left: 4px;
 	margin-right: 4px;
 }
+#resources span.flashing {
+	animation-name: flashred;
+	animation-duration: 0.8s;
+	animation-iteration-count: infinite;
+}
 #resources span::before {
 	width: 32px;
 	height: 32px;
@@ -104,6 +109,21 @@ canvas {
 	content: "";
 	display: inline-block !important;
 	background-image: var(--image-url);
+}
+
+@keyframes flashred {
+	0% {
+		text-shadow: 0 0 4px red;
+		color: red;
+	}
+	50% {
+		text-shadow: 0 0 4px white;
+		color: white;
+	}
+	100% {
+		text-shadow: 0 0 4px red;
+		color: red;
+	}
 }
 
 @keyframes alertfade {
@@ -126,7 +146,7 @@ canvas {
 		background-color: hsl(180deg, 100%, 50%);
 	}
 	100% {
-		background-color: hsl(0deg, 100%, 50%);
+		background-color: hsl(360deg, 100%, 50%);
 	}
 }
 #alertbox {

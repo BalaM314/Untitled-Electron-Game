@@ -362,10 +362,15 @@ const scenes = {
                     const el = document.createElement("span");
                     el.id = id;
                     el.style.setProperty("--image-url", `url("assets/textures/item/${id}.png")`);
+                    el.title = f `${bundle.get(`item.${id}.name`)}\n${bundle.get(`item.${id}.description`, "\b")}`;
                     resourcesEl.appendChild(el);
                     return el;
                 })());
                 resourcesItems[id].innerText = amount.toString();
+                if (level1.flashResources[id] > Date.now())
+                    resourcesItems[id].classList.add("flashing");
+                else
+                    resourcesItems[id].classList.remove("flashing");
             }
         },
         onmousedown(e) {

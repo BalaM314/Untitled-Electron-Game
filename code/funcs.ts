@@ -575,6 +575,12 @@ function tooltip(title:string, properties:Record<string, string>){
 	return `${title}<div style="font-size: 70%;">${props.join("<br/>")}</div>`;
 }
 
+/** Generates a tag template processor from a function that processes one value at a time. */
+function f(stringChunks:readonly string[], ...varChunks:readonly string[]):string {
+	return String.raw({raw: stringChunks}, ...varChunks).replaceAll(/[\s\S]\u0008/g, "");
+}
+
+
 function makeRebindButton(y:number, buttonID: [string, string], buttonName:string, defaultKey: string){
 	const keybind = (<any>keybinds)[buttonID[0]]?.[buttonID[1]] as Keybind | null;
 	if(!keybind) throw new Error(`Invalid rebind button ${buttonID[0]}.${buttonID[1]}`);

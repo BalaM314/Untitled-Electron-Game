@@ -149,7 +149,7 @@ const Direction = (() => {
     };
 })();
 const consts = {
-    VERSION: "alpha 3.1.0",
+    VERSION: "alpha 3.2.0",
     CHUNK_SIZE: 16,
     TILE_SIZE: 30,
     ITEM_SIZE: 16,
