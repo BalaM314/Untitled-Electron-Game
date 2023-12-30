@@ -609,6 +609,8 @@ function makeRebindButton(y:number, buttonID: [string, string], buttonName:strin
 }
 
 function selectID(id:RawBuildingID){
+	const block = Buildings.getOpt(id);
+	if(block && !block.unlocked()) id = "base_null";
 	placedBuilding.type = id;
 	const image = document.querySelector(`img#${id}`);
 	for(const icon of toolbarEl.children){

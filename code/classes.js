@@ -497,25 +497,25 @@ class Chunk {
             y_offset: 2031,
             ore_scale: 3,
             min_water_chunk_distance: 3,
+            ocean_distance: 160,
+            river_distance: 140,
             hilly: {
-                terrain_cutoff: 0.007,
+                terrain_cutoff: 0,
                 stone_threshold: 0.7,
                 ore_threshold: 0.8,
-                min_iron_distance: 8,
-                min_copper_distance: 12
+                water_threshold: -0.1,
+                min_iron_distance: 4,
+                min_copper_distance: 7
             }
         };
-        let isWet = false;
+        let isLake = false;
         let isHilly = false;
-        let distanceFromSpawn = Math.sqrt(this.x ** 2 + this.y ** 2);
-        let distanceBoost = constrain(Math.log((distanceFromSpawn / generation_consts.ore_scale) + 0.5) / 2, 0, 0.6);
-        if (this.generator().chance(0.07) && distanceFromSpawn > generation_consts.min_water_chunk_distance) {
-            isWet = true;
-        }
-        else if (distanceBoost > generation_consts.hilly.terrain_cutoff) {
+        let distanceFromSpawn = Math.sqrt((this.x) ** 2 + (this.y) ** 2);
+        let distanceBoost = constrain(Math.log(distanceFromSpawn + 1) / 3, 0, 0.6);
+        if (distanceBoost > generation_consts.hilly.terrain_cutoff) {
             isHilly = true;
         }
-        if (isWet) {
+        if (isLake) {
             for (let y = 0; y < consts.CHUNK_SIZE; y++) {
                 for (let x = 0; x < consts.CHUNK_SIZE; x++) {
                     if (y == 0 || y == 15 || x == 0 || x == 15) {
@@ -539,24 +539,39 @@ class Chunk {
             if (distanceFromSpawn < generation_consts.hilly.min_iron_distance) {
                 oreToGenerate = "base_ore_coal";
             }
+            else if (Math.floor(distanceFromSpawn) == generation_consts.hilly.min_iron_distance) {
+                oreToGenerate = "base_ore_iron";
+            }
             else if (distanceFromSpawn < generation_consts.hilly.min_copper_distance) {
-                oreToGenerate = oreRand.chance(0.5) ? "base_ore_iron" : "base_ore_coal";
+                oreToGenerate = oreRand.chance(0.5) ? "base_ore_coal" : "base_ore_iron";
+            }
+            else if (Math.floor(distanceFromSpawn) == generation_consts.hilly.min_copper_distance) {
+                oreToGenerate = "base_ore_copper";
             }
             else {
                 oreToGenerate = oreRand.chance(0.5) ? (oreRand.chance(0.25) ? "base_ore_copper" : "base_ore_iron") : "base_ore_coal";
             }
             for (let y = 0; y < consts.CHUNK_SIZE; y++) {
                 for (let x = 0; x < consts.CHUNK_SIZE; x++) {
-                    const noiseHeight = Math.abs(noise.perlin2(((this.x * consts.CHUNK_SIZE) + x + this.parent.seed) / generation_consts.perlin_scale, ((this.y * consts.CHUNK_SIZE) + y + (this.parent.seed + generation_consts.y_offset))
-                        / generation_consts.perlin_scale));
-                    if ((noiseHeight + distanceBoost / 2) > generation_consts.hilly.ore_threshold) {
-                        this.layers[0][y][x] = oreToGenerate;
-                    }
-                    else if ((noiseHeight + distanceBoost) > generation_consts.hilly.stone_threshold) {
-                        this.layers[0][y][x] = "base_stone";
+                    const dist = Math.sqrt(((this.x * consts.CHUNK_SIZE) + x) ** 2 + ((this.y * consts.CHUNK_SIZE) + y) ** 2);
+                    if (dist > generation_consts.ocean_distance) {
+                        this.layers[0][y][x] = "base_water";
                     }
                     else {
-                        this.layers[0][y][x] = "base_grass";
+                        const noiseHeight = Math.abs(noise.perlin2(((this.x * consts.CHUNK_SIZE) + x + this.parent.seed) / generation_consts.perlin_scale, ((this.y * consts.CHUNK_SIZE) + y + (this.parent.seed + generation_consts.y_offset))
+                            / generation_consts.perlin_scale));
+                        if ((noiseHeight + distanceBoost / 2) > generation_consts.hilly.ore_threshold) {
+                            this.layers[0][y][x] = oreToGenerate;
+                        }
+                        else if ((noiseHeight + distanceBoost) > generation_consts.hilly.stone_threshold) {
+                            this.layers[0][y][x] = "base_stone";
+                        }
+                        else if (dist > generation_consts.river_distance && noiseHeight - (distanceBoost / 5) < generation_consts.hilly.water_threshold) {
+                            this.layers[0][y][x] = "base_water";
+                        }
+                        else {
+                            this.layers[0][y][x] = "base_grass";
+                        }
                     }
                 }
             }
@@ -567,19 +582,19 @@ class Chunk {
                     this.layers[0][y][x] = "base_grass";
                 }
             }
-            const oreToGenerate = distanceFromSpawn < 3 ? "base_ore_coal"
-                : this.generator().chance(0.5) ? "base_ore_coal" : "base_ore_iron";
-            const hillX = Math.floor(this.generator().value * 16);
-            const hillY = Math.floor(this.generator().value * 16);
-            this.setTile(hillX, hillY, oreToGenerate);
-            this.setTile(hillX + 1, hillY, "base_stone");
-            this.setTile(hillX - 1, hillY, "base_stone");
-            this.setTile(hillX, hillY + 1, "base_stone");
-            this.setTile(hillX, hillY - 1, "base_stone");
-            this.setTile(hillX + 1, hillY + 1, this.generator().chance(0.5) ? "base_grass" : "base_stone");
-            this.setTile(hillX + 1, hillY - 1, this.generator().chance(0.5) ? "base_grass" : "base_stone");
-            this.setTile(hillX - 1, hillY + 1, this.generator().chance(0.5) ? "base_grass" : "base_stone");
-            this.setTile(hillX - 1, hillY - 1, this.generator().chance(0.5) ? "base_grass" : "base_stone");
+            this.setTile(10, 9, "base_stone");
+            this.setTile(10, 10, "base_ore_coal");
+            this.setTile(10, 11, "base_ore_coal");
+            this.setTile(10, 12, "base_stone");
+            this.setTile(11, 9, "base_stone");
+            this.setTile(12, 10, "base_stone");
+            this.setTile(11, 10, "base_stone");
+            this.setTile(11, 11, "base_stone");
+            this.setTile(11, 12, "base_stone");
+            this.setTile(9, 9, "base_stone");
+            this.setTile(9, 10, "base_stone");
+            this.setTile(9, 11, "base_stone");
+            this.setTile(9, 12, "base_stone");
         }
         return this;
     }

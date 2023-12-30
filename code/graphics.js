@@ -42,6 +42,11 @@ class Camera {
         this.scrollY -= y;
         if (x != 0 || y != 0)
             this._visibleRect = null;
+        const dist = Math.sqrt(this.scrollX ** 2 + this.scrollY ** 2);
+        if (dist > this.maxDistance) {
+            this.scrollX *= this.maxDistance / dist;
+            this.scrollY *= this.maxDistance / dist;
+        }
     }
     static zoom(scaleFactor) {
         scaleFactor = constrain(scaleFactor, 0.9, 1.1);
@@ -51,6 +56,7 @@ class Camera {
         else if (this.zoomLevel * scaleFactor > this.maxZoom) {
             scaleFactor = this.maxZoom / this.zoomLevel;
         }
+        this._visibleRect = null;
         if ((this.zoomLevel <= this.minZoom && scaleFactor <= 1) || (this.zoomLevel >= this.maxZoom && scaleFactor >= 1)) {
             return;
         }
@@ -91,6 +97,7 @@ Camera.maxZoom = 5;
 Camera.scrollX = 0;
 Camera.scrollY = 0;
 Camera._visibleRect = null;
+Camera.maxDistance = 170 * consts.TILE_SIZE;
 class Gfx {
     static init() {
         this.layers = {

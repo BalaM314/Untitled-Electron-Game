@@ -623,7 +623,7 @@ function load(){
 		saveExists() &&
 		(settings.alwaysLoadSave || confirm("Would you like to load your save?"))
 	) importData(localStorage.getItem("save1")!);
-	else level1 = new Level(314, true).generate();
+	else level1 = new Level(Rand.int(0, 1000), true).generate();
 
 	Game.sceneName = "game";
 	Game.forceRedraw = true;

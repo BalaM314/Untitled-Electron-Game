@@ -15,6 +15,9 @@ class ContentRegistryC<K, T extends new (...args:any[]) => {}> implements Iterab
 	get(id:K):T {
 		return this.contentMap.get(id) ?? (() => {throw new Error(`Object with id ${id} does not exist.`)})();
 	}
+	getOpt(id:K):T | null {
+		return this.contentMap.get(id) ?? null;
+	}
 	[Symbol.iterator]():Iterator<T> {
 		return this.contentMap.values();
 	}

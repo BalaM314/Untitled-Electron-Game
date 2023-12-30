@@ -84,10 +84,16 @@ class Camera {
 	static get width(){return window.innerWidth;}
 	static get height(){return window.innerHeight;}
 	private static _visibleRect:Rect | null = null;
+	static maxDistance = 170 * consts.TILE_SIZE;
 	static scroll(x:number, y:number){
 		this.scrollX -= x;
 		this.scrollY -= y;
 		if(x != 0 || y != 0) this._visibleRect = null;
+		const dist = Math.sqrt(this.scrollX ** 2 + this.scrollY ** 2);
+		if(dist > this.maxDistance){
+			this.scrollX *= this.maxDistance / dist;
+			this.scrollY *= this.maxDistance / dist;
+		}
 	}
 	static zoom(scaleFactor:number){
 		scaleFactor = constrain(scaleFactor, 0.9, 1.1);
@@ -96,6 +102,7 @@ class Camera {
 		} else if(this.zoomLevel * scaleFactor > this.maxZoom){
 			scaleFactor = this.maxZoom / this.zoomLevel;
 		}
+		this._visibleRect = null;
 		if((this.zoomLevel <= this.minZoom && scaleFactor <= 1)||(this.zoomLevel >= this.maxZoom && scaleFactor >= 1)){
 			return;
 		}

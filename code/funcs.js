@@ -517,6 +517,9 @@ function makeRebindButton(y, buttonID, buttonName, defaultKey) {
     });
 }
 function selectID(id) {
+    const block = Buildings.getOpt(id);
+    if (block && !block.unlocked())
+        id = "base_null";
     placedBuilding.type = id;
     const image = document.querySelector(`img#${id}`);
     for (const icon of toolbarEl.children) {

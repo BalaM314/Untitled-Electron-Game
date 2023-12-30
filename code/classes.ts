@@ -559,34 +559,35 @@ class Chunk {
 			ore_scale: 3,
 			/** The minimum distance from spawn for water chunks to spawn.*/
 			min_water_chunk_distance: 3,
+			ocean_distance: 160,
+			river_distance: 140,
 			hilly: {
 				/** Determins where the hilly(perlin generated) terrain starts. Higher values make it start further away.*/
-				terrain_cutoff: 0.007,
+				terrain_cutoff: 0,
 				/** Determines how high the perlin noise has to go for stone to generate... sort of. See Chunk.generate().*/
 				stone_threshold: 0.7,
 				/** Same as terrain stone threshold but for ore.*/
 				ore_threshold: 0.8,
-				/** Minimum distance from spawn for iron ore to generate.*/
-				min_iron_distance: 8,
-				/** Minimum distance from spawn for copper ore to generate.*/
-				min_copper_distance: 12
+				water_threshold: -0.1,
+				/** Minimum distance from spawn for iron ore to generate in chunks.*/
+				min_iron_distance: 4,
+				/** Minimum distance from spawn for copper ore to generate in chunks.*/
+				min_copper_distance: 7
 			}
 		};
 
-		let isWet = false;
+		let isLake = false;
 		let isHilly = false;
 
-		let distanceFromSpawn = Math.sqrt(this.x **2 + this.y **2);
-		let distanceBoost = constrain(Math.log((distanceFromSpawn / generation_consts.ore_scale) + 0.5)/2, 0, 0.6);
+		let distanceFromSpawn = Math.sqrt((this.x) ** 2 + (this.y) ** 2);
+		let distanceBoost = constrain(Math.log(distanceFromSpawn + 1) / 3, 0, 0.6);
 		//A value added to the perlin noise on each tile to make the amount of stone/ore increase, scales as you go further out.
 
-		if(this.generator().chance(0.07) && distanceFromSpawn > generation_consts.min_water_chunk_distance){
-			isWet = true;
-		} else if(distanceBoost > generation_consts.hilly.terrain_cutoff){
+		if(distanceBoost > generation_consts.hilly.terrain_cutoff){
 			isHilly = true;
 		}
 		
-		if(isWet){//Generator for wet chunks.
+		if(isLake){//Generator for lake chunks.
 			for(let y = 0; y < consts.CHUNK_SIZE; y ++){
 				for(let x = 0; x < consts.CHUNK_SIZE; x ++){
 					//Choose the tile to be placed:
@@ -612,8 +613,12 @@ class Chunk {
 			const oreRand = this.generator();
 			if(distanceFromSpawn < generation_consts.hilly.min_iron_distance){
 				oreToGenerate = "base_ore_coal";
+			} else if(Math.floor(distanceFromSpawn) == generation_consts.hilly.min_iron_distance){
+				oreToGenerate = "base_ore_iron";
 			} else if(distanceFromSpawn < generation_consts.hilly.min_copper_distance){
-				oreToGenerate = oreRand.chance(0.5) ? "base_ore_iron" : "base_ore_coal";
+				oreToGenerate = oreRand.chance(0.5) ? "base_ore_coal" : "base_ore_iron";
+			} else if(Math.floor(distanceFromSpawn) == generation_consts.hilly.min_copper_distance){
+				oreToGenerate = "base_ore_copper";
 			} else {
 				oreToGenerate = oreRand.chance(0.5) ? (oreRand.chance(0.25) ? "base_ore_copper" : "base_ore_iron") : "base_ore_coal";
 			}
@@ -621,21 +626,28 @@ class Chunk {
 
 			for(let y = 0; y < consts.CHUNK_SIZE; y ++){
 				for(let x = 0; x < consts.CHUNK_SIZE; x ++){
-					//Choose the tile to be placed:
-					const noiseHeight = 
-					Math.abs(noise.perlin2(
-						((this.x * consts.CHUNK_SIZE) + x + this.parent.seed) / generation_consts.perlin_scale,
-						((this.y * consts.CHUNK_SIZE) + y + (this.parent.seed + generation_consts.y_offset))
-							/ generation_consts.perlin_scale
-					));
-					//This formula just finds the perlin noise value at a tile, but tweaked so it's different per seed and not mirrored diagonally.
-
-					if((noiseHeight + distanceBoost / 2) > generation_consts.hilly.ore_threshold){
-						this.layers[0][y][x] = oreToGenerate;
-					} else if((noiseHeight + distanceBoost) > generation_consts.hilly.stone_threshold){
-						this.layers[0][y][x] = "base_stone";
+					const dist = Math.sqrt(((this.x * consts.CHUNK_SIZE) + x) ** 2 + ((this.y * consts.CHUNK_SIZE) + y) ** 2);
+					if(dist > generation_consts.ocean_distance){
+						this.layers[0][y][x] = "base_water";
 					} else {
-						this.layers[0][y][x] = "base_grass";
+						//Choose the tile to be placed:
+						const noiseHeight = 
+						Math.abs(noise.perlin2(
+							((this.x * consts.CHUNK_SIZE) + x + this.parent.seed) / generation_consts.perlin_scale,
+							((this.y * consts.CHUNK_SIZE) + y + (this.parent.seed + generation_consts.y_offset))
+								/ generation_consts.perlin_scale
+						));
+						//This formula just finds the perlin noise value at a tile, but tweaked so it's different per seed and not mirrored diagonally.
+	
+						if((noiseHeight + distanceBoost / 2) > generation_consts.hilly.ore_threshold){
+							this.layers[0][y][x] = oreToGenerate;
+						} else if((noiseHeight + distanceBoost) > generation_consts.hilly.stone_threshold){
+							this.layers[0][y][x] = "base_stone";
+						} else if(dist > generation_consts.river_distance && noiseHeight - (distanceBoost / 5) < generation_consts.hilly.water_threshold){
+							this.layers[0][y][x] = "base_water";
+						} else {
+							this.layers[0][y][x] = "base_grass";
+						}
 					}
 				}
 			}
@@ -646,23 +658,21 @@ class Chunk {
 					this.layers[0][y][x] = "base_grass";
 				}
 			}
-			const oreToGenerate:TileID = 
-				distanceFromSpawn < 3 ? "base_ore_coal"
-				: this.generator().chance(0.5) ? "base_ore_coal" : "base_ore_iron";
+			
+			this.setTile(10, 9, "base_stone");
+			this.setTile(10, 10, "base_ore_coal");
+			this.setTile(10, 11, "base_ore_coal");
+			this.setTile(10, 12, "base_stone");
+			this.setTile(11, 9, "base_stone");
+			this.setTile(12, 10, "base_stone");
+			this.setTile(11, 10, "base_stone");
+			this.setTile(11, 11, "base_stone");
+			this.setTile(11, 12, "base_stone");
+			this.setTile(9, 9, "base_stone");
+			this.setTile(9, 10, "base_stone");
+			this.setTile(9, 11, "base_stone");
+			this.setTile(9, 12, "base_stone");
 
-			const hillX = Math.floor(this.generator().value * 16);
-			const hillY = Math.floor(this.generator().value * 16);
-
-			//Makes a "hill", with an ore node in the middle, stone on the sides, and maybe stone in the corners.
-			this.setTile(hillX, hillY, oreToGenerate);
-			this.setTile(hillX + 1, hillY, "base_stone");
-			this.setTile(hillX - 1, hillY, "base_stone");
-			this.setTile(hillX, hillY + 1, "base_stone");
-			this.setTile(hillX, hillY - 1, "base_stone");
-			this.setTile(hillX + 1, hillY + 1, this.generator().chance(0.5) ? "base_grass" : "base_stone");
-			this.setTile(hillX + 1, hillY - 1, this.generator().chance(0.5) ? "base_grass" : "base_stone");
-			this.setTile(hillX - 1, hillY + 1, this.generator().chance(0.5) ? "base_grass" : "base_stone");
-			this.setTile(hillX - 1, hillY - 1, this.generator().chance(0.5) ? "base_grass" : "base_stone");
 		}
 
 		return this;

@@ -16,6 +16,9 @@ class ContentRegistryC {
     get(id) {
         return this.contentMap.get(id) ?? (() => { throw new Error(`Object with id ${id} does not exist.`); })();
     }
+    getOpt(id) {
+        return this.contentMap.get(id) ?? null;
+    }
     [Symbol.iterator]() {
         return this.contentMap.values();
     }
