@@ -2010,8 +2010,8 @@ class PowerGrid {
     updatePower() {
         const powerRequested = this.consumers.reduce((acc, p) => acc + p.getRequestedPower(), 0);
         const maxProduction = this.producers.reduce((acc, p) => acc + p.getMaxPowerProduction(), 0);
-        const load = Math.min(powerRequested / maxProduction, 1);
-        const satisfaction = Math.min(maxProduction / powerRequested, 1);
+        const load = maxProduction == 0 ? 0 : Math.min(powerRequested / maxProduction, 1);
+        const satisfaction = powerRequested == 0 ? 0 : Math.min(maxProduction / powerRequested, 1);
         this.producers.forEach(p => p.powerLoad = load);
         this.consumers.forEach(c => c.powerSatisfaction = satisfaction);
     }
