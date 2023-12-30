@@ -421,8 +421,15 @@ const scenes: {
 				Gfx.text(`C:${currentFrame.cps} I:${currentFrame.ips}`, 10, 150);
 			}
 		
-			for(let item of resourcesEl.children){
-				(item as HTMLSpanElement).innerText = (level1.resources[item.id] ?? 0).toString();
+			for(const [id, amount] of Object.entries(level1.resources)){
+				resourcesItems[id] ??= (() => {
+					const el = document.createElement("span");
+					el.id = id;
+					el.style.setProperty("--image-url", `url("assets/textures/item/${id}.png")`);
+					resourcesEl.appendChild(el);
+					return el;
+				})();
+				resourcesItems[id].innerText = amount.toString();
 			}
 		},
 		onmousedown(e:MouseEvent){

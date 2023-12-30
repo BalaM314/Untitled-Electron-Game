@@ -22,4 +22,5 @@ const errorBackground = getElement("error_background", HTMLDivElement);
 const loadingBackground = getElement("loading_background", HTMLDivElement);
 const gameBackground = getElement("game_background", HTMLDivElement);
 const resourcesEl = getElement("resources", HTMLDivElement);
+const resourcesItems = {};
 const texturesDiv = getElement("textures", HTMLDivElement);

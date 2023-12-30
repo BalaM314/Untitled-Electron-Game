@@ -151,12 +151,13 @@ class Level {
         }
         if (buildingID[0] == "base_null")
             return;
+        const block = Buildings.get(buildingID[0]);
         let changedID = [buildingID[0], buildingID[1]];
-        changedID[1] = Buildings.get(buildingID[0]).changeMeta(changedID[1], tileX, tileY, this);
-        let textureSize = Buildings.get(buildingID[0]).textureSize(buildingID[1]);
-        let isError = !Buildings.get(changedID[0]).canBuildAt(tileX, tileY, this) || this.buildingAtTile(tileX, tileY)?.block.immutable;
+        changedID[1] = block.changeMeta(changedID[1], tileX, tileY, this);
+        let textureSize = block.textureSize(buildingID[1]);
+        let isError = !block.canBuildAt(tileX, tileY, this) || this.buildingAtTile(tileX, tileY)?.block.immutable || !this.hasResources(block.buildCost);
         let underlayTextureSize = textureSize[0][0] == textureSize[0][1] ? textureSize : [[1, 1], [0, 0]];
-        Gfx.tImage(isError ? Gfx.texture("misc/invalidunderlay") : Gfx.texture("misc/ghostunderlay"), tileX + underlayTextureSize[1][0], tileY + underlayTextureSize[1][1], underlayTextureSize[0][0], underlayTextureSize[0][1]);
+        Gfx.tImage(Gfx.texture(isError ? "misc/invalidunderlay" : "misc/ghostunderlay"), tileX + underlayTextureSize[1][0], tileY + underlayTextureSize[1][1], ...underlayTextureSize[0]);
         Gfx.alpha(0.7);
         Building.display(changedID, Pos.fromTileCoords(tileX, tileY, false), "ghostBuilds");
         Gfx.alpha(1);
@@ -176,6 +177,7 @@ class Level {
             return true;
         }
         const block = Buildings.get(buildingID[0]);
+        buildingID = [buildingID[0], block.changeMeta(buildingID[1], tileX, tileY, this)];
         if (block.isOverlay) {
             if (this.overlayBuildAtTile(tileX, tileY)?.block.id == buildingID[0] &&
                 this.overlayBuildAtTile(tileX, tileY)?.meta == buildingID[1] &&
@@ -197,8 +199,14 @@ class Level {
                 const offsets = MultiBlockController.getOffsetsForSize(...block.multiblockSize);
                 for (const [xOffset, yOffset] of offsets) {
                     const buildUnder = this.buildingAtTile(tileX + xOffset, tileY + yOffset);
+                    if (buildUnder?.block.immutable)
+                        return false;
                     buildUnder?.break();
                 }
+                if (!this.hasResources(block.buildCost)) {
+                    return false;
+                }
+                this.drainResources(block.buildCost);
                 let controller = new block(tileX, tileY, buildingID[1], this);
                 controller.secondaries = offsets.map(([x, y]) => new block.secondary(tileX + x, tileY + y, 0, this));
                 controller.secondaries.forEach(secondary => secondary.controller = controller);
@@ -213,7 +221,10 @@ class Level {
                 return true;
             }
             else {
-                const building = new block(tileX, tileY, block.changeMeta(buildingID[1], tileX, tileY, this), this);
+                if (!this.hasResources(block.buildCost))
+                    return false;
+                this.drainResources(block.buildCost);
+                const building = new block(tileX, tileY, buildingID[1], this);
                 this.buildings.add(building);
                 this.grid.addBuilding(building);
                 trigger("placeBuilding", { building });
@@ -228,6 +239,30 @@ class Level {
         else {
             trigger("placeBuildingFail", { pos: Pos.fromTileCoords(tileX, tileY, false), type: block });
             return false;
+        }
+    }
+    hasResources(items) {
+        var _b;
+        for (const [item, amount] of items) {
+            (_b = level1.resources)[item] ?? (_b[item] = 0);
+            if (level1.resources[item] < amount) {
+                return false;
+            }
+        }
+        return true;
+    }
+    drainResources(items) {
+        var _b;
+        for (const [item, amount] of items) {
+            (_b = level1.resources)[item] ?? (_b[item] = 0);
+            level1.resources[item] -= amount;
+        }
+    }
+    addResources(items) {
+        var _b;
+        for (const [item, amount] of items) {
+            (_b = level1.resources)[item] ?? (_b[item] = 0);
+            level1.resources[item] += amount;
         }
     }
     update(currentFrame) {
@@ -678,6 +713,7 @@ let Building = (() => {
                 this.level.writeOverlayBuild(this.pos.tileX, this.pos.tileY, null);
             else
                 this.level.writeBuilding(this.pos.tileX, this.pos.tileY, null);
+            this.level.addResources(this.block.buildCost);
         }
         preUpdate(currentFrame) { }
         update(currentFrame) {

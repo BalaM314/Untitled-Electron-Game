@@ -130,6 +130,6 @@ class ObjectiveTree {
 }
 const objectives = new ObjectiveTree(() => {
     const produceCoal = new Objective("produceCoal");
-    const gatherCoal = new Objective("gatherCoal", [produceCoal], () => level1.resources["base_coal"] >= 10);
+    const gatherCoal = new Objective("gatherCoal", [produceCoal], () => level1.hasResources([["base_coal", 10]]));
     const researchStoneFurnace = new ResearchObjective("researchStoneFurnace", [gatherCoal], tech.get("building_furnace"));
 });

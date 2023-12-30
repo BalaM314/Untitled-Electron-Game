@@ -161,16 +161,17 @@ Fluids.register(new Fluid("base_steam", "white"));
 
 const Buildings = new ContentRegistryC<RawBuildingID, typeof Building>();
 Buildings.register("base_conveyor", Conveyor, {
-
+	buildCost: [["base_stone", 1]],
 });
 Buildings.register("base_miner", Miner, {
-
+	buildCost: [["base_stone", 10]],
 });
 Buildings.register("base_trash_can", TrashCan, {
-
+	buildCost: [["base_stone", 10]],
 });
 Buildings.register("base_furnace", BuildingWithRecipe, {
 	recipeType: recipes.base_smelting,
+	buildCost: [["base_stone", 15]],
 	drawer: BuildingWithRecipe.makeDrawer<BuildingWithRecipe>((build, e) => {
 		Gfx.fillColor(...Gfx.lerp([255, 127, 39], [255, 95, 29], e.sin()));
 		Gfx.tRect(...build.centeredPos().tile, 0.5, 0.5, RectMode.CENTER);
@@ -178,28 +179,34 @@ Buildings.register("base_furnace", BuildingWithRecipe, {
 	craftEffect: [Fx.smoke, "#555"]
 });
 Buildings.register("base_extractor", Extractor, {
-	
+	buildCost: [["base_stone", 2], ["base_ironIngot", 2]]
 });
 Buildings.register("base_chest", StorageBuilding, {
+	buildCost: [["base_ironIngot", 15], ["base_stoneBrick", 10]],
 	capacity: 64
 });
 Buildings.register("base_resource_acceptor", ResourceAcceptor, {
 
 });
 Buildings.register("base_alloy_smelter", BuildingWithRecipe, {
+	buildCost: [["base_stoneBrick", 35], ["base_ironIngot", 20]],
 	recipeType: recipes.base_alloying, drawer: BuildingWithRecipe.progressDrawer(), craftEffect: [Fx.smoke, "#222"]
 });
 Buildings.register("base_wiremill", BuildingWithRecipe, {
+	buildCost: [["base_stoneBrick", 20], ["base_ironIngot", 35], ["base_copperIngot", 15]],
 	recipeType: recipes.base_wiremilling, drawer: BuildingWithRecipe.progressDrawer()
 });
 Buildings.register("base_compressor", BuildingWithRecipe, {
+	buildCost: [["base_stoneBrick", 25], ["base_ironIngot", 35], ["base_copperIngot", 10]],
 	recipeType: recipes.base_compressing, drawer: BuildingWithRecipe.progressDrawer()
 });
 Buildings.register("base_lathe", BuildingWithRecipe, {
+	buildCost: [["base_stoneBrick", 20], ["base_ironIngot", 35], ["base_copperIngot", 10]],
 	recipeType: recipes.base_lathing, drawer: BuildingWithRecipe.progressDrawer(), runEffect: [Fx.spark, "#FFC", 20, 0.8]
 });
 Buildings.register("base_multiblock_secondary", MultiBlockSecondary, {});
 Buildings.register("base_assembler", MultiBlockController, {
+	buildCost: [["base_stoneBrick", 50], ["base_ironIngot", 35], ["base_copperIngot", 25], ["base_ironPlate", 25], ["base_ironRod", 10], ["base_copperWire", 10]],
 	recipeType: recipes.base_assembling,
 	multiblockSize: [2, 2],
 	drawer: BuildingWithRecipe.progressDrawer(),
@@ -208,9 +215,10 @@ Buildings.register("base_assembler", MultiBlockController, {
 Buildings.register("base_arc_tower", ArcTower, {});
 Buildings.register("base_power_source", PowerSource, {});
 Buildings.register("base_pipe", Pipe, {
-
+	buildCost: [["base_ironPlate", 1]],
 });
 Buildings.register("base_pump", Pump, {
+	buildCost: [["base_ironPlate", 10], ["base_stoneBrick", 10]],
 	outputFluid: Fluids.get("base_water")
 });
 Buildings.register("base_tank", Tank, {

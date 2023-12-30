@@ -5,9 +5,7 @@
 
 
 class Level {
-	resources: {
-		[index: string]: number
-	} = {};
+	resources: Partial<Record<ItemID, number>> = {};
 	storage = new Map<string, Chunk>();
 	format: string;
 	uuid: string;
@@ -150,14 +148,16 @@ class Level {
 		}
 		if(buildingID[0] == "base_null") return;
 
+		const block = Buildings.get(buildingID[0]);
+
 		let changedID:BuildingIDWithMeta = [buildingID[0], buildingID[1]];
-		changedID[1] = Buildings.get(buildingID[0]).changeMeta(changedID[1], tileX, tileY, this);
-		let textureSize = Buildings.get(buildingID[0]).textureSize(buildingID[1]);
+		changedID[1] = block.changeMeta(changedID[1], tileX, tileY, this);
+		let textureSize = block.textureSize(buildingID[1]);
 
 		//Draw underlay
-		let isError = !Buildings.get(changedID[0]).canBuildAt(tileX, tileY, this) || this.buildingAtTile(tileX, tileY)?.block.immutable;
+		let isError = !block.canBuildAt(tileX, tileY, this) || this.buildingAtTile(tileX, tileY)?.block.immutable || !this.hasResources(block.buildCost);//TOOD cleanup
 		let underlayTextureSize = textureSize[0][0] == textureSize[0][1] ? textureSize : [[1, 1], [0, 0]];
-		Gfx.tImage(isError ? Gfx.texture("misc/invalidunderlay") : Gfx.texture("misc/ghostunderlay"), tileX + underlayTextureSize[1][0], tileY + underlayTextureSize[1][1], underlayTextureSize[0][0], underlayTextureSize[0][1]);
+		Gfx.tImage(Gfx.texture(isError ? "misc/invalidunderlay" : "misc/ghostunderlay"), tileX + underlayTextureSize[1][0], tileY + underlayTextureSize[1][1], ...underlayTextureSize[0]);
 
 		Gfx.alpha(0.7);
 		Building.display(changedID, Pos.fromTileCoords(tileX, tileY, false), "ghostBuilds");
@@ -179,6 +179,7 @@ class Level {
 			return true;
 		}
 		const block = Buildings.get(buildingID[0]);
+		buildingID = [buildingID[0], block.changeMeta(buildingID[1], tileX, tileY, this)];
 
 		//Only overwrite the same building once per build attempt.
 		//Otherwise, you could constantly overwrite a building on every frame you tried to build, which is not good.
@@ -208,9 +209,17 @@ class Level {
 				//Break all the buildings under
 				for(const [xOffset, yOffset] of offsets){
 					const buildUnder = this.buildingAtTile(tileX + xOffset, tileY + yOffset);
-					//if(buildUnder?.block.immutable) return false;
+					if(buildUnder?.block.immutable) return false;
 					buildUnder?.break();
 				}
+
+				//Check resource cost
+				if(!this.hasResources(block.buildCost)){
+					//TODO feedback
+					return false;
+				}
+				//Drain resources
+				this.drainResources(block.buildCost);
 				
 				//Create buildings
 				let controller = new block(tileX, tileY, buildingID[1], this);
@@ -228,9 +237,12 @@ class Level {
 				trigger("placeBuilding", {building: controller});
 				return true;
 			} else {
+				//Check resource cost
+				if(!this.hasResources(block.buildCost)) return false; //TODO feedback
+				//Drain resources
+				this.drainResources(block.buildCost);
 				const building = new block(
-					tileX, tileY,
-					block.changeMeta(buildingID[1], tileX, tileY, this), this
+					tileX, tileY, buildingID[1], this
 				);
 				this.buildings.add(building);
 				this.grid.addBuilding(building);
@@ -246,7 +258,27 @@ class Level {
 			return false;
 		}
 	}
-
+	hasResources(items:ItemStack[]){
+		for(const [item, amount] of items){
+			level1.resources[item] ??= 0;
+			if(level1.resources[item]! < amount){
+				return false;
+			}
+		}
+		return true;
+	}
+	drainResources(items:ItemStack[]){
+		for(const [item, amount] of items){
+			level1.resources[item] ??= 0;
+			level1.resources[item]! -= amount;
+		}
+	}
+	addResources(items:ItemStack[]){
+		for(const [item, amount] of items){
+			level1.resources[item] ??= 0;
+			level1.resources[item]! += amount;
+		}
+	}
 	update(currentFrame:CurrentFrame){
 		this.buildings.forEach(b => b.preUpdate(currentFrame));
 		this.grid.updatePower();
@@ -796,6 +828,7 @@ class Building {
 		}
 		if(this.block.isOverlay) this.level.writeOverlayBuild(this.pos.tileX, this.pos.tileY, null);
 		else this.level.writeBuilding(this.pos.tileX, this.pos.tileY, null);
+		this.level.addResources(this.block.buildCost);
 	}
 	preUpdate(currentFrame:CurrentFrame){}
 	update(currentFrame:CurrentFrame){
@@ -1731,7 +1764,7 @@ class ResourceAcceptor extends Building {
 	static acceptsItems = true;
 	acceptItem(item:Item){
 		this.level.resources[item.id] ??= 0;
-		this.level.resources[item.id] ++;
+		this.level.resources[item.id]! ++;
 		return true;
 	}
 }

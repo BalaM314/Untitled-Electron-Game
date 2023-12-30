@@ -103,19 +103,9 @@ canvas {
 	background-size: 32px;
 	content: "";
 	display: inline-block !important;
+	background-image: var(--image-url);
 }
-#base_coal::before {
-	background-image: url("assets/textures/item/base_coal.png");
-}
-#base_ironIngot::before {
-	background-image: url("assets/textures/item/base_ironIngot.png");
-}
-#base_steelIngot::before {
-	background-image: url("assets/textures/item/base_steelIngot.png");
-}
-#base_copperIngot::before {
-	background-image: url("assets/textures/item/base_copperIngot.png");
-}
+
 @keyframes alertfade {
 	from {
 		background-color: rgba(0, 0, 255, 0.0);
