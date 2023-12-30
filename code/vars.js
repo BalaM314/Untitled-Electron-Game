@@ -192,6 +192,7 @@ const consts = {
     CHUNK_SIZE: 16,
     TILE_SIZE: 30,
     ITEM_SIZE: 16,
+    chunkSizeInPixels: 16 * 30,
     chunkCullingMargin: 120,
     ups: 60,
     scrollSpeed: 5,

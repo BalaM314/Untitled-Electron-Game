@@ -243,6 +243,7 @@ const consts = {
 	TILE_SIZE: 30,
 	/**Size of an item in pixels. */
 	ITEM_SIZE: 16,
+	chunkSizeInPixels: 16 * 30,
 	/**Margin applied to chunk culling. */
 	chunkCullingMargin: 120,
 	/**Updates per second. */

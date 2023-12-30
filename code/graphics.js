@@ -37,6 +37,12 @@ async function loadTextures(textures, texturesDiv) {
 class Camera {
     static get width() { return window.innerWidth; }
     static get height() { return window.innerHeight; }
+    static scroll(x, y) {
+        this.scrollX -= x;
+        this.scrollY -= y;
+        if (x != 0 || y != 0)
+            this._visibleRect = null;
+    }
     static zoom(scaleFactor) {
         scaleFactor = constrain(scaleFactor, 0.9, 1.1);
         if (this.zoomLevel * scaleFactor < this.minZoom) {
@@ -52,11 +58,11 @@ class Camera {
         this.zoomLevel *= scaleFactor;
     }
     static visibleRect() {
-        return [
+        return this._visibleRect ?? (this._visibleRect = [
             ...this.unproject(0, 0),
             this.width / this.zoomLevel,
             this.height / this.zoomLevel,
-        ];
+        ]);
     }
     static isVisible(rect, cullingMargin = 0) {
         const [x, y, w, h] = this.visibleRect();
@@ -84,6 +90,7 @@ Camera.minZoom = 1;
 Camera.maxZoom = 5;
 Camera.scrollX = 0;
 Camera.scrollY = 0;
+Camera._visibleRect = null;
 class Gfx {
     static init() {
         this.layers = {

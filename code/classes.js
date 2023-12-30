@@ -303,7 +303,7 @@ class Level {
         }
     }
     display(currentframe) {
-        for (let chunk of this.storage.values()) {
+        for (const chunk of this.storage.values()) {
             chunk.display(currentframe);
         }
     }
@@ -354,6 +354,8 @@ class Chunk {
         this.y = y;
         this.parent = parent;
         this.hasBuildings = false;
+        this.pixelX = Pos.chunkToPixel(this.x);
+        this.pixelY = Pos.chunkToPixel(this.y);
         let tweakedX = x == 0 ? 5850 : x;
         let tweakedY = y == 0 ? 9223 : y;
         this.chunkSeed = Math.abs((((tweakedX) ** 3) * (tweakedY ** 5) + 3850 + ((parent.seed - 314) * 11)) % (2 ** 16));
@@ -583,8 +585,8 @@ class Chunk {
     }
     display(currentframe) {
         if (!Camera.isVisible([
-            Pos.chunkToPixel(this.x), Pos.chunkToPixel(this.y),
-            Pos.chunkToPixel(1), Pos.chunkToPixel(1)
+            this.pixelX, this.pixelY,
+            consts.chunkSizeInPixels, consts.chunkSizeInPixels
         ], consts.chunkCullingMargin))
             return;
         currentframe.cps++;

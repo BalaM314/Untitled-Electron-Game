@@ -483,19 +483,19 @@ const scenes: {
 		onkeyheld(currentframe:CurrentFrame){
 			const scrollSpeed = keybinds.move.scroll_faster.isHeld() ? consts.fastScrollSpeed : consts.scrollSpeed;
 			if(keybinds.move.up.isHeld()){
-				Camera.scrollY += scrollSpeed;
+				Camera.scroll(0, -scrollSpeed);
 				currentframe.redraw = true;
 			}
 			if(keybinds.move.left.isHeld()){
-				Camera.scrollX += scrollSpeed;
+				Camera.scroll(-scrollSpeed, 0);
 				currentframe.redraw = true;
 			}
 			if(keybinds.move.down.isHeld()){
-				Camera.scrollY -= scrollSpeed;
+				Camera.scroll(0, scrollSpeed);
 				currentframe.redraw = true;
 			}
 			if(keybinds.move.right.isHeld()){
-				Camera.scrollX -= scrollSpeed;
+				Camera.scroll(scrollSpeed, 0);
 				currentframe.redraw = true;
 			}
 			if(keybinds.placement.break_building.isHeld()){

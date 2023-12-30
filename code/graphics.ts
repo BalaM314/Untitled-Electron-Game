@@ -83,6 +83,12 @@ class Camera {
 	static scrollY:number = 0;
 	static get width(){return window.innerWidth;}
 	static get height(){return window.innerHeight;}
+	private static _visibleRect:Rect | null = null;
+	static scroll(x:number, y:number){
+		this.scrollX -= x;
+		this.scrollY -= y;
+		if(x != 0 || y != 0) this._visibleRect = null;
+	}
 	static zoom(scaleFactor:number){
 		scaleFactor = constrain(scaleFactor, 0.9, 1.1);
 		if(this.zoomLevel * scaleFactor < this.minZoom){
@@ -98,11 +104,11 @@ class Camera {
 	}
 	/**Returns the rectangle that is visible in in-world coordinates.*/
 	static visibleRect(){
-		return [
+		return this._visibleRect ??= [
 			...this.unproject(0, 0),
 			this.width / this.zoomLevel,
 			this.height / this.zoomLevel,
-		] as Rect;
+		] satisfies Rect;
 	}
 	static isVisible(rect:Rect, cullingMargin:number = 0){
 		const [x, y, w, h] = this.visibleRect();

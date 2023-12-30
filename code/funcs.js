@@ -414,10 +414,10 @@ class Pos {
         return Math.floor(tileCoord / consts.CHUNK_SIZE);
     }
     static pixelToChunk(pixelCoord) {
-        return Math.floor(pixelCoord / (consts.TILE_SIZE * consts.CHUNK_SIZE));
+        return Math.floor(pixelCoord / consts.chunkSizeInPixels);
     }
     static chunkToPixel(chunkCoord) {
-        return chunkCoord * consts.CHUNK_SIZE * consts.TILE_SIZE;
+        return chunkCoord * consts.chunkSizeInPixels;
     }
     static tileOffsetInPixels(pixelCoord) {
         pixelCoord = Math.floor(pixelCoord) % consts.TILE_SIZE;

@@ -319,7 +319,7 @@ class Level {
 	display(currentframe:Object):void {
 		
 		//Instantly returns in the display method if offscreen.
-		for(let chunk of this.storage.values()){
+		for(const chunk of this.storage.values()){
 			chunk.display(currentframe);
 		}
 		
@@ -386,6 +386,8 @@ class Chunk {
 	}, never>;
 	chunkSeed: number;
 	hasBuildings: boolean = false;
+	pixelX = Pos.chunkToPixel(this.x);
+	pixelY = Pos.chunkToPixel(this.y);
 	constructor(public x:number, public y:number, public parent:Level){
 		//Don't allow x or y to be zero
 		let tweakedX = x == 0 ? 5850 : x;
@@ -667,8 +669,8 @@ class Chunk {
 	}
 	display(currentframe:any){
 		if(!Camera.isVisible([
-			Pos.chunkToPixel(this.x), Pos.chunkToPixel(this.y),
-			Pos.chunkToPixel(1), Pos.chunkToPixel(1)
+			this.pixelX, this.pixelY,
+			consts.chunkSizeInPixels, consts.chunkSizeInPixels
 		], consts.chunkCullingMargin)) return;//if offscreen return immediately
 		currentframe.cps ++;
 		
