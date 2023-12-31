@@ -1011,6 +1011,9 @@ let BuildingWithRecipe = (() => {
             this.recipe = recipe;
             this.timer = recipe.duration;
             this.runEffectTimer = recipe.duration;
+            if (!this.recipe.inputs || this.recipe.inputs.every(([item, amount]) => this.items.some(([i, a]) => i == item && a >= amount))) {
+                this.running = true;
+            }
         }
         update(currentFrame) {
             if (this.recipe && this.running) {

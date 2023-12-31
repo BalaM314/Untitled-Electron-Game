@@ -1134,6 +1134,10 @@ class BuildingWithRecipe extends Building {
 		this.recipe = recipe;
 		this.timer = recipe.duration;
 		this.runEffectTimer = recipe.duration;
+		if(!this.recipe.inputs || this.recipe.inputs.every(([item, amount]) => this.items.some(([i, a]) => i == item && a >= amount))){
+			//If every item is present in the required amount
+			this.running = true;
+		}
 	}
 	update(currentFrame:CurrentFrame){
 		if(this.recipe && this.running){
