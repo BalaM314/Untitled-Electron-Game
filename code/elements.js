@@ -22,6 +22,7 @@ const loadingBackground = getElement("loading_background", HTMLDivElement);
 const gameBackground = getElement("game_background", HTMLDivElement);
 const resourcesEl = getElement("resources", HTMLDivElement);
 const objectiveEl = getElement("objective", HTMLDivElement);
+const objectiveTitle = getElement("objective-title", HTMLDivElement);
 const objectiveText = getElement("objective-text", HTMLSpanElement);
 const objectiveDescription = getElement("objective-description", HTMLDivElement);
 const objectiveNextButton = getElement("objective-next-button", HTMLSpanElement);

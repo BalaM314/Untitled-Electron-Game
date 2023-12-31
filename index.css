@@ -3,9 +3,9 @@ Z indexes:
 Error background and loading background: 0
 Canvases: 10 - 19
 Click capture: 20
-Tooltip window: 21
 Toolbar: 22
 Resources: 23
+Tooltip window: 24
 Active alert box: 30
 */
 
@@ -244,13 +244,14 @@ canvas {
 #tooltipbox {
 	--x: -1000px;
 	--y: -1000px;
-	z-index: 21;
+	z-index: 24;
 	position: absolute;
 	top: var(--y);
 	left: var(--x);
 	border: 4px solid #393C;
 	border-radius: 2px;
 	user-select: none;
+	pointer-events: none;
 	font-size: 150%;
 	font-family: sans-serif;
 	color: white;

@@ -302,10 +302,7 @@ class Level {
                 (Math.abs(building.item.pos.pixelX - x) < consts.ITEM_SIZE / 2) &&
                 Math.abs(building.item.pos.pixelY - y) < consts.ITEM_SIZE / 2) {
                 const id = building.item.id;
-                return tooltip(bundle.get(`item.${id}.name`), {
-                    _description: bundle.get(`item.${id}.description`, ""),
-                    id: settings.showIDsInTooltips ? id : ""
-                });
+                return Item.getTooltip(id);
             }
             else
                 return building.getTooltip();
@@ -689,6 +686,12 @@ class Item {
             x: this.pos.pixelX,
             y: this.pos.pixelY,
         };
+    }
+    static getTooltip(id) {
+        return tooltip(bundle.get(`item.${id}.name`), {
+            _description: bundle.get(`item.${id}.description`, ""),
+            id: settings.showIDsInTooltips ? id : ""
+        });
     }
     static read(data) {
         return new this(data.x, data.y, data.id);
@@ -1080,7 +1083,7 @@ let BuildingWithRecipe = (() => {
         tooltipProperties() {
             return {
                 ...super.tooltipProperties(),
-                Progress: this.recipe ? `${round(this.recipe.duration - this.timer, 2)} / ${this.recipe.duration}` : "",
+                Progress: this.recipe ? `${round(this.recipe.duration - this.timer, 2).toFixed(2)} / ${this.recipe.duration}` : "",
                 Efficiency: `${round(this.efficiency * 100, 2).toString()}%`,
             };
         }

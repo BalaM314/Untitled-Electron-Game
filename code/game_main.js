@@ -355,9 +355,45 @@ const scenes = {
             ParticleEffect.displayAll();
             level1.displayGhostBuilding(...(Camera.unproject(...Input.mouse).map(Pos.pixelToTile)), placedBuilding.ID, currentFrame);
             if (keybinds.display.show_tooltip.isHeld()) {
-                tooltipbox.innerHTML = level1.getTooltip(...Camera.unproject(...Input.mouse));
+                const hovered = Input.latestMouseEvent?.target;
                 tooltipbox.style.setProperty("--x", `${Input.mouseX}px`);
                 tooltipbox.style.setProperty("--y", `${Input.mouseY}px`);
+                if (!hovered || hovered == clickcapture) {
+                    tooltipbox.innerHTML = level1.getTooltip(...Camera.unproject(...Input.mouse));
+                }
+                else if (hovered instanceof HTMLElement) {
+                    if (hovered instanceof HTMLImageElement && hovered.parentElement == toolbarEl) {
+                        const block = Buildings.getOpt((hovered.id ?? ""));
+                        if (block) {
+                            if (block.unlocked()) {
+                                tooltipbox.innerHTML = tooltip(bundle.get(`building.${block.id}.name`), [
+                                    bundle.get(`building.${block.id}.description`)
+                                ]);
+                            }
+                            else {
+                                tooltipbox.innerHTML = tooltip("Not yet unlocked", ["Research this building to unlock it."]);
+                            }
+                        }
+                    }
+                    else if (hovered === resourcesEl) {
+                        tooltipbox.innerHTML = tooltip("Resources", ["These items can be used to construct buildings, or research new ones."]);
+                    }
+                    else if (hovered instanceof HTMLSpanElement && hovered.parentElement == resourcesEl) {
+                        tooltipbox.innerHTML = Item.getTooltip(hovered.id);
+                    }
+                    else if (hovered === objectiveEl || hovered === objectiveTitle ||
+                        hovered === objectiveText || hovered === objectiveDescription ||
+                        hovered === objectiveNextButton) {
+                        tooltipbox.innerHTML = tooltip("Objective", ["This box shows the current objective. It may also contain tips and useful information."]);
+                        Game.stats.objectiveHovered = true;
+                    }
+                    else {
+                        tooltipbox.innerHTML = hovered.id;
+                    }
+                }
+                else {
+                    tooltipbox.innerHTML = "[unknown]";
+                }
             }
             else {
                 tooltipbox.innerHTML = "";
@@ -385,11 +421,9 @@ const scenes = {
                     continue;
                 if (block.unlocked()) {
                     img.classList.remove("locked");
-                    img.title = f `${bundle.get(`building.${block.id}.name`)}\n${bundle.get(`building.${block.id}.description`, "\b")}`;
                 }
                 else {
                     img.classList.add("locked");
-                    img.title = `Not yet researched`;
                 }
             }
             for (const [id, amount] of Object.entries(level1.resources)) {
