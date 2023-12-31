@@ -1302,7 +1302,7 @@ class Miner extends Building {
 		const output = recipes.base_mining.recipes.find(r => r.tile == level.tileAtByTile(tileX, tileY))?.outputs[0][0];
 		if(output){
 			this.miningItem = output;
-			objectives.get("produceStone").satisfy();
+			objectives.get("base_produceStone").satisfy();
 		} else console.warn(`Miner cannot mine tile at ${tileX}, ${tileY}`);
 	}
 	static canBuildAt(tileX:number, tileY:number, level:Level):boolean {

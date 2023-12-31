@@ -252,7 +252,7 @@ function getElement(id, type) {
     if (element instanceof type)
         return element;
     else if (element instanceof HTMLElement)
-        throw new Error(`Element with id was fetched as type ${type}, but was of type ${element.constructor.name}`);
+        throw new Error(`Element with id ${id} was fetched as type ${type.name}, but was of type ${element.constructor.name}`);
     else
         throw new Error(`Element with id ${id} does not exist`);
 }
@@ -279,6 +279,8 @@ function safeToSave() {
 }
 function saveToLocalStorage() {
     localStorage.setItem("save1", JSON.stringify(exportData()));
+    localStorage.setItem("untitled-electron-game:tech-tree", tech.write());
+    localStorage.setItem("untitled-electron-game:objectives", objectives.write());
     Game.lastSaved = Date.now();
 }
 function trigger(key, data) {

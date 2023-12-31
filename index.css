@@ -94,6 +94,46 @@ canvas {
 	border: 2px solid green;
 	background-color: #077A;
 }
+#objective {
+	position: absolute;
+	z-index: 23;
+	right: 0;
+	top: 0;
+	min-height: 10%;
+	min-width: 15%;
+	max-width: 25%;
+	background-color: #077A;
+	font-family: sans-serif;
+	padding: 10px
+}
+#objective-title {
+	margin-bottom: 5px;
+}
+#objective-text {
+	font-size: 26px;
+	text-align: center;
+	color: white;
+	text-decoration: underline;
+}
+/* #objective-complete-icon {
+	color: lime;
+	font-size: 36px;
+} */
+#objective-complete-icon.disabled {
+	display: none;
+}
+#objective-next-button {
+	color: white;
+	font-size: 40px;
+	cursor: pointer;
+	animation: flashgreen 1s infinite;
+}
+#objective-next-button.disabled {
+	display: none;
+}
+#objective-description {
+	color: #DDD;
+}
 #resources span {
 	margin-left: 4px;
 	margin-right: 4px;
@@ -133,6 +173,20 @@ canvas {
 	100% {
 		text-shadow: 0 0 4px red;
 		color: red;
+	}
+}
+@keyframes flashgreen {
+	0% {
+		text-shadow: 0 0 4px lime;
+		color: lime;
+	}
+	50% {
+		text-shadow: 0 0 4px white;
+		color: white;
+	}
+	100% {
+		text-shadow: 0 0 4px lime;
+		color: lime;
 	}
 }
 

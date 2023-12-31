@@ -308,7 +308,7 @@ function* pseudoRandom(seed:number) {
 function getElement<T extends typeof HTMLElement>(id:string, type:T){
 	const element = <unknown>document.getElementById(id);
 	if(element instanceof type) return element as T["prototype"];
-	else if(element instanceof HTMLElement) throw new Error(`Element with id was fetched as type ${type}, but was of type ${element.constructor.name}`);
+	else if(element instanceof HTMLElement) throw new Error(`Element with id ${id} was fetched as type ${type.name}, but was of type ${element.constructor.name}`);
 	else throw new Error(`Element with id ${id} does not exist`);
 }
 
@@ -340,6 +340,8 @@ function safeToSave():boolean {
 
 function saveToLocalStorage(){
 	localStorage.setItem("save1", JSON.stringify(exportData()));
+	localStorage.setItem("untitled-electron-game:tech-tree", tech.write());
+	localStorage.setItem("untitled-electron-game:objectives", objectives.write());
 	Game.lastSaved = Date.now();
 }
 

@@ -123,6 +123,10 @@ function registerEventHandlers() {
             }
         });
     }
+    objectiveNextButton.addEventListener("click", () => {
+        const objective = objectives.objectives.find(o => !o.completed);
+        objective?.tryComplete();
+    });
     alertexit.onclick = closeAlert;
 }
 const scenes = {
@@ -411,6 +415,17 @@ const scenes = {
                     resourcesItems[id]?.style.setProperty("display", "none");
                 }
             }
+            const objective = objectives.objectives.find(o => !o.completed);
+            if (objective) {
+                objectiveText.innerText = objective.name();
+                objectiveDescription.innerText = objective.description();
+                if (objective.satisfied) {
+                    objectiveNextButton.classList.remove("disabled");
+                }
+                else {
+                    objectiveNextButton.classList.add("disabled");
+                }
+            }
         },
         onmousedown(e) {
             if (Game.paused)
@@ -529,11 +544,16 @@ function load() {
         (settings.alwaysLoadSave || confirm("Would you like to load your save?")))
         importData(localStorage.getItem("save1"));
     else
-        level1 = new Level(Rand.int(0, 1000), true).generate();
+        level1 = new Level(Rand.int(0, 10000), true).generate();
+    if (localStorage.getItem("untitled-electron-game:tech-tree"))
+        tech.read(localStorage.getItem("untitled-electron-game:tech-tree"));
+    if (localStorage.getItem("untitled-electron-game:objectives"))
+        objectives.read(localStorage.getItem("untitled-electron-game:objectives"));
     Game.sceneName = "game";
     Game.forceRedraw = true;
     toolbarEl.classList.remove("hidden");
     resourcesEl.classList.remove("hidden");
+    objectiveEl.classList.remove("hidden");
     if (settings.autoSave) {
         if (safeToSave()) {
             setInterval(() => {

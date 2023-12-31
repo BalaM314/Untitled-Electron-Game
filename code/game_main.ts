@@ -161,6 +161,11 @@ function registerEventHandlers(){
 		});
 	}
 
+	objectiveNextButton.addEventListener("click", () => {
+		const objective = objectives.objectives.find(o => !o.completed);
+		objective?.tryComplete();
+	});
+
 	alertexit.onclick = closeAlert;
 }
 
@@ -451,6 +456,7 @@ const scenes: {
 				}
 			}
 		
+			//Update resources
 			for(const [id, amount] of Object.entries(level1.resources as Record<ItemID, number>)){
 				const data = level1.resourceDisplayData[id];
 				const shouldDisplay = data.shouldShowAlways || amount > 0 || data.amountRequired != null || (data.flashEffect != null && data.flashExpireTime > Date.now());
@@ -471,6 +477,21 @@ const scenes: {
 					resourcesItems[id]?.style.setProperty("display", "none");
 				}
 			}
+
+			//Update objective
+			const objective = objectives.objectives.find(o => !o.completed);
+			if(objective){
+				objectiveText.innerText = objective.name();
+				objectiveDescription.innerText = objective.description();
+				if(objective.satisfied){
+					// objectiveCompleteIcon.classList.remove("disabled");
+					objectiveNextButton.classList.remove("disabled");
+				} else {
+					// objectiveCompleteIcon.classList.add("disabled");
+					objectiveNextButton.classList.add("disabled");
+				}
+			}
+
 		},
 		onmousedown(e:MouseEvent){
 			if(Game.paused) return;
@@ -614,12 +635,17 @@ function load(){
 		saveExists() &&
 		(settings.alwaysLoadSave || confirm("Would you like to load your save?"))
 	) importData(localStorage.getItem("save1")!);
-	else level1 = new Level(Rand.int(0, 1000), true).generate();
+	else level1 = new Level(Rand.int(0, 10000), true).generate();
+	if(localStorage.getItem("untitled-electron-game:tech-tree"))
+		tech.read(localStorage.getItem("untitled-electron-game:tech-tree")!);
+	if(localStorage.getItem("untitled-electron-game:objectives"))
+		objectives.read(localStorage.getItem("untitled-electron-game:objectives")!);
 
 	Game.sceneName = "game";
 	Game.forceRedraw = true;
 	toolbarEl.classList.remove("hidden");
 	resourcesEl.classList.remove("hidden");
+	objectiveEl.classList.remove("hidden");
 
 	if(settings.autoSave){
 		if(safeToSave()){
