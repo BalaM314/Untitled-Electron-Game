@@ -55,19 +55,20 @@ class Camera {
         ];
     }
     static scroll(x, y) {
-        if (x != 0 || y != 0) {
-            this.scrollX -= x;
-            this.scrollY -= y;
-            const distSquared = this.scrollX ** 2 + this.scrollY ** 2;
-            if (distSquared > this.maxDistanceSquared) {
-                const dist = Math.sqrt(distSquared);
-                this.scrollX *= this.maxDistance / dist;
-                this.scrollY *= this.maxDistance / dist;
-            }
-            this.update();
-            Game.forceRedraw = true;
+        this.scrollTo(this.scrollX - x, this.scrollY - y);
+    }
+    static scrollTo(x, y) {
+        this.scrollX = x;
+        this.scrollY = y;
+        const distSquared = this.scrollX ** 2 + this.scrollY ** 2;
+        if (distSquared > this.maxDistanceSquared) {
+            const dist = Math.sqrt(distSquared);
+            this.scrollX *= this.maxDistance / dist;
+            this.scrollY *= this.maxDistance / dist;
+            this.scrollLimited = true;
         }
-        ;
+        this.update();
+        Game.forceRedraw = true;
     }
     static zoom(scaleFactor) {
         scaleFactor = constrain(scaleFactor, 0.9, 1.1);
@@ -114,6 +115,7 @@ Camera.scrollX = 0;
 Camera.scrollY = 0;
 Camera.width = window.innerWidth;
 Camera.height = window.innerHeight;
+Camera.scrollLimited = false;
 Camera.zoomedTileSize = _a.zoomLevel * consts.TILE_SIZE;
 Camera.maxDistanceSquared = _a.maxDistance ** 2;
 (() => {

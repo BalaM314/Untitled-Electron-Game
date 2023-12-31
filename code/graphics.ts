@@ -91,6 +91,8 @@ class Camera {
 	static scrollY:number = 0;
 	static width = window.innerWidth;
 	static height = window.innerHeight;
+	/** If true, the distance limit has triggered at least once. */
+	static scrollLimited = false;
 	
 	//Cached calculations
 	static zoomedTileSize = this.zoomLevel * consts.TILE_SIZE;
@@ -123,19 +125,21 @@ class Camera {
 		];
 	}
 	static scroll(x:number, y:number){
-		if(x != 0 || y != 0){
-			this.scrollX -= x;
-			this.scrollY -= y;
-			//Limit the length of this.scroll
-			const distSquared = this.scrollX ** 2 + this.scrollY ** 2;
-			if(distSquared > this.maxDistanceSquared){
-				const dist = Math.sqrt(distSquared);
-				this.scrollX *= this.maxDistance / dist;
-				this.scrollY *= this.maxDistance / dist;
-			}
-			this.update();
-			Game.forceRedraw = true;
-		};
+		this.scrollTo(this.scrollX - x, this.scrollY - y);
+	}
+	static scrollTo(x:number, y:number){
+		this.scrollX = x;
+		this.scrollY = y;
+		//Limit the length of this.scroll
+		const distSquared = this.scrollX ** 2 + this.scrollY ** 2;
+		if(distSquared > this.maxDistanceSquared){
+			const dist = Math.sqrt(distSquared);
+			this.scrollX *= this.maxDistance / dist;
+			this.scrollY *= this.maxDistance / dist;
+			this.scrollLimited = true;
+		}
+		this.update();
+		Game.forceRedraw = true;
 	}
 	static zoom(scaleFactor:number){
 		scaleFactor = constrain(scaleFactor, 0.9, 1.1);
