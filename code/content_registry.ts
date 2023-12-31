@@ -240,21 +240,25 @@ Buildings.register("base_alloy_smelter", BuildingWithRecipe, {
 Buildings.register("base_stirling_generator", BuildingWithRecipe, {
 	buildCost: [["base_stoneBrick", 20], ["base_ironIngot", 35], ["base_copperIngot", 15]],
 	recipeType: recipes.base_stirling_generating,
+	producesPower: true,
 	drawer: BuildingWithRecipe.drawLayer<BuildingWithRecipe>(
 		"building/base_boiler_fire", 1, 1,
 		b => b.timer >= 0 ? map(b.timer, b.recipe?.duration ?? -1, 0, 1, 0.7) : 0
 	)
 });
-Buildings.register("base_wiremill", BuildingWithRecipe, {
-	buildCost: [["base_stoneBrick", 20], ["base_ironIngot", 35], ["base_copperIngot", 15]],
-	recipeType: recipes.base_wiremilling, drawer: BuildingWithRecipe.progressDrawer()
-});
 Buildings.register("base_compressor", BuildingWithRecipe, {
 	buildCost: [["base_stoneBrick", 25], ["base_ironIngot", 35], ["base_copperIngot", 10]],
+	consumesPower: true,
 	recipeType: recipes.base_compressing, drawer: BuildingWithRecipe.progressDrawer()
+});
+Buildings.register("base_wiremill", BuildingWithRecipe, {
+	buildCost: [["base_stoneBrick", 20], ["base_ironIngot", 35], ["base_copperIngot", 15]],
+	consumesPower: true,
+	recipeType: recipes.base_wiremilling, drawer: BuildingWithRecipe.progressDrawer()
 });
 Buildings.register("base_lathe", BuildingWithRecipe, {
 	buildCost: [["base_stoneBrick", 20], ["base_ironIngot", 35], ["base_copperIngot", 10]],
+	consumesPower: true,
 	recipeType: recipes.base_lathing, drawer: BuildingWithRecipe.progressDrawer(), runEffect: [Fx.spark, "#FFC", 20, 0.8]
 });
 Buildings.register("base_multiblock_secondary", MultiBlockSecondary, {

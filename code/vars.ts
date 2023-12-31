@@ -115,36 +115,38 @@ water.name = Water
 steam.name = Steam
 
 [objective]
+leave.name = Objective: Leave
+leave.description = [????? why] Go towards the left. Use WASD to move, and press Shift to scroll faster.
+leave_satisfied.name = Objective: ...build a boat
+leave_satisfied.description = Looks like you're stranded on an island. To get off, you'll need to make a boat from scratch.
+tooltips.name = Use tooltips
+tooltips.description = Move the mouse to this text and press Shift to show tooltips.
 produceStone.name = Produce Stone
 produceStone.description = Stone is used for most early-game buildings. Build a Miner on stone to produce it.
 gatherStone.name = Gather Stone
-gatherStone.description = Use conveyors to transport the stone to the Hub.
+gatherStone.description = Use conveyors to transport the stone to the Hub. Use the arrow keys to change the direction of placed conveyors.
 gatherCoal.name = Gather Coal
-gatherCoal.description = Most buildings will require a source of energy. Get 10 coal to the Hub.
+gatherCoal.description = Most buildings will require a source of energy. Coal deposits are available close to the Hub.
 researchStoneFurnace.name = Research a furnace
 researchStoneFurnace.description = Coal can be used as fuel for furnaces, which can purify raw materials. Research the Furnace.
+gatherStoneBrick.name = Gather Stone Bricks
+gatherStoneBrick.description = The furnace can be used to produce Stone Bricks, which are more suitable for construction than raw stone. Use belts to direct Raw Stone into a Furnace.
 gatherIronIngot.name = Gather Iron
-gatherIronIngot.description = Iron ore nodes are found slightly farther away from the Hub in any direction.
-gatherCopperIngot.name = Gather Copper
-gatherCopperIngot.description = Copper is a good electrical conductor, and is used in machines that produce or consume electricity. Its ore nodes are found far from the Hub.
+gatherIronIngot.description = Iron ore nodes are found slightly farther away from the Hub in any direction. The ore requires processing before usage.
 researchExtractor.name = Research the Extractor
 researchExtractor.description = The extractor is a versatile item transportation device which can be used to transport items over buildings. Press "," "." and "/" to change the length of the extractor.
-gatherStoneBrick.name = Gather Stone Bricks
-gatherStoneBrick.description = The furnace can be used to produce Stone Bricks, which are more suitable for construction than raw stone.
 researchAlloySmelter.name = Research the Alloy Smelter
 researchAlloySmelter.description = Combining raw resources can produce stronger materials, such as steel.
 gatherSteelIngot.name = Gather Steel
-gatherSteelIngot.description = Steel is slow to produce. 8 alloy smelters running in parallel should produce enough for further research.
+gatherSteelIngot.description = Steel is slow to produce. 8 alloy smelters running in parallel should produce enough to saturate a conveyor belt.
+gatherCopperIngot.name = Gather Copper
+gatherCopperIngot.description = Copper is a good electrical conductor, and is used in machines that produce or consume electricity. Its ore nodes are found far from the Hub.
 researchStirlingGenerator.name = Research the Stirling Generator
 researchStirlingGenerator.description = The Stirling Generator is a simple, but inefficient electrical generator that runs by burning items.
 producePower.name = Produce Power
 producePower.description = Use Coal to fuel a Stirling Generator. Produced electrical power is automatically transmitted to buildings that require power. (Note: if no buildings requiring power are present, the generator will not use any coal.)
 researchCompressor.name = Research the Compressor
 researchCompressor.description = The Compressor can convert metal ingots to plates.
-researchWiremill.name = Research the Wiremill
-researchWiremill.description = Copper wires will be necessary for more advanced electrical buildings.
-researchLathe.name = Research the Lathe
-researchLathe.description = The Lathe can produce rods from metal ingots. Unfortunately, most of the input is lost.
 gatherIronPlate.name = Gather Iron Plates
 gatherIronPlate.description = Iron plates will be necessary to handle fluids.
 researchPipe.name = Research Pipes
@@ -153,10 +155,14 @@ researchPump.name = Research the Pump
 researchPump.description = Pumps must be placed on water.
 researchBoiler.name = Research the Boiler
 researchBoiler.description = The Boiler can heat water to produce steam.
+researchWiremill.name = Research the Wiremill
+researchWiremill.description = Copper wires will be necessary for more advanced electrical buildings.
 researchSteamGenerator.name = Research the Steam Turbine
 researchSteamGenerator.description = This building can produce large amounts of electricity from steam. It may require more than one boiler to run at full efficiency.
 activateSteamGenerator.name = Activate a Steam Turbine (or two)
 activateSteamGenerator.description = Finally, enough electricity to run a properly sized factory.
+researchLathe.name = Research the Lathe
+researchLathe.description = The Lathe can produce rods from metal ingots. Unfortunately, most of the input is lost.
 `, "base_");
 
 
@@ -371,6 +377,7 @@ let Game: {
 	stats: {
 		/** Stores the time in milliseconds to render for the past 120 frames. */
 		frameTimes: WindowedMean;
+		objectiveHovered: boolean;
 	}
 } = {
 	texturesReady: false,
@@ -396,6 +403,7 @@ let Game: {
 	frames: 0,
 	stats: {
 		frameTimes: new WindowedMean(120),
+		objectiveHovered: false,
 	}
 };
 let level1:Level = null!;
