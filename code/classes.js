@@ -621,10 +621,6 @@ class Chunk {
         for (let y = 0; y < this.layers[1].length; y++) {
             for (let x = 0; x < this.layers[1][y].length; x++) {
                 this.layers[1][y][x]?.display(currentframe);
-            }
-        }
-        for (let y = 0; y < this.layers[2].length; y++) {
-            for (let x = 0; x < this.layers[2][y].length; x++) {
                 this.layers[2][y][x]?.display(currentframe);
             }
         }

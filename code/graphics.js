@@ -169,6 +169,10 @@ class Gfx {
     static text(text, x, y) {
         this.ctx.fillText(text, x, y);
     }
+    static textOutline(text, x, y) {
+        this.ctx.fillText(text, x, y);
+        this.ctx.strokeText(text, x, y);
+    }
     static pText(pixelX, pixelY, text) {
         this.ctx.fillText(text, (pixelX + Camera.scrollX) * Camera.zoomLevel + Camera.width / 2, (pixelY + Camera.scrollY) * Camera.zoomLevel + Camera.height / 2);
     }

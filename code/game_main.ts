@@ -147,6 +147,7 @@ function registerEventHandlers(){
 		const img = document.createElement("img");
 		img.src = `assets/textures/building/${block.id}%230.png`;
 		img.id = block.id;
+		img.draggable = false;
 		img.title = f`${bundle.get(`building.${block.id}.name`)}\n${bundle.get(`building.${block.id}.description`, "\b")}`;
 		toolbarEl.appendChild(img);
 	}
@@ -154,11 +155,7 @@ function registerEventHandlers(){
 	for(let element of toolbarEl.children){
 		element.addEventListener("click", (event) => {
 			if(event.target instanceof HTMLImageElement){
-				for(let x of toolbarEl.children){
-					x.classList.remove("selected");
-				}
-				event.target.classList.add("selected");
-				placedBuilding.type = (event.target as HTMLImageElement).id as RawBuildingID;
+				selectID(event.target.id as RawBuildingID);
 				Input.mouseDown = false;
 			}
 		});
@@ -384,12 +381,16 @@ const scenes: {
 			//display
 
 			if(Game.paused){
-				ctxOverlays.font = "48px sans-serif";
-				ctxOverlays.fillStyle = "#3333CC";
-				ctxOverlays.textAlign = "center";
-				ctxOverlays.fillText("Game paused", innerWidth * 0.5, innerHeight * 0.2);
-				ctxOverlays.font = "24px sans-serif";
-				ctxOverlays.fillText("Press esc to unpause", innerWidth * 0.5, innerHeight * 0.25);
+				Gfx.layer("overlay");
+				Gfx.font("72px sans-serif");
+				Gfx.fillColor("#3333FF");
+				Gfx.textAlign("center");
+				Gfx.lineWidth(1);
+				Gfx.strokeColor("#0000AA");
+				Gfx.textOutline("Game paused", innerWidth * 0.5, innerHeight * 0.19);
+				Gfx.font("36px sans-serif");
+				Gfx.fillColor("#0000AA");
+				Gfx.text(`Press ${keybinds.misc.pause.toString()} to unpause`, innerWidth * 0.5, innerHeight * 0.26);
 				Game.forceRedraw = true;
 				return;
 			}
@@ -419,29 +420,42 @@ const scenes: {
 			//display overlays
 			Gfx.layer("overlay");
 			Gfx.font("30px sans-serif");
-			Gfx.fillColor("black");
+			Gfx.fillColor("white");
 			Gfx.textAlign("left");
-			Gfx.text(
+			Gfx.strokeColor("#888");
+			Gfx.lineWidth(1);
+			Gfx.textOutline(
 				Camera.unproject(...Input.mouse).map(Pos.pixelToTile).join(","),
 				10, 100
 			);
+			const frameMSLast10 = Game.stats.frameTimes.mean(10, null);
+			const frameMSLast120 = Game.stats.frameTimes.mean(120, null);
+			//TODO repeated code
+			const fpsLast10 = frameMSLast10 ? Math.min(consts.ups, round(1000 / frameMSLast10, 1)) : "...";
+			const fpsLast120 = frameMSLast120 ? Math.min(consts.ups, round(1000 / frameMSLast120, 1)) : "...";
+			Gfx.textOutline(`FPS: ${fpsLast10}/${fpsLast120}`, 10, 50);
 			
 			if(settings.debug){
-				Gfx.text(`C:${currentFrame.cps} I:${currentFrame.ips}`, 10, 150);
+				Gfx.textOutline(`C:${currentFrame.cps} T:${currentFrame.tps} I:${currentFrame.ips} MS:${frameMSLast10}`, 10, 150);
 			}
 
-			for(const build of Buildings){
-				if(build.unlocked())
-					document.querySelector(`img#${build.id}`)?.classList.remove("hidden");
-				else
-					document.querySelector(`img#${build.id}`)?.classList.add("hidden");
+			for(const block of Buildings){
+				const img = document.querySelector(`img#${block.id}`) as HTMLImageElement;
+				if(!img) continue;
+				if(block.unlocked()) {
+					img.classList.remove("locked");
+					img.title = f`${bundle.get(`building.${block.id}.name`)}\n${bundle.get(`building.${block.id}.description`, "\b")}`
+				} else {
+					img.classList.add("locked");
+					img.title = `Not yet researched`;
+				}
 			}
 		
 			for(const [id, amount] of Object.entries(level1.resources as Record<ItemID, number>)){
 				const data = level1.resourceDisplayData[id];
 				const shouldDisplay = data.shouldShowAlways || amount > 0 || data.amountRequired != null || (data.flashEffect != null && data.flashExpireTime > Date.now());
 				if(shouldDisplay){
-					resourcesItems[id]?.style.setProperty("display", "unset");
+					resourcesItems[id]?.style.removeProperty("display");
 					resourcesItems[id] ??= (() => {
 						const el = document.createElement("span");
 						el.id = id;
@@ -481,6 +495,7 @@ const scenes: {
 		},
 		//Unlike the onkeydown function, this one needs to run based on keys being held.
 		onkeyheld(currentframe:CurrentFrame){
+			if(Game.paused) return;
 			const scrollSpeed = keybinds.move.scroll_faster.isHeld() ? consts.fastScrollSpeed : consts.scrollSpeed;
 			if(keybinds.move.up.isHeld()) Camera.scroll(0, -scrollSpeed);
 			if(keybinds.move.left.isHeld()) Camera.scroll(-scrollSpeed, 0);
@@ -552,7 +567,7 @@ function main_loop(){
 		Game.forceRedraw = false;
 		fixSizes();
 		window.getSelection()?.empty();
-		
+
 		let currentState = scenes[Game.sceneName];
 		if(!currentState){
 			throw new InvalidStateError(`Invalid game state "${Game.sceneName}"`);
@@ -567,20 +582,8 @@ function main_loop(){
 
 		currentState.update(currentFrame);
 		currentState.display(currentFrame);
-		
-		if(Game.sceneName == "game"){
-			let frameMS = Date.now() - startFrameTime;
-			Game.stats.frameTimes.add(frameMS);
-			const frameMSLast10 = Game.stats.frameTimes.mean(10, null);
-			const frameMSLast120 = Game.stats.frameTimes.mean(120, null);
-			//TODO repeated code
-			const fpsLast10 = frameMSLast10 ? Math.min(consts.ups, round(1000 / frameMSLast10, 1)) : "...";
-			const fpsLast120 = frameMSLast120 ? Math.min(consts.ups, round(1000 / frameMSLast120, 1)) : "...";
-			ctxOverlays.fillStyle = "#000000";
-			ctxOverlays.font = "30px sans-serif";
-			ctxOverlays.textAlign = "left";
-			ctxOverlays.fillText(`FPS: ${fpsLast10}/${fpsLast120}`, 10, 50);
-		}
+		let frameMS = Date.now() - startFrameTime;
+		Game.stats.frameTimes.add(frameMS);
 
 		handleAlerts();
 		Game.frames ++;

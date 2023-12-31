@@ -465,6 +465,12 @@ class Keybind {
             this.action();
         }
     }
+    toString() {
+        let key = this.mainKey;
+        if (this.mainKey == " ")
+            key = "Space";
+        return this.modifiers.map(m => m + "+").join("") + key;
+    }
 }
 function isKey(obj, thing) {
     if (obj instanceof Map)

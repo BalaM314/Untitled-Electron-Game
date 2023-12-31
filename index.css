@@ -87,18 +87,21 @@ canvas {
 	margin-right: 35%;
 	width: 30%;
 	text-align: center;
-	font-size: 32px;
+	font-size: 28px;
 	font-family: sans-serif;
-	border: 2px solid gray;
-	background-color: #33F5;
+	color: white;
+	text-shadow: 0 0 1px black;
+	border: 2px solid green;
+	background-color: #077A;
 }
 #resources span {
 	margin-left: 4px;
 	margin-right: 4px;
+	display: inline-block;
 }
 #resources span.flashing {
 	animation-name: flashred;
-	animation-duration: 0.8s;
+	animation-duration: 1s;
 	animation-iteration-count: infinite;
 }
 #resources span::before {
@@ -110,7 +113,14 @@ canvas {
 	display: inline-block !important;
 	background-image: var(--image-url);
 }
-
+#toolbar img {
+	cursor: pointer;
+	user-select: none;
+}
+#toolbar img.locked {
+	filter: opacity(0.3) brightness(0);
+	cursor: not-allowed;
+}
 @keyframes flashred {
 	0% {
 		text-shadow: 0 0 4px red;

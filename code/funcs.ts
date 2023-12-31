@@ -539,6 +539,11 @@ class Keybind {
 			this.action();
 		}
 	}
+	toString(){
+		let key = this.mainKey;
+		if(this.mainKey == " ") key = "Space";
+		return this.modifiers.map(m => m + "+").join("") + key;
+	}
 }
 
 /**Returns if a thing is in an object. Useful to stop typescript complaining. */

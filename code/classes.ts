@@ -316,6 +316,7 @@ class Level {
 		
 	}
 	getTooltip(x:number, y:number):string {
+		//returns raw html, make sure to escape!
 		let building = this.buildingAtPixel(x, y);
 		if(building instanceof Building){
 			if(
@@ -704,10 +705,6 @@ class Chunk {
 		for(let y = 0; y < this.layers[1].length; y ++){
 			for(let x = 0; x < this.layers[1][y].length; x ++){
 				this.layers[1][y][x]?.display(currentframe);
-			}
-		}
-		for(let y = 0; y < this.layers[2].length; y ++){
-			for(let x = 0; x < this.layers[2][y].length; x ++){
 				this.layers[2][y][x]?.display(currentframe);
 			}
 		}
@@ -898,6 +895,7 @@ class Building {
 		return bundle.get(`building.${this.block.id}.name`);
 	}
 	getTooltip(){
+		//returns raw html, make sure to escape!
 		return tooltip(this.displayName(), this.tooltipProperties());
 	}
 	tooltipProperties():Record<string, string> {

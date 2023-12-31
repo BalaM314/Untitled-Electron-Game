@@ -247,6 +247,11 @@ class Gfx {
 	static text(text:string, x:number, y:number) {
 		this.ctx.fillText(text, x, y);
 	}
+	/** Uses strokeColor and lineWidth for the outline. */
+	static textOutline(text:string, x:number, y:number) {
+		this.ctx.fillText(text, x, y);
+		this.ctx.strokeText(text, x, y);
+	}
 	static pText(pixelX:number, pixelY:number, text:string){
 		this.ctx.fillText(
 			text,
