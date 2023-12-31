@@ -69,9 +69,9 @@ type BuildingMeta = number;
 type StringBuildingID = `${RawBuildingID}:${BuildingMeta}`;
 
 interface Recipe {
-	inputs?: ItemID[];
+	inputs?: ItemStack[];
 	fluidInputs?: [fluid:FluidID, totalAmount:number][];
-	outputs?: ItemID[];
+	outputs?: ItemStack[];
 	fluidOutputs?: [fluid:FluidID, totalAmount:number][];
 	duration: number;
 	tile?: TileID;

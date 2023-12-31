@@ -1071,7 +1071,8 @@ class BuildingWithRecipe extends Building {
 	timer: number = -1;
 	runEffectTimer = -1;
 	recipe: Recipe | null = null;
-	items: Item[] = [];
+	running = false;
+	items: ItemStack[] = [];
 	fluidOut: FluidStack = [null, 0, this.block.fluidCapacity];
 	/** During updatePower and preUpdate, this will be the actual efficiency on the previous tick. During update, this will be the actual efficiency of the block. */
 	efficiency = 0;
@@ -1089,25 +1090,40 @@ class BuildingWithRecipe extends Building {
 		super(tileX, tileY, meta, level);
 	}
 	acceptItem(item:Item):boolean {
-		for(let i = 0; i < this.block.recipeMaxInputs; i ++){
-			//repeat recipeMaxInputs times
-			if(!this.items[i] && !this.items.map(item => item.id).includes(item.id)){
-				//if there is nothing in this item slot and the new item's id is not in the list of current items' ids
-				for(let recipe of this.block.recipeType.recipes){
-					//for each recipe this building can do
-					if(!recipe.inputs) continue;//If the recipe has no inputs, it cant be the right one
-					if(recipe.fluidInputs && (this.block.fluidCapacity == 0 || !this.block.acceptsFluids)) continue;//recipe requires fluids but this crafter does not support fluids
-					if(recipe.powerConsumption && !this.block.consumesPower) continue;//recipe requires power but this building doesn't accept power
-					if(!this.items.map(item => recipe.inputs!.includes(item.id)).includes(false) && recipe.inputs.includes(item.id)){
-						//if all of the current items are inputs of the recipe and the item is an input of the recipe
-						this.items[i] = item;
-						if(recipe.inputs.length == i + 1){
-							this.setRecipe(recipe);
-						}
-						return true;
-					}
+		if(this.recipe){
+			if(!this.recipe.inputs) return false;
+			const required = this.recipe.inputs.find(i => i[0] == item.id);
+			const existingStack = this.items.find(i => i[0] == item.id);
+			if(!required || !existingStack) return false;
+			if(existingStack[1] < required[1]){
+				existingStack[1] ++;
+				if(this.recipe.inputs.every(([item, amount]) => this.items.some(([i, a]) => i == item && a >= amount))){
+					//If every item is present in the required amount
+					this.running = true;
 				}
-				return false;
+				return true;
+			}
+		} else {
+			for(let i = 0; i < this.block.recipeMaxInputs; i ++){
+				//repeat recipeMaxInputs times
+				if(!this.items[i] && !this.items.map(item => item[0]).includes(item.id)){
+					//if there is nothing in this item slot and the new item's id is not in the list of current items' ids
+					for(let recipe of this.block.recipeType.recipes){
+						//for each recipe this building can do
+						if(!recipe.inputs) continue;//If the recipe has no inputs, it cant be the right one
+						if(recipe.fluidInputs && (this.block.fluidCapacity == 0 || !this.block.acceptsFluids)) continue;//recipe requires fluids but this crafter does not support fluids
+						if(recipe.powerConsumption && !this.block.consumesPower) continue;//recipe requires power but this building doesn't accept power
+						if(this.items.every(item => recipe.inputs!.some(([id, amount]) => id == item[0])) && recipe.inputs.some(([id, amount]) => id == item.id)){
+							//if all of the current items are inputs of the recipe and the item is an input of the recipe
+							this.items[i] = [item.id, 1];
+							if(recipe.inputs.length == i + 1){
+								this.setRecipe(recipe);
+							}
+							return true;
+						}
+					}
+					return false;
+				}
 			}
 		}
 		return false;
@@ -1124,7 +1140,7 @@ class BuildingWithRecipe extends Building {
 		this.runEffectTimer = recipe.duration;
 	}
 	update(currentFrame:CurrentFrame){
-		if(this.recipe){
+		if(this.recipe && this.running){
 			if(this.timer > 0){
 				let minSatisfaction = Math.min(this.timer, 1); //todolater speed boost
 				//Don't send the timer below zero, this would waste fluid inputs or create extra fluid output
@@ -1163,11 +1179,12 @@ class BuildingWithRecipe extends Building {
 					}
 				}
 			} else if(this.timer > -1){
-				if((this.recipe.outputs && this.spawnItem(this.recipe.outputs[0])) || !this.recipe.outputs){
+				if((this.recipe.outputs && this.spawnItem(this.recipe.outputs[0][0])) || !this.recipe.outputs){
 					if(this.block.craftEffect) this.block.craftEffect[0].at(this.centeredPos(), this.block.craftEffect[1]);
 					this.timer = -1;
 					this.items = [];
 					this.recipe = null;
+					this.running = false;
 				}
 			}
 		}
@@ -1248,7 +1265,7 @@ class BuildingWithRecipe extends Building {
 	static outputDrawer<T extends BuildingWithRecipe>(){
 		return ((build:T, currentFrame:CurrentFrame) => {
 			if(build.recipe?.outputs){
-				Item.display(build.recipe.outputs[0], build.centeredPos());
+				Item.display(build.recipe.outputs[0][0], build.centeredPos());
 			}
 		}) as BlockDrawer<Building>;
 	}
@@ -1284,7 +1301,7 @@ class Miner extends Building {
 	constructor(tileX:number, tileY:number, meta:BuildingMeta, level:Level){
 		super(tileX, tileY, meta, level);
 		this.timer = 61;
-		const output = recipes.base_mining.recipes.find(r => r.tile == level.tileAtByTile(tileX, tileY))?.outputs[0];
+		const output = recipes.base_mining.recipes.find(r => r.tile == level.tileAtByTile(tileX, tileY))?.outputs[0][0];
 		if(output){
 			this.miningItem = output;
 			objectives.get("produceStone").satisfy();

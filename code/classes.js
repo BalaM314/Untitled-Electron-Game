@@ -963,30 +963,48 @@ let BuildingWithRecipe = (() => {
             this.timer = -1;
             this.runEffectTimer = -1;
             this.recipe = null;
+            this.running = false;
             this.items = [];
             this.fluidOut = [null, 0, this.block.fluidCapacity];
             this.efficiency = 0;
             this.efficiencyp = 0;
         }
         acceptItem(item) {
-            for (let i = 0; i < this.block.recipeMaxInputs; i++) {
-                if (!this.items[i] && !this.items.map(item => item.id).includes(item.id)) {
-                    for (let recipe of this.block.recipeType.recipes) {
-                        if (!recipe.inputs)
-                            continue;
-                        if (recipe.fluidInputs && (this.block.fluidCapacity == 0 || !this.block.acceptsFluids))
-                            continue;
-                        if (recipe.powerConsumption && !this.block.consumesPower)
-                            continue;
-                        if (!this.items.map(item => recipe.inputs.includes(item.id)).includes(false) && recipe.inputs.includes(item.id)) {
-                            this.items[i] = item;
-                            if (recipe.inputs.length == i + 1) {
-                                this.setRecipe(recipe);
-                            }
-                            return true;
-                        }
-                    }
+            if (this.recipe) {
+                if (!this.recipe.inputs)
                     return false;
+                const required = this.recipe.inputs.find(i => i[0] == item.id);
+                const existingStack = this.items.find(i => i[0] == item.id);
+                if (!required || !existingStack)
+                    return false;
+                if (existingStack[1] < required[1]) {
+                    existingStack[1]++;
+                    if (this.recipe.inputs.every(([item, amount]) => this.items.some(([i, a]) => i == item && a >= amount))) {
+                        this.running = true;
+                    }
+                    return true;
+                }
+            }
+            else {
+                for (let i = 0; i < this.block.recipeMaxInputs; i++) {
+                    if (!this.items[i] && !this.items.map(item => item[0]).includes(item.id)) {
+                        for (let recipe of this.block.recipeType.recipes) {
+                            if (!recipe.inputs)
+                                continue;
+                            if (recipe.fluidInputs && (this.block.fluidCapacity == 0 || !this.block.acceptsFluids))
+                                continue;
+                            if (recipe.powerConsumption && !this.block.consumesPower)
+                                continue;
+                            if (this.items.every(item => recipe.inputs.some(([id, amount]) => id == item[0])) && recipe.inputs.some(([id, amount]) => id == item.id)) {
+                                this.items[i] = [item.id, 1];
+                                if (recipe.inputs.length == i + 1) {
+                                    this.setRecipe(recipe);
+                                }
+                                return true;
+                            }
+                        }
+                        return false;
+                    }
                 }
             }
             return false;
@@ -1003,7 +1021,7 @@ let BuildingWithRecipe = (() => {
             this.runEffectTimer = recipe.duration;
         }
         update(currentFrame) {
-            if (this.recipe) {
+            if (this.recipe && this.running) {
                 if (this.timer > 0) {
                     let minSatisfaction = Math.min(this.timer, 1);
                     if (this.recipe.fluidInputs) {
@@ -1037,12 +1055,13 @@ let BuildingWithRecipe = (() => {
                     }
                 }
                 else if (this.timer > -1) {
-                    if ((this.recipe.outputs && this.spawnItem(this.recipe.outputs[0])) || !this.recipe.outputs) {
+                    if ((this.recipe.outputs && this.spawnItem(this.recipe.outputs[0][0])) || !this.recipe.outputs) {
                         if (this.block.craftEffect)
                             this.block.craftEffect[0].at(this.centeredPos(), this.block.craftEffect[1]);
                         this.timer = -1;
                         this.items = [];
                         this.recipe = null;
+                        this.running = false;
                     }
                 }
             }
@@ -1115,7 +1134,7 @@ let BuildingWithRecipe = (() => {
         static outputDrawer() {
             return ((build, currentFrame) => {
                 if (build.recipe?.outputs) {
-                    Item.display(build.recipe.outputs[0], build.centeredPos());
+                    Item.display(build.recipe.outputs[0][0], build.centeredPos());
                 }
             });
         }
@@ -1161,7 +1180,7 @@ class Miner extends Building {
         this.miningItem = null;
         this.ranOnce = false;
         this.timer = 61;
-        const output = recipes.base_mining.recipes.find(r => r.tile == level.tileAtByTile(tileX, tileY))?.outputs[0];
+        const output = recipes.base_mining.recipes.find(r => r.tile == level.tileAtByTile(tileX, tileY))?.outputs[0][0];
         if (output) {
             this.miningItem = output;
             objectives.get("produceStone").satisfy();

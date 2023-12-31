@@ -46,19 +46,19 @@ const recipes = {
 	base_mining: {
 		recipes: [
 			{
-				outputs: ["base_coal"],
+				outputs: [["base_coal", 1]],
 				duration: 60,
 				tile: "base_ore_coal"
 			},{
-				outputs: ["base_ironOre"],
+				outputs: [["base_ironOre", 1]],
 				duration: 60,
 				tile: "base_ore_iron"
 			},{
-				outputs: ["base_copperOre"],
+				outputs: [["base_copperOre", 1]],
 				duration: 60,
 				tile: "base_ore_copper"
 			},{
-				outputs: ["base_stone"],
+				outputs: [["base_stone", 1]],
 				duration: 60,
 				tile: "base_stone"
 			},
@@ -67,16 +67,16 @@ const recipes = {
 	base_smelting: {
 		recipes: [
 			{
-				inputs: ["base_ironOre"],
-				outputs: ["base_ironIngot"],
+				inputs: [["base_ironOre", 1]],
+				outputs: [["base_ironIngot", 1]],
 				duration: 60
 			},{
-				inputs: ["base_copperOre"],
-				outputs: ["base_copperIngot"],
+				inputs: [["base_copperOre", 1]],
+				outputs: [["base_copperIngot", 1]],
 				duration: 60
 			},{
-				inputs: ["base_stone"],
-				outputs: ["base_stoneBrick"],
+				inputs: [["base_stone", 2]],
+				outputs: [["base_stoneBrick", 1]],
 				duration: 60
 			}
 		]
@@ -84,8 +84,8 @@ const recipes = {
 	base_alloying: {
 		recipes: [
 			{
-				inputs: ["base_coal", "base_ironIngot"],
-				outputs: ["base_steelIngot"],
+				inputs: [["base_coal", 1], ["base_ironIngot", 1]],
+				outputs: [["base_steelIngot", 1]],
 				duration: 240
 			}
 		]
@@ -93,8 +93,8 @@ const recipes = {
 	base_wiremilling: {
 		recipes: [
 			{
-				inputs: ["base_copperIngot"],
-				outputs: ["base_copperWire"],
+				inputs: [["base_copperIngot", 1]],
+				outputs: [["base_copperWire", 1]],
 				powerConsumption: 10,
 				duration: 120
 			}
@@ -103,13 +103,13 @@ const recipes = {
 	base_compressing: {
 		recipes: [
 			{
-				inputs: ["base_ironIngot"],
-				outputs: ["base_ironPlate"],
+				inputs: [["base_ironIngot", 1]],
+				outputs: [["base_ironPlate", 1]],
 				duration: 60,
 				powerConsumption: 10,
 			},{
-				inputs: ["base_steelIngot"],
-				outputs: ["base_steelPlate"],
+				inputs: [["base_steelIngot", 1]],
+				outputs: [["base_steelPlate", 1]],
 				duration: 60,
 				powerConsumption: 15,
 			}
@@ -118,13 +118,13 @@ const recipes = {
 	base_lathing: {
 		recipes: [
 			{
-				inputs: ["base_ironIngot"],
-				outputs: ["base_ironRod"],
+				inputs: [["base_ironIngot", 1]],
+				outputs: [["base_ironRod", 1]],
 				duration: 60,
 				powerConsumption: 10,
 			},{
-				inputs: ["base_steelIngot"],
-				outputs: ["base_steelRod"],
+				inputs: [["base_steelIngot", 1]],
+				outputs: [["base_steelRod", 1]],
 				duration: 60,
 				powerConsumption: 15,
 			}
@@ -133,18 +133,18 @@ const recipes = {
 	base_assembling: {
 		recipes: [
 			{
-				inputs: ["base_steelRod", "base_copperWire"],
-				outputs: ["base_rotor"],
+				inputs: [["base_steelRod", 1], ["base_copperWire", 1]],
+				outputs: [["base_rotor", 1]],
 				duration: 120,
 				powerConsumption: 30,
 			},{
-				inputs: ["base_ironPlate", "base_copperWire"],
-				outputs: ["base_stator"],
+				inputs: [["base_ironPlate", 1], ["base_copperWire", 1]],
+				outputs: [["base_stator", 1]],
 				duration: 120,
 				powerConsumption: 30,
 			},{
-				inputs: ["base_stator", "base_rotor"],
-				outputs: ["base_motor"],
+				inputs: [["base_stator", 1], ["base_rotor", 1]],
+				outputs: [["base_motor", 1]],
 				duration: 30,
 				powerConsumption: 10,
 			}
@@ -153,7 +153,7 @@ const recipes = {
 	base_boiling: {
 		recipes: [
 			{
-				inputs: ["base_coal"],
+				inputs: [["base_coal", 1]],
 				fluidInputs: [["base_water", 5]],
 				fluidOutputs: [["base_steam", 10]],
 				duration: 30
@@ -163,7 +163,7 @@ const recipes = {
 	base_stirling_generating: {
 		recipes: [
 			{
-				inputs: ["base_coal"],
+				inputs: [["base_coal", 1]],
 				duration: 120,
 				powerProduction: 10
 			}
