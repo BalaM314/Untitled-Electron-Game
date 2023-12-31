@@ -415,25 +415,16 @@ const scenes = {
         },
         onkeyheld(currentframe) {
             const scrollSpeed = keybinds.move.scroll_faster.isHeld() ? consts.fastScrollSpeed : consts.scrollSpeed;
-            if (keybinds.move.up.isHeld()) {
+            if (keybinds.move.up.isHeld())
                 Camera.scroll(0, -scrollSpeed);
-                currentframe.redraw = true;
-            }
-            if (keybinds.move.left.isHeld()) {
+            if (keybinds.move.left.isHeld())
                 Camera.scroll(-scrollSpeed, 0);
-                currentframe.redraw = true;
-            }
-            if (keybinds.move.down.isHeld()) {
+            if (keybinds.move.down.isHeld())
                 Camera.scroll(0, scrollSpeed);
-                currentframe.redraw = true;
-            }
-            if (keybinds.move.right.isHeld()) {
+            if (keybinds.move.right.isHeld())
                 Camera.scroll(scrollSpeed, 0);
-                currentframe.redraw = true;
-            }
             if (keybinds.placement.break_building.isHeld()) {
-                currentframe.redraw = true;
-                level1.breakBuilding(...(Camera.unproject(Input.mouseX, Input.mouseY).map(Pos.pixelToTile)));
+                level1.breakBuilding(...Camera.unproject(...Input.mouse).map(Pos.pixelToTile));
             }
         },
         onkeydown(e) {
@@ -458,6 +449,7 @@ function fixSizes() {
             Game.forceRedraw = true;
         }
     }
+    Camera.update();
 }
 function handleAlerts() {
     if (Game.alerts.list.length && !Game.alerts.active) {

@@ -8,6 +8,8 @@ interface Texture extends UnloadedTexture {
 	image: CanvasImageSource;
 	width: number;
 	height: number;
+	widthByTwo: number;
+	heightByTwo: number;
 }
 
 interface AnimationData {
@@ -57,6 +59,8 @@ function loadTexture(t:UnloadedTexture, texturesDiv:HTMLDivElement){
 				image: img,
 				width: img.width,
 				height: img.height,
+				widthByTwo: img.width / 2,
+				heightByTwo: img.height / 2,
 			});
 		});
 		img.addEventListener("error", (err) => {
@@ -76,24 +80,62 @@ async function loadTextures(textures:UnloadedTexture[], texturesDiv:HTMLDivEleme
 }
 
 class Camera {
+	//Configuration
+	static readonly maxDistance = 170 * consts.TILE_SIZE;
+	static readonly minZoom = 1;
+	static readonly maxZoom = 5;
+
+	//Variables
 	static zoomLevel:number = 1;
-	static minZoom = 1;
-	static maxZoom = 5;
 	static scrollX:number = 0;
 	static scrollY:number = 0;
-	static get width(){return window.innerWidth;}
-	static get height(){return window.innerHeight;}
-	private static _visibleRect:Rect | null = null;
-	static maxDistance = 170 * consts.TILE_SIZE;
+	static width = window.innerWidth;
+	static height = window.innerHeight;
+	
+	//Cached calculations
+	static zoomedTileSize = this.zoomLevel * consts.TILE_SIZE;
+	static widthByTwo:number;
+	static heightByTwo:number;
+	static scrollXTimesZoomLevel:number;
+	static scrollYTimesZoomLevel:number;
+	static scrollXTimesZoomLevelPlusWidthByTwo:number;
+	static scrollYTimesZoomLevelPlusHeightByTwo:number;
+	/**The rectangle that is visible in in-world coordinates.*/
+	static visibleRect:Rect;
+	static readonly maxDistanceSquared = this.maxDistance ** 2;
+	static {
+		this.update();
+	}
+	static update(){
+		this.width = window.innerWidth;
+		this.height = window.innerHeight;
+		this.widthByTwo = this.width / 2;
+		this.heightByTwo = this.height / 2;
+		this.zoomedTileSize = this.zoomLevel * consts.TILE_SIZE;
+		this.scrollXTimesZoomLevel = this.scrollX * this.zoomLevel;
+		this.scrollYTimesZoomLevel = this.scrollY * this.zoomLevel;
+		this.scrollXTimesZoomLevelPlusWidthByTwo = this.scrollX * this.zoomLevel + this.widthByTwo;
+		this.scrollYTimesZoomLevelPlusHeightByTwo = this.scrollY * this.zoomLevel + this.heightByTwo;
+		this.visibleRect = [
+			...this.unproject(0, 0),
+			this.width / this.zoomLevel,
+			this.height / this.zoomLevel,
+		];
+	}
 	static scroll(x:number, y:number){
-		this.scrollX -= x;
-		this.scrollY -= y;
-		if(x != 0 || y != 0) this._visibleRect = null;
-		const dist = Math.sqrt(this.scrollX ** 2 + this.scrollY ** 2);
-		if(dist > this.maxDistance){
-			this.scrollX *= this.maxDistance / dist;
-			this.scrollY *= this.maxDistance / dist;
-		}
+		if(x != 0 || y != 0){
+			this.scrollX -= x;
+			this.scrollY -= y;
+			//Limit the length of this.scroll
+			const distSquared = this.scrollX ** 2 + this.scrollY ** 2;
+			if(distSquared > this.maxDistanceSquared){
+				const dist = Math.sqrt(distSquared);
+				this.scrollX *= this.maxDistance / dist;
+				this.scrollY *= this.maxDistance / dist;
+			}
+			this.update();
+			Game.forceRedraw = true;
+		};
 	}
 	static zoom(scaleFactor:number){
 		scaleFactor = constrain(scaleFactor, 0.9, 1.1);
@@ -102,41 +144,33 @@ class Camera {
 		} else if(this.zoomLevel * scaleFactor > this.maxZoom){
 			scaleFactor = this.maxZoom / this.zoomLevel;
 		}
-		this._visibleRect = null;
 		if((this.zoomLevel <= this.minZoom && scaleFactor <= 1)||(this.zoomLevel >= this.maxZoom && scaleFactor >= 1)){
 			return;
 		}
-		Game.forceRedraw = true;
 		this.zoomLevel *= scaleFactor;
-	}
-	/**Returns the rectangle that is visible in in-world coordinates.*/
-	static visibleRect(){
-		return this._visibleRect ??= [
-			...this.unproject(0, 0),
-			this.width / this.zoomLevel,
-			this.height / this.zoomLevel,
-		] satisfies Rect;
+		this.update();
+		Game.forceRedraw = true;
 	}
 	static isVisible(rect:Rect, cullingMargin:number = 0){
-		const [x, y, w, h] = this.visibleRect();
+		const [x, y, w, h] = this.visibleRect;
 		return Intersector.rectsIntersect(rect, [x - cullingMargin, y - cullingMargin, w + cullingMargin * 2, h + cullingMargin * 2]);
 	}
 	static isPointVisible(point:PosT, cullingMargin:number = 0){
-		const [x, y, w, h] = this.visibleRect();
+		const [x, y, w, h] = this.visibleRect;
 		return Intersector.pointInRect(point, [x - cullingMargin, y - cullingMargin, w + cullingMargin * 2, h + cullingMargin * 2]);
 	}
 	/**Converts world coordinates to screen coordinates, where [0,0] is at the top left. */
 	static project(x:number, y:number):PosT {
 		return [
-			((x + this.scrollX) * this.zoomLevel) + this.width / 2,
-			((y + this.scrollY) * this.zoomLevel) + this.height / 2
+			x * this.zoomLevel + this.scrollXTimesZoomLevelPlusWidthByTwo,
+			y * this.zoomLevel + this.scrollYTimesZoomLevelPlusHeightByTwo,
 		];
 	}
 	/**Converts screen coordinates to world coordinates. */
 	static unproject(x:number, y:number):PosT {
 		return [
-			(x - this.width / 2) / this.zoomLevel - this.scrollX,
-			(y - this.height / 2) / this.zoomLevel - this.scrollY
+			(x - this.widthByTwo) / this.zoomLevel - this.scrollX,
+			(y - this.heightByTwo) / this.zoomLevel - this.scrollY
 		];
 	}
 }
@@ -255,31 +289,34 @@ class Gfx {
 	static pRect(pixelX:number, pixelY:number, width:number, height:number, mode:RectMode = this.rectMode, _ctx = this.ctx){
 		if(mode == RectMode.CORNER)
 			_ctx.fillRect(
-				(pixelX + Camera.scrollX) * Camera.zoomLevel + Camera.width / 2,
-				(pixelY + Camera.scrollY) * Camera.zoomLevel + Camera.height / 2,
+				pixelX * Camera.zoomLevel + Camera.scrollXTimesZoomLevelPlusWidthByTwo,
+				pixelY * Camera.zoomLevel + Camera.scrollYTimesZoomLevelPlusHeightByTwo,
 				width * Camera.zoomLevel,
 				height * Camera.zoomLevel
 			);
 		else 
 			_ctx.fillRect(
-				pixelX + ((Camera.scrollX - width / 2) * Camera.zoomLevel) + Camera.width / 2,
-				pixelY + ((Camera.scrollY - height / 2) * Camera.zoomLevel) + Camera.height / 2,
+				pixelX - (width / 2) * Camera.zoomLevel + Camera.scrollXTimesZoomLevelPlusWidthByTwo,
+				pixelY - (height / 2) * Camera.zoomLevel + Camera.scrollYTimesZoomLevelPlusHeightByTwo,
+				// (pixelX - (width / 2)) * Camera.zoomLevel + Camera.scrollXTimesZoomLevelPlusWidthByTwo,
+				// (pixelY - (height / 2)) * Camera.zoomLevel + Camera.scrollYTimesZoomLevelPlusHeightByTwo,
 				width * Camera.zoomLevel, height * Camera.zoomLevel
 			);
 	}
 	static tRect(tileX:number, tileY:number, width:number, height:number, mode:RectMode = this.rectMode, _ctx = this.ctx){
 		if(mode == RectMode.CORNER)
 			_ctx.fillRect(
-				(tileX * consts.TILE_SIZE + Camera.scrollX) * Camera.zoomLevel + Camera.width / 2,
-				(tileY * consts.TILE_SIZE + Camera.scrollY) * Camera.zoomLevel + Camera.height / 2,
-				width * Camera.zoomLevel * consts.TILE_SIZE,
-				height * Camera.zoomLevel * consts.TILE_SIZE
+				tileX * Camera.zoomedTileSize + Camera.scrollXTimesZoomLevelPlusWidthByTwo,
+				tileY * Camera.zoomedTileSize + Camera.scrollYTimesZoomLevelPlusHeightByTwo,
+				width * Camera.zoomedTileSize,
+				height * Camera.zoomedTileSize,
 			);
 		else 
 			_ctx.fillRect(
-				((tileX - 0.5 * width) * consts.TILE_SIZE + Camera.scrollX) * Camera.zoomLevel + Camera.width / 2,
-				((tileY - 0.5 * height) * consts.TILE_SIZE + Camera.scrollY) * Camera.zoomLevel + Camera.height / 2,
-				width * Camera.zoomLevel * consts.TILE_SIZE, height * Camera.zoomLevel * consts.TILE_SIZE
+				(tileX - 0.5 * width) * Camera.zoomedTileSize + Camera.scrollXTimesZoomLevelPlusWidthByTwo,
+				(tileY - 0.5 * height) * Camera.zoomedTileSize + Camera.scrollYTimesZoomLevelPlusHeightByTwo,
+				width * Camera.zoomedTileSize,
+				height * Camera.zoomedTileSize,
 			);
 	}
 	static tImage(
@@ -290,10 +327,23 @@ class Gfx {
 	){
 		_ctx.drawImage(
 			texture.image,
-			(tileX * consts.TILE_SIZE + Camera.scrollX) * Camera.zoomLevel + Camera.width / 2,
-			(tileY * consts.TILE_SIZE + Camera.scrollY) * Camera.zoomLevel + Camera.height / 2,
-			width * consts.TILE_SIZE * Camera.zoomLevel,
-			height * consts.TILE_SIZE * Camera.zoomLevel
+			tileX * Camera.zoomedTileSize + Camera.scrollXTimesZoomLevelPlusWidthByTwo,
+			tileY * Camera.zoomedTileSize + Camera.scrollYTimesZoomLevelPlusHeightByTwo,
+			width * Camera.zoomedTileSize,
+			height * Camera.zoomedTileSize
+			);
+		}
+	//this function gets called 245k times per second, optimize to the max
+	static tImageOneByOne(
+		texture:Texture,
+		tileX:number, tileY:number
+	){
+		this.ctx.drawImage(
+			texture.image,
+			tileX * Camera.zoomedTileSize + Camera.scrollXTimesZoomLevelPlusWidthByTwo,
+			tileY * Camera.zoomedTileSize + Camera.scrollYTimesZoomLevelPlusHeightByTwo,
+			Camera.zoomedTileSize,
+			Camera.zoomedTileSize
 		);
 	}
 	static pImage(
@@ -305,16 +355,16 @@ class Gfx {
 		if(mode == RectMode.CORNER)
 			_ctx.drawImage(
 				texture.image,
-				(pixelX + Camera.scrollX) * Camera.zoomLevel + Camera.width / 2,
-				(pixelY + Camera.scrollY) * Camera.zoomLevel + Camera.height / 2,
+				pixelX * Camera.zoomLevel + Camera.scrollXTimesZoomLevelPlusWidthByTwo,
+				pixelY * Camera.zoomLevel + Camera.scrollYTimesZoomLevelPlusHeightByTwo,
 				width * Camera.zoomLevel,
 				height * Camera.zoomLevel
 			);
 		else
 			_ctx.drawImage(
 				texture.image,
-				(pixelX - (width / 2) + Camera.scrollX) * Camera.zoomLevel + Camera.width / 2,
-				(pixelY - (width / 2) + Camera.scrollY) * Camera.zoomLevel + Camera.height / 2,
+				(pixelX - (width / 2)) * Camera.zoomLevel + Camera.scrollXTimesZoomLevelPlusWidthByTwo,
+				(pixelY - (height / 2)) * Camera.zoomLevel + Camera.scrollYTimesZoomLevelPlusHeightByTwo,
 				width * Camera.zoomLevel,
 				height * Camera.zoomLevel
 			);
@@ -322,12 +372,12 @@ class Gfx {
 	static tEllipse(tileX:number, tileY:number, width:number, height:number = width, rotation = 0, startAngle = 0, endAngle = 2 * Math.PI, _ctx = this.ctx){
 		_ctx.beginPath();
 		_ctx.moveTo(
-			(tileX * consts.TILE_SIZE + Camera.scrollX) * Camera.zoomLevel + Camera.width / 2,
-			(tileY * consts.TILE_SIZE + Camera.scrollY) * Camera.zoomLevel + Camera.height / 2
+			tileX * Camera.zoomedTileSize + Camera.scrollXTimesZoomLevelPlusWidthByTwo,
+			tileY * Camera.zoomedTileSize + Camera.scrollYTimesZoomLevelPlusHeightByTwo
 		);
 		_ctx.ellipse(
-			(tileX * consts.TILE_SIZE + Camera.scrollX) * Camera.zoomLevel + Camera.width / 2,
-			(tileY * consts.TILE_SIZE + Camera.scrollY) * Camera.zoomLevel + Camera.height / 2,
+			tileX * Camera.zoomedTileSize + Camera.scrollXTimesZoomLevelPlusWidthByTwo,
+			tileY * Camera.zoomedTileSize + Camera.scrollYTimesZoomLevelPlusHeightByTwo,
 			width * Camera.zoomLevel * consts.TILE_SIZE / 2,
 			height * Camera.zoomLevel * consts.TILE_SIZE / 2,
 			rotation, startAngle, endAngle

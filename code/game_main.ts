@@ -482,26 +482,13 @@ const scenes: {
 		//Unlike the onkeydown function, this one needs to run based on keys being held.
 		onkeyheld(currentframe:CurrentFrame){
 			const scrollSpeed = keybinds.move.scroll_faster.isHeld() ? consts.fastScrollSpeed : consts.scrollSpeed;
-			if(keybinds.move.up.isHeld()){
-				Camera.scroll(0, -scrollSpeed);
-				currentframe.redraw = true;
-			}
-			if(keybinds.move.left.isHeld()){
-				Camera.scroll(-scrollSpeed, 0);
-				currentframe.redraw = true;
-			}
-			if(keybinds.move.down.isHeld()){
-				Camera.scroll(0, scrollSpeed);
-				currentframe.redraw = true;
-			}
-			if(keybinds.move.right.isHeld()){
-				Camera.scroll(scrollSpeed, 0);
-				currentframe.redraw = true;
-			}
+			if(keybinds.move.up.isHeld()) Camera.scroll(0, -scrollSpeed);
+			if(keybinds.move.left.isHeld()) Camera.scroll(-scrollSpeed, 0);
+			if(keybinds.move.down.isHeld()) Camera.scroll(0, scrollSpeed);
+			if(keybinds.move.right.isHeld()) Camera.scroll(scrollSpeed, 0);
 			if(keybinds.placement.break_building.isHeld()){
-				currentframe.redraw = true;
 				level1.breakBuilding(
-					...(Camera.unproject(Input.mouseX, Input.mouseY).map(Pos.pixelToTile))
+					...Camera.unproject(...Input.mouse).map(Pos.pixelToTile)
 				);
 			}
 		},
@@ -533,6 +520,7 @@ function fixSizes(){
 			Game.forceRedraw = true;
 		}
 	}
+	Camera.update();
 }
 
 

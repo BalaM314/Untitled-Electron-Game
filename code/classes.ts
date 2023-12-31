@@ -94,22 +94,21 @@ class Level {
 		//good enough
 	}
 
-	tileAtByPixel(pixelX:number, pixelY:number):TileID{
+	tileAtByPixel(pixelX:number, pixelY:number):TileID {
 		return this.getChunk(
 			Pos.pixelToTile(pixelX),
 			Pos.pixelToTile(pixelY)
 		).tileAt(Pos.chunkOffsetInTiles(Pos.pixelToTile(pixelX)), Pos.chunkOffsetInTiles(Pos.pixelToTile(pixelY)));
 	}
-	tileAtByTile(tileX:number, tileY:number):TileID{
+	tileAtByTile(tileX:number, tileY:number):TileID {
 		return this.getChunk(
 			tileX,
 			tileY
 		).tileAt(Pos.chunkOffsetInTiles(tileX), Pos.chunkOffsetInTiles(tileY));
 	}
-	setTileByTile(tileX:number, tileY:number, tile:TileID):boolean {
+	setTileByTile(tileX:number, tileY:number, tile:TileID){
 		this.getChunk(tileX,tileY).setTile(Pos.chunkOffsetInTiles(tileX), Pos.chunkOffsetInTiles(tileY), tile);
 		Game.forceRedraw = true;
-		return true;
 	}
 	buildingAtTile(tileX:number, tileY:number):Building | null {
 		return this.getChunk(
@@ -141,21 +140,15 @@ class Level {
 			pos.tileY
 		).overlayBuildAt(pos.chunkOffsetXInTiles, pos.chunkOffsetYInTiles);
 	}
-	writeBuilding(tileX:number, tileY:number, building:Building | null):boolean {
-		if(this.getChunk(tileX,tileY)){
-			this.getChunk(tileX,tileY).setBuilding(Pos.chunkOffsetInTiles(tileX), Pos.chunkOffsetInTiles(tileY), building);
-			Game.forceRedraw = true;
-			return true;
-		}
-		return false;
+	writeBuilding(tileX:number, tileY:number, building:Building | null){
+		this.getChunk(tileX,tileY).setBuilding(
+			Pos.chunkOffsetInTiles(tileX), Pos.chunkOffsetInTiles(tileY), building
+		);
 	}
-	writeOverlayBuild(tileX:number, tileY:number, building:OverlayBuild | null):boolean {
-		if(this.getChunk(tileX,tileY)){
-			this.getChunk(tileX,tileY).setOverlayBuild(Pos.chunkOffsetInTiles(tileX), Pos.chunkOffsetInTiles(tileY), building);
-			Game.forceRedraw = true;
-			return true;
-		}
-		return false;
+	writeOverlayBuild(tileX:number, tileY:number, building:OverlayBuild | null){
+		this.getChunk(tileX,tileY).setOverlayBuild(
+			Pos.chunkOffsetInTiles(tileX), Pos.chunkOffsetInTiles(tileY), building
+		);
 	}
 	
 	
@@ -263,11 +256,9 @@ class Level {
 				this.buildings.add(building);
 				this.grid.addBuilding(building);
 				trigger("placeBuilding", {building});
-				if(building instanceof OverlayBuild){
-					return this.writeOverlayBuild(tileX, tileY, building);
-				} else {
-					return this.writeBuilding(tileX, tileY, building);
-				}
+				if(building instanceof OverlayBuild) this.writeOverlayBuild(tileX, tileY, building);
+				else this.writeBuilding(tileX, tileY, building);
+				return true;
 			}
 		} else {
 			trigger("placeBuildingFail", {pos: Pos.fromTileCoords(tileX, tileY, false), type: block});
@@ -388,6 +379,8 @@ class Chunk {
 	hasBuildings: boolean = false;
 	pixelX = Pos.chunkToPixel(this.x);
 	pixelY = Pos.chunkToPixel(this.y);
+	tileX = Pos.chunkToTile(this.x);
+	tileY = Pos.chunkToTile(this.y);
 	constructor(public x:number, public y:number, public parent:Level){
 		//Don't allow x or y to be zero
 		let tweakedX = x == 0 ? 5850 : x;
@@ -688,20 +681,23 @@ class Chunk {
 			Gfx.strokeColor("#000000");
 			Gfx.lineWidth(1);
 			Gfx.layer("tile");
+			currentframe.tps += 256;
+			let tileX:number;
+			let tileY:number;
 			for(let y = 0; y < consts.CHUNK_SIZE; y ++){
+				tileY = this.tileY + y;
 				for(let x = 0; x < consts.CHUNK_SIZE; x ++){
-					currentframe.tps ++;
-					let tileX = (this.x * consts.CHUNK_SIZE) + x;
-					let tileY = (this.y * consts.CHUNK_SIZE) + y;
+					//WARNING: 300k runs per second! Very hot!
+					tileX = this.tileX + x;
 					const tile = this.layers[0][y][x];
-					Gfx.tImage(Gfx.texture(`tile/${tile}`), tileX, tileY, 1, 1);
+					Gfx.tImageOneByOne(Gfx.texture(`tile/${tile}`), tileX, tileY);
 				}
 			}
 			Gfx.layer("tileOver");
 			if(settings.showTileBorders){
 				for(let i = 0; i < consts.CHUNK_SIZE; i ++){
-					Gfx.tLine((this.x * consts.CHUNK_SIZE) + i, (this.y * consts.CHUNK_SIZE), (this.x * consts.CHUNK_SIZE) + i, ((this.y + 1) * consts.CHUNK_SIZE));
-					Gfx.tLine((this.x * consts.CHUNK_SIZE), (this.y * consts.CHUNK_SIZE) + i, ((this.x + 1) * consts.CHUNK_SIZE), (this.y * consts.CHUNK_SIZE) + i);
+					Gfx.tLine(this.tileX + i, this.tileY, this.tileX + i, ((this.y + 1) * consts.CHUNK_SIZE));
+					Gfx.tLine(this.tileX, this.tileY + i, ((this.x + 1) * consts.CHUNK_SIZE), this.tileY + i);
 				}
 			}
 		}
