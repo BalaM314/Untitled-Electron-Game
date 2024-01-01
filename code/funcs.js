@@ -505,6 +505,18 @@ function tooltip(title, properties) {
     }
     return `${title}<div style="font-size: 70%;">${props.join("<br/>")}</div>`;
 }
+function firstUsePopup(key, message, callback, runCallbackAfterMessage = false) {
+    const lsKey = `untitled-electron-game-${key}`;
+    if (localStorage.getItem(lsKey) != null) {
+        callback?.();
+    }
+    else {
+        alert(message);
+        localStorage.setItem(lsKey, "true");
+        if (runCallbackAfterMessage)
+            callback?.();
+    }
+}
 function f(stringChunks, ...varChunks) {
     return String.raw({ raw: stringChunks }, ...varChunks).replaceAll(/[\s\S]\u0008/g, "");
 }

@@ -587,6 +587,23 @@ function tooltip(title:string, properties:Record<string, string> | string[]):str
 	return `${title}<div style="font-size: 70%;">${props.join("<br/>")}</div>`;
 }
 
+/**
+ * Helper function to display a popup on first use of a feature. Do not overuse as getting spammed with alert() is annoying.
+ * @param key Gets "pasapapor-" prepended to it.
+ * @param message Message displayed in the alert box.
+ * @param callback Called if it is not the first use.
+ */
+function firstUsePopup(key:string, message:string, callback?:() => unknown, runCallbackAfterMessage = false){
+	const lsKey = `untitled-electron-game-${key}`;
+	if(localStorage.getItem(lsKey) != null){
+		callback?.();
+	} else {
+		alert(message);
+		localStorage.setItem(lsKey, "true");
+		if(runCallbackAfterMessage) callback?.();
+	}
+}
+
 /** Generates a tag template processor from a function that processes one value at a time. */
 function f(stringChunks:readonly string[], ...varChunks:readonly string[]):string {
 	return String.raw({raw: stringChunks}, ...varChunks).replaceAll(/[\s\S]\u0008/g, "");

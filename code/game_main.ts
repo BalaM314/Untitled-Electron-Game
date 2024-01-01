@@ -524,6 +524,18 @@ const scenes: {
 					// objectiveCompleteIcon.classList.add("disabled");
 					objectiveNextButton.classList.add("disabled");
 				}
+			} else {
+				objectiveEl.classList.add("hidden");
+			}
+
+			if(Game.showGui){
+				objectiveEl.classList.remove("hidden");
+				toolbarEl.classList.remove("hidden");
+				resourcesEl.classList.remove("hidden");
+			} else {
+				objectiveEl.classList.add("hidden");
+				toolbarEl.classList.add("hidden");
+				resourcesEl.classList.add("hidden");
 			}
 
 		},
@@ -567,10 +579,11 @@ const scenes: {
 			if(e.key == "Enter" && Input.lastKeysPressed.join(", ") == 
 				["ArrowUp", "ArrowUp", "ArrowDown", "ArrowDown", "ArrowLeft", "ArrowRight", "ArrowLeft", "ArrowRight", "b", "a", "Enter"].join(", ")
 			){
-				window.open("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
+				window.open("https://www.youtube.com/watch?v=dQw4w9WgXcQ"); //this is fine
 				for(let [key, value] of Object.entries(level1.resources) as [ItemID, number][]){
-					level1.resources[key] = Infinity;
+					level1.resources[key] = 999999;
 				}
+				tech.nodes.forEach(n => n.unlocked = true);
 			}
 		}
 	}
@@ -694,7 +707,9 @@ function load(){
 }
 
 
-
+function showCredits(){
+	_alert("you win!"); //todo not yet implemented
+}
 
 /**Exports an Untitled Electron Game save, as an object. */
 function exportData():SaveData {

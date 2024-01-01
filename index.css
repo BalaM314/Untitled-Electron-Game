@@ -55,11 +55,10 @@ canvas {
 #toolbar {
 	position: absolute;
 	display: flex;
-	bottom: 20px;
 	width: 60%;
+	height: 7%;
+	bottom: 10px;
 	left: 20%;
-	right: 20%;
-	top: 90%;
 	--cell-size: calc(10% - 20px - 1%);
 	background-color: rgba(0, 0, 255, 0.2);
 	border-radius: 5%;
@@ -83,16 +82,18 @@ canvas {
 #resources {
 	position: absolute;
 	z-index: 23;
-	margin-left: 35%;
-	margin-right: 35%;
-	width: 30%;
+	left: 32.5%;
+	right: 32.5%;
+	width: 35%;
 	text-align: center;
-	font-size: 28px;
+	font-size: 24px;
 	font-family: sans-serif;
 	color: white;
 	text-shadow: 0 0 1px black;
 	border: 2px solid green;
 	background-color: #077A;
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
 }
 #objective {
 	position: absolute;
@@ -135,9 +136,8 @@ canvas {
 	color: #DDD;
 }
 #resources span {
-	margin-left: 4px;
-	margin-right: 4px;
-	display: inline-block;
+	overflow-x: visible;
+	white-space: nowrap;
 }
 #resources span.flashing {
 	animation-name: flashred;
@@ -145,10 +145,11 @@ canvas {
 	animation-iteration-count: infinite;
 }
 #resources span::before {
-	width: 32px;
-	height: 32px;
+	--size: 28px;
+	width: var(--size);
+	height: var(--size);
 	margin-right: 4px;
-	background-size: 32px;
+	background-size: var(--size);
 	content: "";
 	display: inline-block !important;
 	background-image: var(--image-url);

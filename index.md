@@ -36,10 +36,6 @@ advanced motor:
 	rotor + stator + copper wire + steel plate = advanced motor
 
 
-changes:
-remove coal ore
-combustion generator? make everything require power?
-
 
 ## tick loop
 Each stage is called for every building that has the function.
