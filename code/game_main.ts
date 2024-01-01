@@ -146,20 +146,16 @@ function registerEventHandlers(){
 		if(block.hidden) continue;
 		const img = document.createElement("img");
 		img.src = `assets/textures/building/${block.id}%230.png`;
-		img.id = block.id;
+		img.id = "toolbar_" + block.id;
 		img.draggable = false;
 		img.title = f`${bundle.get(`building.${block.id}.name`)}\n${bundle.get(`building.${block.id}.description`, "\b")}`;
+		img.addEventListener("click", () => {
+			selectID(block.id);
+			Input.mouseDown = false;
+		});
 		toolbarEl.appendChild(img);
 	}
 
-	for(let element of toolbarEl.children){
-		element.addEventListener("click", (event) => {
-			if(event.target instanceof HTMLImageElement){
-				selectID(event.target.id as RawBuildingID);
-				Input.mouseDown = false;
-			}
-		});
-	}
 
 	objectiveNextButton.addEventListener("click", () => {
 		const objective = objectives.objectives.find(o => !o.completed);
@@ -173,7 +169,7 @@ function registerEventHandlers(){
 
 /** Object to manage HUD elements (text box, resources, objective, toolbar) */
 const GUI = {
-	elements: [hudtextEl, resourcesEl, objectiveEl, toolbarEl],
+	elements: [hudtextEl, resourcesEl, objectiveEl, toolbarEl, buttonsPane],
 	hidden: true,
 	hide(){
 		this.hidden = true;
@@ -198,11 +194,37 @@ const GUI = {
 		if(tech.menuVisible) tech.hideMenu();
 		else tech.showMenu();
 	},
+	updateTooltipPosition(){
+		tooltipbox.style.setProperty("--x", `${Math.min(Input.mouseX, window.innerWidth - 200)}px`);
+		tooltipbox.style.setProperty("--y", `${Math.min(Input.mouseY, window.innerHeight - 50)}px`);
+	},
 	updateTooltip(){
-		if(keybinds.display.show_tooltip.isHeld()){
-			const hovered = Input.latestMouseEvent?.target;
-			tooltipbox.style.setProperty("--x", `${Input.mouseX}px`);
-			tooltipbox.style.setProperty("--y", `${Input.mouseY}px`);
+		const hovered = Input.latestMouseEvent?.target;
+		if(!(hovered instanceof HTMLElement)) return;
+		if(hovered.id.startsWith("research_")){
+			this.updateTooltipPosition();
+			if(hovered.id.startsWith("research_building_")){ //TODO localize properly
+				const block = Buildings.getOpt(hovered.id.split("research_building_")[1] as RawBuildingID);
+				if(block){
+					if(block.node?.status() == "inaccessible"){
+						tooltipbox.innerHTML = "?";
+					} else if(block.node?.status() == "locked"){
+						tooltipbox.innerHTML = block.tooltip("Click to research!");
+						block.node.showCost();
+					} else {
+						tooltipbox.innerHTML = block.tooltip();
+					}
+				} else {
+					tooltipbox.innerHTML = "[error] invalid block";
+				}
+			} else {
+				const hoveredID = hovered.id.split("research_")[1] ?? "error";
+				tooltipbox.innerHTML = tooltip(bundle.get(`research.${hoveredID}.name`), [
+					bundle.get(`research.${hoveredID}.description`),
+				]);
+			}
+		} else if(keybinds.display.show_tooltip.isHeld()){
+			this.updateTooltipPosition();
 			if(!hovered || hovered == clickcapture){
 				//Mouse is over the main canvas
 				//css pointer-events:none is used to prevent the event target from being the tooltip box itself, or some other unwanted element
@@ -210,12 +232,10 @@ const GUI = {
 			} else if(hovered instanceof HTMLElement){
 				if(hovered instanceof HTMLImageElement && hovered.parentElement == toolbarEl){
 					//toolbar
-					const block = Buildings.getOpt((hovered.id ?? "") as RawBuildingID);
+					const block = Buildings.getOpt((hovered.id.split("toolbar_")[1] ?? "") as RawBuildingID);
 					if(block){
 						if(block.unlocked()){
-							tooltipbox.innerHTML = tooltip(bundle.get(`building.${block.id}.name`), [
-								bundle.get(`building.${block.id}.description`)
-							]);
+							tooltipbox.innerHTML = block.tooltip();
 						} else {
 							tooltipbox.innerHTML = tooltip("Not yet unlocked", ["Research this building to unlock it."]);
 						}
@@ -233,8 +253,10 @@ const GUI = {
 				){
 					tooltipbox.innerHTML = tooltip("Objective", ["This box shows the current objective. It may also contain tips and useful information."]);
 					Game.stats.objectiveHovered = true;
+				} else if(hovered.id == "research-header-text" || hovered.id == "research-header" || hovered.id == "research-exit-button" || hovered.id == "research-menu" || hovered.className == "research-tree-inner"){
+					tooltipbox.innerHTML = tooltip("Research", ["This menu allows you to research new buildings."])
 				} else {
-					tooltipbox.innerHTML = hovered.id;
+					tooltipbox.innerHTML = `???${hovered.id}`;
 				}
 			} else {
 				tooltipbox.innerHTML = "[unknown]";
@@ -310,7 +332,7 @@ const GUI = {
 	},
 	updateToolbar(){
 		for(const block of Buildings){
-			const img = document.querySelector(`#toolbar img#${block.id}`) as HTMLImageElement;
+			const img = document.querySelector(`#toolbar img#toolbar_${block.id}`) as HTMLImageElement;
 			if(!img) continue;
 			if(block.unlocked()){
 				img.classList.remove("locked");
