@@ -271,13 +271,14 @@ const GUI = {
             }
         }
     },
-    update(currentFrame) {
+    display(currentFrame) {
         this.updateTooltip();
         this.updateHudText(currentFrame);
         this.updateResources();
         this.updateObjective();
         this.updateToolbar();
         this.updateVisibility();
+        tech.display();
     },
 };
 for (const k of Object.keys(GUI)) {
@@ -510,7 +511,7 @@ const scenes = {
             level1.display(currentFrame);
             ParticleEffect.displayAll();
             level1.displayGhostBuilding(...(Camera.unproject(...Input.mouse).map(Pos.pixelToTile)), placedBuilding.ID, currentFrame);
-            GUI.update(currentFrame);
+            GUI.display(currentFrame);
         },
         onmousedown(e) {
             if (Game.paused)

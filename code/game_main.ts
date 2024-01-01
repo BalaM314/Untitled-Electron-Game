@@ -313,13 +313,14 @@ const GUI = {
 			}
 		}
 	},
-	update(currentFrame:CurrentFrame){
+	display(currentFrame:CurrentFrame){
 		this.updateTooltip();
 		this.updateHudText(currentFrame);
 		this.updateResources();
 		this.updateObjective();
 		this.updateToolbar();
 		this.updateVisibility();
+		tech.display();
 	},
 };
 for(const k of (Object.keys(GUI) as (keyof typeof GUI)[])){
@@ -570,7 +571,7 @@ const scenes: {
 
 			
 			
-			GUI.update(currentFrame);
+			GUI.display(currentFrame);
 
 		},
 		onmousedown(e:MouseEvent){

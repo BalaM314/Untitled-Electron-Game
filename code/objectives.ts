@@ -4,11 +4,15 @@
 class TechTreeNode {
 	unlocked = false;
 	children:TechTreeNode[] = [];
+	/** Zero-based index */
+	depth:number;
 	constructor(
 		public id:string,
 		public cost:ItemStack[],
 		public prerequisites:TechTreeNode[] = [],
-	){}
+	){
+		this.depth = Math.max(-1, ...this.prerequisites.map(p => p.depth)) + 1;
+	}
 	tryUnlock():boolean {
 		if(!this.prerequisites.every(p => p.unlocked)) return false;
 		if(!level1.hasResources(this.cost, 2000)) return false;
@@ -16,13 +20,22 @@ class TechTreeNode {
 		this.unlocked = true;
 		return true;
 	}
+	imageURL(){
+		//TODO not generic
+		if(this.id.startsWith("building_")){
+			return `assets/textures/building/${this.id.split("building_")[1]}%230.png`;
+		}
+	}
 }
 
 class TechTree {
 	nodes:TechTreeNode[] = [];
-	nodesByID:Record<string, TechTreeNode> = {};
+	nodesByID:Record<string, TechTreeNode> = {}
+	root:TechTreeNode;
 	constructor(builder:(tree:TechTree) => unknown){
 		builder(this);
+		this.root = this.nodes.find(n => n.prerequisites.length == 0) ?? crash(`No root node`);
+		this.nodes.forEach(n => n.children.sort2(n => n.children.length))
 	}
 	
 	node(id:string, cost:ItemStack[], prerequisites:TechTreeNode[], unlocked = false):TechTreeNode {
@@ -42,10 +55,18 @@ class TechTree {
 		return this.nodesByID[id] ?? null;
 	}
 
-
-
-	display(offset:PosT){
-		//this is gonna be kinda painful
+	displayNode(node:TechTreeNode):string {
+		return `<div class="research-tree-node" style="--depth: ${node.depth};${node.prerequisites.length == 0 ? "--right-offset: 1000;" : ""}"><img src="${node.imageURL()}"></div>`;
+	}
+	displayTree(node:TechTreeNode):string {
+		if(node.children.length == 0) return this.displayNode(node);
+		else return `<div class="research-tree-inner">${this.displayNode(node)}${node.children.map(c => this.displayTree(c)).join("\n")}</div>`;
+	}
+	display(){
+		if(researchTree.children.length == 0){
+			researchTree.innerHTML = this.displayTree(this.root);
+			researchTree.style.setProperty("--nodes", this.nodes.length.toString());
+		}
 	}
 	read(data:string){
 		const completedNodes = data.split(",");
@@ -63,9 +84,9 @@ class TechTree {
 const tech = new TechTree(tree => {
 	//TODO tune research costs and building costs
 	const conveyor = tree.node("building_base_conveyor", [], [], true);
-	const miner = tree.node("building_base_miner", [], [], true);
+	const miner = tree.node("building_base_miner", [], [conveyor], true);
 	const trash_can = tree.node("building_base_trash_can", [["base_ironIngot", 20], ["base_stone", 20]], [conveyor]);
-	const furnace = tree.node("building_base_furnace", [["base_coal", 20], ["base_stone", 10]], [conveyor, miner]);
+	const furnace = tree.node("building_base_furnace", [["base_coal", 20], ["base_stone", 10]], [miner]);
 	const extractor = tree.node("building_base_extractor", [["base_ironIngot", 20], ["base_stone", 20]], [conveyor]);
 	const chest = tree.node("building_base_chest", [["base_ironIngot", 20], ["base_stoneBrick", 20]], [conveyor]);
 	const alloy_smelter = tree.node("building_base_alloy_smelter", [["base_stoneBrick", 50], ["base_ironIngot", 50], ["base_coal", 50]], [furnace]);
@@ -73,12 +94,12 @@ const tech = new TechTree(tree => {
 	const compressor = tree.node("building_base_compressor", [["base_ironIngot", 50], ["base_copperIngot", 50]], [stirling_generator]);
 	const lathe = tree.node("building_base_lathe", [["base_ironIngot", 50], ["base_copperIngot", 50]], [stirling_generator]);
 	const wiremill = tree.node("building_base_wiremill", [["base_ironIngot", 50], ["base_copperIngot", 50]], [stirling_generator]);
-	const pipe = tree.node("building_base_pipe", [["base_ironPlate", 10]], [conveyor]);
+	const pipe = tree.node("building_base_pipe", [["base_ironPlate", 10]], [compressor]);
 	const pump = tree.node("building_base_pump", [["base_ironIngot", 50], ["base_ironPlate", 50], ["base_copperIngot", 30]], [pipe]);
 	const tank = tree.node("building_base_tank", [["base_steelIngot", 50], ["base_ironPlate", 50], ["base_stoneBrick", 50]], [pipe]);
-	const boiler = tree.node("building_base_boiler", [["base_ironIngot", 50], ["base_steelIngot", 50], ["base_ironPlate", 50], ["base_coal", 20]], [furnace, pipe]);
+	const boiler = tree.node("building_base_boiler", [["base_ironIngot", 50], ["base_steelIngot", 50], ["base_ironPlate", 50], ["base_coal", 20]], [pipe]);
 	const steam_generator = tree.node("building_base_steam_generator", [["base_ironIngot", 50], ["base_steelIngot", 50], ["base_ironPlate", 50], ["base_copperIngot", 30], ["base_copperWire", 30]], [boiler]);
-	const assembler = tree.node("building_base_assembler", [["base_ironIngot", 200], ["base_steelIngot", 50], ["base_ironPlate", 50], ["base_copperIngot", 200], ["base_copperWire", 100]], [steam_generator, lathe]);
+	const assembler = tree.node("building_base_assembler", [["base_ironIngot", 200], ["base_steelIngot", 50], ["base_ironPlate", 50], ["base_copperIngot", 200], ["base_copperWire", 100]], [steam_generator]);
 	const boat = tree.node("base_boat", [["base_steelPlate", 500], ["base_steelIngot", 100], ["base_steelRod", 100], ["base_ironIngot", 300], ["base_ironPlate", 100], ["base_ironRod", 100], ["base_copperWire", 300], ["base_motor", 20]], [assembler]);
 });
 

@@ -166,9 +166,10 @@ interface CurrentFrame {
 
 interface Array<T> {
 	/**
-	 * Sorts an array, with a callback that ranks elements with a number.
+	 * Sorts an array into ascending order, with a callback that ranks elements with a number.
 	 */
 	sort2: (callback: (value:T) => number) => void;
+	at(index:number):T | null;
 	map<TThis extends Array<T>, U>(this: TThis, fn: (v: T) => U): { [K in keyof TThis]: U }
 }
 

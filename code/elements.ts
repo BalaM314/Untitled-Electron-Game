@@ -29,3 +29,5 @@ const objectiveDescription = getElement("objective-description", HTMLDivElement)
 const objectiveNextButton = getElement("objective-next-button", HTMLSpanElement);
 const resourcesItems:Record<string, HTMLSpanElement> = {};
 const texturesDiv = getElement("textures", HTMLDivElement);
+const researchMenu = getElement("research-menu", HTMLDivElement);
+const researchTree = getElement("research-tree", HTMLDivElement);

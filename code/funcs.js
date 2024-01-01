@@ -1,20 +1,14 @@
 "use strict";
-Array.prototype.sort2 = function (callback) {
-    this.sort((value1, value2) => {
-        let result1 = callback(value1);
-        let result2 = callback(value2);
-        if (result1 < result2) {
-            return -1;
-        }
-        else if (result1 > result2) {
-            return 1;
-        }
-        else {
-            return 0;
-        }
-    });
+Array.prototype.sort2 = function (func) {
+    this.sort((a, b) => func(a) - func(b));
+};
+Array.prototype.at = function (index) {
+    return this[index < 0 ? index + this.length : index];
 };
 Object.defineProperty(Array.prototype, "sort2", {
+    enumerable: false
+});
+Object.defineProperty(Array.prototype, "at", {
     enumerable: false
 });
 CanvasRenderingContext2D.prototype.clear = function () {

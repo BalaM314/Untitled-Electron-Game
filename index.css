@@ -5,7 +5,7 @@ Canvases: 10 - 19
 Click capture: 20
 Toolbar: 22
 Resources: 23
-Tooltip window: 24
+Tooltip window: 29
 Active alert box: 30
 */
 
@@ -175,6 +175,56 @@ canvas {
 #toolbar img.locked {
 	filter: opacity(0.3) brightness(0);
 	cursor: not-allowed;
+}
+#research-menu {
+	z-index: 28;
+	position: absolute;
+	width: 90%;
+	left: 5%;
+	height: 90%;
+	top: 5%;
+	border: 5px solid black;
+	background-color: #000C;
+}
+#research-menu h1 {
+	text-align: center;
+	color: white;
+	font-family: sans-serif;
+	font-size: 50px;
+}
+/* #research-tree-wrapper {
+	
+} */
+.research-tree-inner {
+	display: flex;
+	flex-direction: row;
+	gap: 10px;
+	--right-offset: 0.5;
+	--bar-width: 1.2;
+}
+.research-tree-node {
+	--size: calc((90vw - (var(--nodes) - 1) * 15px) / var(--nodes));
+	height: var(--size);
+	width: var(--size);
+	outline: 2px solid white;
+	background: gray;
+	margin-top: calc(5.5vh * var(--depth));
+}
+.research-tree-node img {
+	height: 100%;
+	width: 100%;
+}
+.research-tree-node::after {
+	position: relative;
+	z-index: -1;
+	top: calc(-1.5 * var(--size));
+	right: calc((var(--bar-width) - var(--right-offset)) * var(--size));
+	display: block;
+	border-top: 2px solid white;
+	border-right: 2px solid white;
+	content: "";
+	height: var(--size);
+	width: calc(var(--bar-width) * var(--size));
 }
 @keyframes flashred {
 	0% {
