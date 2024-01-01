@@ -22,11 +22,20 @@ class TechTreeNode {
             return `assets/textures/building/${this.id.split("building_")[1]}%230.png`;
         }
     }
+    status() {
+        if (this.unlocked)
+            return "unlocked";
+        else if (this.prerequisites.every(p => p.unlocked))
+            return "locked";
+        else
+            return "inaccessible";
+    }
 }
 class TechTree {
     constructor(builder) {
         this.nodes = [];
         this.nodesByID = {};
+        this.menuVisible = false;
         builder(this);
         this.root = this.nodes.find(n => n.prerequisites.length == 0) ?? crash(`No root node`);
         this.nodes.forEach(n => n.children.sort2(n => n.children.length));
@@ -47,8 +56,12 @@ class TechTree {
     getOpt(id) {
         return this.nodesByID[id] ?? null;
     }
+    tryUnlock(id) {
+        this.getOpt(id)?.tryUnlock();
+        this.resetTree();
+    }
     displayNode(node) {
-        return `<div class="research-tree-node" style="--depth: ${node.depth};${node.prerequisites.length == 0 ? "--right-offset: 1000;" : ""}"><img src="${node.imageURL()}"></div>`;
+        return `<div class="research-tree-node ${node.status()}" style="--depth: ${node.depth};${node.prerequisites.length == 0 ? "--right-offset: 1000;" : ""}"><img src="${node.imageURL()}" id="${node.id}" onclick="tech.tryUnlock('${node.id}')"></div>`;
     }
     displayTree(node) {
         if (node.children.length == 0)
@@ -58,9 +71,27 @@ class TechTree {
     }
     display() {
         if (researchTree.children.length == 0) {
-            researchTree.innerHTML = this.displayTree(this.root);
-            researchTree.style.setProperty("--nodes", this.nodes.length.toString());
+            this.resetTree();
         }
+    }
+    showMenu() {
+        if (!this.menuVisible) {
+            this.resetTree();
+            this.menuVisible = true;
+            researchMenu.classList.remove("hidden");
+            resourcesEl.style.backgroundColor = "#111";
+        }
+    }
+    hideMenu() {
+        if (this.menuVisible) {
+            this.menuVisible = false;
+            researchMenu.classList.add("hidden");
+            resourcesEl.style.removeProperty("backgroundColor");
+        }
+    }
+    resetTree() {
+        researchTree.innerHTML = this.displayTree(this.root);
+        researchTree.style.setProperty("--nodes", this.nodes.length.toString());
     }
     read(data) {
         const completedNodes = data.split(",");

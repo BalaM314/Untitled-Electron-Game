@@ -149,6 +149,18 @@ const GUI = {
     toggle() {
         this.hidden = !this.hidden;
     },
+    closeDialog() {
+        if (Game.alerts.active)
+            closeAlert();
+        else if (tech.menuVisible)
+            tech.hideMenu();
+    },
+    toggleResearchMenu() {
+        if (tech.menuVisible)
+            tech.hideMenu();
+        else
+            tech.showMenu();
+    },
     updateTooltip() {
         if (keybinds.display.show_tooltip.isHeld()) {
             const hovered = Input.latestMouseEvent?.target;

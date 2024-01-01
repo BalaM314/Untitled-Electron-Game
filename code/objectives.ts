@@ -26,12 +26,18 @@ class TechTreeNode {
 			return `assets/textures/building/${this.id.split("building_")[1]}%230.png`;
 		}
 	}
+	status(){
+		if(this.unlocked) return "unlocked";
+		else if(this.prerequisites.every(p => p.unlocked)) return "locked";
+		else return "inaccessible";
+	}
 }
 
 class TechTree {
 	nodes:TechTreeNode[] = [];
 	nodesByID:Record<string, TechTreeNode> = {}
 	root:TechTreeNode;
+	menuVisible = false;
 	constructor(builder:(tree:TechTree) => unknown){
 		builder(this);
 		this.root = this.nodes.find(n => n.prerequisites.length == 0) ?? crash(`No root node`);
@@ -55,8 +61,12 @@ class TechTree {
 		return this.nodesByID[id] ?? null;
 	}
 
+	tryUnlock(id:string){
+		this.getOpt(id)?.tryUnlock();
+		this.resetTree();
+	}
 	displayNode(node:TechTreeNode):string {
-		return `<div class="research-tree-node" style="--depth: ${node.depth};${node.prerequisites.length == 0 ? "--right-offset: 1000;" : ""}"><img src="${node.imageURL()}"></div>`;
+		return `<div class="research-tree-node ${node.status()}" style="--depth: ${node.depth};${node.prerequisites.length == 0 ? "--right-offset: 1000;" : ""}"><img src="${node.imageURL()}" id="${node.id}" onclick="tech.tryUnlock('${node.id}')"></div>`;
 	}
 	displayTree(node:TechTreeNode):string {
 		if(node.children.length == 0) return this.displayNode(node);
@@ -64,9 +74,28 @@ class TechTree {
 	}
 	display(){
 		if(researchTree.children.length == 0){
-			researchTree.innerHTML = this.displayTree(this.root);
-			researchTree.style.setProperty("--nodes", this.nodes.length.toString());
+			this.resetTree();
 		}
+	}
+	showMenu(){
+		if(!this.menuVisible){
+			this.resetTree();
+			this.menuVisible = true;
+			researchMenu.classList.remove("hidden");
+			//TODO bad
+			resourcesEl.style.backgroundColor = "#111";
+		}
+	}
+	hideMenu(){
+		if(this.menuVisible){
+			this.menuVisible = false;
+			researchMenu.classList.add("hidden");
+			resourcesEl.style.removeProperty("backgroundColor");
+		}
+	}
+	resetTree(){
+		researchTree.innerHTML = this.displayTree(this.root);
+		researchTree.style.setProperty("--nodes", this.nodes.length.toString());
 	}
 	read(data:string){
 		const completedNodes = data.split(",");

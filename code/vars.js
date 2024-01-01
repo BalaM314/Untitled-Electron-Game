@@ -267,12 +267,12 @@ const keybinds = extend()({
     },
     display: {
         show_tooltip: new Keybind("shift"),
-        hide_gui: new Keybind("c", [], () => firstUsePopup("hide-gui-message", "You have hidden the gui by pressing (c). Press c again to show it.", GUI.toggle))
+        hide_gui: new Keybind("c", [], () => firstUsePopup("hide-gui-message", "You have hidden the gui by pressing (c). Press c again to show it.", GUI.toggle)),
+        research: new Keybind("r", [], () => GUI.toggleResearchMenu()),
     },
     misc: {
         pause: new Keybind(" ", [], () => { Game.paused = !Game.paused; }),
-        close_dialog: new Keybind("escape", [], () => { if (Game.alerts.active)
-            closeAlert(); }),
+        close_dialog: new Keybind("escape", [], () => GUI.closeDialog()),
     }
 });
 const Input = {
