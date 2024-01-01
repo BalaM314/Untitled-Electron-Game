@@ -495,7 +495,7 @@ function tooltip(title, properties) {
     }
     else {
         for (const [k, v] of Object.entries(properties)) {
-            if (v.trim().length > 0) {
+            if (v && v.trim().length > 0) {
                 if (k.startsWith("_"))
                     props.push(v.trim());
                 else

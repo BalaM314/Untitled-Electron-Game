@@ -901,7 +901,7 @@ class Building {
 		//returns raw html, make sure to escape!
 		return tooltip(this.displayName(), this.tooltipProperties());
 	}
-	tooltipProperties():Record<string, string> {
+	tooltipProperties():Partial<Record<string, string>> {
 		return {
 			_description: bundle.get(`building.${this.block.id}.description`, ""),
 			id: settings.showIDsInTooltips ? this.block.id : ""
@@ -1143,8 +1143,11 @@ class BuildingWithRecipe extends Building {
 	update(currentFrame:CurrentFrame){
 		if(this.recipe && this.running){
 			if(this.timer > 0){
-				let minSatisfaction = Math.min(this.timer, 1); //todolater speed boost
-				//Don't send the timer below zero, this would waste fluid inputs or create extra fluid output
+				let minSatisfaction = this.recipe.inputs?.length ? Math.min(this.timer, 1) : 1;
+				//if the recipe does not have any item inputs,
+				//limiting the last tick at the correct amount will result in the last tick having potentially much lower efficiency
+				//this is a problem for power generators as that one tick will cause the network to briefly drop
+				//however if it does have item inputs, not limiting the last tick will result in more fluid/power output for the item
 
 				//Calculate the maximum efficiency
 				if(this.recipe.fluidInputs){ //Fluid check
@@ -1218,6 +1221,8 @@ class BuildingWithRecipe extends Building {
 			...super.tooltipProperties(),
 			Progress: this.recipe ? `${round(this.recipe.duration - this.timer, 2).toFixed(2)} / ${this.recipe.duration}` : "",
 			Efficiency: `${round(this.efficiency * 100, 2).toString()}%`,
+			"Power Generation": this.recipe?.powerProduction ? `${(this.efficiency * this.recipe.powerProduction).toFixed(0)}/${(this.efficiencyp * this.recipe.powerProduction).toFixed(0)}` : undefined,
+			"Power Usage": this.recipe?.powerConsumption ? `${(this.efficiency * this.recipe.powerConsumption).toFixed(0)}/${this.recipe.powerConsumption.toFixed(0)}` : undefined,
 		};
 	}
 	static makeDrawer<T extends BuildingWithRecipe>(drawer:(build:T, e:AnimationData, currentFrame:CurrentFrame) => void, ...drawers:BlockDrawer<T>[]){

@@ -1017,7 +1017,7 @@ let BuildingWithRecipe = (() => {
         update(currentFrame) {
             if (this.recipe && this.running) {
                 if (this.timer > 0) {
-                    let minSatisfaction = Math.min(this.timer, 1);
+                    let minSatisfaction = this.recipe.inputs?.length ? Math.min(this.timer, 1) : 1;
                     if (this.recipe.fluidInputs) {
                         for (const fluidInput of this.recipe.fluidInputs) {
                             const amountNeeded = fluidInput[1] / this.recipe.duration;
@@ -1085,6 +1085,8 @@ let BuildingWithRecipe = (() => {
                 ...super.tooltipProperties(),
                 Progress: this.recipe ? `${round(this.recipe.duration - this.timer, 2).toFixed(2)} / ${this.recipe.duration}` : "",
                 Efficiency: `${round(this.efficiency * 100, 2).toString()}%`,
+                "Power Generation": this.recipe?.powerProduction ? `${(this.efficiency * this.recipe.powerProduction).toFixed(0)}/${(this.efficiencyp * this.recipe.powerProduction).toFixed(0)}` : undefined,
+                "Power Usage": this.recipe?.powerConsumption ? `${(this.efficiency * this.recipe.powerConsumption).toFixed(0)}/${this.recipe.powerConsumption.toFixed(0)}` : undefined,
             };
         }
         static makeDrawer(drawer, ...drawers) {

@@ -572,13 +572,13 @@ function crash(message = `Unreachable code was reached!`):never {
 }
 
 /** @returns formatted HTML */
-function tooltip(title:string, properties:Record<string, string> | string[]):string {
+function tooltip(title:string, properties:Partial<Record<string, string>> | string[]):string {
 	const props:string[] = [];
 	if(Array.isArray(properties)){
 		props.push(...properties);
 	} else {
 		for(const [k, v] of Object.entries(properties)){
-			if(v.trim().length > 0){
+			if(v && v.trim().length > 0){
 				if(k.startsWith("_")) props.push(v.trim());
 				else props.push(`${k}: ${v.trim()}`);
 			}
