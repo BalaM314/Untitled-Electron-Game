@@ -171,7 +171,162 @@ function registerEventHandlers(){
 
 
 
+/** Object to manage HUD elements (text box, resources, objective, toolbar) */
+const GUI = {
+	elements: [hudtextEl, resourcesEl, objectiveEl, toolbarEl],
+	hidden: true,
+	hide(){
+		this.hidden = true;
+		this.updateVisibility();
+	},
+	show(){
+		this.hidden = false;
+		this.updateVisibility();
+	},
+	updateVisibility(){
+		if(this.hidden) this.elements.forEach(e => e.classList.add("hidden"));
+		else this.elements.forEach(e => e.classList.remove("hidden"));
+	},
+	toggle(){
+		this.hidden = !this.hidden;
+	},
+	updateTooltip(){
+		if(keybinds.display.show_tooltip.isHeld()){
+			const hovered = Input.latestMouseEvent?.target;
+			tooltipbox.style.setProperty("--x", `${Input.mouseX}px`);
+			tooltipbox.style.setProperty("--y", `${Input.mouseY}px`);
+			if(!hovered || hovered == clickcapture){
+				//Mouse is over the main canvas
+				//css pointer-events:none is used to prevent the event target from being the tooltip box itself, or some other unwanted element
+				tooltipbox.innerHTML = level1.getTooltip(...Camera.unproject(...Input.mouse));
+			} else if(hovered instanceof HTMLElement){
+				if(hovered instanceof HTMLImageElement && hovered.parentElement == toolbarEl){
+					//toolbar
+					const block = Buildings.getOpt((hovered.id ?? "") as RawBuildingID);
+					if(block){
+						if(block.unlocked()){
+							tooltipbox.innerHTML = tooltip(bundle.get(`building.${block.id}.name`), [
+								bundle.get(`building.${block.id}.description`)
+							]);
+						} else {
+							tooltipbox.innerHTML = tooltip("Not yet unlocked", ["Research this building to unlock it."]);
+						}
+					}
+				} else if(hovered === hudtextEl){
+					tooltipbox.innerHTML = tooltip("Hud Text", ["This area displays useful information, like the current FPS, cursor position, and power grid status."]);
+				} else if(hovered === resourcesEl){
+					tooltipbox.innerHTML = tooltip("Resources", ["These items can be used to construct buildings, or research new ones."]);
+				} else if(hovered instanceof HTMLSpanElement && hovered.parentElement == resourcesEl){
+					tooltipbox.innerHTML = Item.getTooltip(hovered.id as ItemID);
+				} else if(
+					hovered === objectiveEl || hovered === objectiveTitle ||
+					hovered === objectiveText || hovered === objectiveDescription ||
+					hovered === objectiveNextButton
+				){
+					tooltipbox.innerHTML = tooltip("Objective", ["This box shows the current objective. It may also contain tips and useful information."]);
+					Game.stats.objectiveHovered = true;
+				} else {
+					tooltipbox.innerHTML = hovered.id;
+				}
+			} else {
+				tooltipbox.innerHTML = "[unknown]";
+			}
+		} else {
+			tooltipbox.innerHTML = "";
+			tooltipbox.style.setProperty("--x", "-1000px");
+			tooltipbox.style.setProperty("--y", "-1000px");
+		}
+	},
+	updateHudText(currentFrame:CurrentFrame){
+	
+		const mousePosition = "Mouse position: " + Camera.unproject(...Input.mouse).map(Pos.pixelToTile).join(",");
+	
+		const frameMSLast10 = Game.stats.frameTimes.mean(10, null);
+		const frameMSLast120 = Game.stats.frameTimes.mean(120, null);
+		//TODO repeated code
+		const fpsLast10 = frameMSLast10 ? Math.min(consts.ups, round(1000 / frameMSLast10, 1)) : "...";
+		const fpsLast120 = frameMSLast120 ? Math.min(consts.ups, round(1000 / frameMSLast120, 1)) : "...";
+		const fpsText = `FPS: ${fpsLast10}/${fpsLast120}`;
+	
+		const debugText = settings.debug ? `C:${currentFrame.cps} T:${currentFrame.tps} I:${currentFrame.ips} MS:${frameMSLast10}` : "";
+	
+		const gridSatisfaction = level1.grid.powerRequested == 0 ? 1 : level1.grid.maxProduction / level1.grid.powerRequested;
+		const powergridText = level1.grid.maxProduction == 0 && level1.grid.powerRequested == 0 ? "" :
+			`Power: <span style="color: ${
+				gridSatisfaction < 0.3 ? "red" :
+				gridSatisfaction < 0.7 ? "orange" :
+				gridSatisfaction < 1 ? "yellow" :
+				"lime"
+			};">${Math.floor(level1.grid.powerRequested)}/${Math.floor(level1.grid.maxProduction)}</span>`;
+		const powerLowText = gridSatisfaction < 1 ? `<span style="color:red;">Insufficient power!</span>` : "&nbsp;";
 
+		hudtextEl.innerHTML = [mousePosition, fpsText, debugText, powergridText, powerLowText].filter(s => s.length > 0).join("<br>\n");
+	},
+	updateResources(){
+		for(const [id, amount] of Object.entries(level1.resources as Record<ItemID, number>)){
+			const data = level1.resourceDisplayData[id];
+			const shouldDisplay = data.shouldShowAlways || amount > 0 || data.amountRequired != null || (data.flashEffect != null && data.flashExpireTime > Date.now());
+			if(shouldDisplay){
+				resourcesItems[id]?.style.removeProperty("display");
+				resourcesItems[id] ??= (() => {
+					const el = document.createElement("span");
+					el.id = id;
+					el.style.setProperty("--image-url", `url("assets/textures/item/${id}.png")`);
+					el.title = f`${bundle.get(`item.${id}.name`)}\n${bundle.get(`item.${id}.description`, "\b")}`;
+					resourcesEl.appendChild(el);
+					return el;
+				})();
+				resourcesItems[id].innerText = data.amountRequired ? `${amount.toString()}/${data.amountRequired}` : amount.toString();
+				if(data.flashEffect && data.flashExpireTime > Date.now()) resourcesItems[id].classList.add(data.flashEffect);
+				else resourcesItems[id].classList.forEach(c => resourcesItems[id].classList.remove(c));
+			} else {
+				resourcesItems[id]?.style.setProperty("display", "none");
+			}
+		}
+	},
+	updateObjective(){
+		const objective = objectives.objectives.find(o => !o.completed);
+		if(objective){
+			objectiveText.innerText = objective.name();
+			objectiveDescription.innerText = objective.description();
+			if(objective.satisfied){
+				// objectiveCompleteIcon.classList.remove("disabled");
+				objectiveNextButton.classList.remove("disabled");
+			} else {
+				// objectiveCompleteIcon.classList.add("disabled");
+				objectiveNextButton.classList.add("disabled");
+			}
+		} else {
+			objectiveEl.classList.add("hidden");
+		}
+	},
+	updateToolbar(){
+		for(const block of Buildings){
+			const img = document.querySelector(`#toolbar img#${block.id}`) as HTMLImageElement;
+			if(!img) continue;
+			if(block.unlocked()){
+				img.classList.remove("locked");
+				//img.title = f`${bundle.get(`building.${block.id}.name`)}\n${bundle.get(`building.${block.id}.description`, "\b")}`;
+			} else {
+				img.classList.add("locked");
+				//img.title = `Not yet researched`;
+			}
+		}
+	},
+	update(currentFrame:CurrentFrame){
+		this.updateTooltip();
+		this.updateHudText(currentFrame);
+		this.updateResources();
+		this.updateObjective();
+		this.updateToolbar();
+		this.updateVisibility();
+	},
+};
+for(const k of (Object.keys(GUI) as (keyof typeof GUI)[])){
+	if(typeof GUI[k] == "function"){
+		GUI[k] = (GUI[k] as any).bind(GUI);
+	}
+}
 
 
 //todo fix this VV probably repeating myself a lot
@@ -412,131 +567,10 @@ const scenes: {
 				...(Camera.unproject(...Input.mouse).map(Pos.pixelToTile)),
 				placedBuilding.ID, currentFrame
 			);
-			if(keybinds.display.show_tooltip.isHeld()){
-				const hovered = Input.latestMouseEvent?.target;
-				tooltipbox.style.setProperty("--x", `${Input.mouseX}px`);
-				tooltipbox.style.setProperty("--y", `${Input.mouseY}px`);
-				if(!hovered || hovered == clickcapture){
-					//Mouse is over the main canvas
-					//css pointer-events:none is used to prevent the event target from being the tooltip box itself, or some other unwanted element
-					tooltipbox.innerHTML = level1.getTooltip(...Camera.unproject(...Input.mouse));
-				} else if(hovered instanceof HTMLElement){
-					if(hovered instanceof HTMLImageElement && hovered.parentElement == toolbarEl){
-						//toolbar
-						const block = Buildings.getOpt((hovered.id ?? "") as RawBuildingID);
-						if(block){
-							if(block.unlocked()){
-								tooltipbox.innerHTML = tooltip(bundle.get(`building.${block.id}.name`), [
-									bundle.get(`building.${block.id}.description`)
-								]);
-							} else {
-								tooltipbox.innerHTML = tooltip("Not yet unlocked", ["Research this building to unlock it."]);
-							}
-						}
-					} else if(hovered === resourcesEl){
-						tooltipbox.innerHTML = tooltip("Resources", ["These items can be used to construct buildings, or research new ones."]);
-					} else if(hovered instanceof HTMLSpanElement && hovered.parentElement == resourcesEl){
-						tooltipbox.innerHTML = Item.getTooltip(hovered.id as ItemID);
-					} else if(
-						hovered === objectiveEl || hovered === objectiveTitle ||
-						hovered === objectiveText || hovered === objectiveDescription ||
-						hovered === objectiveNextButton
-					){
-						tooltipbox.innerHTML = tooltip("Objective", ["This box shows the current objective. It may also contain tips and useful information."]);
-						Game.stats.objectiveHovered = true;
-					} else {
-						tooltipbox.innerHTML = hovered.id;
-					}
-				} else {
-					tooltipbox.innerHTML = "[unknown]";
-				}
-			} else {
-				tooltipbox.innerHTML = "";
-				tooltipbox.style.setProperty("--x", "-1000px");
-				tooltipbox.style.setProperty("--y", "-1000px");
-			}
+
 			
-			//display overlays
-			Gfx.layer("overlay");
-			Gfx.font("30px sans-serif");
-			Gfx.fillColor("white");
-			Gfx.textAlign("left");
-			Gfx.strokeColor("#888");
-			Gfx.lineWidth(1);
-			Gfx.textOutline(
-				Camera.unproject(...Input.mouse).map(Pos.pixelToTile).join(","),
-				10, 100
-			);
-			const frameMSLast10 = Game.stats.frameTimes.mean(10, null);
-			const frameMSLast120 = Game.stats.frameTimes.mean(120, null);
-			//TODO repeated code
-			const fpsLast10 = frameMSLast10 ? Math.min(consts.ups, round(1000 / frameMSLast10, 1)) : "...";
-			const fpsLast120 = frameMSLast120 ? Math.min(consts.ups, round(1000 / frameMSLast120, 1)) : "...";
-			Gfx.textOutline(`FPS: ${fpsLast10}/${fpsLast120}`, 10, 50);
 			
-			if(settings.debug){
-				Gfx.textOutline(`C:${currentFrame.cps} T:${currentFrame.tps} I:${currentFrame.ips} MS:${frameMSLast10}`, 10, 150);
-			}
-
-			for(const block of Buildings){
-				const img = document.querySelector(`img#${block.id}`) as HTMLImageElement;
-				if(!img) continue;
-				if(block.unlocked()) {
-					img.classList.remove("locked");
-					//img.title = f`${bundle.get(`building.${block.id}.name`)}\n${bundle.get(`building.${block.id}.description`, "\b")}`;
-				} else {
-					img.classList.add("locked");
-					//img.title = `Not yet researched`;
-				}
-			}
-		
-			//Update resources
-			for(const [id, amount] of Object.entries(level1.resources as Record<ItemID, number>)){
-				const data = level1.resourceDisplayData[id];
-				const shouldDisplay = data.shouldShowAlways || amount > 0 || data.amountRequired != null || (data.flashEffect != null && data.flashExpireTime > Date.now());
-				if(shouldDisplay){
-					resourcesItems[id]?.style.removeProperty("display");
-					resourcesItems[id] ??= (() => {
-						const el = document.createElement("span");
-						el.id = id;
-						el.style.setProperty("--image-url", `url("assets/textures/item/${id}.png")`);
-						el.title = f`${bundle.get(`item.${id}.name`)}\n${bundle.get(`item.${id}.description`, "\b")}`;
-						resourcesEl.appendChild(el);
-						return el;
-					})();
-					resourcesItems[id].innerText = data.amountRequired ? `${amount.toString()}/${data.amountRequired}` : amount.toString();
-					if(data.flashEffect && data.flashExpireTime > Date.now()) resourcesItems[id].classList.add(data.flashEffect);
-					else resourcesItems[id].classList.forEach(c => resourcesItems[id].classList.remove(c));
-				} else {
-					resourcesItems[id]?.style.setProperty("display", "none");
-				}
-			}
-
-			//Update objective
-			const objective = objectives.objectives.find(o => !o.completed);
-			if(objective){
-				objectiveText.innerText = objective.name();
-				objectiveDescription.innerText = objective.description();
-				if(objective.satisfied){
-					// objectiveCompleteIcon.classList.remove("disabled");
-					objectiveNextButton.classList.remove("disabled");
-				} else {
-					// objectiveCompleteIcon.classList.add("disabled");
-					objectiveNextButton.classList.add("disabled");
-				}
-			} else {
-				objectiveEl.classList.add("hidden");
-			}
-
-			if(Game.showGui){
-				objectiveEl.classList.remove("hidden");
-				toolbarEl.classList.remove("hidden");
-				resourcesEl.classList.remove("hidden");
-			} else {
-				objectiveEl.classList.add("hidden");
-				toolbarEl.classList.add("hidden");
-				resourcesEl.classList.add("hidden");
-			}
+			GUI.update(currentFrame);
 
 		},
 		onmousedown(e:MouseEvent){
@@ -690,9 +724,7 @@ function load(){
 
 	Game.sceneName = "game";
 	Game.forceRedraw = true;
-	toolbarEl.classList.remove("hidden");
-	resourcesEl.classList.remove("hidden");
-	objectiveEl.classList.remove("hidden");
+	GUI.show();
 
 	if(settings.autoSave){
 		if(safeToSave()){
@@ -709,6 +741,12 @@ function load(){
 
 function showCredits(){
 	_alert("you win!"); //todo not yet implemented
+	//plan:
+	//fade to black, remove camera control
+	//set position to at the edge of the island, show a boat
+	//over 10-15 seconds, accelerate the boat away from the island
+	//fade to black again and roll credits
+
 }
 
 /**Exports an Untitled Electron Game save, as an object. */

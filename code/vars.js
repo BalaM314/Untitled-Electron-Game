@@ -267,7 +267,7 @@ const keybinds = extend()({
     },
     display: {
         show_tooltip: new Keybind("shift"),
-        hide_gui: new Keybind("c", [], () => firstUsePopup("hide-gui-message", "You have hidden the gui by pressing (c). Press c again to show it.", () => Game.showGui = !Game.showGui, true))
+        hide_gui: new Keybind("c", [], () => firstUsePopup("hide-gui-message", "You have hidden the gui by pressing (c). Press c again to show it.", GUI.toggle))
     },
     misc: {
         pause: new Keybind(" ", [], () => { Game.paused = !Game.paused; }),
@@ -327,7 +327,6 @@ let Game = {
         frameTimes: new WindowedMean(120),
         objectiveHovered: false,
     },
-    showGui: true,
 };
 let level1 = null;
 const splashes = [

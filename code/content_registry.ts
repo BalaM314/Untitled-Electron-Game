@@ -174,7 +174,7 @@ const recipes = {
 			{
 				fluidInputs: [["base_steam", 15]],
 				duration: 30,
-				powerProduction: 120
+				powerProduction: 150
 			}
 		]
 	},
