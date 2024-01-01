@@ -889,6 +889,12 @@ class Building {
 	centeredPos(){
 		return Pos.fromTileCoords(this.pos.tileX, this.pos.tileY, true);
 	}
+	static tooltip(...lines:string[]){
+		return tooltip(bundle.get(`building.${this.id}.name`), [
+			bundle.get(`building.${this.id}.description`, ""),
+			...lines
+		]);
+	}
 	static display(id:BuildingIDWithMeta, pos:Pos, layer?:(keyof typeof Gfx.layers)){
 		const block = Buildings.get(id[0]);
 		const textureSize = block.textureSize(id[1]);

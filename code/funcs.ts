@@ -637,7 +637,7 @@ function selectID(id:RawBuildingID){
 	const block = Buildings.getOpt(id);
 	if(block && !block.unlocked()) id = "base_null";
 	placedBuilding.type = id;
-	const image = document.querySelector(`img#${id}`);
+	const image = document.querySelector(`img#toolbar_${id}`);
 	for(const icon of toolbarEl.children){
 		icon.classList.remove("selected")
 	}

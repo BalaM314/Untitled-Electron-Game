@@ -31,3 +31,6 @@ const resourcesItems:Record<string, HTMLSpanElement> = {};
 const texturesDiv = getElement("textures", HTMLDivElement);
 const researchMenu = getElement("research-menu", HTMLDivElement);
 const researchTree = getElement("research-tree", HTMLDivElement);
+const buttonsPane = getElement("buttons-pane", HTMLDivElement);
+const researchButton = getElement("research-button", HTMLSpanElement);
+const settingsButton = getElement("settings-button", HTMLSpanElement);

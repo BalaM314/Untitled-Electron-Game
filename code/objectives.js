@@ -17,6 +17,9 @@ class TechTreeNode {
         this.unlocked = true;
         return true;
     }
+    showCost() {
+        level1.hasResources(this.cost, 100);
+    }
     imageURL() {
         if (this.id.startsWith("building_")) {
             return `assets/textures/building/${this.id.split("building_")[1]}%230.png`;
@@ -61,7 +64,7 @@ class TechTree {
         this.resetTree();
     }
     displayNode(node) {
-        return `<div class="research-tree-node ${node.status()}" style="--depth: ${node.depth};${node.prerequisites.length == 0 ? "--right-offset: 1000;" : ""}"><img src="${node.imageURL()}" id="${node.id}" onclick="tech.tryUnlock('${node.id}')"></div>`;
+        return `<div class="research-tree-node ${node.status()}" style="--depth: ${node.depth};${node.prerequisites.length == 0 ? "--right-offset: 1000;" : ""}"><img src="${node.imageURL()}" id="research_${node.id}" onclick="tech.tryUnlock('${node.id}')"></div>`;
     }
     displayTree(node) {
         if (node.children.length == 0)
@@ -86,7 +89,7 @@ class TechTree {
         if (this.menuVisible) {
             this.menuVisible = false;
             researchMenu.classList.add("hidden");
-            resourcesEl.style.removeProperty("backgroundColor");
+            resourcesEl.style.removeProperty("background-color");
         }
     }
     resetTree() {

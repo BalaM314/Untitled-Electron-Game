@@ -71,6 +71,12 @@ canvas {
 	display: none;
 	visibility: hidden;
 }
+.text-button {
+	cursor: pointer;
+}
+.text-button:hover {
+	text-shadow: 0 0 5px white;
+}
 .selected {
 	border: 5px ridge green;
 }
@@ -80,6 +86,7 @@ canvas {
 	width: 100%;
 	height: 100%;
 }
+
 #hudtext {
 	z-index: 23;
 	position: absolute;
@@ -93,6 +100,7 @@ canvas {
 	border: 2px solid green;
 	background-color: #077A;
 }
+
 #resources {
 	position: absolute;
 	z-index: 26;
@@ -109,6 +117,26 @@ canvas {
 	display: grid;
 	grid-template-columns: repeat(4, 1fr);
 }
+#resources span {
+	overflow-x: visible;
+	white-space: nowrap;
+}
+#resources span.flashing {
+	animation-name: flashred;
+	animation-duration: 1s;
+	animation-iteration-count: infinite;
+}
+#resources span::before {
+	--size: 28px;
+	width: var(--size);
+	height: var(--size);
+	margin-right: 4px;
+	background-size: var(--size);
+	content: "";
+	display: inline-block !important;
+	background-image: var(--image-url);
+}
+
 #objective {
 	position: absolute;
 	z-index: 23;
@@ -150,25 +178,7 @@ canvas {
 #objective-description {
 	color: #DDD;
 }
-#resources span {
-	overflow-x: visible;
-	white-space: nowrap;
-}
-#resources span.flashing {
-	animation-name: flashred;
-	animation-duration: 1s;
-	animation-iteration-count: infinite;
-}
-#resources span::before {
-	--size: 28px;
-	width: var(--size);
-	height: var(--size);
-	margin-right: 4px;
-	background-size: var(--size);
-	content: "";
-	display: inline-block !important;
-	background-image: var(--image-url);
-}
+
 #toolbar img {
 	cursor: pointer;
 	user-select: none;
@@ -177,6 +187,24 @@ canvas {
 	filter: opacity(0.3) brightness(0);
 	cursor: not-allowed;
 }
+
+#buttons-pane {
+	z-index: 23;
+	position: absolute;
+	left: 0;
+	bottom: 0;
+	font-size: 36px;
+	font-family: sans-serif;
+	color: white;
+	text-shadow: 0 0 1px black;
+	border: 2px solid green;
+	background-color: #077A;
+	padding: 5px;
+}
+#buttons-pane span {
+	padding-right: 8px;
+}
+
 #research-menu {
 	z-index: 25;
 	position: absolute;
@@ -197,12 +225,7 @@ canvas {
 	display: flex;
 	justify-content: space-between;
 }
-#research-exit-button {
-	cursor: pointer;
-}
-#research-exit-button:hover {
-	text-shadow: 0 0 5px white;
-}
+
 /* #research-tree-wrapper {
 	
 } */
@@ -255,6 +278,8 @@ canvas {
 	height: calc(var(--drop));
 	width: calc(var(--bar-width) * var(--size));
 }
+
+
 @keyframes flashred {
 	0% {
 		text-shadow: 0 0 4px red;

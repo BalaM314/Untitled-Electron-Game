@@ -181,6 +181,10 @@ produceMotors.name = Produce Motors
 produceMotors.description = Motors are made by combining Stators and Rotors.
 researchBoat.name = Research the Boat
 researchBoat.description = It will take a lot of items to build a boat.
+
+[research]
+boat.name = Boat
+boat.description = The final task.
 `, "base_");
 const Direction = (() => {
     let right = { num: 0, string: "right", vec: [1, 0], horizontal: true, vertical: false };
