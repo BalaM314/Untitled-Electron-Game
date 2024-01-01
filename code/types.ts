@@ -102,6 +102,8 @@ interface SaveData {
 			timeCreated: string;
 		};
 		level1: LevelData;
+		techTree: string;
+		objectives: string;
 	}
 }
 

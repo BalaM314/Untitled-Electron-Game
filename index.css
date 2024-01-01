@@ -118,7 +118,8 @@ canvas {
 	max-width: 25%;
 	background-color: #077A;
 	font-family: sans-serif;
-	padding: 10px
+	padding-left: 10px;
+	padding-bottom: 10px;
 }
 #objective-title {
 	margin-bottom: 5px;

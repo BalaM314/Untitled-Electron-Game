@@ -79,6 +79,11 @@ class Level {
         catch (err) {
             throw new Error(`Error loading chunk ${position}: ${parseError(err)}`);
         }
+        level.buildings.forEach(b => {
+            if (b instanceof MultiBlockController) {
+                b.resetSecondaries();
+            }
+        });
         return level;
     }
     generate() {

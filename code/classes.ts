@@ -55,6 +55,12 @@ class Level {
 		} catch(err){
 			throw new Error(`Error loading chunk ${position}: ${parseError(err)}`)
 		}
+		level.buildings.forEach(b => {
+			if(b instanceof MultiBlockController){
+				//If the secondary is in a different chunk and updates first, the secondary will not know how to find the controller and break, which causes the multiblock to break on loading a save
+				b.resetSecondaries();
+			}
+		})
 		return level;
 	}
 	generate(){

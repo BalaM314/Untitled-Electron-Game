@@ -759,7 +759,9 @@ function exportData():SaveData {
 				version: consts.VERSION,
 				timeCreated: new Date().getTime().toString()
 			},
-			level1: level1.export()
+			level1: level1.export(),
+			techTree: tech.write(),
+			objectives: objectives.write(),
 		}
 	};
 }
@@ -780,6 +782,9 @@ function importData(rawData:string){
 
 		tempLevel = Level.read(levelData);
 		level1 = tempLevel;
+
+		if(data.UntitledElectronGame.techTree) tech.read(data.UntitledElectronGame.techTree);
+		if(data.UntitledElectronGame.objectives) objectives.read(data.UntitledElectronGame.objectives);
 
 	} catch(err){
 		console.error("Import failed.", err);
