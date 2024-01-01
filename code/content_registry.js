@@ -261,6 +261,7 @@ Buildings.register("base_multiblock_secondary", MultiBlockSecondary, {
 Buildings.register("base_assembler", MultiBlockController, {
     buildCost: [["base_stoneBrick", 50], ["base_ironIngot", 100], ["base_copperIngot", 25], ["base_ironPlate", 25], ["base_ironRod", 10], ["base_copperWire", 10]],
     recipeType: recipes.base_assembling,
+    consumesPower: true,
     multiblockSize: [2, 2],
     drawer: BuildingWithRecipe.progressDrawer(),
     secondary: Buildings.get("base_multiblock_secondary")

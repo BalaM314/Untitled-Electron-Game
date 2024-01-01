@@ -1860,6 +1860,12 @@ class MultiBlockController extends BuildingWithRecipe {
         return true;
     }
     spawnItem(id) {
+        if (id == "base_stator")
+            objectives.get("base_produceStators").satisfy();
+        else if (id == "base_rotor")
+            objectives.get("base_produceRotors").satisfy();
+        else if (id == "base_motor")
+            objectives.get("base_produceMotors").satisfy();
         if (super.spawnItem(id)) {
             return true;
         }

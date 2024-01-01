@@ -171,6 +171,16 @@ activateSteamGenerator.name = Activate a Steam Turbine (or two)
 activateSteamGenerator.description = Finally, enough electricity to run a properly sized factory.
 researchLathe.name = Research the Lathe
 researchLathe.description = The Lathe can produce rods from metal ingots. Unfortunately, most of the input is lost.
+researchAssembler.name = Research the Assembler
+researchAssembler.description = The Assembler is a large machine capable of producing useful items from their components.
+produceStators.name = Produce Stators
+produceStators.description = Stators are made from iron plates and copper wire.
+produceRotors.name = Produce Rotors
+produceRotors.description = Rotors are made from steel rods and copper wire.
+produceMotors.name = Produce Motors
+produceMotors.description = Motors are made by combining Stators and Rotors.
+researchBoat.name = Research the Boat
+researchBoat.description = It will take a lot of items to build a boat.
 `, "base_");
 const Direction = (() => {
     let right = { num: 0, string: "right", vec: [1, 0], horizontal: true, vertical: false };
@@ -257,6 +267,7 @@ const keybinds = extend()({
     },
     display: {
         show_tooltip: new Keybind("shift"),
+        hide_gui: new Keybind("c", [], () => firstUsePopup("hide-gui-message", "You have hidden the gui by pressing (c). Press c again to show it.", () => Game.showGui = !Game.showGui, true))
     },
     misc: {
         pause: new Keybind(" ", [], () => { Game.paused = !Game.paused; }),
@@ -315,7 +326,8 @@ let Game = {
     stats: {
         frameTimes: new WindowedMean(120),
         objectiveHovered: false,
-    }
+    },
+    showGui: true,
 };
 let level1 = null;
 const splashes = [

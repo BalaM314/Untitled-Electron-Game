@@ -79,6 +79,7 @@ const tech = new TechTree(tree => {
 	const boiler = tree.node("building_base_boiler", [["base_ironIngot", 50], ["base_steelIngot", 50], ["base_ironPlate", 50], ["base_coal", 20]], [furnace, pipe]);
 	const steam_generator = tree.node("building_base_steam_generator", [["base_ironIngot", 50], ["base_steelIngot", 50], ["base_ironPlate", 50], ["base_copperIngot", 30], ["base_copperWire", 30]], [boiler]);
 	const assembler = tree.node("building_base_assembler", [["base_ironIngot", 200], ["base_steelIngot", 50], ["base_ironPlate", 50], ["base_copperIngot", 200], ["base_copperWire", 100]], [steam_generator, lathe]);
+	const boat = tree.node("base_boat", [["base_steelPlate", 500], ["base_steelIngot", 100], ["base_steelRod", 100], ["base_ironIngot", 300], ["base_ironPlate", 100], ["base_ironRod", 100], ["base_copperWire", 300], ["base_motor", 20]], [assembler]);
 });
 
 
@@ -119,6 +120,13 @@ class Objective {
 	}
 	description(){
 		return bundle.get(`objective.${this.id}.description`);
+	}
+}
+
+class ResearchObjective extends Objective {
+	constructor(id:string, prerequisites:Objective[], nodeID:string, onComplete?:() => unknown){
+		const node = tech.get(nodeID);
+		super(id, prerequisites, () => node.unlocked, onComplete);
 	}
 }
 
@@ -203,6 +211,11 @@ const objectives = new ObjectiveList(() => {
 	const researchSteamGenerator = new ResearchBuildingObjective("base_researchSteamGenerator", [researchBoiler], "steam_generator");
 	const activateSteamGenerator = new Objective("base_activateSteamGenerator", [researchSteamGenerator], () => level1.grid.producers.some(p => p.block === Buildings.get("base_steam_generator") && (p as BuildingWithRecipe).efficiencyp > 0));
 	const researchLathe = new ResearchBuildingObjective("base_researchLathe", [producePower], "lathe");
+	const researchAssembler = new ResearchBuildingObjective("base_researchAssembler", [researchLathe], "assembler");
+	const produceStators = new Objective("base_produceStators", [researchAssembler]);
+	const produceRotors = new Objective("base_produceRotors", [researchAssembler]);
+	const produceMotors = new Objective("base_produceMotors", [produceStators, produceRotors]);
+	const researchBoat = new ResearchObjective("base_researchBoat", [produceMotors], "base_boat", () => showCredits());
 	//all the way to the boat
 });
 
