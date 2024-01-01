@@ -1094,6 +1094,23 @@ let BuildingWithRecipe = (() => {
                 "Power Usage": this.recipe?.powerConsumption ? `${(this.efficiency * this.recipe.powerConsumption).toFixed(0)}/${this.recipe.powerConsumption.toFixed(0)}` : undefined,
             };
         }
+        export() {
+            return {
+                ...super.export(),
+                items: this.items
+            };
+        }
+        static read(buildingData, level) {
+            const build = super.read(buildingData, level);
+            for (const [item, amount] of buildingData.items ?? []) {
+                if (ItemIDs.includes(item) && typeof amount == "number" && amount >= 0)
+                    build.items.push([item, amount]);
+            }
+            const recipe = this.recipeType.recipes.find(r => r.inputs?.every(([item, amount]) => build.items.some(([i, a]) => item == i && a > 0)));
+            if (recipe)
+                build.setRecipe(recipe);
+            return build;
+        }
         static makeDrawer(drawer, ...drawers) {
             return ((build, currentFrame) => {
                 if (build.recipe) {

@@ -135,6 +135,7 @@ interface BuildingData {
 	id: RawBuildingID;
 	meta: BuildingMeta;
 	item: ItemData | null;
+	items?: ItemStack[];
 	fluid?: FluidData | null;
 	inv?: ItemData[];
 }
