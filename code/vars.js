@@ -330,6 +330,7 @@ let Game = {
     stats: {
         frameTimes: new WindowedMean(120),
         objectiveHovered: false,
+        stoneRunOutMessageShown: false,
     },
 };
 let level1 = null;

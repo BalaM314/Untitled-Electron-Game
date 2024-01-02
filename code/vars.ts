@@ -394,6 +394,8 @@ let Game: {
 		/** Stores the time in milliseconds to render for the past 120 frames. */
 		frameTimes: WindowedMean;
 		objectiveHovered: boolean;
+		//TODO wrong abstraction
+		stoneRunOutMessageShown: boolean;
 	}
 } = {
 	texturesReady: false,
@@ -420,6 +422,7 @@ let Game: {
 	stats: {
 		frameTimes: new WindowedMean(120),
 		objectiveHovered: false,
+		stoneRunOutMessageShown: false,
 	},
 };
 let level1:Level = null!;

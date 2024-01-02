@@ -6,6 +6,8 @@
 
 class Level {
 	resources: Record<ItemID, number> = Object.fromEntries(ItemIDs.map(id => [id, 0]));
+	//TODO genericify
+	timeSinceStoneRanOut = Date.now();
 	resourceDisplayData: Record<ItemID, {
 		shouldShowAlways:boolean;
 		amountRequired:number | null;
@@ -316,6 +318,14 @@ class Level {
 		this.buildings.forEach(b => b.update(currentFrame));
 		for(let chunk of this.storage.values()){
 			chunk.update(currentFrame);
+		}
+
+		if(this.resources["base_stone"] == 0 && Date.now() - this.timeSinceStoneRanOut > 15000 && !Game.stats.stoneRunOutMessageShown){
+			//Stone is dead for more than 10 seconds
+			Game.stats.stoneRunOutMessageShown = true;
+			_alert(`It looks like you have run out of stone. Break unnecessary buildings by holding Backspace and moving the mouse over them to recover resources.`);
+		} else if(this.resources["base_stone"] > 0){
+			this.timeSinceStoneRanOut = Date.now();
 		}
 	}
 	display(currentframe:Object):void {
@@ -1872,8 +1882,10 @@ class ResourceAcceptor extends Building {
 		return [[4, 4], [0, 0]];
 	}
 	acceptItem(item:Item){
-		this.level.resources[item.id] ??= 0;
-		this.level.resources[item.id]! ++;
+		this.level.resources[item.id] ++;
+		if(item.id == "base_stone"){
+			this.level.timeSinceStoneRanOut = Date.now();
+		}
 		return true;
 	}
 }

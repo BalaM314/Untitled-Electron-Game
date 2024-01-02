@@ -681,7 +681,7 @@ function fixSizes(){
 function handleAlerts(){
 	if(Game.alerts.list.length && !Game.alerts.active){
 		Input.mouseDown = false;
-		alertmessage.innerText = Game.alerts.list[0];
+		alertmessage.innerHTML = Game.alerts.list[0];
 		alertmessage.style.setProperty("--text-length", alertmessage.innerText.length.toString());
 		alertbox.classList.add("active");
 		Game.alerts.active = true;
