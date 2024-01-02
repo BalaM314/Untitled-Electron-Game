@@ -1,9 +1,9 @@
 const ctxTiles = getElement("canvas0", HTMLCanvasElement).getContext("2d")!;
 const ctxTilesOver = getElement("canvas1", HTMLCanvasElement).getContext("2d")!;//Tiles
-const ctxGBuilds = getElement("canvas2", HTMLCanvasElement).getContext("2d")!;//Ghost buildings
-const ctxBuildsUnder = getElement("canvas3", HTMLCanvasElement).getContext("2d")!;//Under buildings
-const ctxBuilds = getElement("canvas4", HTMLCanvasElement).getContext("2d")!;//Buildings
-const ctxOBuilds = getElement("canvas5", HTMLCanvasElement).getContext("2d")!;//Overlay builds
+const ctxBuildsUnder = getElement("canvas2", HTMLCanvasElement).getContext("2d")!;//Ghost buildings
+const ctxBuilds = getElement("canvas3", HTMLCanvasElement).getContext("2d")!;//Under buildings
+const ctxOBuilds = getElement("canvas4", HTMLCanvasElement).getContext("2d")!;//Buildings
+const ctxGBuilds = getElement("canvas5", HTMLCanvasElement).getContext("2d")!;//Overlay builds
 const ctxItems = getElement("canvas6", HTMLCanvasElement).getContext("2d")!;//Items
 const ctxEffects = getElement("canvas7", HTMLCanvasElement).getContext("2d")!;//Effects
 const ctxOverlays = getElement("canvas8", HTMLCanvasElement).getContext("2d")!;//Overlays

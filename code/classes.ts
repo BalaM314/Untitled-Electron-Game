@@ -158,15 +158,16 @@ class Level {
 	}
 	
 	
-	displayGhostBuilding(tileX:number, tileY:number, buildingID:BuildingIDWithMeta, currentframe:CurrentFrame){ //TODO refactor this method
-		if(!this.hasChunk(tileX, tileY)) return;
+	displayGhostBuilding(tileX:number, tileY:number, buildingID:BuildingIDWithMeta, currentFrame:CurrentFrame){ //TODO refactor this method
 		Gfx.layer("ghostBuilds");
 		if(keybinds.placement.break_building.isHeld()){
 			Gfx.alpha(0.9);
-			Gfx.tImage(Gfx.texture("misc/invalidunderlay"), tileX, tileY, 1, 1);
+			Gfx.tImage(Gfx.texture("misc/breakunderlay"), tileX, tileY, 1, 1);
 			Gfx.alpha(1);
+			return;
 		}
 		if(buildingID[0] == "base_null") return;
+		if(!this.hasChunk(tileX, tileY)) return;
 
 		const block = Buildings.get(buildingID[0]);
 
@@ -178,8 +179,8 @@ class Level {
 		//Draw underlay
 		let isError = !this.hasResources(block.buildCost, 100) || !block.canBuildAt(tileX, tileY, this) || this.buildingAtTile(tileX, tileY)?.block.immutable;//TOOD cleanup
 		let underlayTextureSize = textureSize[0][0] == textureSize[0][1] ? textureSize : [[1, 1], [0, 0]];
+		
 		Gfx.tImage(Gfx.texture(isError ? "misc/invalidunderlay" : "misc/ghostunderlay"), tileX + underlayTextureSize[1][0], tileY + underlayTextureSize[1][1], ...underlayTextureSize[0]);
-
 		Gfx.alpha(0.7);
 		Building.display(changedID, Pos.fromTileCoords(tileX, tileY, false), "ghostBuilds");
 		Gfx.alpha(1);

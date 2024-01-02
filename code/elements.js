@@ -1,10 +1,10 @@
 "use strict";
 const ctxTiles = getElement("canvas0", HTMLCanvasElement).getContext("2d");
 const ctxTilesOver = getElement("canvas1", HTMLCanvasElement).getContext("2d");
-const ctxGBuilds = getElement("canvas2", HTMLCanvasElement).getContext("2d");
-const ctxBuildsUnder = getElement("canvas3", HTMLCanvasElement).getContext("2d");
-const ctxBuilds = getElement("canvas4", HTMLCanvasElement).getContext("2d");
-const ctxOBuilds = getElement("canvas5", HTMLCanvasElement).getContext("2d");
+const ctxBuildsUnder = getElement("canvas2", HTMLCanvasElement).getContext("2d");
+const ctxBuilds = getElement("canvas3", HTMLCanvasElement).getContext("2d");
+const ctxOBuilds = getElement("canvas4", HTMLCanvasElement).getContext("2d");
+const ctxGBuilds = getElement("canvas5", HTMLCanvasElement).getContext("2d");
 const ctxItems = getElement("canvas6", HTMLCanvasElement).getContext("2d");
 const ctxEffects = getElement("canvas7", HTMLCanvasElement).getContext("2d");
 const ctxOverlays = getElement("canvas8", HTMLCanvasElement).getContext("2d");

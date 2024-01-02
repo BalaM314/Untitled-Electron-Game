@@ -1,10 +1,8 @@
 Technical document: contains explanations of how bits of the code work.
 
 todo:
-polish ui for building placement, fix red outline on delete
 tell user that backspace to break buildings
 disable building before the third objective
-fix research menu resource showing issue ✔
 
 
 

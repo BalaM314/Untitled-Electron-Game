@@ -191,10 +191,10 @@ class Gfx {
 		this.layers = {
 			tile: ctxTiles,
 			tileOver: ctxTilesOver,
-			ghostBuilds: ctxGBuilds,
 			buildingsUnder: ctxBuildsUnder,
 			buildings: ctxBuilds,
 			overlayBuilds: ctxOBuilds,
+			ghostBuilds: ctxGBuilds,
 			items: ctxItems,
 			effects: ctxEffects,
 			overlay: ctxOverlays,

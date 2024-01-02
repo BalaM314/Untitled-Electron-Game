@@ -6,22 +6,26 @@ function registerEventHandlers() {
         Input.latestMouseEvent = e;
     };
     clickcapture.onmousedown = (e) => {
+        Input.mouseX = e.x;
+        Input.mouseY = e.y;
+        Input.latestMouseEvent = e;
         if (e.button)
             e.preventDefault();
         if (e.button === 0) {
             Input.mouseDown = true;
         }
-        Input.latestMouseEvent = e;
         Input.buildingPlaced = false;
         if (scenes[Game.sceneName]) {
             scenes[Game.sceneName]?.onmousedown?.(e);
         }
     };
-    clickcapture.onmouseup = (e) => {
+    window.onmouseup = (e) => {
+        Input.mouseX = e.x;
+        Input.mouseY = e.y;
+        Input.latestMouseEvent = e;
         if (e.button == 0) {
             Input.mouseDown = false;
         }
-        Input.latestMouseEvent = e;
         Input.buildingPlaced = false;
     };
     clickcapture.addEventListener("touchstart", (e) => {

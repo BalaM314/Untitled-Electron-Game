@@ -150,16 +150,17 @@ class Level {
     writeOverlayBuild(tileX, tileY, building) {
         this.getChunk(tileX, tileY).setOverlayBuild(Pos.chunkOffsetInTiles(tileX), Pos.chunkOffsetInTiles(tileY), building);
     }
-    displayGhostBuilding(tileX, tileY, buildingID, currentframe) {
-        if (!this.hasChunk(tileX, tileY))
-            return;
+    displayGhostBuilding(tileX, tileY, buildingID, currentFrame) {
         Gfx.layer("ghostBuilds");
         if (keybinds.placement.break_building.isHeld()) {
             Gfx.alpha(0.9);
-            Gfx.tImage(Gfx.texture("misc/invalidunderlay"), tileX, tileY, 1, 1);
+            Gfx.tImage(Gfx.texture("misc/breakunderlay"), tileX, tileY, 1, 1);
             Gfx.alpha(1);
+            return;
         }
         if (buildingID[0] == "base_null")
+            return;
+        if (!this.hasChunk(tileX, tileY))
             return;
         const block = Buildings.get(buildingID[0]);
         let changedID = [buildingID[0], buildingID[1]];

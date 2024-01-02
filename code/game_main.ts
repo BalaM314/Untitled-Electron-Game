@@ -10,22 +10,26 @@ function registerEventHandlers(){
 	}
 
 	clickcapture.onmousedown = (e:MouseEvent) => {
+		Input.mouseX = e.x;
+		Input.mouseY = e.y;
+		Input.latestMouseEvent = e;
 		//The default action is to bring up a context menu or the scroller thing, not desirable
 		if(e.button) e.preventDefault();
 		if(e.button === 0){
 			Input.mouseDown = true;
 		}
-		Input.latestMouseEvent = e;
 		Input.buildingPlaced = false;
 		if(scenes[Game.sceneName]){
 			scenes[Game.sceneName]?.onmousedown?.(e);
 		}
 	}
-	clickcapture.onmouseup = (e:MouseEvent) => {
+	window.onmouseup = (e:MouseEvent) => {
+		Input.mouseX = e.x;
+		Input.mouseY = e.y;
+		Input.latestMouseEvent = e;
 		if(e.button == 0){
 			Input.mouseDown = false;
 		}
-		Input.latestMouseEvent = e;
 		Input.buildingPlaced = false;
 	}
 
