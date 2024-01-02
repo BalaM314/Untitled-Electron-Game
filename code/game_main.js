@@ -166,30 +166,27 @@ const GUI = {
         if (!(hovered instanceof HTMLElement))
             return;
         if (hovered.id.startsWith("research_")) {
+            const hoveredID = hovered.id.split("research_")[1];
+            const node = tech.get(hoveredID);
+            const block = Buildings.getOpt(hoveredID.split("building_")[1]);
             this.updateTooltipPosition();
-            if (hovered.id.startsWith("research_building_")) {
-                const block = Buildings.getOpt(hovered.id.split("research_building_")[1]);
-                if (block) {
-                    if (block.node?.status() == "inaccessible") {
-                        tooltipbox.innerHTML = "?";
-                    }
-                    else if (block.node?.status() == "locked") {
-                        tooltipbox.innerHTML = block.tooltip("Click to research!");
-                        block.node.showCost();
-                    }
-                    else {
-                        tooltipbox.innerHTML = block.tooltip();
-                    }
-                }
-                else {
-                    tooltipbox.innerHTML = "[error] invalid block";
-                }
+            const message = node.missingItem() ? `<span style="color:#FAA"> Missing item: ${bundle.get(`item.${node.missingItem()}.name`)}</span>` : "Click to research!";
+            if (node.status() == "inaccessible") {
+                tooltipbox.innerHTML = "?";
+            }
+            else if (node.status() == "locked") {
+                tooltipbox.innerHTML = block?.tooltip(message) ??
+                    tooltip(bundle.get(`research.${hoveredID}.name`), [
+                        bundle.get(`research.${hoveredID}.description`),
+                        message,
+                    ]);
+                node.showCost();
             }
             else {
-                const hoveredID = hovered.id.split("research_")[1] ?? "error";
-                tooltipbox.innerHTML = tooltip(bundle.get(`research.${hoveredID}.name`), [
-                    bundle.get(`research.${hoveredID}.description`),
-                ]);
+                tooltipbox.innerHTML = block?.tooltip() ??
+                    tooltip(bundle.get(`research.${hoveredID}.name`), [
+                        bundle.get(`research.${hoveredID}.description`),
+                    ]);
             }
         }
         else if (keybinds.display.show_tooltip.isHeld()) {
@@ -518,7 +515,6 @@ const scenes = {
                 return;
             try {
                 level1.generateNecessaryChunks();
-                this.resetResourceDisplayData();
                 level1.update(currentFrame);
                 objectives.update();
             }
@@ -550,6 +546,7 @@ const scenes = {
                 else
                     ctx.clear();
             }
+            level1.resetResourceDisplayData();
             level1.display(currentFrame);
             ParticleEffect.displayAll();
             level1.displayGhostBuilding(...(Camera.unproject(...Input.mouse).map(Pos.pixelToTile)), placedBuilding.ID, currentFrame);

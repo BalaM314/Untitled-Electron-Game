@@ -23,6 +23,12 @@ class TechTreeNode {
 	showCost(){
 		level1.hasResources(this.cost, 100);
 	}
+	hasCost(){
+		return level1.hasResources(this.cost);
+	}
+	missingItem():ItemID | null {
+		return level1.missingItemForResources(this.cost);
+	}
 	imageURL(){
 		//TODO not generic
 		if(this.id.startsWith("building_")){

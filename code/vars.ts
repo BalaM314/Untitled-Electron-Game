@@ -183,17 +183,17 @@ boat.description = The final task.
 type ItemID =
 | "base_null"
 | "base_coalOre"
-| "base_coal"
+| "base_coal" //fuel
 | "base_ironOre"
-| "base_ironIngot"
+| "base_ironIngot" //dog bowl
 | "base_stone"
 | "base_stoneBrick"
 | "base_ironPlate"
 | "base_ironRod"
 | "base_copperOre"
-| "base_copperIngot"
+| "base_copperIngot" //molten
 | "base_copperWire"
-| "base_steelIngot"
+| "base_steelIngot" //cast iron
 | "base_steelPlate"
 | "base_steelRod"
 | "base_stator"

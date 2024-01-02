@@ -259,7 +259,9 @@ class Level {
     hasResources(items, flashTime = 0) {
         let sufficient = true;
         for (const [item, amount] of items) {
-            level1.resourceDisplayData[item].amountRequired = amount;
+            if (flashTime > 0) {
+                level1.resourceDisplayData[item].amountRequired = amount;
+            }
             if (level1.resources[item] < amount) {
                 sufficient = false;
                 if (flashTime) {
@@ -271,6 +273,9 @@ class Level {
             }
         }
         return sufficient;
+    }
+    missingItemForResources(items) {
+        return items.find(([item, amount]) => this.resources[item] < amount)?.[0] ?? null;
     }
     drainResources(items) {
         var _b;

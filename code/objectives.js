@@ -20,6 +20,12 @@ class TechTreeNode {
     showCost() {
         level1.hasResources(this.cost, 100);
     }
+    hasCost() {
+        return level1.hasResources(this.cost);
+    }
+    missingItem() {
+        return level1.missingItemForResources(this.cost);
+    }
     imageURL() {
         if (this.id.startsWith("building_")) {
             return `assets/textures/building/${this.id.split("building_")[1]}%230.png`;
