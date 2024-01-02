@@ -344,13 +344,13 @@ const GUI = {
 		}
 	},
 	display(currentFrame:CurrentFrame){
+		tech.display();
 		this.updateTooltip();
 		this.updateHudText(currentFrame);
 		this.updateResources();
 		this.updateObjective();
 		this.updateToolbar();
 		this.updateVisibility();
-		tech.display();
 	},
 };
 for(const k of (Object.keys(GUI) as (keyof typeof GUI)[])){
@@ -561,6 +561,7 @@ const scenes: {
 			if(Game.paused) return;
 			try {
 				level1.generateNecessaryChunks();
+				this.resetResourceDisplayData();
 				level1.update(currentFrame);
 				objectives.update();
 			} catch(err){

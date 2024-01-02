@@ -159,7 +159,6 @@ class Level {
 	
 	
 	displayGhostBuilding(tileX:number, tileY:number, buildingID:BuildingIDWithMeta, currentframe:CurrentFrame){ //TODO refactor this method
-		this.resetResourceDisplayData();
 		if(!this.hasChunk(tileX, tileY)) return;
 		Gfx.layer("ghostBuilds");
 		if(keybinds.placement.break_building.isHeld()){
