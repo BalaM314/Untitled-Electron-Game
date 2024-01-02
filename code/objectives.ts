@@ -79,6 +79,9 @@ class TechTree {
 		if(researchTree.children.length == 0){
 			this.resetTree();
 		}
+		if(this.menuVisible){
+			placedBuilding.type = "base_null";
+		}
 	}
 	showMenu(){
 		if(!this.menuVisible){
