@@ -1,5 +1,8 @@
 # Untitled-Electron-Game
-![image](https://user-images.githubusercontent.com/71201189/150666276-038b9a4e-a46a-4acc-9467-605ae9e91bf7.png)
+
+![image](https://github.com/BalaM314/Untitled-Electron-Game/assets/71201189/2ba8cccc-caa0-4dc4-9775-b01004da041a)
+
+![image](https://github.com/BalaM314/Untitled-Electron-Game/assets/71201189/c7344f0c-3d45-4315-a69e-6dfd9d7823d8)
 
 A factory building style game. Currently in late alpha, meaning:
 
