@@ -27,9 +27,10 @@ class TechTreeNode {
         return level1.missingItemForResources(this.cost);
     }
     imageURL() {
-        if (this.id.startsWith("building_")) {
+        if (this.id.startsWith("building_"))
             return `assets/textures/building/${this.id.split("building_")[1]}%230.png`;
-        }
+        else
+            return `assets/textures/misc/${this.id}.png`;
     }
     status() {
         if (this.unlocked)

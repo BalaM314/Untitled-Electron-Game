@@ -1,9 +1,6 @@
 Technical document: contains explanations of how bits of the code work.
 
-todo:
-tell user that backspace to break buildings
-disable building before the third objective
-
+todo: ✔
 
 
 

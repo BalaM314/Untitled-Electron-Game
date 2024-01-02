@@ -675,7 +675,7 @@ function fixSizes(){
 function handleAlerts(){
 	if(Game.alerts.list.length && !Game.alerts.active){
 		Input.mouseDown = false;
-		alertmessage.innerHTML = Game.alerts.list[0];
+		alertmessage.innerHTML = Game.alerts.list[0].replaceAll("\n", "<br>");
 		alertmessage.style.setProperty("--text-length", alertmessage.innerText.length.toString());
 		alertbox.classList.add("active");
 		Game.alerts.active = true;
@@ -738,9 +738,11 @@ function load(){
 	
 	if(!localStorage.firstload){
 		localStorage.firstload = true;
-		_alert(`Welcome to Untitled Electron Game!
-		This is a game about building a factory. It's still in early alpha, so there's not much content.
-		There's no good in game tutorial, so to get started check the <a href="https://github.com/BalaM314/Untitled-Electron-Game/wiki/Quickstart-Guide">wiki page</a>.`);
+		_alert(
+`Welcome to Untitled Electron Game!
+This is a game about building a factory.
+To get started, follow the objectives in the top right.`
+		);
 	}
 	
 	if(
@@ -748,10 +750,6 @@ function load(){
 		(settings.alwaysLoadSave || confirm("Would you like to load your save?"))
 	) importData(localStorage.getItem("save1")!);
 	else level1 = new Level(Rand.int(0, 10000), true).generate();
-	if(localStorage.getItem("untitled-electron-game:tech-tree"))
-		tech.read(localStorage.getItem("untitled-electron-game:tech-tree")!);
-	if(localStorage.getItem("untitled-electron-game:objectives"))
-		objectives.read(localStorage.getItem("untitled-electron-game:objectives")!);
 
 	Game.sceneName = "game";
 	Game.forceRedraw = true;
