@@ -163,8 +163,8 @@ function registerEventHandlers(){
 	}
 
 
-	objectiveNextButton.addEventListener("click", () => {
-		const objective = objectives.objectives.find(o => !o.completed);
+	objectiveText.addEventListener("click", () => {
+		const objective = objectives.objectives.find(o => o.satisfied && !o.completed);
 		objective?.tryComplete();
 	});
 
@@ -324,13 +324,7 @@ const GUI = {
 		if(objective){
 			objectiveText.innerText = objective.name();
 			objectiveDescription.innerText = objective.description();
-			if(objective.satisfied){
-				// objectiveCompleteIcon.classList.remove("disabled");
-				objectiveNextButton.classList.remove("disabled");
-			} else {
-				// objectiveCompleteIcon.classList.add("disabled");
-				objectiveNextButton.classList.add("disabled");
-			}
+			objectiveEl.classList[objective.satisfied ? "add" : "remove"]("complete");
 		} else {
 			objectiveEl.classList.add("hidden");
 		}

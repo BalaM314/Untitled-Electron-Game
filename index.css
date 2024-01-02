@@ -159,21 +159,28 @@ canvas {
 	color: white;
 	text-decoration: underline;
 }
+#objective.complete #objective-text {
+	animation: flashgreen 1s infinite;
+	cursor: pointer;
+}
 /* #objective-complete-icon {
 	color: lime;
 	font-size: 36px;
-} */
+}
 #objective-complete-icon.disabled {
 	display: none;
 }
+*/
 #objective-next-button {
-	color: white;
-	font-size: 40px;
-	cursor: pointer;
-	animation: flashgreen 1s infinite;
-}
-#objective-next-button.disabled {
 	display: none;
+}
+#objective.complete #objective-next-button {
+	display: unset;
+	color: white;
+	font-size: 48px;
+	line-height: 30px;
+	cursor: pointer;
+	animation: next-button-flash 1s infinite;
 }
 #objective-description {
 	color: #DDD;
@@ -304,6 +311,22 @@ canvas {
 		color: white;
 	}
 	100% {
+		text-shadow: 0 0 4px lime;
+		color: lime;
+	}
+}
+@keyframes next-button-flash {
+	0% {
+		padding-left: 0px;
+		text-shadow: 0 0 4px lime;
+		color: lime;
+	}
+	50% {
+		text-shadow: 0 0 4px white;
+		color: white;
+	}
+	100% {
+		padding-left: 30px;
 		text-shadow: 0 0 4px lime;
 		color: lime;
 	}
