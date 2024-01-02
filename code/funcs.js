@@ -151,7 +151,12 @@ class Button {
         let tempBaseline = _ctx.textBaseline;
         _ctx.textBaseline = "middle";
         _ctx.fillStyle = "#FFFFFF";
-        _ctx.fillText(this.label, this.x + this.width / 2, this.y + this.height / 2);
+        if (typeof this.label == "string") {
+            _ctx.fillText(this.label, this.x + this.width / 2, this.y + this.height / 2);
+        }
+        else {
+            _ctx.drawImage(this.label.image, this.x, this.y, this.width, this.height);
+        }
         _ctx.textBaseline = tempBaseline;
     }
     isMouseInside() {

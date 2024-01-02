@@ -416,12 +416,12 @@ const scenes: {
 			new Button({
 				x: () => innerWidth * 0.9,
 				y: () => innerHeight * 0.5,
-				width: () => innerWidth * 0.05,
-				height: () => innerHeight * 0.05,
-				label: "Help",
+				width: () => Math.min(innerWidth, innerHeight) * 0.1,
+				height: () => Math.min(innerWidth, innerHeight) * 0.1,
+				label: () => Gfx.texture("misc/github-60x60"),
 				color: "#0000FF",
 				font: "30px sans-serif",
-				onClick: () => {window.open("https://github.com/BalaM314/Untitled-Electron-Game/wiki/Quickstart-Guide");}
+				onClick: () => {window.open("https://github.com/BalaM314/Untitled-Electron-Game/");}
 			}),
 		],
 		update(){},
@@ -432,8 +432,10 @@ const scenes: {
 			ctxOverlays.font = "70px sans-serif";
 			ctxOverlays.textAlign = "center";
 			ctxOverlays.textBaseline = "middle";
-			ctxOverlays.fillStyle = "#000000";
+			ctxOverlays.fillStyle = "#FFFFFF";
 			ctxOverlays.fillText("Untitled Electron Game", innerWidth / 2, innerHeight * 0.2);
+			ctxOverlays.font = "20px sans-serif";
+			ctxOverlays.fillText("Version Beta 1.0.0", innerWidth / 2, innerHeight * 0.25);
 			ctxOverlays.fillStyle = "#cccc00";
 			ctxOverlays.font = `${20 + 5*Game.splash.bounceFunc(millis() / 400)}px sans-serif`;
 			ctxOverlays.fillText(Game.splash.text ?? "splash not found! this is actually an error pls report", innerWidth / 2, innerHeight * 0.35);
