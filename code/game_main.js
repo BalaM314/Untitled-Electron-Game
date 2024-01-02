@@ -313,13 +313,13 @@ const GUI = {
         }
     },
     display(currentFrame) {
+        tech.display();
         this.updateTooltip();
         this.updateHudText(currentFrame);
         this.updateResources();
         this.updateObjective();
         this.updateToolbar();
         this.updateVisibility();
-        tech.display();
     },
 };
 for (const k of Object.keys(GUI)) {
@@ -518,6 +518,7 @@ const scenes = {
                 return;
             try {
                 level1.generateNecessaryChunks();
+                this.resetResourceDisplayData();
                 level1.update(currentFrame);
                 objectives.update();
             }

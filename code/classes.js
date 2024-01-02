@@ -151,7 +151,6 @@ class Level {
         this.getChunk(tileX, tileY).setOverlayBuild(Pos.chunkOffsetInTiles(tileX), Pos.chunkOffsetInTiles(tileY), building);
     }
     displayGhostBuilding(tileX, tileY, buildingID, currentframe) {
-        this.resetResourceDisplayData();
         if (!this.hasChunk(tileX, tileY))
             return;
         Gfx.layer("ghostBuilds");
