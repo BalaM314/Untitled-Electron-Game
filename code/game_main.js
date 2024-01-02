@@ -390,7 +390,7 @@ const scenes = {
             ctxOverlays.fillStyle = "#FFFFFF";
             ctxOverlays.fillText("Untitled Electron Game", innerWidth / 2, innerHeight * 0.2);
             ctxOverlays.font = "20px sans-serif";
-            ctxOverlays.fillText("Version Beta 1.0.0", innerWidth / 2, innerHeight * 0.25);
+            ctxOverlays.fillText("Version Alpha 4.0.0", innerWidth / 2, innerHeight * 0.25);
             ctxOverlays.fillStyle = "#cccc00";
             ctxOverlays.font = `${20 + 5 * Game.splash.bounceFunc(millis() / 400)}px sans-serif`;
             ctxOverlays.fillText(Game.splash.text ?? "splash not found! this is actually an error pls report", innerWidth / 2, innerHeight * 0.35);
