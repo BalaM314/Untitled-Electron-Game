@@ -573,6 +573,7 @@ class Chunk {
 			min_water_chunk_distance: 3,
 			ocean_distance: 160,
 			river_distance: 140,
+			sand_distance: 155,
 			hilly: {
 				/** Determins where the hilly(perlin generated) terrain starts. Higher values make it start further away.*/
 				terrain_cutoff: 0,
@@ -654,7 +655,7 @@ class Chunk {
 						if((noiseHeight + distanceBoost / 2) > generation_consts.hilly.ore_threshold){
 							this.layers[0][y][x] = oreToGenerate;
 						} else if((noiseHeight + distanceBoost) > generation_consts.hilly.stone_threshold){
-							this.layers[0][y][x] = "base_stone";
+							this.layers[0][y][x] = dist > generation_consts.sand_distance ? "base_sand" : "base_stone";
 						} else if(dist > generation_consts.river_distance && noiseHeight - (distanceBoost / 5) < generation_consts.hilly.water_threshold){
 							this.layers[0][y][x] = "base_water";
 						} else {

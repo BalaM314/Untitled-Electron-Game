@@ -2,6 +2,7 @@ type TileID =
 "base_grass" |  //Grass
 "base_stone" |  //stone
 "base_water" |	//water
+"base_sand" |	//sand
 "base_ore_iron" |  //iron ore
 "base_ore_coal" |  //coal ore
 "base_ore_copper" |	//copper ore

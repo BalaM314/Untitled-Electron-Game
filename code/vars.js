@@ -48,6 +48,7 @@ const bundle = I18NBundle.read(`\
 grass.name = Grass
 stone.name = Stone
 water.name = Water
+sand.name = Sand
 water.description = Buildings can't be built on water.
 ore_coal.name = Coal Ore Node
 ore_coal.description = Ore nodes are infinite, and can be mined with a miner.

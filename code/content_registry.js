@@ -60,6 +60,10 @@ const recipes = {
                 outputs: [["base_stone", 1]],
                 duration: 60,
                 tile: "base_stone"
+            }, {
+                outputs: [["base_sand", 1]],
+                duration: 60,
+                tile: "base_sand"
             },
         ]
     },
@@ -182,6 +186,7 @@ const ItemIDs = [
     "base_null",
     "base_coalOre",
     "base_coal",
+    "base_sand",
     "base_ironOre",
     "base_ironIngot",
     "base_stone",
