@@ -115,7 +115,9 @@ function registerEventHandlers() {
         const img = document.createElement("img");
         img.src = `assets/textures/building/${block.id}%230.png`;
         img.id = "toolbar_" + block.id;
-        img.draggable = false;
+        img.addEventListener("drag", () => {
+            _alert(`Place a building by clicking it in the toolbar, then clicking again where you want the building to go.`);
+        });
         img.title = f `${bundle.get(`building.${block.id}.name`)}\n${bundle.get(`building.${block.id}.description`, "\b")}`;
         img.addEventListener("click", () => {
             selectID(block.id);
@@ -616,7 +618,7 @@ function fixSizes() {
 function handleAlerts() {
     if (Game.alerts.list.length && !Game.alerts.active) {
         Input.mouseDown = false;
-        alertmessage.innerHTML = Game.alerts.list.shift();
+        alertmessage.innerText = Game.alerts.list[0];
         alertmessage.style.setProperty("--text-length", alertmessage.innerText.length.toString());
         alertbox.classList.add("active");
         Game.alerts.active = true;

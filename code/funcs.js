@@ -283,11 +283,13 @@ function trigger(key, data) {
             break;
     }
 }
-function _alert(x) {
-    Game.alerts.list.push(x);
+function _alert(message) {
+    if (!Game.alerts.list.includes(message))
+        Game.alerts.list.push(message);
 }
 function closeAlert() {
     alertbox.classList.remove("active");
+    Game.alerts.list.shift();
     Game.alerts.active = false;
 }
 function hex(num, length) {

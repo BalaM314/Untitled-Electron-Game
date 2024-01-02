@@ -348,12 +348,14 @@ function trigger<T extends keyof Triggers>(key:T, data:Triggers[T]){
 	}
 }
 
-function _alert(x:string){
-	Game.alerts.list.push(x);
+function _alert(message:string){
+	if(!Game.alerts.list.includes(message))
+		Game.alerts.list.push(message);
 }
 
 function closeAlert(){
 	alertbox.classList.remove("active");
+	Game.alerts.list.shift();
 	Game.alerts.active = false;
 }
 
