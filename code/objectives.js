@@ -138,7 +138,7 @@ const tech = new TechTree(tree => {
     const boiler = tree.node("building_base_boiler", [["base_ironIngot", 50], ["base_steelIngot", 50], ["base_ironPlate", 50], ["base_coal", 20]], [pipe]);
     const steam_generator = tree.node("building_base_steam_generator", [["base_ironIngot", 50], ["base_steelIngot", 50], ["base_ironPlate", 50], ["base_copperIngot", 30], ["base_copperWire", 30]], [boiler]);
     const assembler = tree.node("building_base_assembler", [["base_ironIngot", 200], ["base_steelIngot", 50], ["base_ironPlate", 50], ["base_copperIngot", 200], ["base_copperWire", 100]], [steam_generator]);
-    const boat = tree.node("base_boat", [["base_steelPlate", 500], ["base_steelIngot", 100], ["base_steelRod", 100], ["base_ironIngot", 300], ["base_ironPlate", 100], ["base_ironRod", 100], ["base_copperWire", 300], ["base_motor", 20]], [assembler]);
+    const boat = tree.node("base_boat", [["base_steelPlate", 500], ["base_steelIngot", 100], ["base_steelRod", 100], ["base_ironIngot", 300], ["base_ironPlate", 100], ["base_ironRod", 100], ["base_copperWire", 300], ["base_copperIngot", 15], ["base_motor", 50]], [assembler]);
 });
 class Objective {
     constructor(id, prerequisites = [], condition, onComplete) {
