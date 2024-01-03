@@ -95,6 +95,8 @@ coalOre.description = Can be converted into Coal by a Furnace.
 coal.name = Coal
 stone.name = Stone
 stoneBrick.name = Stone Brick
+sand.name = Sand
+sand.description = (unused)
 ironOre.name = Iron Ore
 ironOre.description = Can be smelted into Iron by a Furnace.
 ironIngot.name = Iron Ingot
@@ -117,11 +119,13 @@ steam.name = Steam
 
 [objective]
 leave.name = Objective: Leave
-leave.description = [????? why] Go towards the left. Use WASD to move, and press Shift to scroll faster.
+leave.description = Go towards the left. Use WASD to move, and press Shift to scroll faster.
 leave_satisfied.name = Objective: ...build a boat
 leave_satisfied.description = Looks like you're stranded on an island. To get off, you'll need to make a boat from scratch.\\nClick the arrow to proceed.
 tooltips.name = Use tooltips
 tooltips.description = Move the mouse to this text and press Shift to show tooltips.
+tooltips_satisfied.name = Use tooltips
+tooltips_satisfied.description = Almost everything supports tooltips.
 produceStone.name = Produce Stone
 produceStone.description = Stone is used for most early-game buildings. Build a Miner on stone to produce it.
 gatherStone.name = Gather Stone
@@ -317,8 +321,8 @@ const keybinds = extend<Keybinds>()({
 		type_6: new Keybind("6", [], () => selectID("base_chest")),
 		type_7: new Keybind("7", [], () => selectID("base_alloy_smelter")),
 		type_8: new Keybind("8", [], () => selectID("base_stirling_generator")),
-		type_9: new Keybind("9", [], () => selectID("base_wiremill")),
-		type_11: new Keybind("f1", [], () => selectID("base_compressor")),
+		type_11: new Keybind("9", [], () => selectID("base_compressor")),
+		type_9: new Keybind("f1", [], () => selectID("base_wiremill")),
 		type_12: new Keybind("f2", [], () => selectID("base_lathe")),
 		type_13: new Keybind("f3", [], () => selectID("base_assembler")),
 		// type_13: new Keybind("f3", [], () => selectID("base_arc_tower")),
@@ -333,7 +337,7 @@ const keybinds = extend<Keybinds>()({
 	},
 	display: {
 		show_tooltip: new Keybind("shift"),
-		hide_gui: new Keybind("c", [], () => firstUsePopup("hide-gui-message", "You have hidden the gui by pressing (c). Press c again to show it.", GUI.toggle)),
+		hide_gui: new Keybind("c", [], () => firstUsePopup("hide-gui-message", "You have hidden the gui by pressing (c). Press c again to show it.", GUI.toggle, true)),
 		research: new Keybind("r", [], () => GUI.toggleResearchMenu()),
 	},
 	misc: {

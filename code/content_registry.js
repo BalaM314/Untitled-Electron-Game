@@ -236,7 +236,7 @@ Buildings.register("base_resource_acceptor", ResourceAcceptor, {
     hidden: true,
 });
 Buildings.register("base_alloy_smelter", BuildingWithRecipe, {
-    buildCost: [["base_stoneBrick", 35], ["base_ironIngot", 20]],
+    buildCost: [["base_stoneBrick", 30], ["base_ironIngot", 15]],
     recipeType: recipes.base_alloying, drawer: BuildingWithRecipe.progressDrawer(), craftEffect: [Fx.smoke, "#222"]
 });
 Buildings.register("base_stirling_generator", BuildingWithRecipe, {
