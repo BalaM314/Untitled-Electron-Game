@@ -405,7 +405,7 @@ const scenes: {
 				width: () => innerWidth/2,
 				height: () => innerHeight/5,
 				label: "Play",
-				color: "#0000FF",
+				color: "#08F",
 				font: "40px sans-serif",
 				onClick: () => {Input.mouseDown = false;load();}
 			}),
@@ -415,7 +415,7 @@ const scenes: {
 				width: () => innerWidth/2,
 				height: () => innerHeight/5,
 				label: "Settings",
-				color: "#0000FF",
+				color: "#08F",
 				font: "40px sans-serif",
 				onClick: () => {Game.sceneName = "settings";}
 			}),
@@ -425,7 +425,7 @@ const scenes: {
 				width: () => Math.min(innerWidth, innerHeight) * 0.1,
 				height: () => Math.min(innerWidth, innerHeight) * 0.1,
 				label: () => Gfx.texture("misc/github-60x60"),
-				color: "#0000FF",
+				color: "#08F",
 				font: "30px sans-serif",
 				onClick: () => {window.open("https://github.com/BalaM314/Untitled-Electron-Game/");}
 			}),
@@ -461,7 +461,7 @@ const scenes: {
 				width: () => innerWidth * 0.25,
 				height: () => innerHeight * 0.15,
 				label: () => "Debug: " + settings.debug,
-				color: "#0000FF",
+				color: "#08F",
 				font: "35px sans-serif",
 				onClick: () => {settings.debug = !settings.debug;}
 			}),
@@ -471,7 +471,7 @@ const scenes: {
 				width: () => innerWidth * 0.25,
 				height: () => innerHeight * 0.15,
 				label: () => "Always load save: " + settings.alwaysLoadSave,
-				color: "#0000FF",
+				color: "#08F",
 				font: "35px sans-serif",
 				onClick: () => {settings.alwaysLoadSave = !settings.alwaysLoadSave;}
 			}),
@@ -481,7 +481,7 @@ const scenes: {
 				width: () => innerWidth * 0.25,
 				height: () => innerHeight * 0.15,
 				label: () => "Autosave: " + settings.autoSave,
-				color: "#0000FF",
+				color: "#08F",
 				font: "35px sans-serif",
 				onClick: () => {settings.autoSave = !settings.autoSave;}
 			}),
@@ -491,9 +491,29 @@ const scenes: {
 				width: () => innerWidth * 0.25,
 				height: () => innerHeight * 0.15,
 				label: "Controls",
-				color: "#0000FF",
+				color: "#08F",
 				font: "35px sans-serif",
 				onClick: () => {Game.sceneName = "settings.keybinds"}
+			}),
+			new Button({
+				x: () => innerWidth * 0.25,
+				y: () => innerHeight * 0.82,
+				width: () => innerWidth * 0.25,
+				height: () => innerHeight * 0.15,
+				label: () => "Show tile borders: " + settings.showTileBorders,
+				color: "#08F",
+				font: "35px sans-serif",
+				onClick: () => {settings.showTileBorders = !settings.showTileBorders;}
+			}),
+			new Button({
+				x: () => innerWidth * 0.51,
+				y: () => innerHeight * 0.82,
+				width: () => innerWidth * 0.25,
+				height: () => innerHeight * 0.15,
+				label: () => "Extra pipe info: " + settings.showExtraPipeInfo,
+				color: "#08F",
+				font: "35px sans-serif",
+				onClick: () => {settings.showExtraPipeInfo = !settings.showExtraPipeInfo;}
 			}),
 			new Button({
 				x: () => innerWidth * 0.9,
@@ -501,7 +521,7 @@ const scenes: {
 				width: () => innerWidth * 0.09,
 				height: () => innerHeight * 0.09,
 				label: "❌",
-				color: "#0000FF",
+				color: "#08F",
 				font: "40px sans-serif",
 				onClick: () => {Game.sceneName = "title"; localStorage.setItem("settings", JSON.stringify(settings));}
 			}),
@@ -514,7 +534,7 @@ const scenes: {
 			ctxOverlays.font = "70px sans-serif";
 			ctxOverlays.textAlign = "center";
 			ctxOverlays.textBaseline = "middle";
-			ctxOverlays.fillStyle = "#000000";
+			ctxOverlays.fillStyle = "white";
 			ctxOverlays.fillText("Settings", innerWidth / 2, innerHeight * 0.2);
 			scenes.settings.buttons.forEach(button => button.display(ctxOverlays));
 		},
@@ -541,7 +561,7 @@ const scenes: {
 				width: () => innerWidth * 0.09,
 				height: () => innerHeight * 0.09,
 				label: "❌",
-				color: "#0000FF",
+				color: "#08F",
 				font: "40px sans-serif",
 				onClick: () => {Game.sceneName = "settings";}
 			}),
@@ -554,7 +574,7 @@ const scenes: {
 			ctxOverlays.font = "60px sans-serif";
 			ctxOverlays.textAlign = "center";
 			ctxOverlays.textBaseline = "middle";
-			ctxOverlays.fillStyle = "#000000";
+			ctxOverlays.fillStyle = "white";
 			ctxOverlays.fillText("Keybinds", innerWidth / 2, innerHeight * 0.2);
 			this.buttons.forEach(button => button.display(ctxOverlays));
 		},

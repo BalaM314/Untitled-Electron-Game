@@ -551,7 +551,7 @@ function makeRebindButton(y, buttonID, buttonName, defaultKey) {
             .filter(key => !key.startsWith("!"))
             .map(el => el + " + ")
             .join("")}${keybind.mainKey}`,
-        color: "#0000FF",
+        color: "#08F",
         font: "15px sans-serif",
         onClick: () => {
             keybind.mainKey =

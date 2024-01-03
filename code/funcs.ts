@@ -649,7 +649,7 @@ function makeRebindButton(y:number, buttonID: [string, string], buttonName:strin
 			}${
 				keybind.mainKey
 			}`,
-		color: "#0000FF",
+		color: "#08F",
 		font: "15px sans-serif",
 		onClick: () => {
 			keybind.mainKey =
