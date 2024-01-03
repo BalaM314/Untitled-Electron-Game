@@ -127,16 +127,18 @@ class Camera {
 	static scroll(x:number, y:number){
 		this.scrollTo(this.scrollX - x, this.scrollY - y);
 	}
-	static scrollTo(x:number, y:number){
+	static scrollTo(x:number, y:number, limitScroll = true){
 		this.scrollX = x;
 		this.scrollY = y;
-		//Limit the length of this.scroll
-		const distSquared = this.scrollX ** 2 + this.scrollY ** 2;
-		if(distSquared > this.maxDistanceSquared){
-			const dist = Math.sqrt(distSquared);
-			this.scrollX *= this.maxDistance / dist;
-			this.scrollY *= this.maxDistance / dist;
-			this.scrollLimited = true;
+		if(limitScroll){
+			//Limit the length of this.scroll
+			const distSquared = this.scrollX ** 2 + this.scrollY ** 2;
+			if(distSquared > this.maxDistanceSquared){
+				const dist = Math.sqrt(distSquared);
+				this.scrollX *= this.maxDistance / dist;
+				this.scrollY *= this.maxDistance / dist;
+				this.scrollLimited = true;
+			}
 		}
 		this.update();
 		Game.forceRedraw = true;
@@ -152,6 +154,11 @@ class Camera {
 			return;
 		}
 		this.zoomLevel *= scaleFactor;
+		this.update();
+		Game.forceRedraw = true;
+	}
+	static zoomTo(value:number){
+		this.zoomLevel = constrain(value, this.minZoom, this.maxZoom);
 		this.update();
 		Game.forceRedraw = true;
 	}
@@ -187,6 +194,13 @@ class Gfx {
 	static textures:Record<string, Texture> = {};
 	static rectMode:RectMode = RectMode.CORNER;
 	static ctx:CanvasRenderingContext2D = null!;
+	static drawers: (() => unknown)[] = [];
+	static addDrawer(drawer:() => unknown){
+		this.drawers.push(drawer);
+	}
+	static clearDrawers(){
+		this.drawers = [];
+	}
 	static init(){
 		this.layers = {
 			tile: ctxTiles,

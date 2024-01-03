@@ -57,15 +57,17 @@ class Camera {
     static scroll(x, y) {
         this.scrollTo(this.scrollX - x, this.scrollY - y);
     }
-    static scrollTo(x, y) {
+    static scrollTo(x, y, limitScroll = true) {
         this.scrollX = x;
         this.scrollY = y;
-        const distSquared = this.scrollX ** 2 + this.scrollY ** 2;
-        if (distSquared > this.maxDistanceSquared) {
-            const dist = Math.sqrt(distSquared);
-            this.scrollX *= this.maxDistance / dist;
-            this.scrollY *= this.maxDistance / dist;
-            this.scrollLimited = true;
+        if (limitScroll) {
+            const distSquared = this.scrollX ** 2 + this.scrollY ** 2;
+            if (distSquared > this.maxDistanceSquared) {
+                const dist = Math.sqrt(distSquared);
+                this.scrollX *= this.maxDistance / dist;
+                this.scrollY *= this.maxDistance / dist;
+                this.scrollLimited = true;
+            }
         }
         this.update();
         Game.forceRedraw = true;
@@ -82,6 +84,11 @@ class Camera {
             return;
         }
         this.zoomLevel *= scaleFactor;
+        this.update();
+        Game.forceRedraw = true;
+    }
+    static zoomTo(value) {
+        this.zoomLevel = constrain(value, this.minZoom, this.maxZoom);
         this.update();
         Game.forceRedraw = true;
     }
@@ -122,6 +129,12 @@ Camera.maxDistanceSquared = _a.maxDistance ** 2;
     _a.update();
 })();
 class Gfx {
+    static addDrawer(drawer) {
+        this.drawers.push(drawer);
+    }
+    static clearDrawers() {
+        this.drawers = [];
+    }
     static init() {
         this.layers = {
             tile: ctxTiles,
@@ -251,6 +264,7 @@ Gfx.layers = null;
 Gfx.textures = {};
 Gfx.rectMode = RectMode.CORNER;
 Gfx.ctx = null;
+Gfx.drawers = [];
 class ParticleEffect {
     constructor(args) {
         this.lifetime = 1000;

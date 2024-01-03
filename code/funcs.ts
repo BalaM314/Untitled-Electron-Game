@@ -45,6 +45,25 @@ function gcd(x:number, y:number){
 	return x;
 }
 
+function delay(time:number):Promise<void> {
+	return new Promise((resolve, reject) => {
+		setTimeout(() => {
+			resolve();
+		}, time);
+	});
+}
+
+function until(predicate:() => boolean, checkInterval = 100):Promise<void> {
+	return new Promise((resolve, reject) => {
+		const id = setInterval(() => {
+			if(predicate()){
+				clearInterval(id);
+				resolve();
+			}
+		}, checkInterval);
+	})
+}
+
 function round(amount:number, places = 0):number {
 	const tenEplaces = 10 ** places;
 	return Math.round(amount * tenEplaces) / tenEplaces;

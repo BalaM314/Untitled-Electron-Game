@@ -34,3 +34,5 @@ const researchTree = getElement("research-tree", HTMLDivElement);
 const buttonsPane = getElement("buttons-pane", HTMLDivElement);
 const researchButton = getElement("research-button", HTMLSpanElement);
 const settingsButton = getElement("settings-button", HTMLSpanElement);
+const screenOverlay = getElement("screen-overlay", HTMLDivElement);
+const creditsEl = getElement("credits-container", HTMLDivElement);

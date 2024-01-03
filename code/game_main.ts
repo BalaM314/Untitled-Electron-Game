@@ -19,7 +19,7 @@ function registerEventHandlers(){
 			Input.mouseDown = true;
 		}
 		Input.buildingPlaced = false;
-		if(scenes[Game.sceneName]){
+		if(scenes[Game.sceneName] && Input.active){
 			scenes[Game.sceneName]?.onmousedown?.(e);
 		}
 	}
@@ -79,9 +79,11 @@ function registerEventHandlers(){
 		//Only the last 10 keypresses are logged
 
 		//Handle keybinds
-		for(let section of Object.values(keybinds)){
-			for(let keybind of Object.values(section)){
-				keybind.check(e);
+		if(Input.active){
+			for(let section of Object.values(keybinds)){
+				for(let keybind of Object.values(section)){
+					keybind.check(e);
+				}
 			}
 		}
 
@@ -113,7 +115,9 @@ function registerEventHandlers(){
 	}
 
 	window.onwheel = (e:WheelEvent) => {
-		Camera.zoom(Math.pow(1.001, -e.deltaY));
+		if(!Game.paused && Input.active){
+			Camera.zoom(Math.pow(1.001, -e.deltaY));
+		}
 	}
 
 	//When the window loses focus, clear the list of held keys and set mousePressed to false.
@@ -186,8 +190,10 @@ const GUI = {
 		this.updateVisibility();
 	},
 	updateVisibility(){
-		if(this.hidden) this.elements.forEach(e => e.classList.add("hidden"));
-		else this.elements.forEach(e => e.classList.remove("hidden"));
+		if(this.hidden){
+			tech.hideMenu();
+			this.elements.forEach(e => e.classList.add("hidden"));
+		} else this.elements.forEach(e => e.classList.remove("hidden"));
 	},
 	toggle(){
 		this.hidden = !this.hidden;
@@ -601,8 +607,7 @@ const scenes: {
 				placedBuilding.ID, currentFrame
 			);
 
-			
-			
+			Gfx.drawers.forEach(d => d());
 			GUI.display(currentFrame);
 
 		},
@@ -770,13 +775,71 @@ To get started, follow the objectives in the top right.`
 }
 
 
-function showCredits(){
-	_alert("you win!"); //todo not yet implemented
-	//plan:
-	//fade to black, remove camera control
-	//set position to at the edge of the island, show a boat
-	//over 10-15 seconds, accelerate the boat away from the island
-	//fade to black again and roll credits
+async function showCredits(){
+	
+	GUI.hide();
+	Input.active = false;
+
+	await delay(1000);
+
+	//activate the animation
+	screenOverlay.classList.add("active");
+
+	//wait for the fade to black animation, then wait on the black screen for a bit
+	await delay(1500 + 2500);
+
+	//scene setup
+	let boatX = 1 * consts.TILE_SIZE;
+	let boatY = 161 * consts.TILE_SIZE;
+	let cameraOffset = -5 * consts.TILE_SIZE;
+	let boatVel = 0;
+	let boatAccel = 0;
+	const previousShowTileBorders = settings.showTileBorders;
+	settings.showTileBorders = false;
+	Camera.scrollTo(consts.TILE_SIZE * -3, -boatY + cameraOffset);
+	Camera.zoomTo(1.3);
+	//boat
+	Gfx.addDrawer(() => {
+		Camera.scrollTo(consts.TILE_SIZE * -3, -boatY + cameraOffset, false);
+		boatVel += boatAccel;
+		boatY += boatVel;
+		Gfx.layer("overlay");
+		Gfx.pImage(Gfx.texture("misc/base_boat"), boatX, boatY);
+	});
+	screenOverlay.classList.remove("active"); //show screen
+
+	await delay(2000);
+
+	boatAccel = 0.01;
+
+	await until(() => boatY > 164 * consts.TILE_SIZE);
+
+	Camera.zoomTo(1);
+
+	await until(() => boatY > 180 * consts.TILE_SIZE);
+
+	boatAccel = 0.02;
+
+	await until(() => boatY > 300 * consts.TILE_SIZE);
+
+	boatAccel = 0;
+	screenOverlay.classList.add("active");
+	
+	await delay(1500);
+
+	Gfx.clearDrawers();
+
+	await delay(3000);
+
+	
+
+
+	//TODO go back to the title screen, un load()
+	Camera.scrollTo(0, 0);
+	screenOverlay.classList.remove("active");
+	settings.showTileBorders = previousShowTileBorders;
+	GUI.show();
+	Input.active = true;
 
 }
 

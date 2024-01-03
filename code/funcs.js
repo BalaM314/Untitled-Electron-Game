@@ -33,6 +33,23 @@ function gcd(x, y) {
     }
     return x;
 }
+function delay(time) {
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            resolve();
+        }, time);
+    });
+}
+function until(predicate, checkInterval = 100) {
+    return new Promise((resolve, reject) => {
+        const id = setInterval(() => {
+            if (predicate()) {
+                clearInterval(id);
+                resolve();
+            }
+        }, checkInterval);
+    });
+}
 function round(amount, places = 0) {
     const tenEplaces = 10 ** places;
     return Math.round(amount * tenEplaces) / tenEplaces;

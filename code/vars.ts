@@ -345,6 +345,7 @@ const keybinds = extend<Keybinds>()({
 const Input = {
 	mouseX: 0,
 	mouseY: 0,
+	active: true,
 	get mouse():[mouseX:number, mouseY:number]{
 		return [Input.mouseX, Input.mouseY];
 	},
