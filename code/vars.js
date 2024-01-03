@@ -329,6 +329,7 @@ let Game = {
         active: false
     },
     frames: 0,
+    enteredGame: false,
     stats: {
         frameTimes: new WindowedMean(120),
         objectiveHovered: false,

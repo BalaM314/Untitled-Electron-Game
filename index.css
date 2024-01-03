@@ -180,7 +180,8 @@ canvas {
 	font-size: 48px;
 	line-height: 30px;
 	cursor: pointer;
-	animation: next-button-flash 1s infinite;
+	animation: flashgreen 1s infinite;
+	animation-timing-function: steps(1);
 }
 #objective-description {
 	color: #DDD;
@@ -350,7 +351,7 @@ canvas {
 		margin-top: 100vh;
 	}
 	to {
-		margin-top: -110%;
+		margin-top: -100%;
 	}
 }
 
@@ -387,22 +388,6 @@ canvas {
 		color: white;
 	}
 	100% {
-		text-shadow: 0 0 4px lime;
-		color: lime;
-	}
-}
-@keyframes next-button-flash {
-	0% {
-		padding-left: 0px;
-		text-shadow: 0 0 4px lime;
-		color: lime;
-	}
-	50% {
-		text-shadow: 0 0 4px white;
-		color: white;
-	}
-	100% {
-		padding-left: 30px;
 		text-shadow: 0 0 4px lime;
 		color: lime;
 	}

@@ -9,6 +9,8 @@ class TechTreeNode {
         this.depth = Math.max(-1, ...this.prerequisites.map(p => p.depth)) + 1;
     }
     tryUnlock() {
+        if (this.unlocked)
+            return true;
         if (!this.prerequisites.every(p => p.unlocked))
             return false;
         if (!level1.hasResources(this.cost, 2000))
@@ -157,8 +159,10 @@ class Objective {
         }
     }
     complete() {
-        this.completed = true;
-        this.onComplete?.();
+        if (!this.completed) {
+            this.completed = true;
+            this.onComplete?.();
+        }
     }
     tryComplete() {
         if (!this.completed && this.satisfied && this.prerequisites.every(o => o.completed)) {

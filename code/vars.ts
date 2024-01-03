@@ -393,6 +393,7 @@ let Game: {
 		active: boolean;
 	}
 	frames: number;
+	enteredGame: boolean;
 	stats: {
 		/** Stores the time in milliseconds to render for the past 120 frames. */
 		frameTimes: WindowedMean;
@@ -422,6 +423,7 @@ let Game: {
 		active: false
 	},
 	frames: 0,
+	enteredGame: false,
 	stats: {
 		frameTimes: new WindowedMean(120),
 		objectiveHovered: false,

@@ -129,7 +129,7 @@ function registerEventHandlers() {
         });
         toolbarEl.appendChild(img);
     }
-    objectiveText.addEventListener("click", () => {
+    objectiveTitle.addEventListener("click", () => {
         const objective = objectives.objectives.find(o => o.satisfied && !o.completed);
         objective?.tryComplete();
     });
@@ -321,9 +321,9 @@ const GUI = {
         this.updateTooltip();
         this.updateHudText(currentFrame);
         this.updateResources();
-        this.updateObjective();
         this.updateToolbar();
         this.updateVisibility();
+        this.updateObjective();
     },
 };
 for (const k of Object.keys(GUI)) {
@@ -681,7 +681,7 @@ function main_loop() {
         Game.frames++;
     }
     catch (err) {
-        alert("An error has occurred! Oopsie.\nPlease create an issue on this project's GitHub so I can fix it.\nError message: " + parseError(err));
+        alert("An error has occurred!\nPlease create an issue on this project's GitHub so I can fix it.\nError message: " + parseError(err));
         ctxs.forEach((ctx) => { ctx.clear(); });
         errorBackground.style.zIndex = "99999";
         gameBackground.classList.add("hidden");
@@ -690,31 +690,48 @@ function main_loop() {
     Game.animationFrame = requestAnimationFrame(main_loop);
 }
 function load() {
+    Camera.scrollTo(0, 0);
+    Camera.zoomTo(1);
+    placedBuilding.type = "base_null";
     if (!localStorage.firstload) {
         localStorage.firstload = true;
         _alert(`Welcome to Untitled Electron Game!
 This is a game about building a factory.
 To get started, follow the objectives in the top right.`);
     }
-    if (saveExists() &&
-        (settings.alwaysLoadSave || confirm("Would you like to load your save?")))
-        importData(localStorage.getItem("save1"));
-    else
-        level1 = new Level(Rand.int(0, 10000), true).generate();
+    if (!Game.enteredGame) {
+        if (saveExists() &&
+            (settings.alwaysLoadSave || confirm("Would you like to load your save?")))
+            importData(localStorage.getItem("save1"));
+        else
+            level1 = new Level(Rand.int(0, 10000), true).generate();
+        if (settings.autoSave) {
+            if (safeToSave()) {
+                setInterval(() => {
+                    saveToLocalStorage();
+                    console.log("Autosaved.");
+                }, 30000);
+            }
+            else {
+                _alert("It looks like your current world isn't the same world as your save. Autosaving has been disabled to avoid overwriting it.");
+            }
+        }
+    }
     Game.sceneName = "game";
     Game.forceRedraw = true;
     GUI.show();
-    if (settings.autoSave) {
-        if (safeToSave()) {
-            setInterval(() => {
-                saveToLocalStorage();
-                console.log("Autosaved.");
-            }, 30000);
+}
+function returnToTitle() {
+    GUI.hide();
+    if (safeToSave() || confirm("Are you sure you want to save? This will overwrite your current saved world which seems to be different!")) {
+        try {
+            saveToLocalStorage();
         }
-        else {
-            _alert("It looks like your current world isn't the same world as your save. Autosaving has been disabled to avoid overwriting it.");
+        catch (err) {
+            alert("Failed to save! " + parseError(err));
         }
     }
+    Game.sceneName = "title";
 }
 async function showCredits() {
     GUI.hide();
@@ -754,11 +771,10 @@ async function showCredits() {
     creditsEl.classList.add("active");
     screenOverlay.classList.remove("active");
     await delay(60000 + 1000);
-    Camera.scrollTo(0, 0);
     settings.showTileBorders = previousShowTileBorders;
     creditsEl.classList.remove("active");
-    GUI.show();
     Input.active = true;
+    returnToTitle();
 }
 function exportData() {
     return {
