@@ -435,6 +435,8 @@ canvas {
 }
 #alertmessage {
 	font-size: min(200%, calc(50000% / var(--text-length)));
+	font-family: sans-serif;
+	color: white;
 	text-align: center;
 	overflow-wrap: break-word;
 }
@@ -443,6 +445,8 @@ canvas {
 	font-size: 200%;
 	right: 5%;
 	bottom: 5%;
+	font-family: sans-serif;
+	font-weight: bold;
 }
 #tooltipbox {
 	--x: -1000px;

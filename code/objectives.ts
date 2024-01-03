@@ -129,7 +129,7 @@ const tech = new TechTree(tree => {
 	const conveyor = tree.node("building_base_conveyor", [], [], true);
 	const miner = tree.node("building_base_miner", [], [conveyor], true);
 	const trash_can = tree.node("building_base_trash_can", [["base_ironIngot", 20], ["base_stone", 20]], [conveyor]);
-	const furnace = tree.node("building_base_furnace", [["base_coal", 20], ["base_stone", 10]], [miner]);
+	const furnace = tree.node("building_base_furnace", [["base_coal", 20], ["base_stone", 40]], [miner]);
 	const extractor = tree.node("building_base_extractor", [["base_ironIngot", 20], ["base_stone", 20]], [conveyor]);
 	const chest = tree.node("building_base_chest", [["base_ironIngot", 20], ["base_stoneBrick", 20]], [conveyor]);
 	const alloy_smelter = tree.node("building_base_alloy_smelter", [["base_stoneBrick", 50], ["base_ironIngot", 50], ["base_coal", 50]], [furnace]);

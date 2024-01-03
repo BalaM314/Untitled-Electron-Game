@@ -328,8 +328,8 @@ const GUI = {
 	updateObjective(){
 		const objective = objectives.objectives.find(o => !o.completed);
 		if(objective){
-			objectiveText.innerText = objective.name();
-			objectiveDescription.innerText = objective.description();
+			objectiveText.innerHTML = objective.name().replaceAll(`\\n`, "<br>");
+			objectiveDescription.innerHTML = objective.description().replaceAll(`\\n`, "<br>");
 			objectiveEl.classList[objective.satisfied ? "add" : "remove"]("complete");
 		} else {
 			objectiveEl.classList.add("hidden");
@@ -769,8 +769,7 @@ function load(){
 		localStorage.firstload = true;
 		_alert(
 `Welcome to Untitled Electron Game!
-This is a game about building a factory.
-To get started, follow the objectives in the top right.`
+This is a game about building a factory. To get started, follow the objectives in the top right.`
 		);
 	}
 	
@@ -840,18 +839,22 @@ async function showCredits(){
 		Camera.scrollTo(consts.TILE_SIZE * -3, -boatY + cameraOffset, false);
 		boatVel += boatAccel;
 		boatY += boatVel;
-		Gfx.layer("overlay");
+		Gfx.layer("items"); //don't override the effects
 		Gfx.pImage(Gfx.texture("misc/base_boat"), boatX, boatY);
+		if((Game.frames % 15) == 0){
+			Fx.smoke.at(Pos.fromPixelCoords(boatX + 2.2 * consts.TILE_SIZE, boatY + 7.5 * consts.TILE_SIZE));
+			Fx.smoke.at(Pos.fromPixelCoords(boatX + 4.2 * consts.TILE_SIZE, boatY + 7.5 * consts.TILE_SIZE));
+		}
 	});
 	screenOverlay.classList.remove("active"); //show screen
 
 	await delay(2000);
 
-	boatAccel = 0.01;
-
-	await until(() => boatY > 164 * consts.TILE_SIZE);
-
 	Camera.zoomTo(1);
+
+	await delay(1000);
+
+	boatAccel = 0.01;
 
 	await until(() => boatY > 180 * consts.TILE_SIZE);
 
@@ -871,7 +874,7 @@ async function showCredits(){
 	creditsEl.classList.add("active");
 	screenOverlay.classList.remove("active");
 
-	await delay(60000 + 1000);
+	await delay(60000);
 
 	settings.showTileBorders = previousShowTileBorders;
 	creditsEl.classList.remove("active");
