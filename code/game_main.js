@@ -730,10 +730,13 @@ async function showCredits() {
     screenOverlay.classList.add("active");
     await delay(1500);
     Gfx.clearDrawers();
-    await delay(3000);
-    Camera.scrollTo(0, 0);
+    await delay(500);
+    creditsEl.classList.add("active");
     screenOverlay.classList.remove("active");
+    await delay(60000 + 1000);
+    Camera.scrollTo(0, 0);
     settings.showTileBorders = previousShowTileBorders;
+    creditsEl.classList.remove("active");
     GUI.show();
     Input.active = true;
 }

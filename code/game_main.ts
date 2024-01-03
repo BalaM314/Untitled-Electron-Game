@@ -829,15 +829,18 @@ async function showCredits(){
 
 	Gfx.clearDrawers();
 
-	await delay(3000);
+	await delay(500);
 
-	
+	creditsEl.classList.add("active");
+	screenOverlay.classList.remove("active");
+
+	await delay(60000 + 1000);
 
 
 	//TODO go back to the title screen, un load()
 	Camera.scrollTo(0, 0);
-	screenOverlay.classList.remove("active");
 	settings.showTileBorders = previousShowTileBorders;
+	creditsEl.classList.remove("active");
 	GUI.show();
 	Input.active = true;
 

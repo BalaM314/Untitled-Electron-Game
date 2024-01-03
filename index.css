@@ -298,7 +298,61 @@ canvas {
 	animation: fadetoblack 1500ms both;
 }
 
+#credits-container {
+	display: none;
+	position: absolute;
+	z-index: 29;
+	width: 100%;
+	height: 100%;
+}
+#credits-inner {
+	display: none;
+	position: absolute;
+	z-index: 29;
+	width: 100%;
+	height: 100%;
+}
+#credits-container.active {
+	display: block;
+	background-color: #111;
+}
+#credits-container.active #credits-inner {
+	display: block;
+	animation: creditsroll 60s both linear;
+	background-color: #111;
+	color: white;
+	font-family: sans-serif;
+}
+#credits-logo {
+	margin: 100px auto;
+	display: block;
+	width: 300px;
+	height: 300px;
+	background-image: linear-gradient(to bottom right, #888, #CCC, #888, #CCC);
+}
 
+#credits-inner p {
+	text-align: center;
+	margin: 10vh 0;
+	font-size: 4vh;
+}
+
+#credits-title {
+	text-align: center;
+	margin-bottom: 10vh;
+	font-size: 10vh;
+	text-shadow: 0 0 15px blue;
+}
+
+
+@keyframes creditsroll {
+	from {
+		margin-top: 100vh;
+	}
+	to {
+		margin-top: -110%;
+	}
+}
 
 @keyframes fadetoblack {
 	from {
