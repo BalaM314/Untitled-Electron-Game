@@ -367,7 +367,7 @@ const Input = {
 	ctrl: () => Input.keysHeld.has("ctrl"),
 };
 let settings = {
-	debug: true,
+	debug: false,
 	alwaysLoadSave: true,
 	autoSave: true,
 	showExtraPipeInfo: false,
