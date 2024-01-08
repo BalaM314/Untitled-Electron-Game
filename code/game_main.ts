@@ -18,7 +18,7 @@ function registerEventHandlers(){
 		if(e.button === 0){
 			Input.mouseDown = true;
 			Input.buildingPlaced = false;
-		} else if(e.button === 1){
+		} else if(e.button === 2){
 			Input.rightMouseDown = true;
 		}
 		if(scenes[Game.sceneName] && Input.active){
@@ -31,7 +31,7 @@ function registerEventHandlers(){
 		Input.latestMouseEvent = e;
 		if(e.button == 0){
 			Input.mouseDown = false;
-		} else if(e.button == 1){
+		} else if(e.button == 2){
 			Input.rightMouseDown = false;
 		}
 		Input.buildingPlaced = false;
@@ -645,6 +645,8 @@ const scenes: {
 					...(Camera.unproject(e.x, e.y).map(c => Pos.tileToPixel(Pos.pixelToTile(c), true))),
 					"base_null"
 				), null);
+			} else if(e.button === 1){
+				//TODO pick block
 			}
 		},
 		onmouseheld(){
