@@ -216,6 +216,7 @@ type Direction = {
 	vec: PosT;
 	horizontal: boolean;
 	vertical: boolean;
+	cw: Direction;
 }
 //I miss java enums
 const Direction: {
@@ -235,6 +236,14 @@ const Direction: {
 	left.opposite = right;
 	down.opposite = up;
 	up.opposite = down;
+	right.cw = down;
+	down.cw = left;
+	left.cw = up;
+	up.cw = right;
+	down.ccw = right;
+	left.ccw = down;
+	up.ccw = left;
+	right.ccw = up;
 	return {
 		right, down, left, up,
 		*[Symbol.iterator](){
@@ -305,6 +314,7 @@ const keybinds = extend<Keybinds>()({
 	placement: {
 		force_straight_conveyor: new Keybind("shift"),
 		allow_multiple_overwrite: new Keybind("shift"),
+		invert_rotate: new Keybind("shift"),
 		break_building: new Keybind("backspace"),
 		modifier_1: new Keybind(",", [], () => {placedBuilding.modifier = 0;}),
 		modifier_2: new Keybind(".", [], () => {placedBuilding.modifier = 1;}),
@@ -313,6 +323,7 @@ const keybinds = extend<Keybinds>()({
 		direction_left: new Keybind("arrowleft", [], () => {placedBuilding.direction = Direction.left;}),
 		direction_down: new Keybind("arrowdown", [], () => {placedBuilding.direction = Direction.down;}),
 		direction_right: new Keybind("arrowright", [], () => {placedBuilding.direction = Direction.right;}),
+		direction_rotate: new Keybind("r", [], () => {placedBuilding.direction = placedBuilding.direction[keybinds.placement.invert_rotate.isHeld() ? "ccw" : "cw"];}),
 		type_1: new Keybind("1", [], () => selectID("base_conveyor")),
 		type_2: new Keybind("2", [], () => selectID("base_miner")),
 		type_3: new Keybind("3", [], () => selectID("base_trash_can")),
