@@ -354,6 +354,7 @@ const Input = {
 		return [Input.mouseX, Input.mouseY];
 	},
 	mouseDown: false,
+	rightMouseDown: false,
 	mouseDownTime: 0,
 	canOverwriteBuilding(){
 		return !this.buildingPlaced || keybinds.placement.allow_multiple_overwrite.isHeld();

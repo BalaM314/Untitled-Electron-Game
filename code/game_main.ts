@@ -17,8 +17,10 @@ function registerEventHandlers(){
 		if(e.button) e.preventDefault();
 		if(e.button === 0){
 			Input.mouseDown = true;
+			Input.buildingPlaced = false;
+		} else if(e.button === 1){
+			Input.rightMouseDown = true;
 		}
-		Input.buildingPlaced = false;
 		if(scenes[Game.sceneName] && Input.active){
 			scenes[Game.sceneName]?.onmousedown?.(e);
 		}
@@ -29,6 +31,8 @@ function registerEventHandlers(){
 		Input.latestMouseEvent = e;
 		if(e.button == 0){
 			Input.mouseDown = false;
+		} else if(e.button == 1){
+			Input.rightMouseDown = false;
 		}
 		Input.buildingPlaced = false;
 	}
@@ -374,6 +378,7 @@ const scenes: {
 		display: (currentFrame:CurrentFrame) => void;
 		onmousedown?: (e:MouseEvent) => void;
 		onmouseheld?: (currentFrame:CurrentFrame) => void;
+		onrightmouseheld?: (currentFrame:CurrentFrame) => void;
 		onkeydown?: (e:KeyboardEvent) => void;
 		onkeyheld?: (currentFrame:CurrentFrame) => void;
 	}
@@ -645,10 +650,19 @@ const scenes: {
 		onmouseheld(){
 			if(Game.paused) return;
 			if(!Input.latestMouseEvent) return;
-			if(!(Input.ctrl() || keybinds.placement.break_building.isHeld()) && placedBuilding.ID[0] != "base_null"){
+			if(!Input.ctrl() && !keybinds.placement.break_building.isHeld() && placedBuilding.ID[0] != "base_null"){
 				level1.buildBuilding(
 					...(Camera.unproject(Input.latestMouseEvent.x, Input.latestMouseEvent.y).map(Pos.pixelToTile)),
 					placedBuilding.ID
+				);
+			}
+		},
+		onrightmouseheld(){
+			if(Game.paused) return;
+			if(!Input.latestMouseEvent) return;
+			if(!Input.ctrl() && !keybinds.placement.break_building.isHeld()){
+				level1.breakBuilding(
+					...Camera.unproject(...Input.mouse).map(Pos.pixelToTile)
 				);
 			}
 		},
@@ -735,6 +749,9 @@ function main_loop(){
 
 		if(Input.mouseDown){
 			currentState.onmouseheld?.(currentFrame);
+		}
+		if(Input.rightMouseDown){
+			currentState.onrightmouseheld?.(currentFrame);
 		}
 		if(Input.keysHeld.size > 0){
 			currentState.onkeyheld?.(currentFrame);
