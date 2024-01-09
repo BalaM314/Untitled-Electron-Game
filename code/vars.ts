@@ -217,6 +217,7 @@ type Direction = {
 	horizontal: boolean;
 	vertical: boolean;
 	cw: Direction;
+	ccw: Direction;
 }
 //I miss java enums
 const Direction: {
@@ -349,7 +350,7 @@ const keybinds = extend<Keybinds>()({
 	display: {
 		show_tooltip: new Keybind("shift"),
 		hide_gui: new Keybind("c", [], () => firstUsePopup("hide-gui-message", "You have hidden the gui by pressing (c). Press c again to show it.", GUI.toggle, true)),
-		research: new Keybind("r", [], () => GUI.toggleResearchMenu()),
+		research: new Keybind("j", [], () => GUI.toggleResearchMenu()),
 	},
 	misc: {
 		pause: new Keybind(" ", [], () => {Game.paused = !Game.paused;}),

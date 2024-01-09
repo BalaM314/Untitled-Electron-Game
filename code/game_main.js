@@ -13,8 +13,11 @@ function registerEventHandlers() {
             e.preventDefault();
         if (e.button === 0) {
             Input.mouseDown = true;
+            Input.buildingPlaced = false;
         }
-        Input.buildingPlaced = false;
+        else if (e.button === 2) {
+            Input.rightMouseDown = true;
+        }
         if (scenes[Game.sceneName] && Input.active) {
             scenes[Game.sceneName]?.onmousedown?.(e);
         }
@@ -25,6 +28,9 @@ function registerEventHandlers() {
         Input.latestMouseEvent = e;
         if (e.button == 0) {
             Input.mouseDown = false;
+        }
+        else if (e.button == 2) {
+            Input.rightMouseDown = false;
         }
         Input.buildingPlaced = false;
     };
@@ -588,14 +594,25 @@ const scenes = {
             if (e.ctrlKey && e.button == 0) {
                 level1.buildingAtPixel(...(Camera.unproject(e.x, e.y)))?.acceptItem(new Item(...(Camera.unproject(e.x, e.y).map(c => Pos.tileToPixel(Pos.pixelToTile(c), true))), "base_null"), null);
             }
+            else if (e.button === 1) {
+            }
         },
         onmouseheld() {
             if (Game.paused)
                 return;
             if (!Input.latestMouseEvent)
                 return;
-            if (!(Input.ctrl() || keybinds.placement.break_building.isHeld()) && placedBuilding.ID[0] != "base_null") {
+            if (!Input.ctrl() && !keybinds.placement.break_building.isHeld() && placedBuilding.ID[0] != "base_null") {
                 level1.buildBuilding(...(Camera.unproject(Input.latestMouseEvent.x, Input.latestMouseEvent.y).map(Pos.pixelToTile)), placedBuilding.ID);
+            }
+        },
+        onrightmouseheld() {
+            if (Game.paused)
+                return;
+            if (!Input.latestMouseEvent)
+                return;
+            if (!Input.ctrl() && !keybinds.placement.break_building.isHeld()) {
+                level1.breakBuilding(...Camera.unproject(...Input.mouse).map(Pos.pixelToTile));
             }
         },
         onkeyheld(currentframe) {
@@ -669,6 +686,9 @@ function main_loop() {
         }
         if (Input.mouseDown) {
             currentState.onmouseheld?.(currentFrame);
+        }
+        if (Input.rightMouseDown) {
+            currentState.onrightmouseheld?.(currentFrame);
         }
         if (Input.keysHeld.size > 0) {
             currentState.onkeyheld?.(currentFrame);

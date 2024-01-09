@@ -153,7 +153,7 @@ class Level {
     }
     displayGhostBuilding(tileX, tileY, buildingID, currentFrame) {
         Gfx.layer("ghostBuilds");
-        if (keybinds.placement.break_building.isHeld()) {
+        if (keybinds.placement.break_building.isHeld() || Input.rightMouseDown) {
             Gfx.alpha(0.9);
             Gfx.tImage(Gfx.texture("misc/breakunderlay"), tileX, tileY, 1, 1);
             Gfx.alpha(1);
