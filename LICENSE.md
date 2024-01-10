@@ -1,4 +1,4 @@
-Copyright (c) BalaM314, 2023
+Copyright (c) BalaM314, 2024
 All Rights Reserved except as stated below.
 
 * You may distribute the code of this project and modified versions of the code of this project, as long as this copyright notice is included.
