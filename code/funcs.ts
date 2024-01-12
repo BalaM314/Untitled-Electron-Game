@@ -15,16 +15,6 @@ Object.defineProperty(Array.prototype, "at", {
 	enumerable: false
 });
 
-CanvasRenderingContext2D.prototype.clear = function(){
-	// this.globalAlpha = 1.0;
-	// this.fillStyle = "#000000";
-	// this.strokeStyle = "#000000";
-	(this as CanvasRenderingContext2D).clearRect(0, 0, this.canvas.width, this.canvas.height);
-};
-Object.defineProperty(CanvasRenderingContext2D.prototype, "clear", {
-	enumerable: false
-});
-
 /**Returns the time passed since program start in milliseconds. */
 function millis():number{
 	return (new Date()).valueOf() - Game.startTime.valueOf();

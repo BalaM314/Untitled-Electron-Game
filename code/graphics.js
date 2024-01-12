@@ -181,6 +181,15 @@ class Gfx {
     static lineWidth(width) {
         this.ctx.lineWidth = width;
     }
+    static clear(color, _ctx = this.ctx) {
+        if (color) {
+            _ctx.fillStyle = color;
+            _ctx.fillRect(0, 0, _ctx.canvas.width, _ctx.canvas.height);
+        }
+        else {
+            _ctx.clearRect(0, 0, _ctx.canvas.width, _ctx.canvas.height);
+        }
+    }
     static text(text, x, y) {
         this.ctx.fillText(text, x, y);
     }

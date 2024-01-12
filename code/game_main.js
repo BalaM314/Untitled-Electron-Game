@@ -345,17 +345,15 @@ const scenes = {
                 Game.sceneName = "title";
         },
         display(currentFrame) {
-            ctxOverlays.clear();
-            ctxOverlays.fillStyle = "#0033CC";
-            ctxOverlays.fillRect(0, 0, innerWidth, innerHeight);
-            ctxOverlays.font = "70px sans-serif";
-            ctxOverlays.textAlign = "center";
+            Gfx.layer("overlay");
+            Gfx.clear("#0033CC");
+            Gfx.font("70px sans-serif");
+            Gfx.textAlign("center");
             ctxOverlays.textBaseline = "middle";
-            ctxOverlays.fillStyle = "#000000";
-            ctxOverlays.fillText("Untitled Electron Game", innerWidth / 2, innerHeight * 0.2);
-            ctxOverlays.fillStyle = "#000000";
-            ctxOverlays.font = `40px sans-serif`;
-            ctxOverlays.fillText(`Loading... ${Game.loadedTextures}/${textureIDs.length}`, innerWidth / 2, innerHeight * 0.35);
+            Gfx.fillColor("#FFF");
+            Gfx.text("Untitled Electron Game", innerWidth / 2, innerHeight * 0.2);
+            Gfx.font(`40px sans-serif`);
+            Gfx.text(`Loading... ${Game.loadedTextures}/${textureIDs.length}`, innerWidth / 2, innerHeight * 0.35);
         }
     },
     title: {
@@ -393,19 +391,18 @@ const scenes = {
         ],
         update() { },
         display(currentFrame) {
-            ctxOverlays.clear();
-            ctxOverlays.fillStyle = "#0033CC";
-            ctxOverlays.fillRect(0, 0, innerWidth, innerHeight);
-            ctxOverlays.font = "70px sans-serif";
-            ctxOverlays.textAlign = "center";
+            Gfx.layer("overlay");
+            Gfx.clear("#0033CC");
+            Gfx.font("70px sans-serif");
+            Gfx.textAlign("center");
             ctxOverlays.textBaseline = "middle";
-            ctxOverlays.fillStyle = "#FFFFFF";
-            ctxOverlays.fillText("Untitled Electron Game", innerWidth / 2, innerHeight * 0.2);
-            ctxOverlays.font = "20px sans-serif";
-            ctxOverlays.fillText("Version Alpha 4.0.0", innerWidth / 2, innerHeight * 0.25);
-            ctxOverlays.fillStyle = "#cccc00";
-            ctxOverlays.font = `${20 + 5 * Game.splash.bounceFunc(millis() / 400)}px sans-serif`;
-            ctxOverlays.fillText(Game.splash.text ?? "splash not found! this is actually an error pls report", innerWidth / 2, innerHeight * 0.35);
+            Gfx.fillColor("#FFF");
+            Gfx.text("Untitled Electron Game", innerWidth / 2, innerHeight * 0.2);
+            Gfx.font("20px sans-serif");
+            Gfx.text("Version Alpha 4.0.0", innerWidth / 2, innerHeight * 0.25);
+            Gfx.fillColor("#cccc00");
+            Gfx.font(`${20 + 5 * Game.splash.bounceFunc(millis() / 400)}px sans-serif`);
+            Gfx.text(Game.splash.text ?? "splash not found! this is actually an error pls report", innerWidth / 2, innerHeight * 0.35);
             scenes.title.buttons.forEach(button => button.display(ctxOverlays));
         },
         onmousedown(e) {
@@ -489,14 +486,13 @@ const scenes = {
         ],
         update() { },
         display(currentFrame) {
-            ctxOverlays.clear();
-            ctxOverlays.fillStyle = "#0033CC";
-            ctxOverlays.fillRect(0, 0, innerWidth, innerHeight);
-            ctxOverlays.font = "70px sans-serif";
-            ctxOverlays.textAlign = "center";
+            Gfx.layer("overlay");
+            Gfx.clear("#0033CC");
+            Gfx.font("70px sans-serif");
+            Gfx.textAlign("center");
             ctxOverlays.textBaseline = "middle";
-            ctxOverlays.fillStyle = "white";
-            ctxOverlays.fillText("Settings", innerWidth / 2, innerHeight * 0.2);
+            Gfx.fillColor("#FFF");
+            Gfx.text("Settings", innerWidth / 2, innerHeight * 0.2);
             scenes.settings.buttons.forEach(button => button.display(ctxOverlays));
         },
         onmousedown(e) {
@@ -529,14 +525,13 @@ const scenes = {
         ],
         update() { },
         display(currentFrame) {
-            ctxOverlays.clear();
-            ctxOverlays.fillStyle = "#0033CC";
-            ctxOverlays.fillRect(0, 0, innerWidth, innerHeight);
-            ctxOverlays.font = "60px sans-serif";
-            ctxOverlays.textAlign = "center";
+            Gfx.layer("overlay");
+            Gfx.clear("#0033CC");
+            Gfx.font("60px sans-serif");
+            Gfx.textAlign("center");
             ctxOverlays.textBaseline = "middle";
-            ctxOverlays.fillStyle = "white";
-            ctxOverlays.fillText("Keybinds", innerWidth / 2, innerHeight * 0.2);
+            Gfx.fillColor("#FFF");
+            Gfx.text("Keybinds", innerWidth / 2, innerHeight * 0.2);
             this.buttons.forEach(button => button.display(ctxOverlays));
         },
         onmousedown(e) {
@@ -574,12 +569,9 @@ const scenes = {
                 return;
             }
             for (const ctx of ctxs) {
-                if (ctx == ctxTiles || ctx == ctxTilesOver) {
-                    if (currentFrame.redraw)
-                        ctx.clear();
+                if (!(ctx == ctxTiles || ctx == ctxTilesOver) || currentFrame.redraw) {
+                    Gfx.clear(null, ctx);
                 }
-                else
-                    ctx.clear();
             }
             level1.resetResourceDisplayData();
             level1.display(currentFrame);
@@ -702,7 +694,7 @@ function main_loop() {
     }
     catch (err) {
         alert("An error has occurred!\nPlease create an issue on this project's GitHub so I can fix it.\nError message: " + parseError(err));
-        ctxs.forEach((ctx) => { ctx.clear(); });
+        ctxs.forEach(ctx => Gfx.clear(null, ctx));
         errorBackground.style.zIndex = "99999";
         gameBackground.classList.add("hidden");
         throw err;

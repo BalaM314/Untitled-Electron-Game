@@ -262,6 +262,14 @@ class Gfx {
 	static lineWidth(width:number) {
 		this.ctx.lineWidth = width;
 	}
+	static clear(color?:string | null, _ctx = this.ctx){
+		if(color){
+			_ctx.fillStyle = color;
+			_ctx.fillRect(0, 0, _ctx.canvas.width, _ctx.canvas.height);
+		} else {
+			_ctx.clearRect(0, 0, _ctx.canvas.width, _ctx.canvas.height);
+		}
+	}
 	static text(text:string, x:number, y:number) {
 		this.ctx.fillText(text, x, y);
 	}

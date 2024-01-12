@@ -11,12 +11,6 @@ Object.defineProperty(Array.prototype, "sort2", {
 Object.defineProperty(Array.prototype, "at", {
     enumerable: false
 });
-CanvasRenderingContext2D.prototype.clear = function () {
-    this.clearRect(0, 0, this.canvas.width, this.canvas.height);
-};
-Object.defineProperty(CanvasRenderingContext2D.prototype, "clear", {
-    enumerable: false
-});
 function millis() {
     return (new Date()).valueOf() - Game.startTime.valueOf();
 }
