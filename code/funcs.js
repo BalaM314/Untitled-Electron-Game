@@ -196,11 +196,11 @@ class WindowedMean {
     add(value) {
         this.data[this.queuei++ % this.maxWindowSize] = value;
     }
-    mean(windowSize = this.maxWindowSize, notEnoughDataValue = null) {
+    mean(windowSize = this.maxWindowSize, notEnoughDataValue) {
         if (this.queuei >= windowSize)
             return this.rawMean(windowSize);
         else
-            return notEnoughDataValue;
+            return (notEnoughDataValue ?? null);
     }
     rawMean(windowSize = this.maxWindowSize) {
         if (windowSize > this.maxWindowSize)
@@ -215,9 +215,9 @@ class WindowedMean {
         }
         return total / windowSize;
     }
-    standardDeviation(windowSize = this.maxWindowSize, notEnoughDataValue = 0) {
+    standardDeviation(windowSize = this.maxWindowSize, notEnoughDataValue) {
         if (this.queuei < windowSize)
-            return notEnoughDataValue;
+            return notEnoughDataValue ?? 0;
         const mean = this.mean(windowSize);
         let sumXMinusMeanSquared = 0;
         let wrappedQueueI = this.queuei % this.maxWindowSize;

@@ -241,7 +241,6 @@ class WindowedMean {
 	/** Index of the next place to insert an item into the queue. */
 	queuei:number = 0;
 	
-
 	constructor(public maxWindowSize:number, fillValue = 0){
 		this.data = new Array(maxWindowSize).fill(fillValue);
 	}
@@ -249,9 +248,11 @@ class WindowedMean {
 	add(value:number){
 		this.data[this.queuei++ % this.maxWindowSize] = value;
 	}
-	mean<T = null>(windowSize = this.maxWindowSize, notEnoughDataValue:T = null as T):number | T {
+	mean(windowSize?:number):number | null;
+	mean<T>(windowSize:number, notEnoughDataValue:T):number | T;
+	mean<T>(windowSize = this.maxWindowSize, notEnoughDataValue?:T):number | T {
 		if(this.queuei >= windowSize) return this.rawMean(windowSize);
-		else return notEnoughDataValue;
+		else return (notEnoughDataValue ?? null) as any; //overload 1
 	}
 	rawMean(windowSize:number = this.maxWindowSize){
 		if(windowSize > this.maxWindowSize) throw new Error(`Cannot get average over the last ${windowSize} values becaue only ${this.maxWindowSize} values are stored`);
@@ -263,9 +264,10 @@ class WindowedMean {
 		}
 		return total / windowSize;
 	}
-
-	standardDeviation<T = number>(windowSize = this.maxWindowSize, notEnoughDataValue:T = 0 as T):number | T {
-		if(this.queuei < windowSize) return notEnoughDataValue;
+	standardDeviation(windowSize?:number):number;
+	standardDeviation<T>(windowSize:number, notEnoughDataValue:T):number | T;
+	standardDeviation<T>(windowSize = this.maxWindowSize, notEnoughDataValue?:T):number | T {
+		if(this.queuei < windowSize) return notEnoughDataValue ?? 0;
 		const mean = this.mean(windowSize)!;
 		/** Σ(x-x̄)^2 */
 		let sumXMinusMeanSquared = 0;
@@ -277,7 +279,6 @@ class WindowedMean {
 		}
 		return sumXMinusMeanSquared / windowSize;
 	}
-
 }
 
 function Abstract<TClass extends new (...args:any[]) => any>(input:TClass, context:ClassDecoratorContext<TClass>):TClass {
