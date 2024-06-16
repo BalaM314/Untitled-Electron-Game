@@ -79,8 +79,8 @@ function registerEventHandlers() {
         Input.keysHeld.delete(e.key.toLowerCase());
     };
     uploadButton.onchange = (event) => {
-        let file = (event.target?.files?.[0] ?? null);
-        if (file == null)
+        let file = event.target?.files?.[0];
+        if (!file)
             return;
         let reader = new FileReader();
         reader.readAsText(file);

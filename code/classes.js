@@ -856,6 +856,9 @@ let Building = (() => {
         getMaxPowerProduction() {
             throw new Error(`Function "getMaxPowerProduction" not implemented for base class Building.`);
         }
+        canVaryPowerProduction() {
+            return true;
+        }
         getRequestedPower() {
             throw new Error(`Function "getRequestedPower" not implemented for base class Building.`);
         }
@@ -2100,8 +2103,15 @@ class PowerGrid {
     }
     updatePower() {
         this.powerRequested = this.consumers.reduce((acc, p) => acc + p.getRequestedPower(), 0);
-        this.maxProduction = this.producers.reduce((acc, p) => acc + p.getMaxPowerProduction(), 0);
-        const load = this.maxProduction == 0 ? 0 : Math.min(this.powerRequested / this.maxProduction, 1);
+        let variablePower = 0, fixedPower = 0;
+        for (const producer of this.producers) {
+            if (producer.canVaryPowerProduction())
+                variablePower += producer.getMaxPowerProduction();
+            else
+                fixedPower += producer.getMaxPowerProduction();
+        }
+        this.maxProduction = variablePower + fixedPower;
+        const load = this.maxProduction == 0 ? 0 : constrain((this.powerRequested - fixedPower) / this.maxProduction, 0, 1);
         const satisfaction = this.powerRequested == 0 ? 0 : Math.min(this.maxProduction / this.powerRequested, 1);
         this.producers.forEach(p => p.powerLoad = load);
         this.consumers.forEach(c => c.powerSatisfaction = satisfaction);

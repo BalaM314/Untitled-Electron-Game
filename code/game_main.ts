@@ -107,8 +107,8 @@ function registerEventHandlers(){
 	//When file uploaded
 	uploadButton.onchange = (event:Event) => {
 		//Load a save file
-		let file = ((event.target as any)?.files?.[0] ?? null) as Blob | null;
-		if(file == null) return;
+		let file = (event.target as HTMLInputElement)?.files?.[0];
+		if(!file) return;
 		let reader = new FileReader();
 		reader.readAsText(file);
 		reader.onload = e => {
