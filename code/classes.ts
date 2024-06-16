@@ -1402,51 +1402,79 @@ class Conveyor extends Building {
 	static outputsItems = true;
 	/**Speed of the item in pixels per update. */
 	static speed = 1;
+	static inputMapping = [
+		//uldr
+		0b0100,
+		0b1000,
+		0b0001,
+		0b0010,
+		0b0010,
+		0b1000,
+		0b0001,
+		0b0100,
+		0b0010,
+		0b1000,
+		0b0001,
+		0b0100,
+		0b0110,
+		0b1100,
+		0b1001,
+		0b1100,
+		0b0011,
+		0b1001,
+		0b0011,
+		0b0110,
+		0b1010,
+		0b0101,
+		0b1010,
+		0b0101,
+		0b1110,
+		0b1101,
+		0b1011,
+		0b0111,
+	];
+	static outputMapping = [
+		//uldr
+		Direction.right,
+		Direction.down,
+		Direction.left,
+		Direction.up,
+		Direction.right,
+		Direction.right,
+		Direction.down,
+		Direction.down,
+		Direction.left,
+		Direction.left,
+		Direction.up,
+		Direction.up,
+		Direction.right,
+		Direction.right,
+		Direction.down,
+		Direction.down,
+		Direction.left,
+		Direction.left,
+		Direction.up,
+		Direction.up,
+		Direction.right,
+		Direction.down,
+		Direction.left,
+		Direction.up,
+		Direction.right,
+		Direction.down,
+		Direction.left,
+		Direction.up,
+	];
+
 	block!:typeof Conveyor;
 	outputSide:Direction = Conveyor.outputSide(this.meta);
 	acceptsItemFromSide(side:Direction):boolean {
-		//Bit cursed, but far better than what it used to be
-		switch(side){
-			case Direction.left: return [
-				0x00, 0x07, 0x0B, 0x0C, 0x0D, 0x0F, 0x13, 0x15, 0x17, 0x18, 0x19, 0x1B,
-			].includes(this.meta);
-			case Direction.up: return [
-				0x01, 0x05, 0x09, 0x0D, 0x0E, 0x0F, 0x11, 0x14, 0x16, 0x18, 0x19, 0x1A,
-			].includes(this.meta);
-			case Direction.right: return [
-				0x02, 0x06, 0x0A, 0x0E, 0x10, 0x11, 0x12, 0x15, 0x17, 0x19, 0x1A, 0x1B,
-			].includes(this.meta);
-			case Direction.down: return [
-				0x03, 0x08, 0x04, 0x0C, 0x10, 0x12, 0x13, 0x14, 0x16, 0x18, 0x1A, 0x1B,
-			].includes(this.meta);
-			default: crash();
-		}
+		return Boolean(this.block.inputMapping[this.meta] & side.bitmask);
 	}
 	outputsItemToSide(side:Direction):boolean {
-		//Bit cursed, but far better than what it used to be
-		switch(side){
-			case Direction.left: return [
-				2, 8, 9, 16, 17, 22, 26
-			].includes(this.meta);
-			case Direction.up: return [
-				3, 10, 11, 18, 19, 23, 27
-			].includes(this.meta);
-			case Direction.right: return [
-				0, 4, 5, 12, 13, 20, 24
-			].includes(this.meta);
-			case Direction.down: return [
-				1, 6, 7, 14, 15, 21, 25
-			].includes(this.meta);
-			default: crash();
-		}
+		return this.block.outputMapping[this.meta] == side;
 	}
-	/**Not sure if this function is a good idea? */
 	static outputSide(meta:number):Direction {
-		if([2, 8, 9, 16, 17, 22, 26].includes(meta)) return Direction.left;
-		if([3,10,11, 18, 19, 23, 27].includes(meta)) return Direction.up;
-		if([0, 4, 5, 12, 13, 20, 24].includes(meta)) return Direction.right;
-		if([1, 6, 7, 14, 15, 21, 25].includes(meta)) return Direction.down;
-		throw new Error(`Invalid meta ${meta}`);
+		return this.outputMapping[meta] ?? crash(`Invalid meta ${meta}`);
 	}
 	static getID(type:RawBuildingID, direction:Direction, modifier:number):BuildingIDWithMeta {
 		return [type, direction.num] as BuildingIDWithMeta;
@@ -1457,58 +1485,58 @@ class Conveyor extends Building {
 			//If holding shift, just return a straight conveyor.
 		}
 
-		let hasLeftBuilding = level.buildingAtTile(tileX - 1, tileY)?.outputsItemToSide(Direction.right) ?? false;
-		let hasTopBuilding = level.buildingAtTile(tileX, tileY - 1)?.outputsItemToSide(Direction.down) ?? false;
-		let hasRightBuilding = level.buildingAtTile(tileX + 1, tileY)?.outputsItemToSide(Direction.left) ?? false;
-		let hasBottomBuilding = level.buildingAtTile(tileX, tileY + 1)?.outputsItemToSide(Direction.up) ?? false;
+		let hasLeft = level.buildingAtTile(tileX - 1, tileY)?.outputsItemToSide(Direction.right) ?? false;
+		let hasUp = level.buildingAtTile(tileX, tileY - 1)?.outputsItemToSide(Direction.down) ?? false;
+		let hasRight = level.buildingAtTile(tileX + 1, tileY)?.outputsItemToSide(Direction.left) ?? false;
+		let hasDown = level.buildingAtTile(tileX, tileY + 1)?.outputsItemToSide(Direction.up) ?? false;
 		
 		switch(meta){
 			case 0:
-				if(hasLeftBuilding){
-					if(hasTopBuilding && hasBottomBuilding) return 0x18;
-					else if(hasTopBuilding) return 0x0D;
-					else if(hasBottomBuilding) return 0x0C;
+				if(hasLeft){
+					if(hasUp && hasDown) return 0x18;
+					else if(hasUp) return 0x0D;
+					else if(hasDown) return 0x0C;
 					else return 0x00;
 				} else {
-					if(hasTopBuilding && hasBottomBuilding) return 0x14;
-					else if(hasTopBuilding) return 0x05;
-					else if(hasBottomBuilding) return 0x04;
+					if(hasUp && hasDown) return 0x14;
+					else if(hasUp) return 0x05;
+					else if(hasDown) return 0x04;
 					else return 0x00;
 				}
 			case 1:
-				if(hasTopBuilding){
-					if(hasLeftBuilding && hasRightBuilding) return 0x19;
-					else if(hasLeftBuilding) return 0x0F;
-					else if(hasRightBuilding) return 0x0E;
+				if(hasUp){
+					if(hasLeft && hasRight) return 0x19;
+					else if(hasLeft) return 0x0F;
+					else if(hasRight) return 0x0E;
 					else return 0x01;
 				} else {
-					if(hasLeftBuilding && hasRightBuilding) return 0x15;
-					else if(hasLeftBuilding) return 0x07;
-					else if(hasRightBuilding) return 0x06;
+					if(hasLeft && hasRight) return 0x15;
+					else if(hasLeft) return 0x07;
+					else if(hasRight) return 0x06;
 					else return 0x01;
 				}
 			case 2:
-				if(hasRightBuilding){
-					if(hasTopBuilding && hasBottomBuilding) return 0x1A;
-					else if(hasTopBuilding) return 0x11;
-					else if(hasBottomBuilding) return 0x10;
+				if(hasRight){
+					if(hasUp && hasDown) return 0x1A;
+					else if(hasUp) return 0x11;
+					else if(hasDown) return 0x10;
 					else return 0x02;
 				} else {
-					if(hasTopBuilding && hasBottomBuilding) return 0x16;
-					else if(hasTopBuilding) return 0x09;
-					else if(hasBottomBuilding) return 0x08;
+					if(hasUp && hasDown) return 0x16;
+					else if(hasUp) return 0x09;
+					else if(hasDown) return 0x08;
 					else return 0x02;
 				}
 			case 3:
-				if(hasBottomBuilding){
-					if(hasLeftBuilding && hasRightBuilding) return 0x1B;
-					else if(hasLeftBuilding) return 0x13;
-					else if(hasRightBuilding) return 0x12;
+				if(hasDown){
+					if(hasLeft && hasRight) return 0x1B;
+					else if(hasLeft) return 0x13;
+					else if(hasRight) return 0x12;
 					else return 0x03;
 				} else {
-					if(hasLeftBuilding && hasRightBuilding) return 0x17;
-					else if(hasLeftBuilding) return 0x0B;
-					else if(hasRightBuilding) return 0x0A;
+					if(hasLeft && hasRight) return 0x17;
+					else if(hasLeft) return 0x0B;
+					else if(hasRight) return 0x0A;
 					else return 0x03;
 				}
 			default: return meta;
@@ -1517,6 +1545,7 @@ class Conveyor extends Building {
 	update(){
 		if(this.item instanceof Item){
 			if(this.item.pos.tileX != this.pos.tileX || this.item.pos.tileY != this.pos.tileY){
+				//Item moved outside of this building, transfer it
 				let building = this.buildAt(this.outputSide);
 				if(!building) return;
 				if(building.acceptItem(this.item, this.outputSide.opposite)){

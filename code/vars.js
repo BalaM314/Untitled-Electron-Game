@@ -196,6 +196,10 @@ const Direction = (() => {
     let down = { num: 1, string: "down", vec: [0, 1], horizontal: false, vertical: true };
     let left = { num: 2, string: "left", vec: [-1, 0], horizontal: true, vertical: false };
     let up = { num: 3, string: "up", vec: [0, -1], horizontal: false, vertical: true };
+    right.bitmask = 1 << right.num;
+    down.bitmask = 1 << down.num;
+    left.bitmask = 1 << left.num;
+    up.bitmask = 1 << up.num;
     right.opposite = left;
     left.opposite = right;
     down.opposite = up;

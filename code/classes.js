@@ -1262,49 +1262,13 @@ class Conveyor extends Building {
         this.outputSide = Conveyor.outputSide(this.meta);
     }
     acceptsItemFromSide(side) {
-        switch (side) {
-            case Direction.left: return [
-                0x00, 0x07, 0x0B, 0x0C, 0x0D, 0x0F, 0x13, 0x15, 0x17, 0x18, 0x19, 0x1B,
-            ].includes(this.meta);
-            case Direction.up: return [
-                0x01, 0x05, 0x09, 0x0D, 0x0E, 0x0F, 0x11, 0x14, 0x16, 0x18, 0x19, 0x1A,
-            ].includes(this.meta);
-            case Direction.right: return [
-                0x02, 0x06, 0x0A, 0x0E, 0x10, 0x11, 0x12, 0x15, 0x17, 0x19, 0x1A, 0x1B,
-            ].includes(this.meta);
-            case Direction.down: return [
-                0x03, 0x08, 0x04, 0x0C, 0x10, 0x12, 0x13, 0x14, 0x16, 0x18, 0x1A, 0x1B,
-            ].includes(this.meta);
-            default: crash();
-        }
+        return Boolean(this.block.inputMapping[this.meta] & side.bitmask);
     }
     outputsItemToSide(side) {
-        switch (side) {
-            case Direction.left: return [
-                2, 8, 9, 16, 17, 22, 26
-            ].includes(this.meta);
-            case Direction.up: return [
-                3, 10, 11, 18, 19, 23, 27
-            ].includes(this.meta);
-            case Direction.right: return [
-                0, 4, 5, 12, 13, 20, 24
-            ].includes(this.meta);
-            case Direction.down: return [
-                1, 6, 7, 14, 15, 21, 25
-            ].includes(this.meta);
-            default: crash();
-        }
+        return this.block.outputMapping[this.meta] == side;
     }
     static outputSide(meta) {
-        if ([2, 8, 9, 16, 17, 22, 26].includes(meta))
-            return Direction.left;
-        if ([3, 10, 11, 18, 19, 23, 27].includes(meta))
-            return Direction.up;
-        if ([0, 4, 5, 12, 13, 20, 24].includes(meta))
-            return Direction.right;
-        if ([1, 6, 7, 14, 15, 21, 25].includes(meta))
-            return Direction.down;
-        throw new Error(`Invalid meta ${meta}`);
+        return this.outputMapping[meta] ?? crash(`Invalid meta ${meta}`);
     }
     static getID(type, direction, modifier) {
         return [type, direction.num];
@@ -1313,91 +1277,91 @@ class Conveyor extends Building {
         if (keybinds.placement.force_straight_conveyor.isHeld()) {
             return meta;
         }
-        let hasLeftBuilding = level.buildingAtTile(tileX - 1, tileY)?.outputsItemToSide(Direction.right) ?? false;
-        let hasTopBuilding = level.buildingAtTile(tileX, tileY - 1)?.outputsItemToSide(Direction.down) ?? false;
-        let hasRightBuilding = level.buildingAtTile(tileX + 1, tileY)?.outputsItemToSide(Direction.left) ?? false;
-        let hasBottomBuilding = level.buildingAtTile(tileX, tileY + 1)?.outputsItemToSide(Direction.up) ?? false;
+        let hasLeft = level.buildingAtTile(tileX - 1, tileY)?.outputsItemToSide(Direction.right) ?? false;
+        let hasUp = level.buildingAtTile(tileX, tileY - 1)?.outputsItemToSide(Direction.down) ?? false;
+        let hasRight = level.buildingAtTile(tileX + 1, tileY)?.outputsItemToSide(Direction.left) ?? false;
+        let hasDown = level.buildingAtTile(tileX, tileY + 1)?.outputsItemToSide(Direction.up) ?? false;
         switch (meta) {
             case 0:
-                if (hasLeftBuilding) {
-                    if (hasTopBuilding && hasBottomBuilding)
+                if (hasLeft) {
+                    if (hasUp && hasDown)
                         return 0x18;
-                    else if (hasTopBuilding)
+                    else if (hasUp)
                         return 0x0D;
-                    else if (hasBottomBuilding)
+                    else if (hasDown)
                         return 0x0C;
                     else
                         return 0x00;
                 }
                 else {
-                    if (hasTopBuilding && hasBottomBuilding)
+                    if (hasUp && hasDown)
                         return 0x14;
-                    else if (hasTopBuilding)
+                    else if (hasUp)
                         return 0x05;
-                    else if (hasBottomBuilding)
+                    else if (hasDown)
                         return 0x04;
                     else
                         return 0x00;
                 }
             case 1:
-                if (hasTopBuilding) {
-                    if (hasLeftBuilding && hasRightBuilding)
+                if (hasUp) {
+                    if (hasLeft && hasRight)
                         return 0x19;
-                    else if (hasLeftBuilding)
+                    else if (hasLeft)
                         return 0x0F;
-                    else if (hasRightBuilding)
+                    else if (hasRight)
                         return 0x0E;
                     else
                         return 0x01;
                 }
                 else {
-                    if (hasLeftBuilding && hasRightBuilding)
+                    if (hasLeft && hasRight)
                         return 0x15;
-                    else if (hasLeftBuilding)
+                    else if (hasLeft)
                         return 0x07;
-                    else if (hasRightBuilding)
+                    else if (hasRight)
                         return 0x06;
                     else
                         return 0x01;
                 }
             case 2:
-                if (hasRightBuilding) {
-                    if (hasTopBuilding && hasBottomBuilding)
+                if (hasRight) {
+                    if (hasUp && hasDown)
                         return 0x1A;
-                    else if (hasTopBuilding)
+                    else if (hasUp)
                         return 0x11;
-                    else if (hasBottomBuilding)
+                    else if (hasDown)
                         return 0x10;
                     else
                         return 0x02;
                 }
                 else {
-                    if (hasTopBuilding && hasBottomBuilding)
+                    if (hasUp && hasDown)
                         return 0x16;
-                    else if (hasTopBuilding)
+                    else if (hasUp)
                         return 0x09;
-                    else if (hasBottomBuilding)
+                    else if (hasDown)
                         return 0x08;
                     else
                         return 0x02;
                 }
             case 3:
-                if (hasBottomBuilding) {
-                    if (hasLeftBuilding && hasRightBuilding)
+                if (hasDown) {
+                    if (hasLeft && hasRight)
                         return 0x1B;
-                    else if (hasLeftBuilding)
+                    else if (hasLeft)
                         return 0x13;
-                    else if (hasRightBuilding)
+                    else if (hasRight)
                         return 0x12;
                     else
                         return 0x03;
                 }
                 else {
-                    if (hasLeftBuilding && hasRightBuilding)
+                    if (hasLeft && hasRight)
                         return 0x17;
-                    else if (hasLeftBuilding)
+                    else if (hasLeft)
                         return 0x0B;
-                    else if (hasRightBuilding)
+                    else if (hasRight)
                         return 0x0A;
                     else
                         return 0x03;
@@ -1585,6 +1549,66 @@ Conveyor.displaysItem = true;
 Conveyor.acceptsItems = true;
 Conveyor.outputsItems = true;
 Conveyor.speed = 1;
+Conveyor.inputMapping = [
+    0b0100,
+    0b1000,
+    0b0001,
+    0b0010,
+    0b0010,
+    0b1000,
+    0b0001,
+    0b0100,
+    0b0010,
+    0b1000,
+    0b0001,
+    0b0100,
+    0b0110,
+    0b1100,
+    0b1001,
+    0b1100,
+    0b0011,
+    0b1001,
+    0b0011,
+    0b0110,
+    0b1010,
+    0b0101,
+    0b1010,
+    0b0101,
+    0b1110,
+    0b1101,
+    0b1011,
+    0b0111,
+];
+Conveyor.outputMapping = [
+    Direction.right,
+    Direction.down,
+    Direction.left,
+    Direction.up,
+    Direction.right,
+    Direction.right,
+    Direction.down,
+    Direction.down,
+    Direction.left,
+    Direction.left,
+    Direction.up,
+    Direction.up,
+    Direction.right,
+    Direction.right,
+    Direction.down,
+    Direction.down,
+    Direction.left,
+    Direction.left,
+    Direction.up,
+    Direction.up,
+    Direction.right,
+    Direction.down,
+    Direction.left,
+    Direction.up,
+    Direction.right,
+    Direction.down,
+    Direction.left,
+    Direction.up,
+];
 class OverlayBuild extends Building {
     buildingUnder() {
         return this.level.buildingAtPos(this.pos);
