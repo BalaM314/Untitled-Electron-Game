@@ -225,19 +225,19 @@ class Level {
 		Input.buildingPlaced = true;
 
 		if(block.canBuildAt(tileX, tileY, this)){
+			if(!this.hasResources(block.buildCost, 1500)) return false;
 			if(block.prototype instanceof MultiBlockController){
 				//Multiblock handling
 				forceType<typeof MultiBlockController>(block);
 				const offsets = MultiBlockController.getOffsetsForSize(...block.multiblockSize);
 				
-				//Break all the buildings under
+				//Break all the other buildings under
 				for(const [xOffset, yOffset] of offsets){
 					const buildUnder = this.buildingAtTile(tileX + xOffset, tileY + yOffset);
 					if(buildUnder?.block.immutable) return false;
 					buildUnder?.break();
 				}
 
-				if(!this.hasResources(block.buildCost, 1500)) return false;
 				this.drainResources(block.buildCost);
 				
 				//Create buildings
@@ -254,9 +254,9 @@ class Level {
 					this.buildings.add(secondary);
 				});
 				trigger("placeBuilding", {building: controller});
+				Input.lastBuilding = controller;
 				return true;
 			} else {
-				if(!this.hasResources(block.buildCost, 1500)) return false;
 				this.drainResources(block.buildCost);
 				const building = new block(
 					tileX, tileY, buildingID[1], this
@@ -266,6 +266,7 @@ class Level {
 				trigger("placeBuilding", {building});
 				if(building instanceof OverlayBuild) this.writeOverlayBuild(tileX, tileY, building);
 				else this.writeBuilding(tileX, tileY, building);
+				Input.lastBuilding = building;
 				return true;
 			}
 		} else {
@@ -1546,11 +1547,8 @@ class Conveyor extends Building {
 		if(this.item instanceof Item){
 			if(this.item.pos.tileX != this.pos.tileX || this.item.pos.tileY != this.pos.tileY){
 				//Item moved outside of this building, transfer it
-				let building = this.buildAt(this.outputSide);
-				if(!building) return;
-				if(building.acceptItem(this.item, this.outputSide.opposite)){
+				if(this.buildAt(this.outputSide)?.acceptItem(this.item, this.outputSide.opposite))
 					this.item = null;
-				}
 				return;
 			}
 			switch(this.meta){
@@ -1772,7 +1770,6 @@ class Extractor extends OverlayBuild {
 	}
 
 	grabItemFromTile(filter:(item:Item) => boolean = item => item instanceof Item){
-
 		if(
 			this.buildingUnder() instanceof Building &&
 			this.buildingUnder()!.hasItem() &&
@@ -1782,7 +1779,6 @@ class Extractor extends OverlayBuild {
 			this.item.pos.pixelX = this.pos.pixelXCenteredInTile;
 			this.item.pos.pixelY = this.pos.pixelYCenteredInTile;
 		}
-
 	}
 
 	dropItem(){
@@ -1994,6 +1990,7 @@ class MultiBlockController extends BuildingWithRecipe {
 	static textureSize(meta:number):TextureInfo {
 		return [this.multiblockSize, [0, 0]];
 	}
+	/** Does not return 0,0 */
 	static getOffsetsForSize(width:number, height:number){
 		let offsets:PosT[] = [];
 		for(let i = 0; i < width; i ++){

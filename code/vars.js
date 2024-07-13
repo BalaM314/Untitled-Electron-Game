@@ -252,9 +252,7 @@ const keybinds = extend()({
             download("Untitled-Electron-Game-save.json", JSON.stringify(exportData()));
         }),
         save: new Keybind("s", ["control", "!alt", "!shift"], () => attemptManualLocalSave()),
-        load_from_file: new Keybind("o", ["control"], () => {
-            uploadButton.click();
-        }),
+        load_from_file: new Keybind("o", ["control"], () => uploadButton.click()),
     },
     placement: {
         force_straight_conveyor: new Keybind("shift"),
@@ -296,6 +294,10 @@ const keybinds = extend()({
     misc: {
         pause: new Keybind(" ", [], () => { Game.paused = !Game.paused; }),
         close_dialog: new Keybind("escape", [], () => GUI.closeDialog()),
+        undo: new Keybind("z", ["control"], () => {
+            Input.lastBuilding?.break();
+            Input.lastBuilding = null;
+        })
     }
 });
 const Input = {
@@ -312,6 +314,7 @@ const Input = {
         return !this.buildingPlaced || keybinds.placement.allow_multiple_overwrite.isHeld();
     },
     buildingPlaced: false,
+    lastBuilding: null,
     latestMouseEvent: null,
     keysHeld: new Set(),
     lastKeysPressed: new Array(11).fill(""),

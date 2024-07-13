@@ -206,6 +206,8 @@ class Level {
         }
         Input.buildingPlaced = true;
         if (block.canBuildAt(tileX, tileY, this)) {
+            if (!this.hasResources(block.buildCost, 1500))
+                return false;
             if (block.prototype instanceof MultiBlockController) {
                 forceType(block);
                 const offsets = MultiBlockController.getOffsetsForSize(...block.multiblockSize);
@@ -215,8 +217,6 @@ class Level {
                         return false;
                     buildUnder?.break();
                 }
-                if (!this.hasResources(block.buildCost, 1500))
-                    return false;
                 this.drainResources(block.buildCost);
                 let controller = new block(tileX, tileY, buildingID[1], this);
                 controller.secondaries = offsets.map(([x, y]) => new block.secondary(tileX + x, tileY + y, 0, this));
@@ -229,11 +229,10 @@ class Level {
                     this.buildings.add(secondary);
                 });
                 trigger("placeBuilding", { building: controller });
+                Input.lastBuilding = controller;
                 return true;
             }
             else {
-                if (!this.hasResources(block.buildCost, 1500))
-                    return false;
                 this.drainResources(block.buildCost);
                 const building = new block(tileX, tileY, buildingID[1], this);
                 this.buildings.add(building);
@@ -243,6 +242,7 @@ class Level {
                     this.writeOverlayBuild(tileX, tileY, building);
                 else
                     this.writeBuilding(tileX, tileY, building);
+                Input.lastBuilding = building;
                 return true;
             }
         }
@@ -1372,12 +1372,8 @@ class Conveyor extends Building {
     update() {
         if (this.item instanceof Item) {
             if (this.item.pos.tileX != this.pos.tileX || this.item.pos.tileY != this.pos.tileY) {
-                let building = this.buildAt(this.outputSide);
-                if (!building)
-                    return;
-                if (building.acceptItem(this.item, this.outputSide.opposite)) {
+                if (this.buildAt(this.outputSide)?.acceptItem(this.item, this.outputSide.opposite))
                     this.item = null;
-                }
                 return;
             }
             switch (this.meta) {
