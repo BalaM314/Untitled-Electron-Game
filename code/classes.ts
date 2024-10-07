@@ -881,7 +881,7 @@ class Building {
 	static canOutputTo(building:Building | null){
 		return building instanceof Conveyor;
 	}
-	static canOutputFluidTo(building:Building | null){
+	static canOutputFluidTo(building:Building | null):boolean {
 		return building instanceof Pipe;
 	}
 	/**Called to destroy the building. Should remove all references to it. */
