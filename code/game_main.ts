@@ -68,7 +68,7 @@ function registerEventHandlers(){
 	//Do stuff when a key is pressed(not held).
 	window.onkeydown = (e:KeyboardEvent) => {
 
-		if((e.ctrlKey && e.key.match(/^[wertuniWERTUNIK1234567890!@#$%^&*()]$/)) || e.key.match(/^f(5|11)$/i)){
+		if((e.ctrlKey && e.key.match(/^[wertuniWERTUNIK1234567890!@#$%^&*()=-]$/)) || e.key.match(/^f(5|11)$/i)){
 			return;
 			//If you pressed one of these key combos, return
 		}
