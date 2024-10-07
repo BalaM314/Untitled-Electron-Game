@@ -1391,8 +1391,12 @@ class Miner extends Building {
 
 class TrashCan extends Building {
 	static acceptsItems = true;
+	static acceptsFluids = true;
 	acceptItem(item:Item){
 		return true;
+	}
+	acceptFluid(stack:FluidStack, maxThroughput:number, from:Building):number {
+		return Fluid.drain(stack, maxThroughput);
 	}
 }
 

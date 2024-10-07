@@ -1254,8 +1254,12 @@ class TrashCan extends Building {
     acceptItem(item) {
         return true;
     }
+    acceptFluid(stack, maxThroughput, from) {
+        return Fluid.drain(stack, maxThroughput);
+    }
 }
 TrashCan.acceptsItems = true;
+TrashCan.acceptsFluids = true;
 class Conveyor extends Building {
     constructor() {
         super(...arguments);
