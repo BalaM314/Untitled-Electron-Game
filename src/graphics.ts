@@ -51,7 +51,7 @@ function getAnimationData(fin:number):AnimationData {
 function loadTexture(t:UnloadedTexture, texturesDiv:HTMLDivElement){
 	return new Promise<Texture>((resolve, reject) => {
 		let img = document.createElement("img");
-		img.setAttribute("src", `assets/textures/${t.id}.png`.replace(":", "%23"));
+		img.setAttribute("src", `assets/textures/${t.id}.png`.replace(":", "!"));
 		img.addEventListener("load", () => {
 			Game.loadedTextures ++;
 			resolve({

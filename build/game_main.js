@@ -123,7 +123,7 @@ function registerEventHandlers() {
         if (block.hidden)
             continue;
         const img = document.createElement("img");
-        img.src = `assets/textures/building/${block.id}%230.png`;
+        img.src = `assets/textures/building/${block.id}!0.png`;
         img.id = "toolbar_" + block.id;
         img.addEventListener("drag", () => {
             _alert(`Place a building by clicking it in the toolbar, then clicking again where you want the building to go.`);

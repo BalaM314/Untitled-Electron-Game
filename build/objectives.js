@@ -30,7 +30,7 @@ class TechTreeNode {
     }
     imageURL() {
         if (this.id.startsWith("building_"))
-            return `assets/textures/building/${this.id.split("building_")[1]}%230.png`;
+            return `assets/textures/building/${this.id.split("building_")[1]}!0.png`;
         else
             return `assets/textures/misc/${this.id}.png`;
     }
