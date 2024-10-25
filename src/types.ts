@@ -1,3 +1,5 @@
+/* Copyright © BalaM314, 2024. MIT License. */
+
 type TileID = 
 "base_grass" |  //Grass
 "base_stone" |  //stone

@@ -8,6 +8,11 @@
 		"target": "ES2020",
 		"alwaysStrict": true,
 		"removeComments": true,
-		"strict": true
-	}
+		"strict": true,
+		"outDir": "build/",
+		"rootDir": "src",
+	},
+	"include": [
+		"src/**/*.ts"
+	]
 }

@@ -1,3 +1,4 @@
+/* Copyright © BalaM314, 2024. MIT License. */
 class Content<K extends string> {
 	nid:number;
 	constructor(public id:K){

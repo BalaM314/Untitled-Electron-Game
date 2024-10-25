@@ -1,3 +1,4 @@
+/* Copyright © BalaM314, 2024. MIT License. */
 
 class I18NBundle {
 	mapping:Map<string, string>;
@@ -462,7 +463,6 @@ const splashes:string[] = [
 	"Got any grapes?",
 	"e",
 	"Hello fellow untitled electron game enthusiast, I have made this splash text ridiculously long to the point where it is only actually readable by accessing the game files. w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w Hello fellow untitled electron game enthusiast, I have made this splash text ridiculously long to the point where it is only actually readable by accessing the game files.",
-	// "/execute order 420",
 	"Now a noodle.",
 	"${splash}",
 	"Goes brrrrrrr!",
@@ -476,13 +476,13 @@ const splashes:string[] = [
 	"uiwcoufhuwrwytyur g fhk",
 	"Oi",
 	"what am i even doing",
-	// "Do distribute!",
+	"Do distribute!",
 	"Do not sell!",
 	"doot doot",
 	"/kill",
 	"c418 is still the best lol",
 	"I wonder what this button does!",
-	// "Ctrl+W for 420 free diamonds!",
+	"Ctrl+W for free diamonds!",
 	"One day, somewhere in the future, my work will be quoted!",
 	"For the last time guys, the Earth is a *rhombicubeoctahedron*.",
 	".party()!",
@@ -503,7 +503,6 @@ const splashes:string[] = [
 	"3.141592653589793238462643383279502884197169399375105820974944592307816406286208998628034825342117067982148086513282306647093844609550582231725359408128481",
 	"Noted.",
 	"let splashes: string[] = ",
-	"I just simultaneously whipped and nae nae'd!",
 	"TypeScript powered!",
 	"Server friendly!",
 	"Environmentally friendly!",

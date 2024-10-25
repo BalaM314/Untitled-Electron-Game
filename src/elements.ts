@@ -1,3 +1,4 @@
+/* Copyright © BalaM314, 2024. MIT License. */
 const ctxTiles = getElement("canvas0", HTMLCanvasElement).getContext("2d")!;
 const ctxTilesOver = getElement("canvas1", HTMLCanvasElement).getContext("2d")!;//Tiles
 const ctxBuildsUnder = getElement("canvas2", HTMLCanvasElement).getContext("2d")!;//Ghost buildings

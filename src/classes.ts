@@ -1,5 +1,6 @@
 /*
-	Main classes.
+Copyright © BalaM314, 2024. MIT License.
+Main classes.
 */
 
 

@@ -1,4 +1,4 @@
-
+/* Copyright © BalaM314, 2024. MIT License. */
 
 interface UnloadedTexture {
 	id: string;

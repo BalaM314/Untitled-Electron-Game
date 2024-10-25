@@ -1,4 +1,7 @@
-//this will contain the tech tree and the objective system, and maybe the events system too
+/*
+Copyright © BalaM314, 2024. MIT License.
+Contains the tech tree and the objective system.
+*/
 
 
 class TechTreeNode {

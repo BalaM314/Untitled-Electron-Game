@@ -1,4 +1,4 @@
-
+/* Copyright © BalaM314, 2024. MIT License. */
 /** Content registry where the content is a class. */
 class ContentRegistryC<K, T extends new (...args:any[]) => {}> implements Iterable<T> {
 	private contentMap = new Map<K, T>();

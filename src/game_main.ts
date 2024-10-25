@@ -1,3 +1,4 @@
+/* Copyright © BalaM314, 2024. MIT License. */
 
 /**Registers event handlers, called once on page load. */
 function registerEventHandlers(){
