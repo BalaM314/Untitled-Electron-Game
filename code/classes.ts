@@ -93,7 +93,7 @@ class Level {
 	generateNecessaryChunks(){
 		let [chunkX, chunkY] = Camera.unproject(0, 0).map(Pos.pixelToChunk);
 		const xOffsets = [0, 1, 2, 3, 4];
-		const yOffsets = [0, 1, 2];
+		const yOffsets = [0, 1, 2, 3];
 		for(const xOffset of xOffsets){
 			for(const yOffset of yOffsets){
 				this.generateChunk(chunkX + xOffset, chunkY + yOffset);
