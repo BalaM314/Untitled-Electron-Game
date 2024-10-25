@@ -18,6 +18,7 @@
 	},
 	"homepage": "https://github.com/BalaM314/Untitled-Electron-Game#readme",
 	"devDependencies": {
-		"electron": "^13.1.9"
+		"electron": "^13.1.9",
+		"typescript": "^5.6.3"
 	}
 }
