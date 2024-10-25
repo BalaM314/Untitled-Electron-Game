@@ -268,8 +268,12 @@ const GUI = {
 				){
 					tooltipbox.innerHTML = tooltip("Objective", ["This box shows the current objective. It may also contain tips and useful information."]);
 					Game.stats.objectiveHovered = true;
-				} else if(hovered.id == "research-header-text" || hovered.id == "research-header" || hovered.id == "research-exit-button" || hovered.id == "research-menu" || hovered.className == "research-tree-inner"){
+				} else if(hovered.id == "research-button" || hovered.id == "research-header-text" || hovered.id == "research-header" || hovered.id == "research-exit-button" || hovered.id == "research-menu" || hovered.className == "research-tree-inner"){
 					tooltipbox.innerHTML = tooltip("Research", ["This menu allows you to research new buildings."])
+				} else if(hovered.id == "settings-button"){
+					tooltipbox.innerHTML = tooltip("Settings", ["This menu allows you to change the game settings."])
+				} else if(hovered.id == "buttons-pane"){
+					return;
 				} else {
 					tooltipbox.innerHTML = `???${hovered.id}`;
 				}
@@ -649,7 +653,10 @@ const scenes: {
 					"base_null"
 				), null);
 			} else if(e.button === 1){
-				//TODO pick block
+				const buildUnder = level1.buildingAtPixel(...Camera.unproject(...Input.mouse));
+				if(buildUnder){
+					placedBuilding.type = buildUnder.block.id;
+				}
 			}
 		},
 		onmouseheld(){
