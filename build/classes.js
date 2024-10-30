@@ -1662,8 +1662,28 @@ class Extractor extends OverlayBuild {
             this.buildingUnder().hasItem() &&
             filter(this.buildingUnder().hasItem())) {
             this.item = this.buildingUnder().removeItem();
-            this.item.pos.pixelX = this.pos.pixelXCenteredInTile;
-            this.item.pos.pixelY = this.pos.pixelYCenteredInTile;
+            switch (this.meta) {
+                case 0:
+                case 4:
+                case 8:
+                    this.item.pos.pixelY = this.pos.pixelYCenteredInTile;
+                    break;
+                case 1:
+                case 5:
+                case 9:
+                    this.item.pos.pixelX = this.pos.pixelXCenteredInTile;
+                    break;
+                case 2:
+                case 6:
+                case 10:
+                    this.item.pos.pixelY = this.pos.pixelYCenteredInTile;
+                    break;
+                case 3:
+                case 7:
+                case 11:
+                    this.item.pos.pixelX = this.pos.pixelXCenteredInTile;
+                    break;
+            }
         }
     }
     dropItem() {
