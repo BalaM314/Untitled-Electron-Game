@@ -113,6 +113,8 @@ copperWire.name = Copper Wire
 stator.name = Stator
 rotor.name = Rotor
 motor.name = Motor
+siliconCrude.name = Crude Silicon
+siliconCrude.description = Contains many impurities, but might be suitable for large transistors.
 
 [fluid]
 water.name = Water
@@ -206,6 +208,7 @@ type ItemID =
 | "base_stator"
 | "base_rotor"
 | "base_motor"
+| "base_siliconCrude"
 ;
 
 type FluidID = "base_water" | "base_steam";

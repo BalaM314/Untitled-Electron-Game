@@ -82,6 +82,10 @@ const recipes = {
 				inputs: [["base_stone", 2]],
 				outputs: [["base_stoneBrick", 1]],
 				duration: 60
+			},{
+				inputs: [["base_sand", 2]],
+				outputs: [["base_siliconCrude", 1]],
+				duration: 180
 			}
 		]
 	},
