@@ -30,13 +30,6 @@ interface ObjectConstructor {
 	 */
 	entries<const K extends string, T>(o: Record<K, T>): Array<[K, T]>;
 	fromEntries<const K extends string, T>(entries: Iterable<readonly [K, T]>): Record<K, T>;
-  /**
-   * Copy the values of all of the enumerable own properties from one or more source objects to a
-   * target object. Returns the target object.
-   * @param target The target object to copy to.
-   * @param sources One or more source objects from which to copy properties
-   */
-  assign<T extends any>(...sources: T[]): T;
 	/**
 	 * Creates an object that has the specified prototype or that has null prototype.
 	 * @param o Object to use as a prototype. May be null.

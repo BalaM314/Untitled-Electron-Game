@@ -824,17 +824,17 @@ const Log = (() => {
 			"",
 		],
 		caution: [
-			`%c[UEG]%c⚠️ `,
+			`%c[UEG]%c ⚠️ `,
 			styles.UEG,
 			styles.caution,
 		],
 		warn: [
-			`%c[UEG]%c⚠️ `,
+			`%c[UEG]%c ⚠️ `,
 			styles.UEG,
 			styles.warn,
 		],
 		error: [
-			`%c[UEG]%c🛑 `,
+			`%c[UEG]%c 🛑 `,
 			styles.UEG,
 			styles.error,
 		] as const,
@@ -850,7 +850,7 @@ const Log = (() => {
 		return Object.assign(
 			new String(
 				Array.isArray(input) ? input[0] :
-				typeof input === "object" ? processObject(Object.assign(input, ...rest)) :
+				typeof input === "object" ? processObject(Object.assign({}, input, ...rest)) :
 				input
 			),
 			{ [ColorTag]: true as const }
@@ -872,10 +872,15 @@ const Log = (() => {
 		prefixes,
 		...Object.fromEntries(Object.entries(prefixes).map(
 			([name, [prefix, ...colors]]) => [name, (message:string, ...data:unknown[]) => {
-				console.log(prefix + message, ...data, ...colors);
+				console.log(prefix + message, ...colors, ...data);
 			}] as const
 		)),
 		ColorTag,
+		group(message:string, callback:() => unknown, collapsed = false){
+			console[collapsed ? "groupCollapsed" : "group"](prefixes.info[0] + message, prefixes.info[1], prefixes.info[2]);
+			callback();
+			console.groupEnd();
+		},
 		style: Object.assign(style, {
 			[ColorTag]: true,
 			toString(){
@@ -885,5 +890,38 @@ const Log = (() => {
 			([key, val]) => [key, style(val)] as const
 		))),
 		raw,
+		showBanner(){
+			const text = "Untitled Electron Game";
+			const fontStyle = {
+				"font-family": "monospace",
+				"text-shadow": "2px 2px 2px black;",
+			};
+			const fontStyleLarge = {
+				"font-size": "200%",
+			}
+			const fontStyleSmall = {
+				"font-size": "100%",
+			}
+			const fontStyleSpace = {
+				"font-family": "monospace",
+				"color": "#0000",
+				"background-color": "#0033CC",
+			};
+			const gradient = {
+				"background-image": `linear-gradient(to right, ${range(225, 225 + 360, 30).map(i => `hsl(${i}deg, 100%, 40%)`).join(", ")})`
+			};
+			const subtitleLine = {
+				"background-color": "#0033CC",
+			};
+			const subtitleStyle = {
+				"background-color": "#315541",
+			};
+			const subtitle = " by BalaM314 ";
+			raw`\
+${style(fontStyleSmall, fontStyleSpace)}${" ".repeat(3 * 2)}${text.repeat(2)}${" ".repeat(3 * 2)}
+${style(fontStyleLarge, fontStyleSpace)}${style(fontStyleLarge, fontStyle, gradient)}   ${text} ${style(fontStyleLarge, fontStyleSpace)}  
+${style(fontStyleSmall, fontStyle, subtitleLine)}${" ".repeat((6 + text.length) * 2 - subtitle.length - 2)}${style(fontStyleSmall, fontStyle, subtitleStyle)}${subtitle}${style(fontStyleSmall, fontStyle, subtitleLine)}${" ".repeat(2)}
+${style(fontStyleSmall, fontStyleSpace)}${" ".repeat(3 * 2)}${text.repeat(2)}${" ".repeat(3 * 2)}`
+		},
 	};
 })();

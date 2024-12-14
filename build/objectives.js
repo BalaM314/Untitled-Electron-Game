@@ -109,12 +109,14 @@ class TechTree {
         researchTree.style.setProperty("--nodes", this.nodes.length.toString());
     }
     read(data) {
-        const completedNodes = data.split(",");
-        for (const node of completedNodes) {
+        let numRead = 0;
+        for (const node of data.split(",")) {
             if (this.getOpt(node)) {
                 this.get(node).unlocked = true;
+                numRead++;
             }
         }
+        return numRead;
     }
     write() {
         return this.nodes.filter(n => n.unlocked).map(n => n.id).join(",");
@@ -219,12 +221,15 @@ class ObjectiveList {
         this.objectives.forEach(o => o.update());
     }
     read(data) {
+        let numRead = 0;
         const completedObjectives = data.split(",");
         for (const objective of completedObjectives) {
             if (this.getOpt(objective)) {
                 this.get(objective).completed = true;
+                numRead++;
             }
         }
+        return numRead;
     }
     write() {
         return this.objectives.filter(n => n.completed).map(n => n.id).join(",");

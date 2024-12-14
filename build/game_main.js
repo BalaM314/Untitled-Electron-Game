@@ -826,18 +826,26 @@ function exportData() {
 function importData(rawData) {
     let tempLevel;
     try {
-        let data = JSON.parse(rawData);
-        assert(data.UntitledElectronGame.metadata.validationCode === "esrdtfgvczdsret56u7yhgvfcesrythgvfd!");
-        let levelData = data.UntitledElectronGame.level1;
-        levelData.version = data.UntitledElectronGame.metadata.version;
-        levelData.uuid = data.UntitledElectronGame.metadata.uuid ?? data.UntitledElectronGame.metadata.id;
-        assert(levelData.chunks instanceof Object);
-        tempLevel = Level.read(levelData);
-        level1 = tempLevel;
-        if (data.UntitledElectronGame.techTree)
-            tech.read(data.UntitledElectronGame.techTree);
-        if (data.UntitledElectronGame.objectives)
-            objectives.read(data.UntitledElectronGame.objectives);
+        Log.group(`Importing save data...`, () => {
+            let data = JSON.parse(rawData);
+            assert(data.UntitledElectronGame.metadata.validationCode === "esrdtfgvczdsret56u7yhgvfcesrythgvfd!");
+            let levelData = data.UntitledElectronGame.level1;
+            levelData.version = data.UntitledElectronGame.metadata.version;
+            levelData.uuid = data.UntitledElectronGame.metadata.uuid ?? data.UntitledElectronGame.metadata.id;
+            assert(levelData.chunks instanceof Object);
+            tempLevel = Level.read(levelData);
+            Log.info("Parsed world data.");
+            level1 = tempLevel;
+            if (data.UntitledElectronGame.techTree) {
+                const num = tech.read(data.UntitledElectronGame.techTree);
+                Log.info(`Imported ${num} tech tree nodes.`);
+            }
+            if (data.UntitledElectronGame.objectives) {
+                const num = objectives.read(data.UntitledElectronGame.objectives);
+                Log.info(`Imported ${num} completed objectives.`);
+            }
+            Log.info(`Imported save data.`);
+        });
     }
     catch (err) {
         Log.error("Import failed.", err);
@@ -866,8 +874,11 @@ let placedBuilding = {
     }
 };
 function init() {
+    Log.showBanner();
     Log.info("Starting...");
-    console.log("%c Hey there! It looks like you're checking out the console.\nIf you want to view the source code, *please do it at* https://github.com/BalaM314/Untitled-Electron-Game \n Make sure to view the .ts files as the .js files are compiled and thus look weird.", "color: blue; font-size: 30px;");
+    Log.raw `${Log.style({ color: "blue", "font-size": "150%" })}\
+Hey there! It looks like you're checking out the console.
+This game is open source! https://github.com/BalaM314/Untitled-Electron-Game`;
     try {
         assert(localStorage.getItem("settings"));
         const loadedSettings = JSON.parse(localStorage.getItem("settings"));
