@@ -296,6 +296,7 @@ const keybinds = extend()({
     misc: {
         pause: new Keybind(" ", [], () => { Game.paused = !Game.paused; }),
         close_dialog: new Keybind("escape", [], () => GUI.closeDialog()),
+        close_alert: new Keybind("enter", [], () => GUI.closeAlert()),
         undo: new Keybind("z", ["control"], () => {
             Input.lastBuilding?.break();
             Input.lastBuilding = null;

@@ -161,7 +161,7 @@ function registerEventHandlers(){
 		img.src = `assets/textures/building/${block.id}!0.png`;
 		img.id = "toolbar_" + block.id;
 		img.addEventListener("drag", () => {
-			_alert(`Place a building by clicking it in the toolbar, then clicking again where you want the building to go.`);
+			GUI.alert(`Place a building by clicking it in the toolbar, then clicking again where you want the building to go.`);
 		});
 		img.title = f`${bundle.get(`building.${block.id}.name`)}\n${bundle.get(`building.${block.id}.description`, "\b")}`;
 		img.addEventListener("click", () => {
@@ -177,7 +177,7 @@ function registerEventHandlers(){
 		objective?.tryComplete();
 	});
 
-	alertexit.onclick = closeAlert;
+	alertexit.onclick = GUI.closeAlert;
 }
 
 
@@ -203,8 +203,17 @@ const GUI = {
 	toggle(){
 		this.hidden = !this.hidden;
 	},
+	alert(message:string){
+		if(!Game.alerts.list.includes(message))
+			Game.alerts.list.push(message);
+	},
+	closeAlert(){
+		alertbox.classList.remove("active");
+		Game.alerts.list.shift();
+		Game.alerts.active = false;
+	},
 	closeDialog(){
-		if(Game.alerts.active) closeAlert();
+		if(Game.alerts.active) this.closeAlert();
 		else if(tech.menuVisible) tech.hideMenu();
 	},
 	toggleResearchMenu(){
@@ -797,7 +806,7 @@ function load(){
 
 	if(!localStorage.firstload){
 		localStorage.firstload = true;
-		_alert(
+		GUI.alert(
 `Welcome to Untitled Electron Game!
 This is a game about building a factory. To get started, follow the objectives in the top right.`
 		);
@@ -818,7 +827,7 @@ This is a game about building a factory. To get started, follow the objectives i
 					console.log("Autosaved.");
 				}, 30000);
 			} else {
-				_alert("It looks like your current world isn't the same world as your save. Autosaving has been disabled to avoid overwriting it.");
+				GUI.alert("It looks like your current world isn't the same world as your save. Autosaving has been disabled to avoid overwriting it.");
 			}
 		}
 	}

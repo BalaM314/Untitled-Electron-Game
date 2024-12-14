@@ -299,15 +299,6 @@ function trigger(key, data) {
             break;
     }
 }
-function _alert(message) {
-    if (!Game.alerts.list.includes(message))
-        Game.alerts.list.push(message);
-}
-function closeAlert() {
-    alertbox.classList.remove("active");
-    Game.alerts.list.shift();
-    Game.alerts.active = false;
-}
 function hex(num, length) {
     return `0x${(Array(length).fill("0").join("") + num.toString(16)).toUpperCase().slice(-length)}`;
 }

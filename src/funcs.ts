@@ -362,17 +362,6 @@ function trigger<T extends keyof Triggers>(key:T, data:Triggers[T]){
 	}
 }
 
-function _alert(message:string){
-	if(!Game.alerts.list.includes(message))
-		Game.alerts.list.push(message);
-}
-
-function closeAlert(){
-	alertbox.classList.remove("active");
-	Game.alerts.list.shift();
-	Game.alerts.active = false;
-}
-
 function hex(num:number, length:number){
 	return `0x${(Array(length).fill("0").join("") + num.toString(16)).toUpperCase().slice(-length)}`;
 	//it just works

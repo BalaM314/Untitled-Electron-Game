@@ -302,7 +302,7 @@ class Level {
         }
         if (this.resources["base_stone"] == 0 && Date.now() - this.timeSinceStoneRanOut > 15000 && !Game.stats.stoneRunOutMessageShown) {
             Game.stats.stoneRunOutMessageShown = true;
-            _alert(`It looks like you have run out of stone. Break unnecessary buildings by holding Backspace and moving the cursor over them to recover resources.`);
+            GUI.alert(`It looks like you have run out of stone. Break unnecessary buildings by holding Backspace and moving the cursor over them to recover resources.`);
         }
         else if (this.resources["base_stone"] > 0) {
             this.timeSinceStoneRanOut = Date.now();
