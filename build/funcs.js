@@ -1,16 +1,18 @@
 "use strict";
-Array.prototype.sort2 = function (func) {
-    this.sort((a, b) => func(a) - func(b));
-};
-Array.prototype.at = function (index) {
-    return this[index < 0 ? index + this.length : index];
-};
 Object.defineProperty(Array.prototype, "sort2", {
-    enumerable: false
+    enumerable: false,
+    value: function (func) {
+        this.sort((a, b) => func(a) - func(b));
+    },
 });
-Object.defineProperty(Array.prototype, "at", {
-    enumerable: false
-});
+if (!Array.prototype.at) {
+    Array.prototype.at = function (index) {
+        return this[index < 0 ? index + this.length : index];
+    };
+    Object.defineProperty(Array.prototype, "at", {
+        enumerable: false
+    });
+}
 function millis() {
     return (new Date()).valueOf() - Game.startTime.valueOf();
 }
@@ -50,6 +52,9 @@ function round(amount, places = 0) {
 }
 function percentage(amount, places = 0) {
     return `${round(amount * 100, places)}%`;
+}
+function range(start, end, step = 1) {
+    return Array.from({ length: Math.floor((end - start + step) / step) }, (_, i) => start + i * step);
 }
 function constrain(x, min, max) {
     if (x > max)
@@ -716,3 +721,63 @@ class PseudoRandom extends Random {
     }
 }
 const Rand = new Random(Math.random);
+const Log = (() => {
+    const styles = {
+        UEG: `color: #0033CC; font-weight: bolder;`,
+        caution: "color: yellow;",
+        warn: "color: orange;",
+        error: "color: red; font-weight: bolder;",
+    };
+    const prefixes = {
+        info: [
+            `%c[UEG]%c `,
+            styles.UEG,
+            "",
+        ],
+        caution: [
+            `%c[UEG]%c⚠️ `,
+            styles.UEG,
+            styles.caution,
+        ],
+        warn: [
+            `%c[UEG]%c⚠️ `,
+            styles.UEG,
+            styles.warn,
+        ],
+        error: [
+            `%c[UEG]%c🛑 `,
+            styles.UEG,
+            styles.error,
+        ],
+    };
+    const ColorTag = Symbol("ColorTag");
+    function isColorTagged(x) {
+        return x instanceof Object && ColorTag in x;
+    }
+    function processObject(input) {
+        return Object.entries(input).map(([k, v]) => `${k}: ${v};`).join(" ");
+    }
+    function style(input, ...rest) {
+        return Object.assign(new String(Array.isArray(input) ? input[0] :
+            typeof input === "object" ? processObject(Object.assign(input, ...rest)) :
+                input), { [ColorTag]: true });
+    }
+    ;
+    const raw = function (stringChunks, ...varChunks) {
+        console.log(String.raw({ raw: stringChunks }, ...varChunks.map(c => isColorTagged(c) ? `%c` : c)), ...varChunks.filter(isColorTagged));
+    };
+    return {
+        prefixes,
+        ...Object.fromEntries(Object.entries(prefixes).map(([name, [prefix, ...colors]]) => [name, (message, ...data) => {
+                console.log(prefix + message, ...data, ...colors);
+            }])),
+        ColorTag,
+        style: Object.assign(style, {
+            [ColorTag]: true,
+            toString() {
+                return "";
+            }
+        }, Object.fromEntries(Object.entries(styles).map(([key, val]) => [key, style(val)]))),
+        raw,
+    };
+})();

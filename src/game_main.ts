@@ -821,7 +821,7 @@ This is a game about building a factory. To get started, follow the objectives i
 			if(safeToSave()){
 				setInterval(() => {
 					saveToLocalStorage();
-					console.log("Autosaved.");
+					Log.info("Autosaved.");
 				}, 30000);
 			} else {
 				GUI.alert("It looks like your current world isn't the same world as your save. Autosaving has been disabled to avoid overwriting it.");
@@ -957,7 +957,7 @@ function importData(rawData:string){
 		if(data.UntitledElectronGame.objectives) objectives.read(data.UntitledElectronGame.objectives);
 
 	} catch(err){
-		console.error("Import failed.", err);
+		Log.error("Import failed.", err);
 		alert("Import failed! " + parseError(err));
 	}
 }
@@ -992,18 +992,19 @@ let placedBuilding: {
 
 /**Called once on page load. */
 function init(){
+	Log.info("Starting...");
+	console.log("%c Hey there! It looks like you're checking out the console.\nIf you want to view the source code, *please do it at* https://github.com/BalaM314/Untitled-Electron-Game \n Make sure to view the .ts files as the .js files are compiled and thus look weird.", "color: blue; font-size: 30px;");
+
 	try {
 		assert(localStorage.getItem("settings"));
-		const loadedSettings = JSON.parse(localStorage.getItem("settings")!);
+		const loadedSettings = JSON.parse(localStorage.getItem("settings")!) as any;
 		for(const [k, v] of Object.entries(settings) as [keyof typeof settings, (typeof settings)[keyof typeof settings]][]){
 			if(loadedSettings[k] && typeof loadedSettings[k] == typeof settings[k]) settings[k] = loadedSettings[k];
 		}
 	} catch(err){
-		console.warn("Invalid persistent settings!\nIf this is your first time visiting this site, nothing to worry about.");
+		Log.caution("Invalid persistent settings!\nIf this is your first time visiting this site, nothing to worry about.");
 		localStorage.setItem("settings", JSON.stringify(settings));
 	}
-	
-	console.log("%c Hey there! It looks like you're checking out the console.\nIf you want to view the source code, *please do it at* https://github.com/BalaM314/Untitled-Electron-Game \n Make sure to view the .ts files as the .js files are compiled and thus look weird.", "color: blue; font-size: 30px;")
 
 	Gfx.init();
 	
@@ -1012,7 +1013,9 @@ function init(){
 		.then(loadedTextures => {
 			Gfx.textures = loadedTextures;
 			Game.texturesReady = true;
-		});
+			Log.info(`Successfully loaded ${Object.keys(loadedTextures).length} textures.`);
+		})
+		.catch(() => {});
 	
 	
 	registerEventHandlers();

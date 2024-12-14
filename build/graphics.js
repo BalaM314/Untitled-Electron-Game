@@ -26,9 +26,10 @@ function loadTexture(t, texturesDiv) {
             });
         });
         img.addEventListener("error", (err) => {
-            alert(`Failed to load texture "${t.id}": ${err.message}`);
-            console.error(err);
-            reject(`Failed to load texture "${t.id}": ${err.message}`);
+            const message = `Failed to load texture "${t.id}": ${err.message}`;
+            alert(message);
+            Log.error(message, err);
+            reject(message);
         });
         texturesDiv.appendChild(img);
     });

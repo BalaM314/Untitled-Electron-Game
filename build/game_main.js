@@ -736,7 +736,7 @@ This is a game about building a factory. To get started, follow the objectives i
             if (safeToSave()) {
                 setInterval(() => {
                     saveToLocalStorage();
-                    console.log("Autosaved.");
+                    Log.info("Autosaved.");
                 }, 30000);
             }
             else {
@@ -840,7 +840,7 @@ function importData(rawData) {
             objectives.read(data.UntitledElectronGame.objectives);
     }
     catch (err) {
-        console.error("Import failed.", err);
+        Log.error("Import failed.", err);
         alert("Import failed! " + parseError(err));
     }
 }
@@ -866,6 +866,8 @@ let placedBuilding = {
     }
 };
 function init() {
+    Log.info("Starting...");
+    console.log("%c Hey there! It looks like you're checking out the console.\nIf you want to view the source code, *please do it at* https://github.com/BalaM314/Untitled-Electron-Game \n Make sure to view the .ts files as the .js files are compiled and thus look weird.", "color: blue; font-size: 30px;");
     try {
         assert(localStorage.getItem("settings"));
         const loadedSettings = JSON.parse(localStorage.getItem("settings"));
@@ -875,17 +877,18 @@ function init() {
         }
     }
     catch (err) {
-        console.warn("Invalid persistent settings!\nIf this is your first time visiting this site, nothing to worry about.");
+        Log.caution("Invalid persistent settings!\nIf this is your first time visiting this site, nothing to worry about.");
         localStorage.setItem("settings", JSON.stringify(settings));
     }
-    console.log("%c Hey there! It looks like you're checking out the console.\nIf you want to view the source code, *please do it at* https://github.com/BalaM314/Untitled-Electron-Game \n Make sure to view the .ts files as the .js files are compiled and thus look weird.", "color: blue; font-size: 30px;");
     Gfx.init();
     noise.seed(1);
     loadTextures(textureIDs.map(id => ({ id })), texturesDiv)
         .then(loadedTextures => {
         Gfx.textures = loadedTextures;
         Game.texturesReady = true;
-    });
+        Log.info(`Successfully loaded ${Object.keys(loadedTextures).length} textures.`);
+    })
+        .catch(() => { });
     registerEventHandlers();
     if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
         alert("It looks like you're trying to play on a phone. Unfortunately, mobile devices are not currently supported.");
