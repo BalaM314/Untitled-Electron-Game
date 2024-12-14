@@ -2,18 +2,20 @@
 
 
 
-Array.prototype.sort2 = function(func){
-	this.sort((a, b) => func(a) - func(b));
-};
-Array.prototype.at = function(index){
-	return this[index < 0 ? index + this.length : index];
-}
 Object.defineProperty(Array.prototype, "sort2", {
-	enumerable: false
+	enumerable: false,
+	value: function(this:unknown[], func){
+		this.sort((a, b) => func(a) - func(b));
+	} satisfies typeof Array.prototype.sort2,
 });
-Object.defineProperty(Array.prototype, "at", {
-	enumerable: false
-});
+if(!Array.prototype.at){
+	Array.prototype.at = function(index){
+		return this[index < 0 ? index + this.length : index];
+	}
+	Object.defineProperty(Array.prototype, "at", {
+		enumerable: false
+	});
+}
 
 /**Returns the time passed since program start in milliseconds. */
 function millis():number{

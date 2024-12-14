@@ -940,7 +940,7 @@ function exportData():SaveData {
 function importData(rawData:string){
 	let tempLevel:Level;
 	try {
-		let data:SaveData = JSON.parse(rawData);
+		let data = JSON.parse(rawData) as SaveData;
 		assert(data.UntitledElectronGame.metadata.validationCode === "esrdtfgvczdsret56u7yhgvfcesrythgvfd!");
 		
 		let levelData = data.UntitledElectronGame.level1;
