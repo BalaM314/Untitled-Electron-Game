@@ -62,37 +62,6 @@ function round(amount:number, places = 0):number {
 function percentage(amount:number, places = 0):string {
 	return `${round(amount * 100, places)}%`;
 }
-function random(max:number):number;
-function random(min:number, max:number):number;
-function random<T>(list:T[]):T;
-
-/**Chooses a random number between min and max, or selects a random element from an array. */
-function random(min:any, max?:any):any{
-	if(typeof min == "number"){
-		if(arguments.length > 2){
-			throw new ArgumentError("Too many arguments for random");
-		}
-		if(arguments.length == 1){
-			max = min;
-			min = 0;
-		}
-		if(arguments.length == 0){
-			min = 0;
-			max = 1;
-		}
-		return Math.random()*(max-min) + min;
-	} else if(min instanceof Array){
-		return min[Math.floor(random(0, min.length))];
-	}
-}
-
-function range(start:number, end:number){
-	let temp = [];
-	for(let i = start; i <= end; i ++){
-		temp.push(i);
-	}
-	return temp;
-}
 
 function constrain(x:number, min:number, max:number){
 	if(x > max) return max;
@@ -100,15 +69,13 @@ function constrain(x:number, min:number, max:number){
 	return x;
 }
 
-function map(value:number, from1:number, from2:number, to1:number, to2:number){
+function linear_map(value:number, from1:number, from2:number, to1:number, to2:number){
 	return ((value - from1) / (from2 - from1)) * (to2 - to1) + to1;
 }
 
 
-function assert(x:any){
-	if(!x){
-		throw new AssertionFailedError(x);
-	}
+function assert(x:unknown, message?:string){
+	if(!x) crash(message ? `Assertion failed: ${message}` : message);
 }
 
 function download(filename:string, text:string){
@@ -254,8 +221,9 @@ class WindowedMean {
 		if(this.queuei >= windowSize) return this.rawMean(windowSize);
 		else return (notEnoughDataValue ?? null) as any; //overload 1
 	}
-	rawMean(windowSize:number = this.maxWindowSize){
-		if(windowSize > this.maxWindowSize) throw new Error(`Cannot get average over the last ${windowSize} values becaue only ${this.maxWindowSize} values are stored`);
+	rawMean(windowSize:number = this.maxWindowSize):number {
+		if(windowSize > this.maxWindowSize)
+			crash(`Cannot get average over the last ${windowSize} values becaue only ${this.maxWindowSize} values are stored`);
 		let total = 0;
 		let wrappedQueueI = this.queuei % this.maxWindowSize;
 		for(let i = wrappedQueueI - windowSize; i < wrappedQueueI; i ++){
@@ -285,7 +253,7 @@ function Abstract<TClass extends new (...args:any[]) => any>(input:TClass, conte
 	return class __temp extends input {
 		constructor(...args:any[]){
 			super(...args);
-			if(this.constructor === __temp) throw new Error(`Cannot construct abstract class ${input.name}`);
+			if(this.constructor === __temp) crash(`Cannot construct abstract class ${input.name}`);
 		}
 	}
 }
@@ -318,8 +286,8 @@ function* pseudoRandom(seed:number) {
 function getElement<T extends typeof HTMLElement>(id:string, type:T){
 	const element = <unknown>document.getElementById(id);
 	if(element instanceof type) return element as T["prototype"];
-	else if(element instanceof HTMLElement) throw new Error(`Element with id ${id} was fetched as type ${type.name}, but was of type ${element.constructor.name}`);
-	else throw new Error(`Element with id ${id} does not exist`);
+	else if(element instanceof HTMLElement) crash(`Element with id ${id} was fetched as type ${type.name}, but was of type ${element.constructor.name}`);
+	else crash(`Element with id ${id} does not exist`);
 }
 
 function add(a:PosT, b:PosT):PosT {
@@ -505,13 +473,12 @@ class Pos {
 }
 
 class Keybind {
-	mainKey: string;
-	modifiers: string[];
-	action: () => void;
-	constructor(mainKey: string, modifiers?: string[], action?: () => void){
-		this.mainKey = mainKey;
-		this.modifiers = modifiers?.map(key => key.toLowerCase()) ?? [];
-		this.action = action ?? (() => {});
+	constructor(
+		public mainKey: string,
+		public modifiers: string[] = [],
+		public action: () => void = () => {}
+	){
+		this.modifiers = modifiers.map(key => key.toLowerCase());
 	}
 	isHeld(){
 		let modifiersHeld = this.modifiers
@@ -549,23 +516,9 @@ class Keybind {
 	}
 }
 
-/**Returns if a thing is in an object. Useful to stop typescript complaining. */
-function isKey<T extends string>(obj:Record<T, unknown>, thing:unknown):thing is T;
-function isKey<T extends string>(obj:Map<T, unknown>, thing:unknown):thing is T;
-function isKey<T extends string>(obj:Record<T, unknown> | Map<T, unknown>, thing:unknown):thing is T {
-	if(obj instanceof Map)
-		return obj.has(thing as T);
-	else
-		return (thing as string) in obj;
-}
-
 /**Sets a variable to be of a particular type. */
 function forceType<T>(input:unknown): asserts input is T {
 	//
-}
-
-function extend<Struct>() {
-	return <T extends Struct>(data:T) => data;
 }
 
 function crash(message = `Unreachable code was reached!`):never {
@@ -590,7 +543,7 @@ function tooltip(title:string, properties:Partial<Record<string, string>> | stri
 
 /**
  * Helper function to display a popup on first use of a feature. Do not overuse as getting spammed with alert() is annoying.
- * @param key Gets "pasapapor-" prepended to it.
+ * @param key Gets "untitled-electron-game-" prepended to it.
  * @param message Message displayed in the alert box.
  * @param callback Called if it is not the first use.
  */
@@ -611,9 +564,12 @@ function f(stringChunks:readonly string[], ...varChunks:readonly string[]):strin
 }
 
 
-function makeRebindButton(y:number, buttonID: [string, string], buttonName:string, defaultKey: string){
-	const keybind = (<any>keybinds)[buttonID[0]]?.[buttonID[1]] as Keybind | null;
-	if(!keybind) throw new Error(`Invalid rebind button ${buttonID[0]}.${buttonID[1]}`);
+function makeRebindButton(
+	y: number,
+	keybind: Keybind,
+	buttonName: string,
+	defaultKey: string
+){
 	return new Button({
 		x: () => innerWidth * 0.3,
 		y: () => innerHeight * y,
@@ -626,9 +582,7 @@ function makeRebindButton(y:number, buttonID: [string, string], buttonName:strin
 					.map(el => el + " + ")
 					.join("")
 				//Get the list of modifiers, remove the ones that start with !, then add " + " to each one.
-			}${
-				keybind.mainKey
-			}`,
+			}${keybind.mainKey}`,
 		color: "#08F",
 		font: "15px sans-serif",
 		onClick: () => {

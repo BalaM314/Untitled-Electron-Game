@@ -516,17 +516,17 @@ const scenes = {
     },
     "settings.keybinds": {
         buttons: [
-            makeRebindButton(0.3, ["move", "up"], "Move up", "w"),
-            makeRebindButton(0.35, ["move", "left"], "Move left", "a"),
-            makeRebindButton(0.4, ["move", "down"], "Move down", "s"),
-            makeRebindButton(0.45, ["move", "right"], "Move right", "d"),
-            makeRebindButton(0.5, ["move", "scroll_faster"], "Scroll faster", "shift"),
-            makeRebindButton(0.55, ["saves", "save_to_file"], "Save to file", "s"),
-            makeRebindButton(0.6, ["saves", "save"], "Save to browser", "s"),
-            makeRebindButton(0.65, ["saves", "load_from_file"], "Load from file", "o"),
-            makeRebindButton(0.7, ["placement", "break_building"], "Break building", "backspace"),
-            makeRebindButton(0.75, ["placement", "force_straight_conveyor"], "Force straight conveyor", "shift"),
-            makeRebindButton(0.8, ["display", "show_tooltip"], "Show tooltips", "shift"),
+            makeRebindButton(0.3, keybinds.move.up, "Move up", "w"),
+            makeRebindButton(0.35, keybinds.move.left, "Move left", "a"),
+            makeRebindButton(0.4, keybinds.move.down, "Move down", "s"),
+            makeRebindButton(0.45, keybinds.move.right, "Move right", "d"),
+            makeRebindButton(0.5, keybinds.move.scroll_faster, "Scroll faster", "shift"),
+            makeRebindButton(0.55, keybinds.saves.save_to_file, "Save to file", "s"),
+            makeRebindButton(0.6, keybinds.saves.save, "Save to browser", "s"),
+            makeRebindButton(0.65, keybinds.saves.load_from_file, "Load from file", "o"),
+            makeRebindButton(0.7, keybinds.placement.break_building, "Break building", "backspace"),
+            makeRebindButton(0.75, keybinds.placement.force_straight_conveyor, "Force straight conveyor", "shift"),
+            makeRebindButton(0.8, keybinds.display.show_tooltip, "Show tooltips", "shift"),
             new Button({
                 x: () => innerWidth * 0.9,
                 y: () => innerHeight * 0.01,
@@ -565,7 +565,7 @@ const scenes = {
             }
             catch (err) {
                 console.error(err);
-                throw new Error(`Error updating world: ${parseError(err)}`);
+                crash(`Error updating world: ${parseError(err)}`);
             }
         },
         display(currentFrame) {
@@ -691,10 +691,7 @@ function main_loop() {
         Game.forceRedraw = false;
         fixSizes();
         window.getSelection()?.empty();
-        let currentState = scenes[Game.sceneName];
-        if (!currentState) {
-            throw new InvalidStateError(`Invalid game state "${Game.sceneName}"`);
-        }
+        let currentState = scenes[Game.sceneName] ?? crash(`Invalid game state "${Game.sceneName}"`);
         if (Input.mouseDown) {
             currentState.onmouseheld?.(currentFrame);
         }
@@ -893,10 +890,10 @@ function init() {
     if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
         alert("It looks like you're trying to play on a phone. Unfortunately, mobile devices are not currently supported.");
     }
-    Game.splash.text = Math.random() < 0.95
-        ? splashes[Math.ceil(Math.random() * (splashes.length - 1))]
-        : raresplashes[Math.ceil(Math.random() * (raresplashes.length - 1))];
-    Game.splash.bounceFunc = Math.random() < 0.9 ? Math.sin : Math.tan;
+    Game.splash.text = Rand.chance(0.95)
+        ? Rand.item(splashes.slice(1))
+        : Rand.item(raresplashes.slice(1));
+    Game.splash.bounceFunc = Rand.chance(0.9) ? Math.sin : Math.tan;
     if (Game.splash.text == "I wonder what this button does!")
         Game.splash.clickBehavior = () => window.open("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
     errorBackground.classList.remove("hidden");

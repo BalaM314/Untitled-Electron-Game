@@ -13,7 +13,7 @@ class ContentRegistryC<K, T extends new (...args:any[]) => {}> implements Iterab
 		return clazz;
 	}
 	get(id:K):T {
-		return this.contentMap.get(id) ?? (() => {throw new Error(`Object with id ${id} does not exist.`)})();
+		return this.contentMap.get(id) ?? crash(`Object with id ${id} does not exist.`);
 	}
 	getOpt(id:K | undefined):T | null {
 		return (this.contentMap.get as (key: K | undefined) => T | undefined)(id) ?? null;
@@ -252,7 +252,7 @@ Buildings.register("base_stirling_generator", BuildingWithRecipe, {
 	producesPower: true,
 	drawer: BuildingWithRecipe.drawLayer<BuildingWithRecipe>(
 		"building/base_boiler_fire", 1, 1,
-		b => b.timer >= 0 ? map(b.timer, b.recipe?.duration ?? -1, 0, 1, 0.7) : 0
+		b => b.timer >= 0 ? linear_map(b.timer, b.recipe?.duration ?? -1, 0, 1, 0.7) : 0
 	)
 });
 Buildings.register("base_compressor", BuildingWithRecipe, {
@@ -309,7 +309,7 @@ Buildings.register("base_boiler", BuildingWithRecipe, {
 		BuildingWithRecipe.drawFluid([0, -0.2], 0.8, 0.4),
 		BuildingWithRecipe.drawLayer<BuildingWithRecipe>(
 			"building/base_boiler_fire", 1, 1,
-			b => b.timer >= 0 ? map(b.timer, b.recipe?.duration ?? -1, 0, 1, 0.7) : 0
+			b => b.timer >= 0 ? linear_map(b.timer, b.recipe?.duration ?? -1, 0, 1, 0.7) : 0
 		)
 	)
 });

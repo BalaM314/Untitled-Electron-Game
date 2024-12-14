@@ -14,7 +14,7 @@ class ContentRegistryC {
         return clazz;
     }
     get(id) {
-        return this.contentMap.get(id) ?? (() => { throw new Error(`Object with id ${id} does not exist.`); })();
+        return this.contentMap.get(id) ?? crash(`Object with id ${id} does not exist.`);
     }
     getOpt(id) {
         return this.contentMap.get(id) ?? null;
@@ -247,7 +247,7 @@ Buildings.register("base_stirling_generator", BuildingWithRecipe, {
     buildCost: [["base_stoneBrick", 20], ["base_ironIngot", 35], ["base_copperIngot", 15]],
     recipeType: recipes.base_stirling_generating,
     producesPower: true,
-    drawer: BuildingWithRecipe.drawLayer("building/base_boiler_fire", 1, 1, b => b.timer >= 0 ? map(b.timer, b.recipe?.duration ?? -1, 0, 1, 0.7) : 0)
+    drawer: BuildingWithRecipe.drawLayer("building/base_boiler_fire", 1, 1, b => b.timer >= 0 ? linear_map(b.timer, b.recipe?.duration ?? -1, 0, 1, 0.7) : 0)
 });
 Buildings.register("base_compressor", BuildingWithRecipe, {
     buildCost: [["base_stoneBrick", 25], ["base_ironIngot", 35], ["base_copperIngot", 10]],
@@ -299,7 +299,7 @@ Buildings.register("base_boiler", BuildingWithRecipe, {
     outputsFluids: true,
     fluidExtraPressure: 1,
     runEffect: [Fx.smoke, "#222", 30, 1],
-    drawer: BuildingWithRecipe.combineDrawers(BuildingWithRecipe.drawFluid([0, -0.2], 0.8, 0.4), BuildingWithRecipe.drawLayer("building/base_boiler_fire", 1, 1, b => b.timer >= 0 ? map(b.timer, b.recipe?.duration ?? -1, 0, 1, 0.7) : 0))
+    drawer: BuildingWithRecipe.combineDrawers(BuildingWithRecipe.drawFluid([0, -0.2], 0.8, 0.4), BuildingWithRecipe.drawLayer("building/base_boiler_fire", 1, 1, b => b.timer >= 0 ? linear_map(b.timer, b.recipe?.duration ?? -1, 0, 1, 0.7) : 0))
 });
 Buildings.register("base_steam_generator", MultiBlockController, {
     buildCost: [["base_ironPlate", 45], ["base_ironIngot", 90], ["base_stoneBrick", 55], ["base_copperIngot", 10], ["base_copperWire", 40]],

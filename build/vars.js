@@ -241,7 +241,7 @@ const Mathf = {
     TWO_PI: Math.PI * 2,
     HALF_PI: Math.PI / 2,
 };
-const keybinds = extend()({
+const keybinds = {
     move: {
         up: new Keybind("w", ["!control", "!alt"]),
         left: new Keybind("a", ["!control", "!alt"]),
@@ -302,7 +302,7 @@ const keybinds = extend()({
             Input.lastBuilding = null;
         })
     }
-});
+};
 const Input = {
     mouseX: 0,
     mouseY: 0,
@@ -446,18 +446,6 @@ const raresplashes = [
     "amoGUS",
     "declare let raresplashes:"
 ];
-function makeError(name) {
-    return class extends Error {
-        constructor(message) {
-            super(...arguments);
-            this.name = name;
-        }
-    };
-}
-const ShouldNotBePossibleError = makeError("ShouldNotBePossibleError");
-const AssertionFailedError = makeError("AssertionFailedError");
-const ArgumentError = makeError("ArgumentError");
-const InvalidStateError = makeError("InvalidStateError");
 function importIntoGlobalScope(obj) {
     Object.assign(window, obj);
 }

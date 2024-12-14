@@ -56,7 +56,7 @@ class Level {
 				//Generate a chunk with that data
 			}
 		} catch(err){
-			throw new Error(`Error loading chunk ${position}: ${parseError(err)}`)
+			crash(`Error loading chunk ${position}: ${parseError(err)}`)
 		}
 		level.buildings.forEach(b => {
 			if(b instanceof MultiBlockController){
@@ -465,7 +465,7 @@ class Chunk {
 					tempBuilding = Buildings.get(buildingData.id).read(buildingData, level);
 				} catch(err){
 					console.error(err);
-					throw new Error(`Failed to import building id ${stringifyMeta(buildingData.id, buildingData.meta)} at position ${x},${y} in chunk ${chunkX},${chunkY}. See console for more details.`);
+					crash(`Failed to import building id ${stringifyMeta(buildingData.id, buildingData.meta)} at position ${x},${y} in chunk ${chunkX},${chunkY}. See console for more details.`);
 				}
 				level.buildings.add(tempBuilding);
 				chunk.layers[1][y][x] = tempBuilding;
@@ -525,7 +525,7 @@ class Chunk {
 		return this;
 	}
 	tileAt(tileX:number, tileY:number):TileID {
-		return this.layers[0][tileY]?.[tileX] ?? (() => {throw new Error(`Tile ${tileX}, ${tileY} does not exist!`)})();
+		return this.layers[0][tileY]?.[tileX] ?? crash(`Tile ${tileX}, ${tileY} does not exist!`);
 	}
 	buildingAt(tileX:number, tileY:number):Building | null {
 		return this.layers[1][tileY]?.[tileX] ?? null;
@@ -992,7 +992,7 @@ class Building {
 	 * @returns the maximum power that this building can produce on this tick.
 	**/
 	getMaxPowerProduction():number {
-		throw new Error(`Function "getMaxPowerProduction" not implemented for base class Building.`);
+		crash(`Function "getMaxPowerProduction" not implemented for base class Building.`);
 	}
 	/**
 	 * Called between preUpdate and update.
@@ -1007,7 +1007,7 @@ class Building {
 	 * @returns the amount of power that this building wants on this tick.
 	 **/
 	getRequestedPower():number {
-		throw new Error(`Function "getRequestedPower" not implemented for base class Building.`);
+		crash(`Function "getRequestedPower" not implemented for base class Building.`);
 	}
 	buildAt(direction:Direction):Building | null {
 		return this.level.buildingAtTile(this.pos.tileX + direction.vec[0], this.pos.tileY + direction.vec[1]);
@@ -1208,7 +1208,8 @@ class BuildingWithRecipe extends Building {
 					for(const fluidInput of this.recipe.fluidInputs){ //Actually drain
 						const amountNeeded = fluidInput[1] / this.recipe.duration * minSatisfaction;
 						const amountDrained = Fluid.drain(this.fluid!, amountNeeded);
-						if(amountDrained - amountNeeded > Number.EPSILON * 5) throw new ShouldNotBePossibleError(`logic error when consuming fluids: needed ${amountNeeded}, got ${amountDrained}`);
+						if(amountDrained - amountNeeded > Number.EPSILON * 5)
+							crash(`logic error when consuming fluids: needed ${amountNeeded}, got ${amountDrained}`);
 					}
 				}
 				//Power production/consumption is handled separately, consumption will be off by one tick
@@ -1249,7 +1250,7 @@ class BuildingWithRecipe extends Building {
 			this.timer > 0 &&
 			this.timer <= this.runEffectTimer
 		){
-			if(Math.random() < this.block.runEffect[3])
+			if(Rand.chance(this.block.runEffect[3]))
 				this.block.runEffect[0].at(this.centeredPos(), this.block.runEffect[1]);
 			this.runEffectTimer -= this.block.runEffect[2];
 		}
@@ -1770,7 +1771,7 @@ class Extractor extends OverlayBuild {
 			case 9: return [0, 3];
 			case 10: return [-3, 0];
 			case 11: return [0, -3];
-			default: throw new Error(`Invalid meta ${meta}`);
+			default: crash(`Invalid meta ${meta}`);
 		}
 	}
 
@@ -1805,7 +1806,7 @@ class Extractor extends OverlayBuild {
 			}
 		} else {
 			console.error(this);
-			throw new InvalidStateError(`no item to drop; extractor at ${this.pos.tileX} ${this.pos.tileY}`);
+			crash(`no item to drop; extractor at ${this.pos.tileX} ${this.pos.tileY}`);
 		}
 	}
 
@@ -2148,12 +2149,12 @@ class Tank extends Building {
 		const fillLevel = this.fluid![1] / this.block.fluidCapacity;
 		//scale pressure to 20% of the tank's capacity, so if it is more than 20% full the tank will output at full speed
 		//maybe use a max pressure of 2 to allow full speed output even to full pipes?
-		return constrain(map(fillLevel, 0, this.block.pressureOutMaxFill, 0, 1), this.block.pressureOutMin, 1);
+		return constrain(linear_map(fillLevel, 0, this.block.pressureOutMaxFill, 0, 1), this.block.pressureOutMin, 1);
 	}
 	pressureIn(){
 		const fillLevel = this.fluid![1] / this.block.fluidCapacity;
 		//scale pressure to 20% of the tank's capacity, so if it is more than 20% full the tank will output at full speed
-		return constrain(map(fillLevel, this.block.pressureInMaxFill, 1, 0, 1), this.block.pressureInMin, 1);
+		return constrain(linear_map(fillLevel, this.block.pressureInMaxFill, 1, 0, 1), this.block.pressureInMin, 1);
 	}
 	tooltipProperties(){
 		return {
@@ -2357,16 +2358,16 @@ class ArcTower extends Building {
 	}
 	static drawer:any = function(build:ArcTower, currentFrame:CurrentFrame){
 		if(currentFrame.frame % 10 == 0)
-			build.arcAAccel = random(-build.block.maxArcAAccel, build.block.maxArcAAccel);
+			build.arcAAccel = Rand.num(-build.block.maxArcAAccel, build.block.maxArcAAccel);
 		//update accel 6 times per second
 		build.arcAVel = constrain(build.arcAVel + build.arcAAccel, -build.block.maxArcAVel, build.block.maxArcAVel);
 		build.arcAngle = (build.arcAngle + build.arcAVel) % Mathf.TWO_PI;
-		const rad = (build.block.primaryRadius + random(...build.block.primaryRadiusRange)) * build.powerSatisfaction;
+		const rad = (build.block.primaryRadius + Rand.num(...build.block.primaryRadiusRange)) * build.powerSatisfaction;
 		const arcPos = [rad * Math.cos(build.arcAngle) + build.pos.tileXCentered, rad * Math.sin(build.arcAngle) + build.pos.tileYCentered] as const;
-		const srad1 = (build.block.secondaryRadius + random(...build.block.secondaryRadiusRange)) * build.powerSatisfaction;
-		const srad2 = (build.block.secondaryRadius + random(...build.block.secondaryRadiusRange)) * build.powerSatisfaction;
-		const srad1Angle = build.arcAngle + random(-(Math.PI * 2 / 3), Math.PI * 2 / 3);
-		const srad2Angle = build.arcAngle + random(-(Math.PI * 2 / 3), Math.PI * 2 / 3);
+		const srad1 = (build.block.secondaryRadius + Rand.num(...build.block.secondaryRadiusRange)) * build.powerSatisfaction;
+		const srad2 = (build.block.secondaryRadius + Rand.num(...build.block.secondaryRadiusRange)) * build.powerSatisfaction;
+		const srad1Angle = build.arcAngle + Rand.num(-(Math.PI * 2 / 3), Math.PI * 2 / 3);
+		const srad2Angle = build.arcAngle + Rand.num(-(Math.PI * 2 / 3), Math.PI * 2 / 3);
 		const sArc1Pos = [arcPos[0] + srad1 * Math.cos(srad1Angle), arcPos[1] + srad1 * Math.sin(srad1Angle)] as const;
 		const sArc2Pos = [arcPos[0] + srad2 * Math.cos(srad2Angle), arcPos[1] + srad2 * Math.sin(srad2Angle)] as const;
 

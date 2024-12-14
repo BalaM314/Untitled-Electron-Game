@@ -51,32 +51,6 @@ function round(amount, places = 0) {
 function percentage(amount, places = 0) {
     return `${round(amount * 100, places)}%`;
 }
-function random(min, max) {
-    if (typeof min == "number") {
-        if (arguments.length > 2) {
-            throw new ArgumentError("Too many arguments for random");
-        }
-        if (arguments.length == 1) {
-            max = min;
-            min = 0;
-        }
-        if (arguments.length == 0) {
-            min = 0;
-            max = 1;
-        }
-        return Math.random() * (max - min) + min;
-    }
-    else if (min instanceof Array) {
-        return min[Math.floor(random(0, min.length))];
-    }
-}
-function range(start, end) {
-    let temp = [];
-    for (let i = start; i <= end; i++) {
-        temp.push(i);
-    }
-    return temp;
-}
 function constrain(x, min, max) {
     if (x > max)
         return max;
@@ -84,13 +58,12 @@ function constrain(x, min, max) {
         return min;
     return x;
 }
-function map(value, from1, from2, to1, to2) {
+function linear_map(value, from1, from2, to1, to2) {
     return ((value - from1) / (from2 - from1)) * (to2 - to1) + to1;
 }
-function assert(x) {
-    if (!x) {
-        throw new AssertionFailedError(x);
-    }
+function assert(x, message) {
+    if (!x)
+        crash(message ? `Assertion failed: ${message}` : message);
 }
 function download(filename, text) {
     let temp2 = document.createElement('a');
@@ -204,7 +177,7 @@ class WindowedMean {
     }
     rawMean(windowSize = this.maxWindowSize) {
         if (windowSize > this.maxWindowSize)
-            throw new Error(`Cannot get average over the last ${windowSize} values becaue only ${this.maxWindowSize} values are stored`);
+            crash(`Cannot get average over the last ${windowSize} values becaue only ${this.maxWindowSize} values are stored`);
         let total = 0;
         let wrappedQueueI = this.queuei % this.maxWindowSize;
         for (let i = wrappedQueueI - windowSize; i < wrappedQueueI; i++) {
@@ -234,7 +207,7 @@ function Abstract(input, context) {
         constructor(...args) {
             super(...args);
             if (this.constructor === __temp)
-                throw new Error(`Cannot construct abstract class ${input.name}`);
+                crash(`Cannot construct abstract class ${input.name}`);
         }
     };
 }
@@ -262,9 +235,9 @@ function getElement(id, type) {
     if (element instanceof type)
         return element;
     else if (element instanceof HTMLElement)
-        throw new Error(`Element with id ${id} was fetched as type ${type.name}, but was of type ${element.constructor.name}`);
+        crash(`Element with id ${id} was fetched as type ${type.name}, but was of type ${element.constructor.name}`);
     else
-        throw new Error(`Element with id ${id} does not exist`);
+        crash(`Element with id ${id} does not exist`);
 }
 function add(a, b) {
     return [a[0] + b[0], a[1] + b[1]];
@@ -438,10 +411,11 @@ class Pos {
     }
 }
 class Keybind {
-    constructor(mainKey, modifiers, action) {
+    constructor(mainKey, modifiers = [], action = () => { }) {
         this.mainKey = mainKey;
-        this.modifiers = modifiers?.map(key => key.toLowerCase()) ?? [];
-        this.action = action ?? (() => { });
+        this.modifiers = modifiers;
+        this.action = action;
+        this.modifiers = modifiers.map(key => key.toLowerCase());
     }
     isHeld() {
         let modifiersHeld = this.modifiers
@@ -477,16 +451,7 @@ class Keybind {
         return this.modifiers.map(m => m + "+").join("") + key;
     }
 }
-function isKey(obj, thing) {
-    if (obj instanceof Map)
-        return obj.has(thing);
-    else
-        return thing in obj;
-}
 function forceType(input) {
-}
-function extend() {
-    return (data) => data;
 }
 function crash(message = `Unreachable code was reached!`) {
     throw new Error(message);
@@ -523,10 +488,7 @@ function firstUsePopup(key, message, callback, runCallbackAfterMessage = false) 
 function f(stringChunks, ...varChunks) {
     return String.raw({ raw: stringChunks }, ...varChunks).replaceAll(/[\s\S]\u0008/g, "");
 }
-function makeRebindButton(y, buttonID, buttonName, defaultKey) {
-    const keybind = keybinds[buttonID[0]]?.[buttonID[1]];
-    if (!keybind)
-        throw new Error(`Invalid rebind button ${buttonID[0]}.${buttonID[1]}`);
+function makeRebindButton(y, keybind, buttonName, defaultKey) {
     return new Button({
         x: () => innerWidth * 0.3,
         y: () => innerHeight * y,

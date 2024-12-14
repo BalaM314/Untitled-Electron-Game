@@ -304,7 +304,7 @@ const Mathf = {
 
 
 /**Contains all the keybindings for keyboard controls. */
-const keybinds = extend<Keybinds>()({
+const keybinds = {
 	move: {
 		up: new Keybind("w", ["!control", "!alt"]),
 		left: new Keybind("a", ["!control", "!alt"]),
@@ -368,7 +368,7 @@ const keybinds = extend<Keybinds>()({
 			Input.lastBuilding = null;
 		})
 	}
-});
+} satisfies Keybinds;
 
 const Input = {
 	mouseX: 0,
@@ -545,20 +545,6 @@ const raresplashes: string[] = [
 	"amoGUS",
 	"declare let raresplashes:"
 ];
-
-function makeError(name:string):(typeof Error){
-	return class extends Error {
-		constructor(message?: string){
-			super(...arguments);
-			this.name = name;
-		}
-	} as typeof Error;
-}
-
-const ShouldNotBePossibleError = makeError("ShouldNotBePossibleError");
-const AssertionFailedError = makeError("AssertionFailedError");
-const ArgumentError = makeError("ArgumentError");
-const InvalidStateError = makeError("InvalidStateError");
 
 function importIntoGlobalScope(obj:Object){
 	Object.assign(window, obj);
