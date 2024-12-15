@@ -180,10 +180,19 @@ class Level {
 
 
 		//Draw underlay
-		let isError = !this.hasResources(block.buildCost, 100) || !block.canBuildAt(tileX, tileY, this) || this.buildingAtTile(tileX, tileY)?.block.immutable;//TOOD cleanup
-		let underlayTextureSize = textureSize[0][0] == textureSize[0][1] ? textureSize : [[1, 1], [0, 0]];
+		const isError =
+			!this.hasResources(block.buildCost, 100) ||
+			!block.canBuildAt(tileX, tileY, this) ||
+			!this.canBuildBuilding([tileX, tileY], block);
+		//Make the gray/red border 1x1 if the block is rectangular, but NxN if it's square
+		//because making the border rectangular looks weird
+		const underlayTextureSize = textureSize[0][0] == textureSize[0][1] ? textureSize : [[1, 1], [0, 0]];
 		
-		Gfx.tImage(Gfx.texture(isError ? "misc/invalidunderlay" : "misc/ghostunderlay"), tileX + underlayTextureSize[1][0], tileY + underlayTextureSize[1][1], ...underlayTextureSize[0]);
+		Gfx.tImage(
+			Gfx.texture(isError ? "misc/invalidunderlay" : "misc/ghostunderlay"),
+			tileX + underlayTextureSize[1][0], tileY + underlayTextureSize[1][1],
+			...underlayTextureSize[0]
+		);
 		Gfx.alpha(0.7);
 		Building.display(changedID, Pos.fromTileCoords(tileX, tileY, false), "ghostBuilds");
 		Gfx.alpha(1);
@@ -197,13 +206,22 @@ class Level {
 		safeBreak(this.buildingAtTile(tileX, tileY));
 		safeBreak(this.overlayBuildAtTile(tileX, tileY));
 	}
-	buildBuilding(tileX:number, tileY:number, buildingID:BuildingIDWithMeta):boolean {
-		if(this.buildingAtTile(tileX, tileY)?.block.immutable) return false;
-
-		if(buildingID[0] == "base_null"){
-			return true;
+	canBuildBuilding(tile:PosT, block:typeof Building){
+		const size:PosT = block.prototype instanceof MultiBlockController ? (block as typeof MultiBlockController).multiblockSize : [1, 1];
+		for(const [x, y] of MultiBlockController.getOffsetsForSize(...size)
+			.concat([[0, 0]])
+			.map(pos => add(pos, tile))
+		){
+			const build = this.buildingAtTile(x, y);
+			if(build?.block.immutable) return false;
 		}
+		return true;
+	}
+	buildBuilding(tileX:number, tileY:number, buildingID:BuildingIDWithMeta):boolean {
+		
+		if(buildingID[0] == "base_null") return true;
 		const block = Buildings.get(buildingID[0]);
+		if(!this.canBuildBuilding([tileX, tileY], block)) return false;
 		buildingID = [buildingID[0], block.changeMeta(buildingID[1], tileX, tileY, this)];
 
 		//Only overwrite the same building once per build attempt.
@@ -322,9 +340,9 @@ class Level {
 			chunk.update(currentFrame);
 		}
 
-		if(this.resources["base_stone"] == 0 && Date.now() - this.timeSinceStoneRanOut > 15000 && !Game.stats.stoneRunOutMessageShown){
+		if(this.resources["base_stone"] == 0 && Date.now() - this.timeSinceStoneRanOut > 15000 && !Game.transientStats.stoneRunOutMessageShown){
 			//Stone is dead for more than 10 seconds
-			Game.stats.stoneRunOutMessageShown = true;
+			Game.transientStats.stoneRunOutMessageShown = true;
 			GUI.alert(`It looks like you have run out of stone. Break unnecessary buildings by holding Backspace and moving the cursor over them to recover resources.`);
 		} else if(this.resources["base_stone"] > 0){
 			this.timeSinceStoneRanOut = Date.now();

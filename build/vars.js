@@ -339,7 +339,6 @@ let Game = {
     startTime: new Date().getTime(),
     lastSaved: 0,
     forceRedraw: true,
-    tutorial: {},
     paused: false,
     sceneName: "loading",
     splash: {
@@ -355,7 +354,7 @@ let Game = {
     },
     frames: 0,
     enteredGame: false,
-    stats: {
+    transientStats: {
         frameTimes: new WindowedMean(120),
         objectiveHovered: false,
         stoneRunOutMessageShown: false,

@@ -406,9 +406,6 @@ let Game: {
 	startTime: number;
 	lastSaved: number;
 	forceRedraw: boolean;
-	tutorial: {
-		[index: string]: any
-	};
 	sceneName: "loading" | "title" | "settings" | "settings.keybinds" | "game";
 	paused: boolean;
 	splash: {
@@ -424,21 +421,18 @@ let Game: {
 	}
 	frames: number;
 	enteredGame: boolean;
-	stats: {
+	transientStats: {
 		/** Stores the time in milliseconds to render for the past 120 frames. */
 		frameTimes: WindowedMean;
 		objectiveHovered: boolean;
 		//TODO wrong abstraction
 		stoneRunOutMessageShown: boolean;
-	}
+	};
 } = {
 	texturesReady: false,
 	startTime: new Date().getTime(),
 	lastSaved: 0,
 	forceRedraw: true,
-	tutorial: {
-		
-	},
 	paused: false,
 	sceneName: "loading",
 	splash: {
@@ -454,7 +448,7 @@ let Game: {
 	},
 	frames: 0,
 	enteredGame: false,
-	stats: {
+	transientStats: {
 		frameTimes: new WindowedMean(120),
 		objectiveHovered: false,
 		stoneRunOutMessageShown: false,

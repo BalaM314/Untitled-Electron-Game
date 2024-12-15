@@ -167,8 +167,10 @@ class Level {
         let changedID = [buildingID[0], buildingID[1]];
         changedID[1] = block.changeMeta(changedID[1], tileX, tileY, this);
         let textureSize = block.textureSize(buildingID[1]);
-        let isError = !this.hasResources(block.buildCost, 100) || !block.canBuildAt(tileX, tileY, this) || this.buildingAtTile(tileX, tileY)?.block.immutable;
-        let underlayTextureSize = textureSize[0][0] == textureSize[0][1] ? textureSize : [[1, 1], [0, 0]];
+        const isError = !this.hasResources(block.buildCost, 100) ||
+            !block.canBuildAt(tileX, tileY, this) ||
+            !this.canBuildBuilding([tileX, tileY], block);
+        const underlayTextureSize = textureSize[0][0] == textureSize[0][1] ? textureSize : [[1, 1], [0, 0]];
         Gfx.tImage(Gfx.texture(isError ? "misc/invalidunderlay" : "misc/ghostunderlay"), tileX + underlayTextureSize[1][0], tileY + underlayTextureSize[1][1], ...underlayTextureSize[0]);
         Gfx.alpha(0.7);
         Building.display(changedID, Pos.fromTileCoords(tileX, tileY, false), "ghostBuilds");
@@ -182,13 +184,23 @@ class Level {
         safeBreak(this.buildingAtTile(tileX, tileY));
         safeBreak(this.overlayBuildAtTile(tileX, tileY));
     }
-    buildBuilding(tileX, tileY, buildingID) {
-        if (this.buildingAtTile(tileX, tileY)?.block.immutable)
-            return false;
-        if (buildingID[0] == "base_null") {
-            return true;
+    canBuildBuilding(tile, block) {
+        const size = block.prototype instanceof MultiBlockController ? block.multiblockSize : [1, 1];
+        for (const [x, y] of MultiBlockController.getOffsetsForSize(...size)
+            .concat([[0, 0]])
+            .map(pos => add(pos, tile))) {
+            const build = this.buildingAtTile(x, y);
+            if (build?.block.immutable)
+                return false;
         }
+        return true;
+    }
+    buildBuilding(tileX, tileY, buildingID) {
+        if (buildingID[0] == "base_null")
+            return true;
         const block = Buildings.get(buildingID[0]);
+        if (!this.canBuildBuilding([tileX, tileY], block))
+            return false;
         buildingID = [buildingID[0], block.changeMeta(buildingID[1], tileX, tileY, this)];
         if (block.isOverlay) {
             if (this.overlayBuildAtTile(tileX, tileY)?.block.id == buildingID[0] &&
@@ -300,8 +312,8 @@ class Level {
         for (let chunk of this.storage.values()) {
             chunk.update(currentFrame);
         }
-        if (this.resources["base_stone"] == 0 && Date.now() - this.timeSinceStoneRanOut > 15000 && !Game.stats.stoneRunOutMessageShown) {
-            Game.stats.stoneRunOutMessageShown = true;
+        if (this.resources["base_stone"] == 0 && Date.now() - this.timeSinceStoneRanOut > 15000 && !Game.transientStats.stoneRunOutMessageShown) {
+            Game.transientStats.stoneRunOutMessageShown = true;
             GUI.alert(`It looks like you have run out of stone. Break unnecessary buildings by holding Backspace and moving the cursor over them to recover resources.`);
         }
         else if (this.resources["base_stone"] > 0) {

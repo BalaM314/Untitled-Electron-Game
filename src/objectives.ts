@@ -263,7 +263,7 @@ class ChangingObjective extends Objective {
 
 const objectives = new ObjectiveList(() => {
 	const leave = new ChangingObjective("base_leave", [], () => Camera.scrollLimited, () => Camera.scrollTo(0, 0));
-	const tooltips = new Objective("base_tooltips", [], () => Game.stats.objectiveHovered);
+	const tooltips = new Objective("base_tooltips", [], () => Game.transientStats.objectiveHovered);
 	const produceStone = new Objective("base_produceStone");
 	const gatherStone = new GatherObjective("base_gatherStone", [produceStone], [["base_stone", 70]]);
 	const gatherCoal = new GatherObjective("base_gatherCoal", [gatherStone], [["base_coal", 20]]);

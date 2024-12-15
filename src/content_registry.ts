@@ -21,6 +21,9 @@ class ContentRegistryC<K, T extends new (...args:any[]) => {}> implements Iterab
 	[Symbol.iterator]():Iterator<T> {
 		return this.contentMap.values();
 	}
+	keys():K[] {
+		return Array.from(this.contentMap.keys());
+	}
 }
 
 /** Content registry for when the content is a class instance. */
@@ -207,6 +210,10 @@ const ItemIDs:ItemID[] = [
 	"base_stator",
 	"base_rotor",
 	"base_motor",
+];
+const FluidIDs:FluidID[] = [
+	"base_water",
+	"base_steam",
 ];
 
 const Fluids = new ContentRegistryI<FluidID, Fluid>();

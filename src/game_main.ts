@@ -277,7 +277,7 @@ const GUI = {
 					hovered === objectiveNextButton
 				){
 					tooltipbox.innerHTML = tooltip("Objective", ["This box shows the current objective. It may also contain tips and useful information."]);
-					Game.stats.objectiveHovered = true;
+					Game.transientStats.objectiveHovered = true;
 				} else if(hovered.id == "research-button" || hovered.id == "research-header-text" || hovered.id == "research-header" || hovered.id == "research-exit-button" || hovered.id == "research-menu" || hovered.className == "research-tree-inner"){
 					tooltipbox.innerHTML = tooltip("Research", ["This menu allows you to research new buildings."])
 				} else if(hovered.id == "settings-button"){
@@ -300,8 +300,8 @@ const GUI = {
 	
 		const mousePosition = "Mouse position: " + Camera.unproject(...Input.mouse).map(Pos.pixelToTile).join(",");
 	
-		const frameMSLast10 = Game.stats.frameTimes.mean(10, null);
-		const frameMSLast120 = Game.stats.frameTimes.mean(120, null);
+		const frameMSLast10 = Game.transientStats.frameTimes.mean(10, null);
+		const frameMSLast120 = Game.transientStats.frameTimes.mean(120, null);
 		//TODO repeated code
 		const fpsLast10 = frameMSLast10 ? Math.min(consts.ups, round(1000 / frameMSLast10, 1)) : "...";
 		const fpsLast120 = frameMSLast120 ? Math.min(consts.ups, round(1000 / frameMSLast120, 1)) : "...";
@@ -779,7 +779,7 @@ function main_loop(){
 		currentState.update(currentFrame);
 		currentState.display(currentFrame);
 		let frameMS = Date.now() - startFrameTime;
-		Game.stats.frameTimes.add(frameMS);
+		Game.transientStats.frameTimes.add(frameMS);
 
 		handleAlerts();
 		Game.frames ++;

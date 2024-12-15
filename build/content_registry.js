@@ -22,6 +22,9 @@ class ContentRegistryC {
     [Symbol.iterator]() {
         return this.contentMap.values();
     }
+    keys() {
+        return Array.from(this.contentMap.keys());
+    }
 }
 class ContentRegistryI {
     constructor() {
@@ -206,6 +209,10 @@ const ItemIDs = [
     "base_stator",
     "base_rotor",
     "base_motor",
+];
+const FluidIDs = [
+    "base_water",
+    "base_steam",
 ];
 const Fluids = new ContentRegistryI();
 Fluids.register(new Fluid("base_water", "blue"));
