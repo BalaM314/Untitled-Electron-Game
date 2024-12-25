@@ -117,7 +117,7 @@ export class QuadTree {
                 }
             }
         }
-        let tree = new QuadTree([0, 0, 300, 180]);
+        const tree = new QuadTree([0, 0, 300, 180]);
         cancelAnimationFrame(Game.animationFrame);
         Gfx.layer("overlay");
         Gfx.fillColor("black");

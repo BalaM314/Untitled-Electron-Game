@@ -27,8 +27,8 @@ export function returnToTitle() {
 }
 function main_loop() {
     try {
-        let startFrameTime = Date.now();
-        let currentFrame = {
+        const startFrameTime = Date.now();
+        const currentFrame = {
             tooltip: true,
             debug: settings.debug,
             cps: 0,
@@ -41,7 +41,7 @@ function main_loop() {
         setCanvasSizes();
         Camera.update();
         window.getSelection()?.empty();
-        let currentState = scenes[Game.sceneName] ?? crash(`Invalid game state "${Game.sceneName}"`);
+        const currentState = scenes[Game.sceneName] ?? crash(`Invalid game state "${Game.sceneName}"`);
         if (Input.mouseDown) {
             currentState.onmouseheld?.(currentFrame);
         }
@@ -53,7 +53,7 @@ function main_loop() {
         }
         currentState.update(currentFrame);
         currentState.display(currentFrame);
-        let frameMS = Date.now() - startFrameTime;
+        const frameMS = Date.now() - startFrameTime;
         Game.transientStats.frameTimes.add(frameMS);
         GUI.updateAlertDialog();
         Game.frames++;
@@ -77,7 +77,7 @@ This game is open source! https://github.com/BalaM314/Untitled-Electron-Game`;
         assert(localStorage.getItem("settings"));
         const loadedSettings = JSON.parse(localStorage.getItem("settings"));
         for (const [k, v] of Object.entries(settings)) {
-            if (loadedSettings[k] && typeof loadedSettings[k] == typeof settings[k])
+            if (k in loadedSettings && typeof loadedSettings[k] == typeof settings[k])
                 settings[k] = loadedSettings[k];
         }
     }
@@ -110,4 +110,4 @@ This game is open source! https://github.com/BalaM314/Untitled-Electron-Game`;
     void dumpObjectsToGlobalScope();
     main_loop();
 }
-Promise.resolve().then(() => init());
+queueMicrotask(() => void init());

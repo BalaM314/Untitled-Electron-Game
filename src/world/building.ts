@@ -20,9 +20,7 @@ import { settings, consts } from "../vars.js";
 import { Item, Level } from "./world.js";
 
 
-export interface BlockDrawer<T> {
-	(build:T, currentFrame:CurrentFrame):void;
-}
+export type BlockDrawer<T> = (build:T, currentFrame:CurrentFrame) =>void;
 @Abstract
 export class Building {
 	static outputsItems = false;
@@ -60,9 +58,9 @@ export class Building {
 	grid:PowerGrid | null = null;
 	num1 = 0;
 	/** Gets set during power update, after getMaxPowerProduction is called. */
-	powerLoad:number = 0;
+	powerLoad = 0;
 	/** Gets set during power update, after getRequestedPower is called. */
-	powerSatisfaction:number = 0;
+	powerSatisfaction = 0;
 
 	//https://www.typescriptlang.org/play?#code/CYUwxgNghgTiAEAzArgOzAFwJYHtXzgHMsBnDEGAHgCF4QAPc1YE+DATwAcQdF5rkWCMCypCAPgAUWYAC4yMUYQA08TDhizqqzjBycSsgN4AoeOfgBtAArxR8ANYh2vfgF0A-LP423AbhMAXwBKLQCAenCAFQALUiQ0TFx8GKhWACMQEHwsAFtOCBBc7PJgeChmeAB3DQdWRGgqwpISCHZVKAgMGJxkQhi2GIQwHFB4CBwcOoIQTrbqkCwYYAA6ExNIgEEc1DIKsARXbvjINNY4XRASEtYoeBIlQvh0wWElO1QAWhqYYTXTlr8V4iMTwUwWe4YKDYMB2OQKd4AXngACI0KgoMUyi8hCDCCiAhC9jD7lgAF4gWSoZC5TIweDIgCMhIs6QmYAcDMGpBWI12GBgyHU9LSbC4PD4AlxShZ5kIIAwAElgJJguCIRY4BhkDB8McSCs2TgOSsZLL4IEzBZkJxgNCQKqjJbLSYAawAMJ4ABuzg0dEY2RYQOloPV5mJWFhJG4IDk1NpFC5zKt5kiiuqFQwbBw8FSPvgIkQiAoJTF3FYrj5PpcMFYVSw3QLWCLJdQWejWRYKfgkQAsuwkEsyOVOLocFAwAMqqKMDmwHB7eV4KgQFU1NBAQwmHi1N7ffT6427oXi3A2-cY2UvZ1kAh7N076gG1hOuSKKoXlnutCCzgrqgAHIs1Aa4YHzWdngQO43Q+QYEEICZ0k6e4Rm4NYITTNQF1KJciFIch6RQdBsDwao4kneBkGuVgAHl0gAK3ADAVjOLBCD1HN5RXGBFwfdcznKLNBTbPIoMqMgNDvLN7GgvAmCzXIoE4dCLEiWJ4h+aZuBgYtMHmRBRBAD9kC-IY4AA1h6KorM8DvFpb1kbtMJXWNuVYCBDMgiYqhU8wjQ5ABCbwOG4VxPVQasNHNLZ0hwfN7yGYM3lBN1VCqVIs3TBcIHmadz3iFFRFPOCy0OPh9V5PAFCFWcYBRYysyicUSHnLBOGk1BT1YBtylYFEADFEhI1AUTIyMBniKiQGaEgOkqdNA0ozhcygL13gg1CB31Z4cCECgCkXDyV3KVB2GndhfKWu1yEdbsIQq-yHBWDtY3NZ11hg3tDPpLdA1YKVksIMFuwjWFckMgBlS8qRpOkuQANgABnNR6gtK1wvu480bWuh01TuiwHvZJ7wZXKHOzeoJ1jwsgKEkFFWhwKp6vgcLIpgVQjAvTtvERlYAFYLWCAIaYI+nEDSDAWbZ-dOe52NvAAZiFkWQGIWmYHp9I2M+UmKBZzH3zBUkKW8RkVaAA
 	block = this.constructor as typeof Building;
@@ -105,7 +103,9 @@ export class Building {
 		else this.level.writeBuilding(this.pos.tileX, this.pos.tileY, null);
 		this.level.addResources(this.block.buildCost);
 	}
-	preUpdate(currentFrame:CurrentFrame){}
+	preUpdate(currentFrame:CurrentFrame){
+		//empty
+	}
 	update(currentFrame:CurrentFrame){
 		this.item?.update(currentFrame);
 		if(this.block.outputsFluids) this.dumpFluid();
@@ -125,7 +125,7 @@ export class Building {
 	static display(id:BuildingIDWithMeta, pos:Pos, layer?:(keyof typeof Gfx.layers)){
 		const block = Buildings.get(id[0]);
 		const textureSize = block.textureSize(id[1]);
-		layer ??= block.isOverlay ? "overlayBuilds" : "buildings"
+		layer ??= block.isOverlay ? "overlayBuilds" : "buildings";
 		Gfx.tImage(
 			Gfx.texture(`building/${stringifyMeta(...id)}`),
 			pos.tileX + textureSize[1][0], pos.tileY + textureSize[1][1],
@@ -160,7 +160,7 @@ export class Building {
 	}
 	removeItem():Item | null {
 		if(this.item){
-			let temp = this.item;
+			const temp = this.item;
 			this.item = null;
 			return temp;
 		}
@@ -254,7 +254,7 @@ export class Building {
 	dumpFluid(){
 		this.fluidThroughput = 0;
 		const fluid = this.fluidOut ?? this.fluid;
-		if(!fluid || fluid[0] == null || fluid[1] == 0) return;
+		if(fluid?.[0] == null || fluid[1] == 0) return;
 		for(let i = 0; i < Direction.number; i ++){
 			if(++this.cFluidOut > 3) this.cFluidOut = 0;
 			const direction = Direction.all[this.cFluidOut]!;
@@ -312,7 +312,7 @@ export class Building {
 
 class ItemModule {
 	storage:Partial<Record<ItemID, number>> = {};
-	constructor(public maxCapacity:number = 10){}
+	constructor(public maxCapacity = 10){}
 	get(id:ItemID){
 		return this.storage[id] ?? 0;
 	}
@@ -342,7 +342,7 @@ class ItemModule {
 		return (stack[1] += amountTransferred) == maxCapacity;
 	}
 	merge(from:ItemStack, to:ItemStack){
-		
+		//TODO
 	}
 }
 

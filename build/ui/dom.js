@@ -57,12 +57,12 @@ export const DOM = {
 export async function registerEventHandlers() {
     const { scenes } = await import("./scenes.js");
     const { clickcapture } = DOM;
-    window.onmousemove = (e) => {
+    const onmousemove = (e) => {
         Input.mouseX = e.x;
         Input.mouseY = e.y;
         Input.latestMouseEvent = e;
     };
-    clickcapture.onmousedown = (e) => {
+    const onmousedown = (e) => {
         Input.mouseX = e.x;
         Input.mouseY = e.y;
         Input.latestMouseEvent = e;
@@ -79,7 +79,7 @@ export async function registerEventHandlers() {
             scenes[Game.sceneName]?.onmousedown?.(e);
         }
     };
-    window.onmouseup = (e) => {
+    const onmouseup = (e) => {
         Input.mouseX = e.x;
         Input.mouseY = e.y;
         Input.latestMouseEvent = e;
@@ -91,24 +91,34 @@ export async function registerEventHandlers() {
         }
         Input.buildingPlaced = false;
     };
+    window.onmousemove = onmousemove;
+    clickcapture.onmousedown = onmousedown;
+    window.onmouseup = onmouseup;
     clickcapture.addEventListener("touchstart", (e) => {
-        e.x = e.touches[0].clientX;
-        e.y = e.touches[0].clientY;
-        e.button = 0;
-        clickcapture.onmousedown?.(e);
+        onmousedown({
+            x: e.touches[0].clientX,
+            y: e.touches[0].clientY,
+            button: 0,
+            preventDefault() { },
+        });
     });
     clickcapture.addEventListener("touchend", (e) => {
-        e.x = e.changedTouches[0].clientX;
-        e.y = e.changedTouches[0].clientY;
-        e.button = 0;
         setTimeout(() => {
-            clickcapture.onmouseup?.(e);
+            onmouseup({
+                x: e.changedTouches[0].clientX,
+                y: e.changedTouches[0].clientY,
+                button: 0,
+                preventDefault() { },
+            });
         }, 250);
     });
     clickcapture.addEventListener("touchmove", (e) => {
-        e.x = e.touches[0].clientX;
-        e.y = e.touches[0].clientY;
-        window.onmousemove?.(e);
+        onmousemove({
+            x: e.touches[0].clientX,
+            y: e.touches[0].clientY,
+            button: 0,
+            preventDefault() { },
+        });
     });
     clickcapture.oncontextmenu = (e) => {
         e.preventDefault();
@@ -122,8 +132,8 @@ export async function registerEventHandlers() {
         Input.lastKeysPressed.push(e.key);
         Input.lastKeysPressed.shift();
         if (Input.active) {
-            for (let section of Object.values(keybinds)) {
-                for (let keybind of Object.values(section)) {
+            for (const section of Object.values(keybinds)) {
+                for (const keybind of Object.values(section)) {
                     keybind.check(e);
                 }
             }
@@ -136,13 +146,13 @@ export async function registerEventHandlers() {
         Input.keysHeld.delete(e.key.toLowerCase());
     };
     DOM.uploadButton.onchange = (event) => {
-        let file = event.target?.files?.[0];
+        const file = event.target?.files?.[0];
         if (!file)
             return;
-        let reader = new FileReader();
+        const reader = new FileReader();
         reader.readAsText(file);
         reader.onload = e => {
-            let content = e.target?.result?.toString();
+            const content = e.target?.result?.toString();
             if (content == null)
                 return;
             SaveIO.import(content);

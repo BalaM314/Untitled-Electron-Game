@@ -68,8 +68,9 @@ export const scenes = {
                 onClick: () => { window.open("https://github.com/BalaM314/Untitled-Electron-Game/"); }
             }),
         ],
-        update() { },
-        display(currentFrame) {
+        update() {
+        },
+        display() {
             Gfx.layer("overlay");
             Gfx.clear("#0033CC");
             Gfx.font("70px sans-serif");
@@ -163,7 +164,8 @@ export const scenes = {
                 onClick: () => { Game.sceneName = "title"; localStorage.setItem("settings", JSON.stringify(settings)); }
             }),
         ],
-        update() { },
+        update() {
+        },
         display(currentFrame) {
             Gfx.layer("overlay");
             Gfx.clear("#0033CC");
@@ -202,8 +204,9 @@ export const scenes = {
                 onClick: () => { Game.sceneName = "settings"; }
             }),
         ],
-        update() { },
-        display(currentFrame) {
+        update() {
+        },
+        display() {
             Gfx.layer("overlay");
             Gfx.clear("#0033CC");
             Gfx.font("60px sans-serif");
@@ -310,7 +313,7 @@ export const scenes = {
             if (e.key == "Enter" && Input.lastKeysPressed.join(", ") ==
                 ["ArrowUp", "ArrowUp", "ArrowDown", "ArrowDown", "ArrowLeft", "ArrowRight", "ArrowLeft", "ArrowRight", "b", "a", "Enter"].join(", ")) {
                 window.open("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
-                for (let [key, value] of Object.entries(Game.level1.resources)) {
+                for (const [key] of Object.entries(Game.level1.resources)) {
                     Game.level1.resources[key] = 999999;
                 }
                 tech.nodes.forEach(n => n.unlocked = true);

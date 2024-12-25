@@ -15,7 +15,7 @@ import { Item } from "../world/world.js";
 import { DOM } from "./dom.js";
 import { Camera } from "./graphics.js";
 import { Input, keybinds } from "./input.js";
-export const HUD = {
+export const HUD = bindFunctionProperties({
     elements: [DOM.hudtextEl, DOM.resourcesEl, DOM.objectiveEl, DOM.toolbarEl, DOM.buttonsPane],
     hidden: true,
     hide() {
@@ -51,7 +51,8 @@ export const HUD = {
             const node = tech.get(hoveredID);
             const block = Buildings.getOpt(hoveredID.split("building_")[1]);
             this.updateTooltipPosition();
-            const message = node.missingItem() ? `<span style="color:#FAA"> Missing item: ${bundle.get(`item.${node.missingItem()}.name`)}</span>` : "Click to research!";
+            const missingItem = node.missingItem();
+            const message = missingItem ? `<span style="color:#FAA"> Missing item: ${bundle.get(`item.${missingItem}.name`)}</span>` : "Click to research!";
             if (node.status() == "inaccessible") {
                 tooltipbox.innerHTML = "?";
             }
@@ -132,7 +133,7 @@ export const HUD = {
         const fpsLast10 = frameMSLast10 ? Math.min(consts.ups, round(1000 / frameMSLast10, 1)) : "...";
         const fpsLast120 = frameMSLast120 ? Math.min(consts.ups, round(1000 / frameMSLast120, 1)) : "...";
         const fpsText = `FPS: ${fpsLast10}/${fpsLast120}`;
-        const debugText = settings.debug ? `C:${currentFrame.cps} T:${currentFrame.tps} I:${currentFrame.ips} MS:${frameMSLast10}` : "";
+        const debugText = settings.debug ? `C:${currentFrame.cps} T:${currentFrame.tps} I:${currentFrame.ips} MS:${frameMSLast10 ?? "..."}` : "";
         const { grid } = Game.level1;
         const gridSatisfaction = grid.powerRequested == 0 ? 1 : grid.maxProduction / grid.powerRequested;
         const powergridText = grid.maxProduction == 0 && grid.powerRequested == 0 ? "" :
@@ -202,9 +203,8 @@ export const HUD = {
         this.updateVisibility();
         this.updateObjective();
     },
-};
-bindFunctionProperties(HUD);
-export const GUI = {
+});
+export const GUI = bindFunctionProperties({
     toggleResearchMenu() {
         if (tech.menuVisible)
             tech.hideMenu();
@@ -239,5 +239,4 @@ export const GUI = {
         else if (tech.menuVisible)
             tech.hideMenu();
     },
-};
-bindFunctionProperties(GUI);
+});

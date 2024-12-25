@@ -15,41 +15,41 @@ import { Game, consts } from "../vars.js";
 import { CTX } from "./dom.js";
 
 
-export interface UnloadedTexture {
+export type UnloadedTexture = {
 	id: string;
 }
 
-export interface Texture extends UnloadedTexture {
+export type Texture = {
 	image: CanvasImageSource;
 	width: number;
 	height: number;
 	widthByTwo: number;
 	heightByTwo: number;
-}
+} & UnloadedTexture
 
-export interface AnimationData {
+export type AnimationData = {
 	/** linear from `from` to `to` */
-	linc(from?:number, to?:number):number;
+	linc(this:void, from?:number, to?:number):number;
 	/** linear from `from` to `to` */
-	ldec(from?:number, to?:number):number;
+	ldec(this:void, from?:number, to?:number):number;
 	/** Mostly linear from 0 to `a`, but drops off towards zero using x^`p`. p is 10 by default. */
-	pdec(a:number, p?:number):number;
+	pdec(this:void, a:number, p?:number):number;
 	/** Sharp decrease at first, then slowly goes towards zero. */
-	edec(a:number, to?:number):number;
+	edec(this:void, a:number, to?:number):number;
 	/**
 	 * Sine wave.
 	 * @param b Multiplier for cycles number. Default 1, meaning 1 cycle per second.
 	 * @param a Amplitude. Default 1, meaning the sine wave goes from -1 to +1.
 	 * @param c Y offset to the sine wave.
 	 */
-	sin(b?:number, a?:number, c?:number):number;
+	sin(this:void, b?:number, a?:number, c?:number):number;
 	/**
 	 * Cosine wave.
 	 * @param b Multiplier for cycles number. Default 1, meaning 1 cycle per second.
 	 * @param a Amplitude. Default 1, meaning the sine wave goes from -1 to +1.
 	 * @param c Y offset to the cosine wave. Default 0.
 	 */
-	cos(b?:number, a?:number, c?:number):number;
+	cos(this:void, b?:number, a?:number, c?:number):number;
 }
 
 export function getAnimationData(fin:number):AnimationData {
@@ -65,7 +65,7 @@ export function getAnimationData(fin:number):AnimationData {
 
 export function loadTexture(t:UnloadedTexture, texturesDiv:HTMLDivElement){
 	return new Promise<Texture>((resolve, reject) => {
-		let img = document.createElement("img");
+		const img = document.createElement("img");
 		img.setAttribute("src", `assets/textures/${t.id}.png`.replace(":", "!"));
 		img.addEventListener("load", () => {
 			Game.loadedTextures ++;
@@ -91,7 +91,7 @@ export function loadTexture(t:UnloadedTexture, texturesDiv:HTMLDivElement){
 export async function loadTextures(textures:UnloadedTexture[], texturesDiv:HTMLDivElement):Promise<Record<string, Texture>> {
 	return Object.fromEntries(
 		(await Promise.all(textures.map(t => loadTexture(t, texturesDiv))))
-		.map(t => [t.id, t])
+			.map(t => [t.id, t])
 	);
 }
 
@@ -102,9 +102,9 @@ export class Camera {
 	static readonly maxZoom = 5;
 
 	//Variables
-	static zoomLevel:number = 1;
-	static scrollX:number = 0;
-	static scrollY:number = 0;
+	static zoomLevel = 1;
+	static scrollX = 0;
+	static scrollY = 0;
 	static width = window.innerWidth;
 	static height = window.innerHeight;
 	/** If true, the distance limit has triggered at least once. */
@@ -178,11 +178,11 @@ export class Camera {
 		this.update();
 		Game.forceRedraw = true;
 	}
-	static isVisible(rect:Rect, cullingMargin:number = 0){
+	static isVisible(rect:Rect, cullingMargin = 0){
 		const [x, y, w, h] = this.visibleRect;
 		return Intersector.rectsIntersect(rect, [x - cullingMargin, y - cullingMargin, w + cullingMargin * 2, h + cullingMargin * 2]);
 	}
-	static isPointVisible(point:PosT, cullingMargin:number = 0){
+	static isPointVisible(point:PosT, cullingMargin = 0){
 		const [x, y, w, h] = this.visibleRect;
 		return Intersector.pointInRect(point, [x - cullingMargin, y - cullingMargin, w + cullingMargin * 2, h + cullingMargin * 2]);
 	}
@@ -215,7 +215,7 @@ export class Gfx {
 	static textures:Record<string, Texture> = {};
 	static rectMode:RectMode = RectMode.CORNER;
 	static ctx:CanvasRenderingContext2D = null!;
-	static drawers: (() => unknown)[] = [];
+	static drawers: Array<() => unknown> = [];
 	static addDrawer(drawer:() => unknown){
 		this.drawers.push(drawer);
 	}
@@ -374,7 +374,7 @@ export class Gfx {
 	static tImage(
 		texture:Texture,
 		tileX:number, tileY:number,
-		width:number = 1, height:number = 1,
+		width = 1, height = 1,
 		_ctx = this.ctx
 	){
 		_ctx.drawImage(
@@ -383,8 +383,8 @@ export class Gfx {
 			tileY * Camera.zoomedTileSize + Camera.scrollYTimesZoomLevelPlusHeightByTwo,
 			width * Camera.zoomedTileSize,
 			height * Camera.zoomedTileSize
-			);
-		}
+		);
+	}
 	//this function gets called 245k times per second, optimize to the max
 	static tImageOneByOne(
 		texture:Texture,
@@ -443,12 +443,12 @@ export class Gfx {
 	}
 }
 
-export interface EffectParams extends AnimationData {
+export type EffectParams = {
 	pos: Pos;
 	prand: PseudoRandom;
 	createdAt: number;
 	color: string;
-}
+} & AnimationData
 
 export class ParticleEffect {
 	lifetime = 1000;
@@ -515,9 +515,9 @@ export const Fx = {
 			Gfx.tLine(...location, ...offset2);
 		},
 	}),
-}
+};
 
-export interface EffectData {
+export type EffectData = {
 	type: ParticleEffect;
 	createdAt: number;
 	pos: Pos;

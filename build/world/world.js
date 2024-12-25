@@ -48,7 +48,8 @@ export class Level {
                 level.resources[item] = amount;
         }
         level.uuid = uuid;
-        let position, chunkData;
+        let position = "";
+        let chunkData;
         try {
             for ([position, chunkData] of Object.entries(chunks)) {
                 chunkData.version = version;
@@ -89,7 +90,7 @@ export class Level {
         this.storage.set(`${x},${y}`, new Chunk(x, y, this).generate());
     }
     generateNecessaryChunks() {
-        let [chunkX, chunkY] = Camera.unproject(0, 0).map(Pos.pixelToChunk);
+        const [chunkX, chunkY] = Camera.unproject(0, 0).map(Pos.pixelToChunk);
         const xOffsets = [0, 1, 2, 3, 4];
         const yOffsets = [0, 1, 2, 3];
         for (const xOffset of xOffsets) {
@@ -142,9 +143,9 @@ export class Level {
         if (!this.hasChunk(tileX, tileY))
             return;
         const block = Buildings.get(buildingID[0]);
-        let changedID = [buildingID[0], buildingID[1]];
+        const changedID = [buildingID[0], buildingID[1]];
         changedID[1] = block.changeMeta(changedID[1], tileX, tileY, this);
-        let textureSize = block.textureSize(buildingID[1]);
+        const textureSize = block.textureSize(buildingID[1]);
         const isError = !this.hasResources(block.buildCost, 100) ||
             !block.canBuildAt(tileX, tileY, this) ||
             !this.canBuildBuilding([tileX, tileY], block);
@@ -209,7 +210,7 @@ export class Level {
                 buildUnder?.break();
             }
             this.drainResources(block.buildCost);
-            let controller = new block(tileX, tileY, buildingID[1], this);
+            const controller = new block(tileX, tileY, buildingID[1], this);
             controller.secondaries = offsets.map(([x, y]) => new block.secondary(tileX + x, tileY + y, 0, this));
             controller.secondaries.forEach(secondary => secondary.controller = controller);
             this.buildings.add(controller);
@@ -279,14 +280,14 @@ export class Level {
         this.buildings.forEach(b => b.preUpdate(currentFrame));
         this.grid.updatePower();
         this.buildings.forEach(b => b.update(currentFrame));
-        for (let chunk of this.storage.values()) {
+        for (const chunk of this.storage.values()) {
             chunk.update(currentFrame);
         }
-        if (this.resources["base_stone"] == 0 && Date.now() - this.timeSinceStoneRanOut > 15000 && !Game.transientStats.stoneRunOutMessageShown) {
+        if (this.resources.base_stone == 0 && Date.now() - this.timeSinceStoneRanOut > 15000 && !Game.transientStats.stoneRunOutMessageShown) {
             Game.transientStats.stoneRunOutMessageShown = true;
             GUI.alert(`It looks like you have run out of stone. Break unnecessary buildings by holding Backspace and moving the cursor over them to recover resources.`);
         }
-        else if (this.resources["base_stone"] > 0) {
+        else if (this.resources.base_stone > 0) {
             this.timeSinceStoneRanOut = Date.now();
         }
     }
@@ -296,7 +297,7 @@ export class Level {
         }
     }
     getTooltip(x, y) {
-        let building = this.buildingAtPixel(x, y);
+        const building = this.buildingAtPixel(x, y);
         if (building instanceof Building) {
             if (building.block.displaysItem && building.item &&
                 (Math.abs(building.item.pos.pixelX - x) < consts.ITEM_SIZE / 2) &&
@@ -316,9 +317,9 @@ export class Level {
         }
     }
     export() {
-        let chunkOutput = {};
-        for (let [position, chunk] of this.storage.entries()) {
-            let output = chunk.export();
+        const chunkOutput = {};
+        for (const [position, chunk] of this.storage.entries()) {
+            const output = chunk.export();
             if (output) {
                 chunkOutput[position] = output;
             }
@@ -343,25 +344,19 @@ export class Chunk {
         this.pixelY = Pos.chunkToPixel(this.y);
         this.tileX = Pos.chunkToTile(this.x);
         this.tileY = Pos.chunkToTile(this.y);
-        let tweakedX = x == 0 ? 5850 : x;
-        let tweakedY = y == 0 ? 9223 : y;
+        const tweakedX = x == 0 ? 5850 : x;
+        const tweakedY = y == 0 ? 9223 : y;
         this.chunkSeed = Math.abs((((tweakedX) ** 3) * (tweakedY ** 5) + 3850 + ((parent.seed - 314) * 11)) % (2 ** 16));
         this._generator = pseudoRandom(this.chunkSeed);
         this.layers = Chunk.initializeLayers();
         return this;
     }
     static initializeLayers() {
-        const layers = [
-            new Array(consts.CHUNK_SIZE),
-            new Array(consts.CHUNK_SIZE),
-            new Array(consts.CHUNK_SIZE)
+        return [
+            Array.from({ length: consts.CHUNK_SIZE }, () => new Array(consts.CHUNK_SIZE).fill("base_null")),
+            Array.from({ length: consts.CHUNK_SIZE }, () => new Array(consts.CHUNK_SIZE).fill(null)),
+            Array.from({ length: consts.CHUNK_SIZE }, () => new Array(consts.CHUNK_SIZE).fill(null))
         ];
-        for (let i = 0; i < consts.CHUNK_SIZE; i++) {
-            layers[0][i] = new Array(consts.CHUNK_SIZE).fill("base_null");
-            layers[1][i] = new Array(consts.CHUNK_SIZE).fill(null);
-            layers[2][i] = new Array(consts.CHUNK_SIZE).fill(null);
-        }
-        return layers;
     }
     static read(chunkX, chunkY, level, data) {
         const chunk = new Chunk(chunkX, chunkY, level);
@@ -369,9 +364,9 @@ export class Chunk {
         if (numericVersion < 200) {
             data.layers = data;
         }
-        for (let y in data.layers[0]) {
-            for (let x in data.layers[0][y]) {
-                let _buildingData = data.layers[0][y][x];
+        for (const y in data.layers[0]) {
+            for (const x in data.layers[0][y]) {
+                const _buildingData = data.layers[0][y][x];
                 if (!_buildingData)
                     continue;
                 chunk.hasBuildings = true;
@@ -407,9 +402,9 @@ export class Chunk {
                 chunk.layers[1][y][x] = tempBuilding;
             }
         }
-        for (let y in data.layers[1]) {
-            for (let x in data.layers[1][y]) {
-                let _buildingData = data.layers[1][y][x];
+        for (const y in data.layers[1]) {
+            for (const x in data.layers[1][y]) {
+                const _buildingData = data.layers[1][y][x];
                 if (!_buildingData)
                     continue;
                 chunk.hasBuildings = true;
@@ -426,7 +421,7 @@ export class Chunk {
                 }
                 else
                     buildingData = _buildingData;
-                let tempBuilding = new (Buildings.get(buildingData.id))(parseInt(x) + (consts.CHUNK_SIZE * chunkX), parseInt(y) + (consts.CHUNK_SIZE * chunkY), buildingData.meta, level);
+                const tempBuilding = new (Buildings.get(buildingData.id))(parseInt(x) + (consts.CHUNK_SIZE * chunkX), parseInt(y) + (consts.CHUNK_SIZE * chunkY), buildingData.meta, level);
                 if (buildingData.item && numericVersion >= 130) {
                     tempBuilding.item = new Item(buildingData.item.x, buildingData.item.y, buildingData.item.id);
                 }
@@ -496,10 +491,10 @@ export class Chunk {
                 min_copper_distance: 7
             }
         };
-        let isLake = false;
+        const isLake = false;
         let isHilly = false;
-        let distanceFromSpawn = Math.sqrt((this.x) ** 2 + (this.y) ** 2);
-        let distanceBoost = constrain(Math.log(distanceFromSpawn + 1) / 3, 0, 0.6);
+        const distanceFromSpawn = Math.sqrt((this.x) ** 2 + (this.y) ** 2);
+        const distanceBoost = constrain(Math.log(distanceFromSpawn + 1) / 3, 0, 0.6);
         if (distanceBoost > generation_consts.hilly.terrain_cutoff) {
             isHilly = true;
         }
@@ -630,11 +625,11 @@ export class Chunk {
         }
     }
     export() {
-        let exportDataL1 = [];
+        const exportDataL1 = [];
         let hasBuildings = false;
-        for (let row of this.layers[1]) {
-            let tempRow = [];
-            for (let building of row) {
+        for (const row of this.layers[1]) {
+            const tempRow = [];
+            for (const building of row) {
                 if (building instanceof Building) {
                     hasBuildings = true;
                 }
@@ -642,10 +637,10 @@ export class Chunk {
             }
             exportDataL1.push(tempRow);
         }
-        let exportDataL2 = [];
-        for (let row of this.layers[2]) {
-            let tempRow = [];
-            for (let overlayBuild of row) {
+        const exportDataL2 = [];
+        for (const row of this.layers[2]) {
+            const tempRow = [];
+            for (const overlayBuild of row) {
                 if (overlayBuild instanceof Building) {
                     hasBuildings = true;
                 }

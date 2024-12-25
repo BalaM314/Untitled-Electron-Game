@@ -95,7 +95,7 @@ let BuildingWithRecipe = (() => {
             else {
                 for (let i = 0; i < this.block.recipeMaxInputs; i++) {
                     if (!this.items[i] && !this.items.map(item => item[0]).includes(item.id)) {
-                        for (let recipe of this.block.recipeType.recipes) {
+                        for (const recipe of this.block.recipeType.recipes) {
                             if (!recipe.inputs)
                                 continue;
                             if (recipe.fluidInputs && (this.block.fluidCapacity == 0 || !this.block.acceptsFluids))
@@ -229,14 +229,12 @@ let BuildingWithRecipe = (() => {
                     drawer(build, getAnimationData(1 - (build.timer) / build.recipe.duration), currentFrame);
                 }
                 drawers.forEach(d => d(build, currentFrame));
-                BuildingWithRecipe.makeDrawer((build, e, currentFrame) => { build.recipe; });
             });
         }
         static combineDrawers(...drawers) {
             return ((build, currentFrame) => {
                 Gfx.layer("buildings");
                 drawers.forEach(d => d(build, currentFrame));
-                BuildingWithRecipe.makeDrawer((build, e, currentFrame) => { build.recipe; });
             });
         }
         static progressDrawerOld() {
@@ -367,10 +365,10 @@ export class Conveyor extends Building {
         if (keybinds.placement.force_straight_conveyor.isHeld()) {
             return meta;
         }
-        let hasLeft = level.buildingAtTile(tileX - 1, tileY)?.outputsItemToSide(Direction.right) ?? false;
-        let hasUp = level.buildingAtTile(tileX, tileY - 1)?.outputsItemToSide(Direction.down) ?? false;
-        let hasRight = level.buildingAtTile(tileX + 1, tileY)?.outputsItemToSide(Direction.left) ?? false;
-        let hasDown = level.buildingAtTile(tileX, tileY + 1)?.outputsItemToSide(Direction.up) ?? false;
+        const hasLeft = level.buildingAtTile(tileX - 1, tileY)?.outputsItemToSide(Direction.right) ?? false;
+        const hasUp = level.buildingAtTile(tileX, tileY - 1)?.outputsItemToSide(Direction.down) ?? false;
+        const hasRight = level.buildingAtTile(tileX + 1, tileY)?.outputsItemToSide(Direction.left) ?? false;
+        const hasDown = level.buildingAtTile(tileX, tileY + 1)?.outputsItemToSide(Direction.up) ?? false;
         switch (meta) {
             case 0:
                 if (hasLeft) {
@@ -902,9 +900,9 @@ export class StorageBuilding extends Building {
         };
     }
     export() {
-        let inv = [];
+        const inv = [];
         if (this.inventory) {
-            for (let item of this.inventory) {
+            for (const item of this.inventory) {
                 const data = item.export();
                 if (data)
                     inv.push(data);
@@ -998,7 +996,7 @@ export class MultiBlockController extends BuildingWithRecipe {
         return [this.multiblockSize, [0, 0]];
     }
     static getOffsetsForSize(width, height) {
-        let offsets = [];
+        const offsets = [];
         for (let i = 0; i < width; i++) {
             for (let j = 0; j < height; j++) {
                 if (i == 0 && j == 0)
@@ -1024,9 +1022,9 @@ export class MultiBlockController extends BuildingWithRecipe {
         super.update(currentFrame);
     }
     resetSecondaries() {
-        let possibleSecondaries = _a.getOffsetsForSize(...this.block.multiblockSize)
+        const possibleSecondaries = _a.getOffsetsForSize(...this.block.multiblockSize)
             .map(([xOffset, yOffset]) => this.level.buildingAtTile(this.pos.tileX + xOffset, this.pos.tileY + yOffset));
-        for (let possibleSecondary of possibleSecondaries) {
+        for (const possibleSecondary of possibleSecondaries) {
             if (possibleSecondary instanceof MultiBlockSecondary &&
                 (possibleSecondary.controller == this || possibleSecondary.controller == undefined)) {
                 possibleSecondary.controller = this;
@@ -1048,7 +1046,7 @@ export class MultiBlockController extends BuildingWithRecipe {
         if (super.spawnItem(id)) {
             return true;
         }
-        for (let secondary of this.secondaries) {
+        for (const secondary of this.secondaries) {
             if (secondary.spawnItem(id)) {
                 return true;
             }
@@ -1066,7 +1064,7 @@ export class MultiBlockController extends BuildingWithRecipe {
     dumpFluid() {
         this.fluidThroughput = 0;
         const fluid = this.fluidOut ?? this.fluid;
-        if (!fluid || fluid[0] == null || fluid[1] == 0)
+        if (fluid?.[0] == null || fluid[1] == 0)
             return;
         const numDirections = 2 * (this.block.multiblockSize[0] + this.block.multiblockSize[1]);
         for (let i = 0; i < numDirections; i++) {

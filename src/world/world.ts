@@ -10,7 +10,7 @@ You should have received a copy of the GNU General Public License along with Unt
 import { ItemIDs, Buildings, Fluids } from "../content/content.js";
 import { bundle } from "../content/i18n.js";
 import { ItemStack } from "../content/registry.js";
-import type { ItemID, LevelData, TileID, BuildingIDWithMeta, CurrentFrame, ChunkData, BuildingData, LegacyBuildingData, LegacyBuildingID, ItemData, TextureInfo } from "../types.js";
+import type { ItemID, LevelData, TileID, BuildingIDWithMeta, CurrentFrame, ChunkData, BuildingData, LegacyBuildingData, LegacyBuildingID, ItemData, TextureInfo, RawBuildingID } from "../types.js";
 import { Camera, Gfx, RectMode } from "../ui/graphics.js";
 import { GUI } from "../ui/gui.js";
 import { keybinds, Input } from "../ui/input.js";
@@ -31,14 +31,12 @@ export class Level {
 		amountRequired:number | null;
 		flashEffect:string | null;
 		flashExpireTime:number;
-	}> = Object.fromEntries(ItemIDs.map(id =>
-		[id, {
+	}> = Object.fromEntries(ItemIDs.map(id => [id, {
 			shouldShowAlways: false,
 			amountRequired: null,
 			flashEffect: null,
 			flashExpireTime: 0,
-		}]
-	));
+		}]));
 	storage = new Map<string, Chunk>();
 	format: string;
 	uuid: string;
@@ -56,6 +54,7 @@ export class Level {
 	}
 	static read(data:LevelData){
 		// Read a level from JSON
+		// eslint-disable-next-line prefer-const
 		let {chunks, resources, seed, version, uuid} = data;
 		const level = new Level(seed, false);
 		if(!Array.isArray(resources)) resources = Object.entries(resources);
@@ -63,7 +62,8 @@ export class Level {
 			if(!isNaN(amount)) level.resources[item] = amount;
 		}
 		level.uuid = uuid;
-		let position, chunkData;
+		let position = "";
+		let chunkData:ChunkData;
 		try {
 			for([position, chunkData] of Object.entries(chunks)){
 				chunkData.version = version;
@@ -73,14 +73,14 @@ export class Level {
 				//Generate a chunk with that data
 			}
 		} catch(err){
-			crash(`Error loading chunk ${position}: ${parseError(err)}`)
+			crash(`Error loading chunk ${position}: ${parseError(err)}`);
 		}
 		level.buildings.forEach(b => {
 			if(b instanceof MultiBlockController){
 				//If the secondary is in a different chunk and updates first, the secondary will not know how to find the controller and break, which causes the multiblock to break on loading a save
 				b.resetSecondaries();
 			}
-		})
+		});
 		return level;
 	}
 	generate(){
@@ -109,7 +109,7 @@ export class Level {
 		);
 	}
 	generateNecessaryChunks(){
-		let [chunkX, chunkY] = Camera.unproject(0, 0).map(Pos.pixelToChunk);
+		const [chunkX, chunkY] = Camera.unproject(0, 0).map(Pos.pixelToChunk);
 		const xOffsets = [0, 1, 2, 3, 4];
 		const yOffsets = [0, 1, 2, 3];
 		for(const xOffset of xOffsets){
@@ -191,9 +191,9 @@ export class Level {
 
 		const block = Buildings.get(buildingID[0]);
 
-		let changedID:BuildingIDWithMeta = [buildingID[0], buildingID[1]];
+		const changedID:BuildingIDWithMeta = [buildingID[0], buildingID[1]];
 		changedID[1] = block.changeMeta(changedID[1], tileX, tileY, this);
-		let textureSize = block.textureSize(buildingID[1]);
+		const textureSize = block.textureSize(buildingID[1]);
 
 
 		//Draw underlay
@@ -277,7 +277,7 @@ export class Level {
 			this.drainResources(block.buildCost);
 			
 			//Create buildings
-			let controller = new block(tileX, tileY, buildingID[1], this);
+			const controller = new block(tileX, tileY, buildingID[1], this);
 			controller.secondaries = offsets.map(([x, y]) => new block.secondary(tileX + x, tileY + y, 0, this));
 			//Link buildings
 			controller.secondaries.forEach(secondary => secondary.controller = controller);
@@ -334,32 +334,32 @@ export class Level {
 	drainResources(items:ItemStack[]){
 		for(const [item, amount] of items){
 			this.resources[item] ??= 0;
-			this.resources[item]! -= amount;
+			this.resources[item] -= amount;
 		}
 	}
 	addResources(items:ItemStack[]){
 		for(const [item, amount] of items){
 			this.resources[item] ??= 0;
-			this.resources[item]! += amount;
+			this.resources[item] += amount;
 		}
 	}
 	update(currentFrame:CurrentFrame){
 		this.buildings.forEach(b => b.preUpdate(currentFrame));
 		this.grid.updatePower();
 		this.buildings.forEach(b => b.update(currentFrame));
-		for(let chunk of this.storage.values()){
+		for(const chunk of this.storage.values()){
 			chunk.update(currentFrame);
 		}
 
-		if(this.resources["base_stone"] == 0 && Date.now() - this.timeSinceStoneRanOut > 15000 && !Game.transientStats.stoneRunOutMessageShown){
+		if(this.resources.base_stone == 0 && Date.now() - this.timeSinceStoneRanOut > 15000 && !Game.transientStats.stoneRunOutMessageShown){
 			//Stone is dead for more than 10 seconds
 			Game.transientStats.stoneRunOutMessageShown = true;
 			GUI.alert(`It looks like you have run out of stone. Break unnecessary buildings by holding Backspace and moving the cursor over them to recover resources.`);
-		} else if(this.resources["base_stone"] > 0){
+		} else if(this.resources.base_stone > 0){
 			this.timeSinceStoneRanOut = Date.now();
 		}
 	}
-	display(currentframe:Object):void {
+	display(currentframe:CurrentFrame):void {
 		
 		//Instantly returns in the display method if offscreen.
 		for(const chunk of this.storage.values()){
@@ -369,7 +369,7 @@ export class Level {
 	}
 	getTooltip(x:number, y:number):string {
 		//returns raw html, make sure to escape!
-		let building = this.buildingAtPixel(x, y);
+		const building = this.buildingAtPixel(x, y);
 		if(building instanceof Building){
 			if(
 				//If there's an item
@@ -392,9 +392,9 @@ export class Level {
 	}
 	export():LevelData {
 		//Exports the level's data to JSON.
-		let chunkOutput:Record<string, ChunkData> = {};
-		for(let [position, chunk] of this.storage.entries()){
-			let output = chunk.export();
+		const chunkOutput:Record<string, ChunkData> = {};
+		for(const [position, chunk] of this.storage.entries()){
+			const output = chunk.export();
 			if(output){
 				chunkOutput[position] = output;
 			}
@@ -403,7 +403,7 @@ export class Level {
 
 		return {
 			chunks: chunkOutput,
-			resources: Object.entries(this.resources as Record<ItemID, number>).filter(([id, amount]) => amount > 0),
+			resources: Object.entries(this.resources).filter(([id, amount]) => amount > 0),
 			seed: this.seed,
 			version: consts.VERSION,
 			uuid: this.uuid
@@ -418,23 +418,23 @@ export class Level {
 export class Chunk {
 	layers: [
 		TileID[][],
-		(Building | null)[][],
-		(OverlayBuild | null)[][]
+		Array<Array<Building | null>>,
+		Array<Array<OverlayBuild | null>>,
 	];
 	_generator: Generator<{
 		value: number;
 		chance(amount: number): boolean;
 	}, never>;
 	chunkSeed: number;
-	hasBuildings: boolean = false;
+	hasBuildings = false;
 	pixelX = Pos.chunkToPixel(this.x);
 	pixelY = Pos.chunkToPixel(this.y);
 	tileX = Pos.chunkToTile(this.x);
 	tileY = Pos.chunkToTile(this.y);
 	constructor(public x:number, public y:number, public parent:Level){
 		//Don't allow x or y to be zero
-		let tweakedX = x == 0 ? 5850 : x;
-		let tweakedY = y == 0 ? 9223 : y;
+		const tweakedX = x == 0 ? 5850 : x;
+		const tweakedY = y == 0 ? 9223 : y;
 		this.chunkSeed = Math.abs(
 			(((tweakedX) ** 3) * (tweakedY ** 5) + 3850 + ((parent.seed - 314) * 11)) % (2 ** 16)
 		);
@@ -445,18 +445,12 @@ export class Chunk {
 
 		return this;
 	}
-	static initializeLayers(){
-		const layers:Chunk["layers"] = [
-			new Array(consts.CHUNK_SIZE),
-			new Array(consts.CHUNK_SIZE),
-			new Array(consts.CHUNK_SIZE)
+	static initializeLayers():Chunk["layers"] {
+		return [
+			Array.from({length: consts.CHUNK_SIZE}, () => new Array<TileID>(consts.CHUNK_SIZE).fill("base_null")),
+			Array.from({length: consts.CHUNK_SIZE}, () => new Array<null>(consts.CHUNK_SIZE).fill(null)),
+			Array.from({length: consts.CHUNK_SIZE}, () => new Array<null>(consts.CHUNK_SIZE).fill(null))
 		];
-		for(let i = 0; i < consts.CHUNK_SIZE; i ++){
-			layers[0][i] = new Array(consts.CHUNK_SIZE).fill("base_null");
-			layers[1][i] = new Array(consts.CHUNK_SIZE).fill(null);
-			layers[2][i] = new Array(consts.CHUNK_SIZE).fill(null);
-		}
-		return layers;
 	}
 	static read(chunkX:number, chunkY:number, level:Level, data:ChunkData){
 		const chunk = new Chunk(chunkX, chunkY, level);
@@ -464,11 +458,14 @@ export class Chunk {
 		//TODO 🚮
 		const numericVersion = +data.version.split(" ")[1]!.replaceAll(".", "");
 		if(numericVersion < 200){
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 			(data as any).layers = data;
 		}
-		for(let y in data.layers[0]){
-			for(let x in data.layers[0][y]){
-				let _buildingData = data.layers[0][y][x as any] as BuildingData | LegacyBuildingData | null;
+		// eslint-disable-next-line @typescript-eslint/no-for-in-array
+		for(const y in data.layers[0]){
+			for(const x in data.layers[0][y]){
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+				const _buildingData = data.layers[0][y][x as any] as BuildingData | LegacyBuildingData | null;
 				if(!_buildingData) continue;
 				chunk.hasBuildings = true;
 				let buildingData:BuildingData;
@@ -480,12 +477,14 @@ export class Chunk {
 						..._buildingData,
 						id: mapLegacyRawBuildingID(getLegacyRawBuildingID((_buildingData as LegacyBuildingData).id)),
 						meta: +(_buildingData as LegacyBuildingData).id >> 8
-					}
+					};
 					//aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa I am still looking forward to beta when I can throw out these garbage formats
 				} else if(numericVersion < 310 && (_buildingData as BuildingData).fluid) {
+					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 					const fluid = (_buildingData as BuildingData).fluid as any;
 					buildingData = {
 						..._buildingData,
+						// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 						fluid: [Fluids.get(fluid[0] as number - 1).id, fluid[1]]
 					} as BuildingData;
 				} else buildingData = _buildingData as BuildingData;
@@ -497,14 +496,17 @@ export class Chunk {
 					crash(`Failed to import building id ${stringifyMeta(buildingData.id, buildingData.meta)} at position ${x},${y} in chunk ${chunkX},${chunkY}. See console for more details.`);
 				}
 				level.buildings.add(tempBuilding);
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 				chunk.layers[1][y]![x as any] = tempBuilding;
 			}
 		}
 
 		//Same as above but for overlay builds.
-		for(let y in data.layers[1]){
-			for(let x in data.layers[1][y]){
-				let _buildingData = data.layers[1][y][x as any] as BuildingData | LegacyBuildingData | null;
+		// eslint-disable-next-line @typescript-eslint/no-for-in-array
+		for(const y in data.layers[1]){
+			for(const x in data.layers[1][y]){
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+				const _buildingData = data.layers[1][y][x as any] as BuildingData | LegacyBuildingData | null;
 				if(!_buildingData) continue;
 				chunk.hasBuildings = true;
 				let buildingData:BuildingData;
@@ -516,10 +518,10 @@ export class Chunk {
 						..._buildingData,
 						id: mapLegacyRawBuildingID(getLegacyRawBuildingID((_buildingData as LegacyBuildingData).id)),
 						meta: +(_buildingData as LegacyBuildingData).id >> 8
-					}
+					};
 					//aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa I am still looking forward to beta when I can throw out these garbage formats
 				} else buildingData = _buildingData as BuildingData;
-				let tempBuilding = new (Buildings.get(buildingData.id))(
+				const tempBuilding = new (Buildings.get(buildingData.id))(
 					parseInt(x) + (consts.CHUNK_SIZE * chunkX),
 					parseInt(y) + (consts.CHUNK_SIZE * chunkY),
 					buildingData.meta, level
@@ -529,6 +531,7 @@ export class Chunk {
 					tempBuilding.item = new Item(buildingData.item.x, buildingData.item.y, buildingData.item.id);
 				}
 				level.buildings.add(tempBuilding);
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 				chunk.layers[2][y]![x as any] = tempBuilding;
 			}
 		}
@@ -620,11 +623,11 @@ export class Chunk {
 			}
 		};
 
-		let isLake = false;
+		const isLake = false;
 		let isHilly = false;
 
-		let distanceFromSpawn = Math.sqrt((this.x) ** 2 + (this.y) ** 2);
-		let distanceBoost = constrain(Math.log(distanceFromSpawn + 1) / 3, 0, 0.6);
+		const distanceFromSpawn = Math.sqrt((this.x) ** 2 + (this.y) ** 2);
+		const distanceBoost = constrain(Math.log(distanceFromSpawn + 1) / 3, 0, 0.6);
 		//A value added to the perlin noise on each tile to make the amount of stone/ore increase, scales as you go further out.
 
 		if(distanceBoost > generation_consts.hilly.terrain_cutoff){
@@ -721,7 +724,7 @@ export class Chunk {
 
 		return this;
 	}
-	display(currentframe:any){
+	display(currentframe:CurrentFrame){
 		if(!Camera.isVisible([
 			this.pixelX, this.pixelY,
 			consts.chunkSizeInPixels, consts.chunkSizeInPixels
@@ -740,7 +743,7 @@ export class Chunk {
 				for(let x = 0; x < consts.CHUNK_SIZE; x ++){
 					//WARNING: 300k runs per second! Very hot!
 					tileX = this.tileX + x;
-					const tile = this.layers[0][y]![x];
+					const tile = this.layers[0][y]![x]!;
 					Gfx.tImageOneByOne(Gfx.texture(`tile/${tile}`), tileX, tileY);
 				}
 			}
@@ -769,11 +772,11 @@ export class Chunk {
 		}
 	}
 	export():ChunkData | null {
-		let exportDataL1:(BuildingData | null)[][] = [];
+		const exportDataL1:Array<Array<BuildingData | null>> = [];
 		let hasBuildings = false;
-		for(let row of this.layers[1]){
-			let tempRow:(BuildingData | null)[] = [];
-			for(let building of row){
+		for(const row of this.layers[1]){
+			const tempRow:Array<BuildingData | null> = [];
+			for(const building of row){
 				if(building instanceof Building){
 					hasBuildings = true;
 				}
@@ -782,10 +785,10 @@ export class Chunk {
 			exportDataL1.push(tempRow);
 		}
 
-		let exportDataL2:(BuildingData | null)[][]= [];
-		for(let row of this.layers[2]){
-			let tempRow:(BuildingData | null)[] = [];
-			for(let overlayBuild of row){
+		const exportDataL2:Array<Array<BuildingData | null>>= [];
+		for(const row of this.layers[2]){
+			const tempRow:Array<BuildingData | null> = [];
+			for(const overlayBuild of row){
 				if(overlayBuild instanceof Building){
 					hasBuildings = true;
 				}

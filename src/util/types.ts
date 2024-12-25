@@ -7,8 +7,11 @@ You should have received a copy of the GNU General Public License along with Unt
 */
 /* Contains utility types. */
 
-export interface TagFunction<Tin = string, Tout = string> {
-	(stringChunks: readonly string[], ...varChunks: readonly Tin[]): Tout;
-}
+export type TagFunction<Tin = string, Tout = string> =
+	(stringChunks: readonly string[], ...varChunks: readonly Tin[]) => Tout;
 export type NonEmptyArray<T> = [T, ...T[]];
+export type Templatable = string | number | boolean;
+/** Makes the property K of T optional. */
+export type PartialKey<T, K extends keyof T> = Partial<T> & Omit<T, K>;
+
 

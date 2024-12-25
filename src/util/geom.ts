@@ -102,28 +102,28 @@ export class Pos {
 		return Pos.pixelToChunk(this.pixelY);
 	}
 	
-	static pixelToTile(pixelCoord:number){
+	static pixelToTile(this:void, pixelCoord:number){
 		return Math.floor(pixelCoord / consts.TILE_SIZE);
 	}
-	static pixelToTileExact(pixelCoord:number){
+	static pixelToTileExact(this:void, pixelCoord:number){
 		return pixelCoord / consts.TILE_SIZE;
 	}
-	static tileToPixel(tileCoord:number, centered:boolean){
-		return (tileCoord + <any>centered * 0.5) * consts.TILE_SIZE;
+	static tileToPixel(this:void, tileCoord:number, centered:boolean){
+		return (tileCoord + (centered as any as number) * 0.5) * consts.TILE_SIZE;
 	}
-	static chunkToTile(chunkCoord: number) {
+	static chunkToTile(this:void, chunkCoord: number) {
 		return chunkCoord * consts.CHUNK_SIZE;
 	}
-	static tileToChunk(tileCoord:number){
+	static tileToChunk(this:void, tileCoord:number){
 		return Math.floor(tileCoord / consts.CHUNK_SIZE);
 	}
-	static tileToChunkExact(tileCoord:number){
+	static tileToChunkExact(this:void, tileCoord:number){
 		return Math.floor(tileCoord / consts.CHUNK_SIZE);
 	}
-	static pixelToChunk(pixelCoord:number){
+	static pixelToChunk(this:void, pixelCoord:number){
 		return Math.floor(pixelCoord / consts.chunkSizeInPixels);
 	}
-	static chunkToPixel(chunkCoord:number){
+	static chunkToPixel(this:void, chunkCoord:number){
 		return chunkCoord * consts.chunkSizeInPixels;
 	}
 	static tileOffsetInPixels(pixelCoord:number):number {

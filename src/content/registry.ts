@@ -10,24 +10,22 @@ You should have received a copy of the GNU General Public License along with Unt
 import { tech, TechTreeNode } from "../objectives.js";
 import type { ItemID, FluidID } from "../types.js";
 import { crash } from "../util/funcs.js";
+import { Templatable } from "../util/types.js";
 
 
 export class Content<K extends string> {
 	nid:number;
+	static _id = 0;
 	constructor(public id:K){
-		//unsafe typescript goes brrrrr
-		//change _id on whatever subclass this is
-		(<any>this.constructor)._id ??= 0;
-		this.nid = (<any>this.constructor)._id++;
+		this.nid = (this.constructor as typeof Content)._id++;
 	}
 }
 
 /** Content registry where the content is a class. */
-export class ContentRegistryC<K, T extends new (...args:any[]) => {}> implements Iterable<T> {
+export class ContentRegistryC<K extends Templatable, T extends new (...args:any[]) => {}> implements Iterable<T> {
 	private contentMap = new Map<K, T>();
-	constructor(){}
 	register<B extends T>(id:K, ctor:B, props:Partial<Exclude<B, "prototype">> = {}) {
-		let clazz = Object.assign(class extends ctor {}, {
+		const clazz = Object.assign(class extends ctor {}, {
 			...props, id
 		});
 		if("node" in clazz)
@@ -68,6 +66,7 @@ export class ContentRegistryI<K extends string, T extends Content<string>> {
 	}
 }
 
+// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
 export interface UnlockableContent {
 	node:TechTreeNode | null;
 }

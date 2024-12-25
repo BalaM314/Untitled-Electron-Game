@@ -26,11 +26,11 @@ export class Keybind {
 		this.modifiers = modifiers.map(key => key.toLowerCase());
 	}
 	isHeld(){
-		let modifiersHeld = this.modifiers
+		const modifiersHeld = this.modifiers
 			.filter(key => !key.startsWith("!"))
 			.filter(key => !Input.keysHeld.has(key))
 			.length == 0;
-		let disallowedModifiersNotHeld = this.modifiers
+		const disallowedModifiersNotHeld = this.modifiers
 			.filter(key => key.startsWith("!"))
 			.map(key => key.slice(1))
 			.filter(key => Input.keysHeld.has(key))
@@ -40,11 +40,11 @@ export class Keybind {
 		return Input.keysHeld.has(this.mainKey) && modifiersHeld && disallowedModifiersNotHeld;
 	}
 	check(e:KeyboardEvent){
-		let modifiersHeld = this.modifiers
+		const modifiersHeld = this.modifiers
 			.filter(key => !key.startsWith("!"))
 			.filter(key => !Input.keysHeld.has(key))
 			.length == 0;
-		let disallowedModifiersNotHeld = this.modifiers
+		const disallowedModifiersNotHeld = this.modifiers
 			.filter(key => key.startsWith("!"))
 			.map(key => key.slice(1))
 			.filter(key => Input.keysHeld.has(key))
@@ -131,7 +131,7 @@ export const keybinds = {
 		})
 	}
 } satisfies Keybinds;
-
+export type PartialMouseEvent = Pick<MouseEvent, "x" | "y" | "button" | "preventDefault"> & Partial<Pick<MouseEvent, "ctrlKey" | "shiftKey" | "altKey" | "target">>;
 export const Input = {
 	mouseX: 0,
 	mouseY: 0,
@@ -147,7 +147,7 @@ export const Input = {
 	},
 	buildingPlaced: false,
 	lastBuilding: null as Building | null,
-	latestMouseEvent: null as MouseEvent | null,
+	latestMouseEvent: null as PartialMouseEvent | null,
 	keysHeld: new Set<string>(),
 	lastKeysPressed: new Array<string>(11).fill(""),
 	shift: () => Input.keysHeld.has("shift"),

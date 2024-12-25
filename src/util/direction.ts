@@ -7,7 +7,9 @@ You should have received a copy of the GNU General Public License along with Unt
 */
 /* Contains the Direction enum class. */
 
+import { forceType } from "./funcs.js";
 import type { PosT } from "./geom.js";
+import { PartialKey } from "./types.js";
 
 
 export type Direction = {
@@ -31,10 +33,15 @@ export const Direction: {
 	number: number;
 	[Symbol.iterator](): IterableIterator<Direction>;
 } = (() => {
-	let right:any = { num: 0, string: "right", vec: [1, 0], horizontal: true, vertical: false};
-	let down:any = { num: 1, string: "down", vec: [0, 1], horizontal: false, vertical: true};
-	let left:any = { num: 2, string: "left", vec: [-1, 0], horizontal: true, vertical: false};
-	let up:any = { num: 3, string: "up", vec: [0, -1], horizontal: false, vertical: true};
+	type PartialDirection = PartialKey<Omit<Direction, "cw" | "ccw" | "opposite">, "bitmask"> & {
+		cw?: PartialDirection;
+		ccw?: PartialDirection;
+		opposite?: PartialDirection;
+	};
+	const right:PartialDirection = { num: 0, string: "right", vec: [1, 0], horizontal: true, vertical: false};
+	const down:PartialDirection = { num: 1, string: "down", vec: [0, 1], horizontal: false, vertical: true};
+	const left:PartialDirection = { num: 2, string: "left", vec: [-1, 0], horizontal: true, vertical: false};
+	const up:PartialDirection = { num: 3, string: "up", vec: [0, -1], horizontal: false, vertical: true};
 	right.bitmask = 1 << right.num;
 	down.bitmask = 1 << down.num;
 	left.bitmask = 1 << left.num;
@@ -51,8 +58,15 @@ export const Direction: {
 	left.ccw = down;
 	up.ccw = left;
 	right.ccw = up;
+	forceType<Direction>(right);
+	forceType<Direction>(down);
+	forceType<Direction>(left);
+	forceType<Direction>(up);
 	return {
-		right, down, left, up,
+		right,
+		down,
+		left,
+		up,
 		*[Symbol.iterator](){
 			yield right;
 			yield down;

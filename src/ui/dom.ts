@@ -15,7 +15,7 @@ import { getElement, safeToSave, saveToLocalStorage, selectID } from "../util/fu
 import { Game } from "../vars.js";
 import { Camera } from "./graphics.js";
 import { GUI } from "./gui.js";
-import { Input, keybinds } from "./input.js";
+import { Input, keybinds, PartialMouseEvent } from "./input.js";
 
 
 export const CTX = (d => Object.fromEntries(Object.entries(d).map(([k, id]) =>
@@ -65,71 +65,81 @@ export const DOM = {
 /**Registers event handlers, called once on page load. */
 export async function registerEventHandlers(){
 	const { scenes } = await import("./scenes.js");
-
 	const { clickcapture } = DOM;
 
-	//Update mouse position
-	window.onmousemove = (e:MouseEvent) => {
+	const onmousemove = (e: PartialMouseEvent) => {
+		//Update mouse position
 		Input.mouseX = e.x;
 		Input.mouseY = e.y;
 		Input.latestMouseEvent = e;
-	}
+	};
+	
 
-	clickcapture.onmousedown = (e:MouseEvent) => {
+	const onmousedown = (e: PartialMouseEvent) => {
 		Input.mouseX = e.x;
 		Input.mouseY = e.y;
 		Input.latestMouseEvent = e;
 		//The default action is to bring up a context menu or the scroller thing, not desirable
-		if(e.button) e.preventDefault();
-		if(e.button === 0){
+		if (e.button) e.preventDefault();
+		if (e.button === 0) {
 			Input.mouseDown = true;
 			Input.buildingPlaced = false;
-		} else if(e.button === 2){
+		} else if (e.button === 2) {
 			Input.rightMouseDown = true;
 		}
-		if(scenes[Game.sceneName] && Input.active){
+		if (scenes[Game.sceneName] && Input.active) {
 			scenes[Game.sceneName]?.onmousedown?.(e);
 		}
-	}
-	window.onmouseup = (e:MouseEvent) => {
+	};
+	const onmouseup = (e: PartialMouseEvent) => {
 		Input.mouseX = e.x;
 		Input.mouseY = e.y;
 		Input.latestMouseEvent = e;
-		if(e.button == 0){
+		if (e.button == 0) {
 			Input.mouseDown = false;
-		} else if(e.button == 2){
+		} else if (e.button == 2) {
 			Input.rightMouseDown = false;
 		}
 		Input.buildingPlaced = false;
-	}
+	};
+	window.onmousemove = onmousemove;
+	clickcapture.onmousedown = onmousedown;
+	window.onmouseup = onmouseup;
 
 	//For touch screens
-	clickcapture.addEventListener("touchstart", (e:any) => {
-		e.x = e.touches[0].clientX;
-		e.y = e.touches[0].clientY;
-		e.button = 0;
-		clickcapture.onmousedown?.(e);
+	clickcapture.addEventListener("touchstart", (e:TouchEvent) => {
+		onmousedown({
+			x: e.touches[0]!.clientX,
+			y: e.touches[0]!.clientY,
+			button: 0,
+			preventDefault(){ /* empty */ },
+		});
 	});
-	clickcapture.addEventListener("touchend", (e:any) => {
+	clickcapture.addEventListener("touchend", (e:TouchEvent) => {
 		//When the screen is tapped, touchend is fired immediately after touchstart, leaving no time for buildings to be placed.
 		//Delays by 250ms
-		e.x = e.changedTouches[0].clientX;
-		e.y = e.changedTouches[0].clientY;
-		e.button = 0;
 		setTimeout(() => {
-			clickcapture.onmouseup?.(e);
+			onmouseup({
+				x: e.changedTouches[0]!.clientX,
+				y: e.changedTouches[0]!.clientY,
+				button: 0,
+				preventDefault(){ /* empty */ },
+			});
 		}, 250);
 	});
-	clickcapture.addEventListener("touchmove", (e:any) => {
-		e.x = e.touches[0].clientX;
-		e.y = e.touches[0].clientY;
-		window.onmousemove?.(e);
+	clickcapture.addEventListener("touchmove", (e:TouchEvent) => {
+		onmousemove({
+			x: e.touches[0]!.clientX,
+			y: e.touches[0]!.clientY,
+			button: 0,
+			preventDefault(){ /* empty */ },
+		});
 	});
 
 	clickcapture.oncontextmenu = (e) => {
 		//Prevent the menu from showing
 		e.preventDefault();
-	}
+	};
 
 	//Do stuff when a key is pressed(not held).
 	window.onkeydown = (e:KeyboardEvent) => {
@@ -150,8 +160,8 @@ export async function registerEventHandlers(){
 
 		//Handle keybinds
 		if(Input.active){
-			for(let section of Object.values(keybinds)){
-				for(let keybind of Object.values(section)){
+			for(const section of Object.values(keybinds)){
+				for(const keybind of Object.values(section)){
 					keybind.check(e);
 				}
 			}
@@ -163,39 +173,40 @@ export async function registerEventHandlers(){
 
 		//Otherwise prevent default
 
-	}
+	};
 	window.onkeyup = (e:KeyboardEvent) => {
 		//Remove key from list of held keys
 		Input.keysHeld.delete(e.key.toLowerCase());
-	}
+	};
 	
 
 	//When file uploaded
 	DOM.uploadButton.onchange = (event:Event) => {
 		//Load a save file
-		let file = (event.target as HTMLInputElement)?.files?.[0];
+		const file = (event.target as HTMLInputElement)?.files?.[0];
 		if(!file) return;
-		let reader = new FileReader();
+		const reader = new FileReader();
 		reader.readAsText(file);
 		reader.onload = e => {
-			let content = e.target?.result?.toString();
+			// eslint-disable-next-line @typescript-eslint/no-base-to-string
+			const content = e.target?.result?.toString();
 			if(content == null) return;
 			SaveIO.import(content);
-		}
-	}
+		};
+	};
 
 	window.onwheel = (e:WheelEvent) => {
 		if(!Game.paused && Input.active){
 			Camera.zoom(Math.pow(1.001, -e.deltaY));
 		}
-	}
+	};
 
 	//When the window loses focus, clear the list of held keys and set mousePressed to false.
 	window.onblur = () => {
 		Input.keysHeld.clear();
 		Input.mouseDown = false;
 		//call pause here once I add it
-	}
+	};
 
 	window.onbeforeunload = (e:BeforeUnloadEvent) => {
 		//Page is about to close
@@ -219,7 +230,7 @@ export async function registerEventHandlers(){
 				}
 			}, 1);
 		}
-	}
+	};
 	for(const block of Buildings){
 		if(block.hidden) continue;
 		const img = document.createElement("img");

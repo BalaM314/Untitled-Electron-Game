@@ -26,7 +26,7 @@ import { Level, Item } from "./world.js";
 
 @Abstract
 export class BuildingWithRecipe extends Building {
-	timer: number = -1;
+	timer = -1;
 	runEffectTimer = -1;
 	recipe: Recipe | null = null;
 	running = false;
@@ -66,7 +66,7 @@ export class BuildingWithRecipe extends Building {
 				//repeat recipeMaxInputs times
 				if (!this.items[i] && !this.items.map(item => item[0]).includes(item.id)) {
 					//if there is nothing in this item slot and the new item's id is not in the list of current items' ids
-					for (let recipe of this.block.recipeType.recipes) {
+					for (const recipe of this.block.recipeType.recipes) {
 						//for each recipe this building can do
 						if (!recipe.inputs) continue; //If the recipe has no inputs, it cant be the right one
 						if (recipe.fluidInputs && (this.block.fluidCapacity == 0 || !this.block.acceptsFluids)) continue; //recipe requires fluids but this crafter does not support fluids
@@ -200,23 +200,21 @@ export class BuildingWithRecipe extends Building {
 		if (recipe) build.setRecipe(recipe);
 		return build;
 	}
-	static makeDrawer<T extends BuildingWithRecipe>(drawer: (build: T, e: AnimationData, currentFrame: CurrentFrame) => void, ...drawers: BlockDrawer<T>[]) {
+	static makeDrawer<T extends BuildingWithRecipe>(drawer: (build: T, e: AnimationData, currentFrame: CurrentFrame) => void, ...drawers: Array<BlockDrawer<T>>) {
 		return ((build: T, currentFrame: CurrentFrame) => {
 			if (build.recipe) {
 				Gfx.layer("buildings");
 				drawer(build, getAnimationData(1 - (build.timer) / build.recipe.duration), currentFrame);
 			}
 			drawers.forEach(d => d(build, currentFrame));
-			BuildingWithRecipe.makeDrawer((build, e, currentFrame) => { build.recipe; });
 		}) as BlockDrawer<Building>;
 		//This is an unsafe cast
 		//The issue is that static properties can't reference this in their type declaration, so I can't tell typescript that a (T extends BuildingWithRecipe)'s drawer won't get called with something other than a T (so it only accepts BuildingDrawer<Building>) without adding an extra line of boilerplate to each class.
 	}
-	static combineDrawers<T extends BuildingWithRecipe>(...drawers: BlockDrawer<T>[]) {
+	static combineDrawers<T extends BuildingWithRecipe>(...drawers: Array<BlockDrawer<T>>) {
 		return ((build: T, currentFrame: CurrentFrame) => {
 			Gfx.layer("buildings");
 			drawers.forEach(d => d(build, currentFrame));
-			BuildingWithRecipe.makeDrawer((build, e, currentFrame) => { build.recipe; });
 		}) as BlockDrawer<Building>;
 		//This is an unsafe cast
 		//The issue is that static properties can't reference this in their type declaration, so I can't tell typescript that a (T extends BuildingWithRecipe)'s drawer won't get called with something other than a T (so it only accepts BuildingDrawer<Building>) without adding an extra line of boilerplate to each class.
@@ -401,10 +399,10 @@ export class Conveyor extends Building {
 			//If holding shift, just return a straight conveyor.
 		}
 
-		let hasLeft = level.buildingAtTile(tileX - 1, tileY)?.outputsItemToSide(Direction.right) ?? false;
-		let hasUp = level.buildingAtTile(tileX, tileY - 1)?.outputsItemToSide(Direction.down) ?? false;
-		let hasRight = level.buildingAtTile(tileX + 1, tileY)?.outputsItemToSide(Direction.left) ?? false;
-		let hasDown = level.buildingAtTile(tileX, tileY + 1)?.outputsItemToSide(Direction.up) ?? false;
+		const hasLeft = level.buildingAtTile(tileX - 1, tileY)?.outputsItemToSide(Direction.right) ?? false;
+		const hasUp = level.buildingAtTile(tileX, tileY - 1)?.outputsItemToSide(Direction.down) ?? false;
+		const hasRight = level.buildingAtTile(tileX + 1, tileY)?.outputsItemToSide(Direction.left) ?? false;
+		const hasDown = level.buildingAtTile(tileX, tileY + 1)?.outputsItemToSide(Direction.up) ?? false;
 
 		switch (meta) {
 			case 0:
@@ -777,7 +775,7 @@ export class Extractor extends OverlayBuild {
 }
 export class StorageBuilding extends Building {
 	inventory: Item[] = [];
-	static capacity: number = 64;
+	static capacity = 64;
 	static acceptsItems = true;
 	block!: typeof StorageBuilding;
 	hasItem() {
@@ -803,9 +801,9 @@ export class StorageBuilding extends Building {
 		};
 	}
 	export(): BuildingData {
-		let inv: ItemData[] = [];
+		const inv: ItemData[] = [];
 		if (this.inventory) {
-			for (let item of this.inventory) {
+			for (const item of this.inventory) {
 				const data = item.export();
 				if (data) inv.push(data);
 			}
@@ -890,7 +888,7 @@ export class MultiBlockController extends BuildingWithRecipe {
 	secondaries: MultiBlockSecondary[] = [];
 	static multiblockSize: PosT = [2, 2];
 	static secondary: typeof MultiBlockSecondary;
-	static outputPositions: [x: number, y: number, direction: Direction][] = [];
+	static outputPositions: Array<[x: number, y: number, direction: Direction]> = [];
 	static {
 		for (let y = 0; y < this.multiblockSize[0]; y++) {
 			this.outputPositions.push([this.multiblockSize[0] - 1, y, Direction.right]);
@@ -910,7 +908,7 @@ export class MultiBlockController extends BuildingWithRecipe {
 	}
 	/** Does not return 0,0 */
 	static getOffsetsForSize(width: number, height: number) {
-		let offsets: PosT[] = [];
+		const offsets: PosT[] = [];
 		for (let i = 0; i < width; i++) {
 			for (let j = 0; j < height; j++) {
 				if (i == 0 && j == 0) continue;
@@ -938,10 +936,10 @@ export class MultiBlockController extends BuildingWithRecipe {
 	}
 	/**Attempts to reconnects to secondaries, returning if the attempt succeeded. */
 	resetSecondaries(): boolean {
-		let possibleSecondaries = MultiBlockController.getOffsetsForSize(...this.block.multiblockSize)
+		const possibleSecondaries = MultiBlockController.getOffsetsForSize(...this.block.multiblockSize)
 			.map(([xOffset, yOffset]) => this.level.buildingAtTile(this.pos.tileX + xOffset, this.pos.tileY + yOffset)
 			);
-		for (let possibleSecondary of possibleSecondaries) {
+		for (const possibleSecondary of possibleSecondaries) {
 			if (possibleSecondary instanceof MultiBlockSecondary &&
 				(possibleSecondary.controller == this || possibleSecondary.controller == undefined)) {
 				possibleSecondary.controller = this;
@@ -959,7 +957,7 @@ export class MultiBlockController extends BuildingWithRecipe {
 		if (super.spawnItem(id)) {
 			return true;
 		}
-		for (let secondary of this.secondaries) {
+		for (const secondary of this.secondaries) {
 			if (secondary.spawnItem(id)) {
 				return true;
 			}
@@ -977,7 +975,7 @@ export class MultiBlockController extends BuildingWithRecipe {
 	dumpFluid() {
 		this.fluidThroughput = 0;
 		const fluid = this.fluidOut ?? this.fluid;
-		if (!fluid || fluid[0] == null || fluid[1] == 0) return;
+		if (fluid?.[0] == null || fluid[1] == 0) return;
 		const numDirections = 2 * (this.block.multiblockSize[0] + this.block.multiblockSize[1]);
 		for (let i = 0; i < numDirections; i++) {
 			this.dumpFluidAt(fluid, ...this.block.outputPositions[this.cFluidOut]!);
@@ -1101,7 +1099,7 @@ export class Pump extends Building {
 }
 export class PowerSource extends Building {
 	block!: typeof PowerSource;
-	static production: number = 100;
+	static production = 100;
 	static producesPower = true;
 	getMaxPowerProduction(): number {
 		return this.block.production;
@@ -1122,7 +1120,7 @@ export class ArcTower extends Building {
 	static consumesPower = true;
 	static maxArcAAccel = 0.05;
 	static maxArcAVel = 0.15;
-	static consumption: number = 100;
+	static consumption = 100;
 	static primaryRadius = 4;
 	static secondaryRadius = 1.5;
 	static primaryRadiusRange = [-1, 1] as const;

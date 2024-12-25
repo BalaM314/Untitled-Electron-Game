@@ -107,26 +107,24 @@ export type ItemID =
 ;
 export type FluidID = "base_water" | "base_steam";
 
-export interface Recipe {
+export type Recipe = {
 	inputs?: NonEmptyArray<ItemStack>;
-	fluidInputs?: [fluid:FluidID, totalAmount:number][];
+	fluidInputs?: Array<[fluid:FluidID, totalAmount:number]>;
 	outputs?: NonEmptyArray<ItemStack>;
-	fluidOutputs?: [fluid:FluidID, totalAmount:number][];
+	fluidOutputs?: Array<[fluid:FluidID, totalAmount:number]>;
 	duration: number;
 	tile?: TileID;
 	powerConsumption?: number;
 	powerProduction?: number;
 }
 
-export interface Recipes {
-	[index: `${string}_${string}`]: {
-		recipes: Recipe[];
-	};
-}
+export type Recipes = Record<`${string}_${string}`, {
+	recipes: Recipe[];
+}>
 
 export type Keybinds = Record<string, Record<string, Keybind>>;
 
-export interface SaveData {
+export type SaveData = {
 	UntitledElectronGame: {
 		metadata: {
 			validationCode: "esrdtfgvczdsret56u7yhgvfcesrythgvfd!";
@@ -140,7 +138,7 @@ export interface SaveData {
 	}
 }
 
-export interface LevelData {
+export type LevelData = {
 	chunks: Record<string, ChunkData>;
 	resources: ItemStack[];
 	seed: number;
@@ -148,13 +146,13 @@ export interface LevelData {
 	version: string;
 }
 
-export interface ChunkData {
-	layers: [(BuildingData | null)[][], (BuildingData | null)[][]];
+export type ChunkData = {
+	layers: [Array<Array<BuildingData | null>>, Array<Array<BuildingData | null>>];
 	version: string;
 }
 
 
-export interface LegacyBuildingData {
+export type LegacyBuildingData = {
 	x: number;
 	y: number;
 	id: LegacyBuildingID;
@@ -162,7 +160,7 @@ export interface LegacyBuildingData {
 	inv: ItemData[];
 }
 
-export interface BuildingData {
+export type BuildingData = {
 	x: number;
 	y: number;
 	id: RawBuildingID;
@@ -173,14 +171,14 @@ export interface BuildingData {
 	inv?: ItemData[];
 }
 
-export interface ItemData {
+export type ItemData = {
 	x: number;
 	y: number;
 	id: ItemID;
 }
 export type FluidData = [fluidID:FluidID | null, amount:number];
 
-export interface CurrentFrame {
+export type CurrentFrame = {
 	tooltip: boolean;
 	debug: boolean;
 	cps: number;//Chunks per frame

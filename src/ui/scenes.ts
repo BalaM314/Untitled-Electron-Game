@@ -18,23 +18,21 @@ import { Item } from "../world/world.js";
 import { CTX } from "./dom.js";
 import { Camera, Gfx, ParticleEffect } from "./graphics.js";
 import { HUD } from "./gui.js";
-import { Input, keybinds } from "./input.js";
+import { Input, keybinds, PartialMouseEvent } from "./input.js";
 
 
 //todo fix this VV probably repeating myself a lot
 /**Holds all the function that do things in each game state. */
-export const scenes: {
-	[P in typeof Game.sceneName]: {
-		buttons: Button[];
-		update: (currentFrame: CurrentFrame) => void;
-		display: (currentFrame: CurrentFrame) => void;
-		onmousedown?: (e: MouseEvent) => void;
-		onmouseheld?: (currentFrame: CurrentFrame) => void;
-		onrightmouseheld?: (currentFrame: CurrentFrame) => void;
-		onkeydown?: (e: KeyboardEvent) => void;
-		onkeyheld?: (currentFrame: CurrentFrame) => void;
-	};
-} = {
+export const scenes: Record<typeof Game.sceneName, {
+	buttons: Button[];
+	update: (currentFrame: CurrentFrame) => void;
+	display: (currentFrame: CurrentFrame) => void;
+	onmousedown?: (e: PartialMouseEvent) => void;
+	onmouseheld?: (currentFrame: CurrentFrame) => void;
+	onrightmouseheld?: (currentFrame: CurrentFrame) => void;
+	onkeydown?: (e: KeyboardEvent) => void;
+	onkeyheld?: (currentFrame: CurrentFrame) => void;
+}> = {
 	loading: {
 		buttons: [],
 		update() {
@@ -87,8 +85,10 @@ export const scenes: {
 				onClick: () => { window.open("https://github.com/BalaM314/Untitled-Electron-Game/"); }
 			}),
 		],
-		update() { },
-		display(currentFrame: CurrentFrame) {
+		update(){
+			//empty
+		},
+		display(){
 			Gfx.layer("overlay");
 			Gfx.clear("#0033CC");
 
@@ -105,7 +105,7 @@ export const scenes: {
 
 			scenes.title.buttons.forEach(button => button.display(Gfx.ctx));
 		},
-		onmousedown(e: MouseEvent) {
+		onmousedown(e){
 			scenes.title.buttons.forEach(button => button.handleMouseClick(e));
 			if (Intersector.pointInRect(Input.mouse, [innerWidth * 0.4, innerHeight * 0.3, innerWidth * 0.2, innerHeight * 0.1]))
 				Game.splash.clickBehavior();
@@ -184,7 +184,9 @@ export const scenes: {
 				onClick: () => { Game.sceneName = "title"; localStorage.setItem("settings", JSON.stringify(settings)); }
 			}),
 		],
-		update() { },
+		update(){
+			//empty
+		},
 		display(currentFrame: CurrentFrame) {
 			Gfx.layer("overlay");
 			Gfx.clear("#0033CC");
@@ -197,7 +199,7 @@ export const scenes: {
 
 			scenes.settings.buttons.forEach(button => button.display(Gfx.ctx));
 		},
-		onmousedown(e: MouseEvent) {
+		onmousedown(e) {
 			scenes.settings.buttons.forEach(button => button.handleMouseClick(e));
 		}
 	},
@@ -225,8 +227,10 @@ export const scenes: {
 				onClick: () => { Game.sceneName = "settings"; }
 			}),
 		],
-		update() { },
-		display(currentFrame: CurrentFrame) {
+		update(){
+			//empty
+		},
+		display(){
 			Gfx.layer("overlay");
 			Gfx.clear("#0033CC");
 
@@ -238,7 +242,7 @@ export const scenes: {
 
 			this.buttons.forEach(button => button.display(Gfx.ctx));
 		},
-		onmousedown(e: MouseEvent) {
+		onmousedown(e) {
 			this.buttons.forEach(button => button.handleMouseClick(e));
 		}
 	},
@@ -290,7 +294,7 @@ export const scenes: {
 			HUD.display(currentFrame);
 
 		},
-		onmousedown(e: MouseEvent) {
+		onmousedown(e) {
 			if (Game.paused) return;
 			if (e.ctrlKey && e.button == 0) {
 				Game.level1.buildingAtPixel(
@@ -344,7 +348,7 @@ export const scenes: {
 			if (e.key == "Enter" && Input.lastKeysPressed.join(", ") ==
 				["ArrowUp", "ArrowUp", "ArrowDown", "ArrowDown", "ArrowLeft", "ArrowRight", "ArrowLeft", "ArrowRight", "b", "a", "Enter"].join(", ")) {
 				window.open("https://www.youtube.com/watch?v=dQw4w9WgXcQ"); //this is fine
-				for (let [key, value] of Object.entries(Game.level1.resources) as [ItemID, number][]) {
+				for (const [key] of Object.entries(Game.level1.resources)) {
 					Game.level1.resources[key] = 999999;
 				}
 				tech.nodes.forEach(n => n.unlocked = true);

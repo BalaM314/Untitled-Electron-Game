@@ -33,7 +33,7 @@ export function gcd(x, y) {
     x = Math.abs(x);
     y = Math.abs(y);
     while (y) {
-        let t = y;
+        const t = y;
         y = x % y;
         x = t;
     }
@@ -81,7 +81,7 @@ export function assert(x, message) {
         crash(message ? `Assertion failed: ${message}` : message);
 }
 export function download(filename, text) {
-    let temp2 = document.createElement('a');
+    const temp2 = document.createElement('a');
     temp2.setAttribute('href', 'data:text/json;charset=utf-8,' + encodeURIComponent(text));
     temp2.setAttribute('download', filename);
     temp2.style.display = 'none';
@@ -97,7 +97,7 @@ export function parseError(err) {
         return err.toString();
     }
     else
-        return err;
+        return String(err);
 }
 export class Button {
     constructor(config) {
@@ -147,7 +147,7 @@ export class Button {
         _ctx.globalAlpha = 1.0;
         _ctx.font = this.font;
         _ctx.textAlign = "center";
-        let tempBaseline = _ctx.textBaseline;
+        const tempBaseline = _ctx.textBaseline;
         _ctx.textBaseline = "middle";
         _ctx.fillStyle = "#FFFFFF";
         if (typeof this.label == "string") {
@@ -180,7 +180,7 @@ export function* pseudoRandom(seed) {
     let value = seed + 11111111111111;
     while (true) {
         value = value * 16807 % 16777216;
-        let num = value / 16777216;
+        const num = value / 16777216;
         yield {
             value: num,
             chance(amount) {
@@ -222,11 +222,7 @@ export function tooltip(title, properties) {
     return `${title}<div style="font-size: 70%;">${props.join("<br/>")}</div>`;
 }
 export function bindFunctionProperties(obj) {
-    Object.entries(obj).map(([k, v]) => {
-        if (typeof v == "function") {
-            obj[k] = v.bind(obj);
-        }
-    });
+    return Object.fromEntries(Object.entries(obj).map(([k, v]) => [k, typeof v == "function" ? v.bind(obj) : v]));
 }
 export function firstUsePopup(key, message, callback, runCallbackAfterMessage = false) {
     const lsKey = `untitled-electron-game-${key}`;

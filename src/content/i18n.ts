@@ -12,11 +12,11 @@ import { crash } from "../util/funcs.js";
 
 class I18NBundle {
 	mapping:Map<string, string>;
-	constructor(text:[key:string, value:string][]){
+	constructor(text:Array<[key:string, value:string]>){
 		this.mapping = new Map(text);
 	}
 	static read(text:string, prefix?:string):I18NBundle {
-		const entries:[string, string][] = [];
+		const entries:Array<[string, string]> = [];
 		let _type = null;
 		for(const l of text.split(/\r?\n/g).map(l => l.trim())){
 			if(l.match(/^\[\w+\]$/)){
@@ -28,14 +28,14 @@ class I18NBundle {
 				const [key, value] = line as [string, string];
 				const parts = key.split(".");
 				if(parts.length == 3 && parts.every(p => p.length > 0)){
-					const [type, name, prop] = parts;
+					const [type, name, prop] = parts as [string, string, string];
 					if(prefix) entries.push([`${type}.${prefix}${name}.${prop}`, value]);
 					else entries.push([key, value]);
 				} else if(parts.length == 2 && parts.every(p => p.length > 0) && _type != null){
-					const [name, prop] = parts;
+					const [name, prop] = parts as [string, string];
 					if(prefix) entries.push([`${_type}.${prefix}${name}.${prop}`, value]);
 					else entries.push([`${_type}.${name}.${prop}`, value]);
-				} else crash(`I18NBundle: Invalid key "${key}"`)
+				} else crash(`I18NBundle: Invalid key "${key}"`);
 			} else crash(`I18NBundle: Invalid line "${l}"`);
 		}
 		return new I18NBundle(entries);

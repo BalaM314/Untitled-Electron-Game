@@ -10,16 +10,16 @@ import { crash } from "../util/funcs.js";
 export class Content {
     constructor(id) {
         this.id = id;
-        this.constructor._id ??= 0;
         this.nid = this.constructor._id++;
     }
 }
+Content._id = 0;
 export class ContentRegistryC {
     constructor() {
         this.contentMap = new Map();
     }
     register(id, ctor, props = {}) {
-        let clazz = Object.assign(class extends ctor {
+        const clazz = Object.assign(class extends ctor {
         }, {
             ...props, id
         });

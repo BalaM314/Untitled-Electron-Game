@@ -47,10 +47,11 @@ export const Log = (() => {
 	function processObject(input:Record<string, string>):string {
 		return Object.entries(input).map(([k, v]) => `${k}: ${v};`).join(" ");
 	}
-	function style(input:string | readonly string[] | Record<string, string>, ...rest:Record<string, string>[]):ColorTagged {
+	function style(input:string | readonly string[] | Record<string, string>, ...rest:Array<Record<string, string>>):ColorTagged {
 		return Object.assign(
 			new String(
 				Array.isArray(input) ? input[0] :
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 				typeof input === "object" ? processObject(Object.assign({}, input, ...rest)) :
 				input
 			),
@@ -65,6 +66,7 @@ export const Log = (() => {
 			...varChunks.filter(isColorTagged)
 		);
 	} satisfies TagFunction<string | number | ColorTagged, void>;
+	// eslint-disable-next-line @typescript-eslint/no-wrapper-object-types
 	type ColorTagged = String & {
 		[ColorTag]: true;
 	};
@@ -99,10 +101,10 @@ export const Log = (() => {
 			};
 			const fontStyleLarge = {
 				"font-size": "200%",
-			}
+			};
 			const fontStyleSmall = {
 				"font-size": "100%",
-			}
+			};
 			const fontStyleSpace = {
 				"font-family": "monospace",
 				"color": "#0000",
@@ -122,7 +124,7 @@ export const Log = (() => {
 ${style(fontStyleSmall, fontStyleSpace)}${" ".repeat(3 * 2)}${text.repeat(2)}${" ".repeat(3 * 2)}
 ${style(fontStyleLarge, fontStyleSpace)}${style(fontStyleLarge, fontStyle, gradient)}   ${text} ${style(fontStyleLarge, fontStyleSpace)}  
 ${style(fontStyleSmall, fontStyle, subtitleLine)}${" ".repeat((6 + text.length) * 2 - subtitle.length - 2)}${style(fontStyleSmall, fontStyle, subtitleStyle)}${subtitle}${style(fontStyleSmall, fontStyle, subtitleLine)}${" ".repeat(2)}
-${style(fontStyleSmall, fontStyleSpace)}${" ".repeat(3 * 2)}${text.repeat(2)}${" ".repeat(3 * 2)}`
+${style(fontStyleSmall, fontStyleSpace)}${" ".repeat(3 * 2)}${text.repeat(2)}${" ".repeat(3 * 2)}`;
 		},
 	};
 })();

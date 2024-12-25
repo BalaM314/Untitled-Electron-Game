@@ -36,8 +36,8 @@ export function returnToTitle(){
 /**The main loop! Called once per frame. */
 function main_loop(){
 	try {
-		let startFrameTime = Date.now();
-		let currentFrame:CurrentFrame = {
+		const startFrameTime = Date.now();
+		const currentFrame:CurrentFrame = {
 			tooltip: true,
 			debug: settings.debug,
 			cps: 0,
@@ -51,7 +51,7 @@ function main_loop(){
 		Camera.update();
 		window.getSelection()?.empty();
 
-		let currentState = scenes[Game.sceneName] ?? crash(`Invalid game state "${Game.sceneName}"`);
+		const currentState = scenes[Game.sceneName] ?? crash(`Invalid game state "${Game.sceneName}"`);
 
 		if(Input.mouseDown){
 			currentState.onmouseheld?.(currentFrame);
@@ -65,7 +65,7 @@ function main_loop(){
 
 		currentState.update(currentFrame);
 		currentState.display(currentFrame);
-		let frameMS = Date.now() - startFrameTime;
+		const frameMS = Date.now() - startFrameTime;
 		Game.transientStats.frameTimes.add(frameMS);
 
 		GUI.updateAlertDialog();
@@ -91,9 +91,10 @@ This game is open source! https://github.com/BalaM314/Untitled-Electron-Game`;
 
 	try {
 		assert(localStorage.getItem("settings"));
-		const loadedSettings = JSON.parse(localStorage.getItem("settings")!) as any;
-		for(const [k, v] of Object.entries(settings) as [keyof typeof settings, (typeof settings)[keyof typeof settings]][]){
-			if(loadedSettings[k] && typeof loadedSettings[k] == typeof settings[k]) settings[k] = loadedSettings[k];
+		const loadedSettings = JSON.parse(localStorage.getItem("settings")!);
+		for(const [k, v] of Object.entries(settings)){
+			if(k in loadedSettings && typeof loadedSettings[k as keyof typeof loadedSettings] == typeof settings[k])
+				settings[k] = loadedSettings[k as keyof typeof loadedSettings];
 		}
 	} catch(err){
 		Log.caution("Invalid persistent settings!\nIf this is your first time visiting this site, nothing to worry about.");
@@ -134,4 +135,4 @@ This game is open source! https://github.com/BalaM314/Untitled-Electron-Game`;
 	main_loop();
 }
 
-Promise.resolve().then(() => init());
+queueMicrotask(() => void init());

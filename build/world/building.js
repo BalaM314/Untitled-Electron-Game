@@ -111,7 +111,8 @@ let Building = (() => {
                 this.level.writeBuilding(this.pos.tileX, this.pos.tileY, null);
             this.level.addResources(this.block.buildCost);
         }
-        preUpdate(currentFrame) { }
+        preUpdate(currentFrame) {
+        }
         update(currentFrame) {
             this.item?.update(currentFrame);
             if (this.block.outputsFluids)
@@ -162,7 +163,7 @@ let Building = (() => {
         }
         removeItem() {
             if (this.item) {
-                let temp = this.item;
+                const temp = this.item;
                 this.item = null;
                 return temp;
             }
@@ -225,7 +226,7 @@ let Building = (() => {
         dumpFluid() {
             this.fluidThroughput = 0;
             const fluid = this.fluidOut ?? this.fluid;
-            if (!fluid || fluid[0] == null || fluid[1] == 0)
+            if (fluid?.[0] == null || fluid[1] == 0)
                 return;
             for (let i = 0; i < Direction.number; i++) {
                 if (++this.cFluidOut > 3)

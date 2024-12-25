@@ -6,6 +6,7 @@ Untitled Electron Game is distributed in the hope that it will be useful, but WI
 You should have received a copy of the GNU General Public License along with Untitled Electron Game. If not, see <https://www.gnu.org/licenses/>.
 */
 /* Contains the quad tree data structures. */
+/* eslint-disable @typescript-eslint/prefer-for-of */
 
 import { Pos, Rect, Intersector } from "./geom.js";
 
@@ -14,8 +15,8 @@ export class QuadTree<T extends {pos: Pos}> {
 	static maxItems = 64;
 	static maxDepth = 8;
 	elements: T[] = [];
-	nodes: QuadTree<T>[] | null = null;
-	constructor(public span:Rect, public depth:number = 1){}
+	nodes: Array<QuadTree<T>> | null = null;
+	constructor(public span:Rect, public depth = 1){}
 	split(){
 		//Convert to nodes
 		this.nodes = [
@@ -112,7 +113,7 @@ export class QuadTree<T extends {pos: Pos}> {
 				}
 			}
 		}
-		let tree = new QuadTree([0, 0, 300, 180]);
+		const tree = new QuadTree([0, 0, 300, 180]);
 		cancelAnimationFrame(Game.animationFrame);
 		Gfx.layer("overlay");
 		Gfx.fillColor("black");
@@ -123,14 +124,14 @@ export class QuadTree<T extends {pos: Pos}> {
 				pos: Pos.fromPixelCoords(...Input.mouse.map(a => a / displayScale))
 			});
 			display(tree);
-		}
+		};
 	}
 }
 
 /** Quad tree infinite */
 export class QuadTreeI<T extends {pos: Pos}> extends QuadTree<T> {
 	static regionSize = [3840, 3840] as const; //8x8 chunks
-	nodes: QuadTree<T>[] = []; //Note: all nodes are stored in an array, so this will cause slowness if there are a large number of nodes
+	nodes: Array<QuadTree<T>> = []; //Note: all nodes are stored in an array, so this will cause slowness if there are a large number of nodes
 	constructor(){
 		super([-Infinity, -Infinity, Infinity, Infinity]);
 	}

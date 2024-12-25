@@ -55,12 +55,12 @@ export const SaveIO = {
 		let tempLevel: Level;
 		try {
 			Log.group(`Importing save data...`, () => {
-				let data = JSON.parse(rawData) as SaveData;
+				const data = JSON.parse(rawData) as SaveData;
 				assert(data.UntitledElectronGame.metadata.validationCode === "esrdtfgvczdsret56u7yhgvfcesrythgvfd!");
 
-				let levelData = data.UntitledElectronGame.level1;
+				const levelData = data.UntitledElectronGame.level1;
 				levelData.version = data.UntitledElectronGame.metadata.version;
-				levelData.uuid = data.UntitledElectronGame.metadata.uuid ?? (<any>data.UntitledElectronGame.metadata).id;
+				levelData.uuid = data.UntitledElectronGame.metadata.uuid ?? (data.UntitledElectronGame.metadata as {id?: string;}).id;
 				assert(levelData.chunks instanceof Object);
 
 				tempLevel = Level.read(levelData);

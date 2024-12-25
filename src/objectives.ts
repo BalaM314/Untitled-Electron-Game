@@ -56,7 +56,7 @@ export class TechTreeNode {
 	imageURL(){
 		//TODO not generic
 		if(this.id.startsWith("building_"))
-			return `assets/textures/building/${this.id.split("building_")[1]}!0.png`;
+			return `assets/textures/building/${this.id.split("building_")[1]!}!0.png`;
 		else
 			return `assets/textures/misc/${this.id}.png`;
 	}
@@ -69,7 +69,7 @@ export class TechTreeNode {
 
 export class TechTree {
 	nodes:TechTreeNode[] = [];
-	nodesByID:Record<string, TechTreeNode> = {}
+	nodesByID:Record<string, TechTreeNode> = {};
 	root:TechTreeNode;
 	menuVisible = false;
 	constructor(
@@ -78,7 +78,7 @@ export class TechTree {
 	){
 		builder(this);
 		this.root = this.nodes.find(n => n.prerequisites.length == 0) ?? crash(`No root node`);
-		this.nodes.forEach(n => sort2(n.children, n => n.children.length))
+		this.nodes.forEach(n => sort2(n.children, n => n.children.length));
 	}
 	
 	node(id:string, cost:ItemStack[], prerequisites:TechTreeNode[], unlocked = false):TechTreeNode {

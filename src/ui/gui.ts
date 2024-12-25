@@ -20,7 +20,7 @@ import { Camera } from "./graphics.js";
 import { Input, keybinds } from "./input.js";
 
 
-export const HUD = {
+export const HUD = bindFunctionProperties({
 	elements: [DOM.hudtextEl, DOM.resourcesEl, DOM.objectiveEl, DOM.toolbarEl, DOM.buttonsPane],
 	hidden: true,
 	hide(){
@@ -53,7 +53,8 @@ export const HUD = {
 			const node = tech.get(hoveredID);
 			const block = Buildings.getOpt(hoveredID.split("building_")[1] as RawBuildingID | undefined);
 			this.updateTooltipPosition();
-			const message = node.missingItem() ? `<span style="color:#FAA"> Missing item: ${bundle.get(`item.${node.missingItem()}.name`)}</span>` : "Click to research!";
+			const missingItem = node.missingItem();
+			const message = missingItem ? `<span style="color:#FAA"> Missing item: ${bundle.get(`item.${missingItem}.name`)}</span>` : "Click to research!";
 			if(node.status() == "inaccessible"){
 				tooltipbox.innerHTML = "?";
 			} else if(node.status() == "locked"){
@@ -100,9 +101,9 @@ export const HUD = {
 					tooltipbox.innerHTML = tooltip("Objective", ["This box shows the current objective. It may also contain tips and useful information."]);
 					Game.transientStats.objectiveHovered = true;
 				} else if(hovered.id == "research-button" || hovered.id == "research-header-text" || hovered.id == "research-header" || hovered.id == "research-exit-button" || hovered.id == "research-menu" || hovered.className == "research-tree-inner"){
-					tooltipbox.innerHTML = tooltip("Research", ["This menu allows you to research new buildings."])
+					tooltipbox.innerHTML = tooltip("Research", ["This menu allows you to research new buildings."]);
 				} else if(hovered.id == "settings-button"){
-					tooltipbox.innerHTML = tooltip("Settings", ["This menu allows you to change the game settings."])
+					tooltipbox.innerHTML = tooltip("Settings", ["This menu allows you to change the game settings."]);
 				} else if(hovered.id == "buttons-pane"){
 					return;
 				} else {
@@ -128,7 +129,7 @@ export const HUD = {
 		const fpsLast120 = frameMSLast120 ? Math.min(consts.ups, round(1000 / frameMSLast120, 1)) : "...";
 		const fpsText = `FPS: ${fpsLast10}/${fpsLast120}`;
 	
-		const debugText = settings.debug ? `C:${currentFrame.cps} T:${currentFrame.tps} I:${currentFrame.ips} MS:${frameMSLast10}` : "";
+		const debugText = settings.debug ? `C:${currentFrame.cps} T:${currentFrame.tps} I:${currentFrame.ips} MS:${frameMSLast10 ?? "..."}` : "";
 	
 		const { grid } = Game.level1;
 		const gridSatisfaction = grid.powerRequested == 0 ? 1 : grid.maxProduction / grid.powerRequested;
@@ -178,7 +179,7 @@ export const HUD = {
 	},
 	updateToolbar(){
 		for(const block of Buildings){
-			const img = document.querySelector(`#toolbar img#toolbar_${block.id}`) as HTMLImageElement;
+			const img = document.querySelector<HTMLImageElement>(`#toolbar img#toolbar_${block.id}`)!;
 			if(!img) continue;
 			if(block.unlocked()){
 				img.classList.remove("locked");
@@ -196,9 +197,9 @@ export const HUD = {
 		this.updateVisibility();
 		this.updateObjective();
 	},
-};
-bindFunctionProperties(HUD);
-export const GUI = {
+});
+
+export const GUI = bindFunctionProperties({
 	toggleResearchMenu(){
 		if(tech.menuVisible) tech.hideMenu();
 		else tech.showMenu();
@@ -229,5 +230,4 @@ export const GUI = {
 		if(this.alerts.active) this.closeAlert();
 		else if(tech.menuVisible) tech.hideMenu();
 	},
-};
-bindFunctionProperties(GUI);
+});

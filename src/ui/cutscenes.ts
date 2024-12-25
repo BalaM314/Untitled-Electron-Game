@@ -30,9 +30,9 @@ export async function showCredits(){
 	await delay(1500 + 2500);
 
 	//scene setup
-	let boatX = 1 * consts.TILE_SIZE;
+	const boatX = 1 * consts.TILE_SIZE;
 	let boatY = 161 * consts.TILE_SIZE;
-	let cameraOffset = -5 * consts.TILE_SIZE;
+	const cameraOffset = -5 * consts.TILE_SIZE;
 	let boatVel = 0;
 	let boatAccel = 0;
 	let smokeSpeed = 15;

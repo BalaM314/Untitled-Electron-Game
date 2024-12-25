@@ -13,7 +13,7 @@ import { tech, objectives } from "../objectives.js";
 import type { SaveData, RawBuildingID, BuildingMeta, StringBuildingID, LegacyRawBuildingID, LegacyBuildingID } from "../types.js";
 import { DOM } from "../ui/dom.js";
 import type { Texture } from "../ui/graphics.js";
-import { Input, Keybind } from "../ui/input.js";
+import { Input, Keybind, PartialMouseEvent } from "../ui/input.js";
 import { Game } from "../vars.js";
 import { Intersector } from "./geom.js";
 
@@ -24,9 +24,9 @@ export function sort2<T>(array:T[], func:(item:T) => number){
 	array.sort((a, b) => func(a) - func(b));
 }
 if(!Array.prototype.at){
-	Array.prototype.at = function(index){
+	Array.prototype.at = function<T>(this:T[], index:number){
 		return this[index < 0 ? index + this.length : index];
-	}
+	};
 	Object.defineProperty(Array.prototype, "at", {
 		enumerable: false
 	});
@@ -45,7 +45,7 @@ export function gcd(x:number, y:number){
 	x = Math.abs(x);
 	y = Math.abs(y);
 	while(y) {
-		let t = y;
+		const t = y;
 		y = x % y;
 		x = t;
 	}
@@ -68,7 +68,7 @@ export function until(predicate:() => boolean, checkInterval = 100):Promise<void
 				resolve();
 			}
 		}, checkInterval);
-	})
+	});
 }
 
 export function round(amount:number, places = 0):number {
@@ -105,7 +105,7 @@ export function assert(x:unknown, message?:string){
 
 export function download(filename:string, text:string){
 	//Self explanatory.
-	let temp2 = document.createElement('a');
+	const temp2 = document.createElement('a');
 	temp2.setAttribute('href', 'data:text/json;charset=utf-8,' + encodeURIComponent(text));
 	temp2.setAttribute('download', filename);
 	temp2.style.display = 'none';
@@ -114,12 +114,12 @@ export function download(filename:string, text:string){
 	document.body.removeChild(temp2);
 }
 
-export function parseError(err:unknown){
+export function parseError(err:unknown):string {
 	if(err instanceof Error){
 		return err.message;
 	} else if(typeof err == "number" || typeof err == "string" || typeof err == "boolean"){
 		return err.toString();
-	} else return err;
+	} else return String(err);
 }
 
 export class Button {
@@ -131,7 +131,7 @@ export class Button {
 	//is this really the best way to solve this?
 	color: string;
 	font: string;
-	onClick: (event:MouseEvent) => void
+	onClick: (event:PartialMouseEvent) => void;
 	constructor(config:{
 		x: number | (() => number);
 		y: number | (() => number);
@@ -140,7 +140,7 @@ export class Button {
 		label: string | (() => string | Texture) | Texture;
 		color: string;
 		font: string;
-		onClick: (event:MouseEvent) => void;
+		onClick: (event:PartialMouseEvent) => void;
 	}){
 		if(config.x instanceof Function)
 			Object.defineProperty(this, "x", {get: config.x});
@@ -192,7 +192,7 @@ export class Button {
 		_ctx.globalAlpha = 1.0;
 		_ctx.font = this.font;
 		_ctx.textAlign = "center";
-		let tempBaseline = _ctx.textBaseline;
+		const tempBaseline = _ctx.textBaseline;
 		_ctx.textBaseline = "middle";
 		_ctx.fillStyle = "#FFFFFF";
 		if(typeof this.label == "string"){
@@ -205,7 +205,7 @@ export class Button {
 	isMouseInside(){
 		return Intersector.pointInRect([Input.mouseX, Input.mouseY], [this.x, this.y, this.width, this.height]);
 	}
-	handleMouseClick(e:MouseEvent){
+	handleMouseClick(e:PartialMouseEvent){
 		if(this.isMouseInside() && e.button == 0){
 			this.onClick(e);
 		}
@@ -215,10 +215,11 @@ export class Button {
 export function Abstract<TClass extends new (...args:any[]) => any>(input:TClass, context:ClassDecoratorContext<TClass>):TClass {
 	return class __temp extends input {
 		constructor(...args:any[]){
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 			super(...args);
 			if(this.constructor === __temp) crash(`Cannot construct abstract class ${input.name}`);
 		}
-	}
+	};
 }
 
 /**
@@ -230,18 +231,18 @@ export function* pseudoRandom(seed:number) {
 	let value = seed + 11111111111111;
 	while(true){
 		value = value * 16807 % 16777216;
-		let num = value / 16777216;
+		const num = value / 16777216;
 		yield {
 			value: num,
 			chance(amount:number){
 				return num < amount;
 			}
-		}
+		};
 	}
 	return null!; //never returns
 }
 export function getElement<T extends typeof HTMLElement>(id:string, type:T){
-	const element = <unknown>document.getElementById(id);
+	const element = document.getElementById(id) as unknown;
 	if(element instanceof type) return element as T["prototype"];
 	else if(element instanceof HTMLElement) crash(`Element with id ${id} was fetched as type ${type.name}, but was of type ${element.constructor.name}`);
 	else crash(`Element with id ${id} does not exist`);
@@ -273,12 +274,12 @@ export function tooltip(title:string, properties:Partial<Record<string, string>>
 	return `${title}<div style="font-size: 70%;">${props.join("<br/>")}</div>`;
 }
 
-export function bindFunctionProperties(obj:Record<string, unknown>){
-	Object.entries(obj).map(([k, v]) => {
-		if(typeof v == "function"){
-			obj[k] = v.bind(obj) as never;
-		}
-	});
+export function bindFunctionProperties<T extends Record<string, unknown>>(obj:T):{
+	[K in keyof T]: T[K] extends (...args:infer Args extends any[]) => infer Out ? (this:void, ...args:Args) => Out : T[K];
+} {
+	return Object.fromEntries(Object.entries(obj).map(([k, v]) =>
+		[k, typeof v == "function" ? v.bind(obj) : v]
+	)) as never;
 }
 
 /**
@@ -310,7 +311,7 @@ export function safeToSave():boolean {
 	try {
 		const data = JSON.parse(localStorage.getItem("save1")!) as SaveData;
 		assert(data.UntitledElectronGame.metadata.validationCode === "esrdtfgvczdsret56u7yhgvfcesrythgvfd!");
-		return data.UntitledElectronGame.metadata.uuid == Game.level1.uuid || (data.UntitledElectronGame.metadata as any).id == Game.level1.uuid;
+		return data.UntitledElectronGame.metadata.uuid == Game.level1.uuid || (data.UntitledElectronGame.metadata as {id?: unknown;}).id == Game.level1.uuid;
 	} catch(err){
 		return true;
 	}
@@ -379,7 +380,7 @@ export function makeRebindButton(
 			keybind.mainKey =
 				(prompt(`Rebind ${buttonName.toLowerCase()} to:`) ?? defaultKey).toLowerCase().substring(0,1);
 		}
-	})
+	});
 }
 
 export function selectID(id:RawBuildingID){
@@ -388,7 +389,7 @@ export function selectID(id:RawBuildingID){
 	Input.placedBuilding.type = id;
 	const image = document.querySelector(`img#toolbar_${id}`);
 	for(const icon of DOM.toolbarEl.children){
-		icon.classList.remove("selected")
+		icon.classList.remove("selected");
 	}
 	if(image) image.classList.add("selected");
 }
