@@ -84,6 +84,7 @@ function main_loop(){
 
 /**Called once on page load. */
 async function init(){
+	//TODO clean
 	Log.showBanner();
 	Log.info("Starting...");
 	Log.raw`${Log.style({color: "blue", "font-size": "150%"})}\

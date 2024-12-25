@@ -12,6 +12,7 @@ export default tseslint.config(
 	...tseslint.configs.recommendedTypeChecked,
 	...tseslint.configs.stylisticTypeChecked,
 	{
+		ignores: ["**/*.js"],
 		languageOptions: {
 			parserOptions: {
 				project: ["./tsconfig.json"],
@@ -56,7 +57,7 @@ export default tseslint.config(
 		},
 	},
 	{
-		files: ["eslint.config.js"],
+		files: ["eslint.config.js", "**/*.js"],
 		extends: [tseslint.configs.disableTypeChecked],
 	},
 );
