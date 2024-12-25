@@ -833,7 +833,7 @@ export class ResourceAcceptor extends Building {
 		return [[4, 4], [0, 0]];
 	}
 	acceptItem(item: Item) {
-		this.level.resources[item.id]++;
+		this.level.addResources([[item.id, 1]]);
 		if (item.id == "base_stone") {
 			this.level.timeSinceStoneRanOut = Date.now();
 		}

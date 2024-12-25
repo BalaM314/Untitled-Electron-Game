@@ -22,6 +22,7 @@ import { Gfx, ParticleEffect } from "./graphics.js";
 import { Camera } from "./camera.js";
 import { HUD } from "./gui.js";
 import { Input, keybinds, PartialMouseEvent } from "./input.js";
+import { PersistentStats } from "../stats.js";
 
 
 //todo fix this VV probably repeating myself a lot
@@ -317,10 +318,15 @@ export const scenes: Record<typeof Game.sceneName, {
 			if (Game.paused) return;
 			if (!Input.latestMouseEvent) return;
 			if (!Input.ctrl() && !keybinds.placement.break_building.isHeld() && Input.placedBuilding.ID[0] != "base_null") {
-				Game.level1.buildBuilding(
+				const result = Game.level1.buildBuilding(
 					...(Camera.unproject(Input.latestMouseEvent.x, Input.latestMouseEvent.y).map(Pos.pixelToTile)),
 					Input.placedBuilding.ID
 				);
+				if(typeof result == "object"){
+					PersistentStats.value.buildings.totalBuilt ++;
+					PersistentStats.value.buildings.builtByType[Input.placedBuilding.type] ++;
+					PersistentStats.value.buildings.totalRemoved += result.buildingsBroken;
+				}
 			}
 		},
 		onrightmouseheld() {

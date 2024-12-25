@@ -69,6 +69,7 @@ export const SaveIO = {
 
 				tempLevel = Level.read(levelData);
 				Log.info("Parsed world data.");
+				configureLevel(tempLevel);
 				Game.level1 = tempLevel;
 
 				if (data.UntitledElectronGame.techTree) {
@@ -92,15 +93,31 @@ export const SaveIO = {
 		}
 	}
 };
-/**Called when switching to gamestate "game". */
 
+export function configureLevel(level:Level){
+	level.onResourcesChange = (item, change) => {
+		if(change > 0){
+			PersistentStats.value.items.totalReachedHub += change;
+			PersistentStats.value.items.reachedHub[item] += change;
+		} else if(change < 0){
+			PersistentStats.value.items.totalUsed += -change;
+			PersistentStats.value.items.used[item] += -change;
+		}
+	};
+	level.onPowerProduced = (type, amount) => {
+		PersistentStats.value.power.totalProduced += amount;
+		PersistentStats.value.power.producedByType[type[0]] += amount;
+	};
+}
+
+/**Called when switching to gamestate "game". */
 export function load() {
 
 	Camera.scrollTo(0, 0);
 	Camera.zoomTo(1);
 	Input.placedBuilding.type = "base_null";
 
-	if (!localStorage.getItem("firstload")) {
+	if(!localStorage.getItem("firstload")){
 		localStorage.setItem("firstload", "true");
 		GUI.alert(
 			`Welcome to Untitled Electron Game!
@@ -108,14 +125,18 @@ This is a game about building a factory. To get started, follow the objectives i
 		);
 	}
 
-	if (!Game.enteredGame) {
+	if(!Game.enteredGame){
 
-		if (saveExists() &&
-			(settings.alwaysLoadSave || confirm("Would you like to load your save?"))) SaveIO.import(localStorage.getItem("save1")!);
-		else Game.level1 = new Level(Rand.int(0, 10000), true).generate();
+		if(saveExists() && (settings.alwaysLoadSave || confirm("Would you like to load your save?"))){
+			SaveIO.import(localStorage.getItem("save1")!);
+		} else {
+			Game.level1 = new Level(Rand.int(0, 10000), true).generate();
+			configureLevel(Game.level1);
+			PersistentStats.value.misc.timeStarted = Date.now();
+		}
 
-		if (settings.autoSave) {
-			if (safeToSave()) {
+		if(settings.autoSave){
+			if(safeToSave()){
 				setInterval(() => {
 					saveToLocalStorage();
 					Log.info("Autosaved.");
@@ -134,7 +155,7 @@ This is a game about building a factory. To get started, follow the objectives i
 export function dumpObjectsToGlobalScope(){
 	Object.assign(window, everything);
 }
-export function selectID(id: RawBuildingID) {
+export function selectID(id:RawBuildingID) {
 	const block = Buildings.getOpt(id);
 	if (block && !block.unlocked()) id = "base_null";
 	Input.placedBuilding.type = id;
@@ -147,22 +168,22 @@ export function selectID(id: RawBuildingID) {
 //#endregion
 //#region Game-related functions
 
-export function saveExists() {
+export function saveExists(){
 	return localStorage.getItem("save1") != null;
 }
 
-export function safeToSave(): boolean {
-	if (!saveExists()) return true;
+export function safeToSave():boolean {
+	if(!saveExists()) return true;
 	try {
 		const data = JSON.parse(localStorage.getItem("save1")!) as SaveData;
 		assert(data.UntitledElectronGame.metadata.validationCode === "esrdtfgvczdsret56u7yhgvfcesrythgvfd!");
 		return data.UntitledElectronGame.metadata.uuid == Game.level1.uuid || (data.UntitledElectronGame.metadata as { id?: unknown; }).id == Game.level1.uuid;
-	} catch (err) {
+	} catch(err) {
 		return true;
 	}
 }
 
-export function saveToLocalStorage() {
+export function saveToLocalStorage(){
 	localStorage.setItem("save1", JSON.stringify(SaveIO.export()));
 	localStorage.setItem("untitled-electron-game:tech-tree", tech.write());
 	localStorage.setItem("untitled-electron-game:objectives", objectives.write());

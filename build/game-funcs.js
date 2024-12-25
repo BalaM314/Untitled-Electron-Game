@@ -60,6 +60,7 @@ export const SaveIO = {
                 assert(levelData.chunks instanceof Object);
                 tempLevel = Level.read(levelData);
                 Log.info("Parsed world data.");
+                configureLevel(tempLevel);
                 Game.level1 = tempLevel;
                 if (data.UntitledElectronGame.techTree) {
                     const num = tech.read(data.UntitledElectronGame.techTree);
@@ -82,6 +83,22 @@ export const SaveIO = {
         }
     }
 };
+export function configureLevel(level) {
+    level.onResourcesChange = (item, change) => {
+        if (change > 0) {
+            PersistentStats.value.items.totalReachedHub += change;
+            PersistentStats.value.items.reachedHub[item] += change;
+        }
+        else if (change < 0) {
+            PersistentStats.value.items.totalUsed += -change;
+            PersistentStats.value.items.used[item] += -change;
+        }
+    };
+    level.onPowerProduced = (type, amount) => {
+        PersistentStats.value.power.totalProduced += amount;
+        PersistentStats.value.power.producedByType[type[0]] += amount;
+    };
+}
 export function load() {
     Camera.scrollTo(0, 0);
     Camera.zoomTo(1);
@@ -92,11 +109,14 @@ export function load() {
 This is a game about building a factory. To get started, follow the objectives in the top right.`);
     }
     if (!Game.enteredGame) {
-        if (saveExists() &&
-            (settings.alwaysLoadSave || confirm("Would you like to load your save?")))
+        if (saveExists() && (settings.alwaysLoadSave || confirm("Would you like to load your save?"))) {
             SaveIO.import(localStorage.getItem("save1"));
-        else
+        }
+        else {
             Game.level1 = new Level(Rand.int(0, 10000), true).generate();
+            configureLevel(Game.level1);
+            PersistentStats.value.misc.timeStarted = Date.now();
+        }
         if (settings.autoSave) {
             if (safeToSave()) {
                 setInterval(() => {

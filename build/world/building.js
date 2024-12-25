@@ -351,17 +351,29 @@ export class PowerGrid {
     updatePower() {
         this.powerRequested = this.consumers.reduce((acc, p) => acc + p.getRequestedPower(), 0);
         let variablePower = 0, fixedPower = 0;
-        for (const producer of this.producers) {
-            if (producer.canVaryPowerProduction())
-                variablePower += producer.getMaxPowerProduction();
-            else
-                fixedPower += producer.getMaxPowerProduction();
-        }
+        const powerData = this.producers.map(producer => {
+            const available = producer.getMaxPowerProduction();
+            if (producer.canVaryPowerProduction()) {
+                variablePower += available;
+                return [producer, { variable: available }];
+            }
+            else {
+                fixedPower += available;
+                return [producer, { fixed: available }];
+            }
+        });
         this.maxProduction = variablePower + fixedPower;
         const load = this.maxProduction == 0 ? 0 : constrain((this.powerRequested - fixedPower) / this.maxProduction, 0, 1);
         const satisfaction = this.powerRequested == 0 ? 0 : Math.min(this.maxProduction / this.powerRequested, 1);
-        this.producers.forEach(p => p.powerLoad = load);
+        const producedByType = powerData.map(([p, data]) => {
+            p.powerLoad = load;
+            if ("fixed" in data)
+                return [[p.block.id, p.meta], data.fixed];
+            else
+                return [[p.block.id, p.meta], data.variable * load];
+        });
         this.consumers.forEach(c => c.powerSatisfaction = satisfaction);
+        return producedByType;
     }
     addBuilding(build) {
         if (build.block.consumesPower)

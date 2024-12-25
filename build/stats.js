@@ -5,7 +5,7 @@ Untitled Electron Game is free software: you can redistribute it and/or modify i
 Untitled Electron Game is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 You should have received a copy of the GNU General Public License along with Untitled Electron Game. If not, see <https://www.gnu.org/licenses/>.
 */
-import { Buildings, ItemIDs, FluidIDs } from "./content/content.js";
+import { Buildings, ItemIDs } from "./content/content.js";
 import { importObject } from "./util/funcs.js";
 const persistentStats = () => ({
     buildings: {
@@ -14,19 +14,17 @@ const persistentStats = () => ({
         totalRemoved: 0,
     },
     items: {
-        totalInHub: 0,
-        inHub: Object.fromEntries(ItemIDs.map(k => [k, 0])),
-    },
-    fluids: {
-        totalProduced: 0,
-        produced: Object.fromEntries(FluidIDs.map(k => [k, 0])),
+        totalReachedHub: 0,
+        reachedHub: Object.fromEntries(ItemIDs.map(k => [k, 0])),
+        totalUsed: 0,
+        used: Object.fromEntries(ItemIDs.map(k => [k, 0])),
     },
     power: {
         totalProduced: 0,
         producedByType: Object.fromEntries(Buildings.keys().map(k => [k, 0])),
     },
     misc: {
-        timeStarted: Date.now(),
+        timeStarted: 0,
     },
 });
 export const PersistentStats = {

@@ -69,9 +69,9 @@ export class Level {
     }
     generate() {
         this.generateNecessaryChunks();
-        this.buildBuilding(-2, -2, ["base_resource_acceptor", 1]);
+        this.setBlockUnchecked(-2, -2, ["base_resource_acceptor", 1]);
         for (const [x, y] of MultiBlockController.getOffsetsForSize(4, 4)) {
-            this.buildBuilding(-2 + x, -2 + y, ["base_resource_acceptor", 0]);
+            this.setBlockUnchecked(-2 + x, -2 + y, ["base_resource_acceptor", 0]);
         }
         return this;
     }
@@ -177,37 +177,46 @@ export class Level {
     }
     buildBuilding(tileX, tileY, buildingID) {
         if (buildingID[0] == "base_null")
-            return true;
+            return "nothing";
         const block = Buildings.get(buildingID[0]);
         if (!this.canBuildBuilding([tileX, tileY], block))
-            return false;
+            return "blocked";
         buildingID = [buildingID[0], block.changeMeta(buildingID[1], tileX, tileY, this, keybinds.placement.force_straight_conveyor.isHeld())];
+        if (!block.canBuildAt(tileX, tileY, this))
+            return "blocked";
+        if (!this.hasResources(block.buildCost, 1500))
+            return "missing resources";
+        let buildingsBroken = 0;
         if (block.isOverlay) {
             if (this.overlayBuildAtTile(tileX, tileY)?.block.id == buildingID[0] &&
                 this.overlayBuildAtTile(tileX, tileY)?.meta == buildingID[1] &&
                 !Input.canOverwriteBuilding())
-                return false;
-            this.overlayBuildAtTile(tileX, tileY)?.break();
+                return "cannot overwrite";
+            const target = this.overlayBuildAtTile(tileX, tileY);
+            if (target) {
+                buildingsBroken++;
+                target.break();
+            }
         }
         else {
             if (this.buildingAtTile(tileX, tileY)?.block.id == buildingID[0] &&
                 this.buildingAtTile(tileX, tileY)?.meta == buildingID[1] &&
                 !Input.canOverwriteBuilding())
-                return false;
-            this.buildingAtTile(tileX, tileY)?.break();
+                return "cannot overwrite";
+            const target = this.buildingAtTile(tileX, tileY);
+            if (target) {
+                buildingsBroken++;
+                target.break();
+            }
         }
         Input.buildingPlaced = true;
-        if (!block.canBuildAt(tileX, tileY, this))
-            return false;
-        if (!this.hasResources(block.buildCost, 1500))
-            return false;
         if (block.prototype instanceof MultiBlockController) {
             forceType(block);
             const offsets = MultiBlockController.getOffsetsForSize(...block.multiblockSize);
             for (const [xOffset, yOffset] of offsets) {
                 const buildUnder = this.buildingAtTile(tileX + xOffset, tileY + yOffset);
                 if (buildUnder?.block.immutable)
-                    return false;
+                    return "blocked";
                 buildUnder?.break();
             }
             this.drainResources(block.buildCost);
@@ -222,7 +231,7 @@ export class Level {
                 this.buildings.add(secondary);
             });
             Input.lastBuilding = controller;
-            return true;
+            return { placed: true, buildingsBroken };
         }
         else {
             this.drainResources(block.buildCost);
@@ -234,8 +243,18 @@ export class Level {
             else
                 this.writeBuilding(tileX, tileY, building);
             Input.lastBuilding = building;
-            return true;
+            return { placed: true, buildingsBroken };
         }
+    }
+    setBlockUnchecked(tileX, tileY, buildingID) {
+        const block = Buildings.get(buildingID[0]);
+        const building = new block(tileX, tileY, buildingID[1], this);
+        this.buildings.add(building);
+        this.grid.addBuilding(building);
+        if (building instanceof OverlayBuild)
+            this.writeOverlayBuild(tileX, tileY, building);
+        else
+            this.writeBuilding(tileX, tileY, building);
     }
     resetResourceDisplayData() {
         Object.values(this.resourceDisplayData).forEach(d => {
@@ -269,17 +288,24 @@ export class Level {
         for (const [item, amount] of items) {
             this.resources[item] ??= 0;
             this.resources[item] -= amount;
+            this.onResourcesChange?.(item, amount);
         }
     }
     addResources(items) {
         for (const [item, amount] of items) {
             this.resources[item] ??= 0;
             this.resources[item] += amount;
+            this.onResourcesChange?.(item, amount);
         }
     }
     update(currentFrame) {
         this.buildings.forEach(b => b.preUpdate(currentFrame));
-        this.grid.updatePower();
+        const productionData = this.grid.updatePower();
+        if (this.onPowerProduced) {
+            for (const item of productionData) {
+                this.onPowerProduced(...item);
+            }
+        }
         this.buildings.forEach(b => b.update(currentFrame));
         for (const chunk of this.storage.values()) {
             chunk.update(currentFrame);

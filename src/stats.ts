@@ -18,19 +18,22 @@ const persistentStats = () => ({
 		totalRemoved: 0,
 	},
 	items: {
-		totalInHub: 0,
-		inHub: Object.fromEntries(ItemIDs.map(k => [k, 0])),
+		totalReachedHub: 0,
+		reachedHub: Object.fromEntries(ItemIDs.map(k => [k, 0])),
+		totalUsed: 0,
+		used: Object.fromEntries(ItemIDs.map(k => [k, 0])),
 	},
-	fluids: {
-		totalProduced: 0,
-		produced: Object.fromEntries(FluidIDs.map(k => [k, 0])),
-	},
+	// disabled: performance hit
+	// fluids: {
+	// 	totalProduced: 0,
+	// 	produced: Object.fromEntries(FluidIDs.map(k => [k, 0])),
+	// },
 	power: {
 		totalProduced: 0,
 		producedByType: Object.fromEntries(Buildings.keys().map(k => [k, 0])),
 	},
 	misc: {
-		timeStarted: Date.now(),
+		timeStarted: 0,
 	},
 });
 
