@@ -99,6 +99,24 @@ export function parseError(err) {
     else
         return String(err);
 }
+export function typeMatches(a, b) {
+    if (a === null)
+        return b === null;
+    if (a === undefined)
+        return b === undefined;
+    return typeof a === typeof b;
+}
+export function importObject(base, ext) {
+    for (const [k, v] of Object.entries(base)) {
+        if (k in ext && typeMatches(ext[k], v)) {
+            if (typeof v === "object" && v != null) {
+                importObject(v, ext[k]);
+            }
+            else
+                base[k] = ext[k];
+        }
+    }
+}
 export class Button {
     constructor(config) {
         if (config.x instanceof Function)

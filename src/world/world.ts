@@ -367,8 +367,8 @@ export class Level {
 		}
 		
 	}
+	/* returns raw html, make sure to escape! */
 	getTooltip(x:number, y:number):string {
-		//returns raw html, make sure to escape!
 		const building = this.buildingAtPixel(x, y);
 		if(building instanceof Building){
 			if(

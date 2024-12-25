@@ -8,9 +8,10 @@ You should have received a copy of the GNU General Public License along with Unt
 /* Contains code for statistics. */
 
 import { Buildings, ItemIDs, FluidIDs } from "./content/content.js";
+import { importObject } from "./util/funcs.js";
 
-
-export const persistentStats = {
+type PersistentStats = ReturnType<typeof persistentStats>;
+const persistentStats = () => ({
 	buildings: {
 		builtByType: Object.fromEntries(Buildings.keys().map(k => [k, 0])),
 		totalBuilt: 0,
@@ -27,6 +28,23 @@ export const persistentStats = {
 	power: {
 		totalProduced: 0,
 		producedByType: Object.fromEntries(Buildings.keys().map(k => [k, 0])),
+	},
+	misc: {
+		timeStarted: Date.now(),
+	},
+});
+
+export const PersistentStats = {
+	value: persistentStats(),
+	read(data:string){
+		try {
+			importObject(this.value, JSON.parse(data));
+		} catch {
+			//ignore invalid json
+		}
+	},
+	write(){
+		return JSON.stringify(this.value);
 	}
 };
 

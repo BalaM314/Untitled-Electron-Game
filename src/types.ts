@@ -130,11 +130,13 @@ export type SaveData = {
 			validationCode: "esrdtfgvczdsret56u7yhgvfcesrythgvfd!";
 			uuid: string;
 			version: string;
+			/** The time that this save data was serialized, not the time that the save was started. */
 			timeCreated: string;
 		};
 		level1: LevelData;
 		techTree: string;
 		objectives: string;
+		stats: string;
 	}
 }
 

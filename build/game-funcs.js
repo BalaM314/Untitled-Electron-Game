@@ -14,6 +14,7 @@ import { Rand } from "./util/random.js";
 import { Log } from "./util/log.js";
 import { Game, consts, settings } from "./vars.js";
 import { Level } from "./world/world.js";
+import { PersistentStats } from "./stats.js";
 export function manualLocalSave(allowConfirmDialog, showSuccessMessage) {
     if (safeToSave() || allowConfirmDialog &&
         confirm("Are you sure you want to save? This will overwrite your current saved world which seems to be different!")) {
@@ -40,6 +41,7 @@ export const SaveIO = {
                 level1: Game.level1.export(),
                 techTree: tech.write(),
                 objectives: objectives.write(),
+                stats: PersistentStats.write(),
             }
         };
     },
@@ -63,6 +65,10 @@ export const SaveIO = {
                 if (data.UntitledElectronGame.objectives) {
                     const num = objectives.read(data.UntitledElectronGame.objectives);
                     Log.info(`Imported ${num} completed objectives.`);
+                }
+                if (data.UntitledElectronGame.stats) {
+                    PersistentStats.read(data.UntitledElectronGame.stats);
+                    Log.info(`Imported saved statistics.`);
                 }
                 Log.info(`Imported save data.`);
             });
