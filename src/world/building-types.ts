@@ -312,6 +312,7 @@ export class TrashCan extends Building {
 	}
 }
 export class Conveyor extends Building {
+	static acceptsItemsFromAll = true;
 	static displaysItem = true;
 	static acceptsItems = true;
 	static outputsItems = true;
@@ -1022,6 +1023,7 @@ export class Tank extends Building {
 	static drawer: any = BuildingWithRecipe.drawFluid([0, 0], 0.8, 0.8);
 }
 export class Pipe extends Building {
+	static acceptsFluidsFromAll = true;
 	static fluidCapacity = 5;
 	static outputsFluids = true;
 	static acceptsFluids = true;

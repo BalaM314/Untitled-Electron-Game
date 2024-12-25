@@ -12,12 +12,9 @@ import { DOM } from "../ui/dom.js";
 import { Input } from "../ui/input.js";
 import { Game } from "../vars.js";
 import { Intersector } from "./geom.js";
-Object.defineProperty(Array.prototype, "sort2", {
-    enumerable: false,
-    value: function (func) {
-        this.sort((a, b) => func(a) - func(b));
-    },
-});
+export function sort2(array, func) {
+    array.sort((a, b) => func(a) - func(b));
+}
 if (!Array.prototype.at) {
     Array.prototype.at = function (index) {
         return this[index < 0 ? index + this.length : index];

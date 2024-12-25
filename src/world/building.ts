@@ -17,7 +17,6 @@ import { Direction } from "../util/direction.js";
 import { Abstract, stringifyMeta, tooltip, constrain, crash } from "../util/funcs.js";
 import { Pos, PosT } from "../util/geom.js";
 import { settings, consts } from "../vars.js";
-import { Conveyor, Pipe } from "./building-types.js";
 import { Item, Level } from "./world.js";
 
 
@@ -28,6 +27,8 @@ export interface BlockDrawer<T> {
 export class Building {
 	static outputsItems = false;
 	static acceptsItems = false;
+	static acceptsItemsFromAll = false;
+	static acceptsFluidsFromAll = false;
 	static outputsFluids = false;
 	static acceptsFluids = false;
 	static fluidCapacity = 100;
@@ -87,12 +88,11 @@ export class Building {
 	static textureSize(meta:number):TextureInfo {
 		return [[1, 1], [0, 0]];
 	}
-	//TODO remove the imports here, wrong direction
-	static canOutputTo(building:Building | null){
-		return building instanceof Conveyor;
+	static canOutputTo(building:Building | null):boolean {
+		return Boolean(building?.block.acceptsItemsFromAll);
 	}
 	static canOutputFluidTo(building:Building | null):boolean {
-		return building instanceof Pipe;
+		return Boolean(building?.block.acceptsFluidsFromAll);
 	}
 	/**Called to destroy the building. Should remove all references to it. */
 	break(){

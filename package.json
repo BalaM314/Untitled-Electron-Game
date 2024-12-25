@@ -3,6 +3,7 @@
 	"version": "1.0.0",
 	"description": "some game idk",
 	"main": "main.js",
+	"type": "module",
 	"scripts": {
 		"test": "electron .",
 		"start": "tsc -w"

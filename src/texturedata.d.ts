@@ -7,4 +7,4 @@ You should have received a copy of the GNU General Public License along with Unt
 */
 /* Declaration file for texturedata.js, which stores a list of the paths to all textures that need to be loaded. */
 
-declare const textureIDs: string[];
+export const textureIDs: string[];

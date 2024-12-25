@@ -7,6 +7,7 @@ You should have received a copy of the GNU General Public License along with Unt
 */
 import { load } from "../game-funcs.js";
 import { objectives, tech } from "../objectives.js";
+import { textureIDs } from "../texturedata.js";
 import { Button, millis, makeRebindButton, crash, parseError } from "../util/funcs.js";
 import { Intersector, Pos } from "../util/geom.js";
 import { Game, settings, consts } from "../vars.js";

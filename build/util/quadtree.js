@@ -5,10 +5,6 @@ Untitled Electron Game is free software: you can redistribute it and/or modify i
 Untitled Electron Game is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 You should have received a copy of the GNU General Public License along with Untitled Electron Game. If not, see <https://www.gnu.org/licenses/>.
 */
-import { Gfx } from "../ui/graphics.js";
-import { Input } from "../ui/input.js";
-import { scenes } from "../ui/scenes.js";
-import { Game } from "../vars.js";
 import { Pos, Intersector } from "./geom.js";
 export class QuadTree {
     constructor(span, depth = 1) {
@@ -100,41 +96,44 @@ export class QuadTree {
     contains(el) {
         return Intersector.pointInRect(el.pos.pixel, this.span);
     }
-    display() {
-        Gfx.fillColor(`hsl(${(this.depth - 1) * 35}, 100%, 50%)`);
-        Gfx.rect(...this.span.map(a => a * QuadTree.displayScale));
-        Gfx.strokeColor("white");
-        Gfx.lineRect(...this.span.map(a => a * QuadTree.displayScale));
-        if (this.nodes) {
-            for (const node of this.nodes)
-                node.display();
-        }
-        else {
-            Gfx.fillColor("blue");
-            for (const el of this.elements) {
-                Gfx.ellipse(...el.pos.pixel.map(a => a * QuadTree.displayScale), 2.5, 2.5);
+    static async setShowcaseMode() {
+        const [{ scenes }, { Game }, { Gfx }, { Input }] = await Promise.all([
+            import("../ui/scenes.js"), import("../vars.js"), import("../ui/graphics.js"), import("../ui/input.js")
+        ]);
+        const displayScale = 4;
+        function display(node) {
+            Gfx.fillColor(`hsl(${(node.depth - 1) * 35}, 100%, 50%)`);
+            Gfx.rect(...node.span.map(a => a * displayScale));
+            Gfx.strokeColor("white");
+            Gfx.lineRect(...node.span.map(a => a * displayScale));
+            if (node.nodes) {
+                for (const n of node.nodes)
+                    display(n);
+            }
+            else {
+                Gfx.fillColor("blue");
+                for (const el of node.elements) {
+                    Gfx.ellipse(...el.pos.pixel.map(a => a * displayScale), 2.5, 2.5);
+                }
             }
         }
-    }
-    static setShowcaseMode() {
         let tree = new QuadTree([0, 0, 300, 180]);
         cancelAnimationFrame(Game.animationFrame);
         Gfx.layer("overlay");
         Gfx.fillColor("black");
         Gfx.rect(0, 0, innerWidth, innerHeight);
-        tree.display();
+        display(tree);
         scenes[Game.sceneName].onmousedown = () => {
             tree.add({
-                pos: Pos.fromPixelCoords(...Input.mouse.map(a => a / QuadTree.displayScale))
+                pos: Pos.fromPixelCoords(...Input.mouse.map(a => a / displayScale))
             });
-            tree.display();
+            display(tree);
         };
     }
 }
 QuadTree.maxItems = 64;
 QuadTree.maxDepth = 8;
-QuadTree.displayScale = 4;
-class QuadTreeI extends QuadTree {
+export class QuadTreeI extends QuadTree {
     constructor() {
         super([-Infinity, -Infinity, Infinity, Infinity]);
         this.nodes = [];

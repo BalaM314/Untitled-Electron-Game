@@ -73,10 +73,3 @@ interface Function {
 interface SymbolConstructor {
 	readonly metadata: unique symbol;
 }
-interface Array<T> {
-	/**
-	 * Sorts an array into ascending order, with a callback that ranks elements with a number.
-	 */
-	sort2: (callback: (value:T) => number) => void;
-	//TODO remove monkey patch
-}

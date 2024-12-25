@@ -15,7 +15,7 @@ import { showCredits } from "./ui/cutscenes.js";
 import { DOM } from "./ui/dom.js";
 import { Camera } from "./ui/graphics.js";
 import { Input } from "./ui/input.js";
-import { crash } from "./util/funcs.js";
+import { crash, sort2 } from "./util/funcs.js";
 import { Game } from "./vars.js";
 import type { BuildingWithRecipe } from "./world/building-types.js";
 import type { Level } from "./world/world.js";
@@ -77,7 +77,7 @@ export class TechTree {
 	){
 		builder(this);
 		this.root = this.nodes.find(n => n.prerequisites.length == 0) ?? crash(`No root node`);
-		this.nodes.forEach(n => n.children.sort2(n => n.children.length))
+		this.nodes.forEach(n => sort2(n.children, n => n.children.length))
 	}
 	
 	node(id:string, cost:ItemStack[], prerequisites:TechTreeNode[], unlocked = false):TechTreeNode {

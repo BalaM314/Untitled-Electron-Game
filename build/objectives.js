@@ -11,7 +11,7 @@ import { showCredits } from "./ui/cutscenes.js";
 import { DOM } from "./ui/dom.js";
 import { Camera } from "./ui/graphics.js";
 import { Input } from "./ui/input.js";
-import { crash } from "./util/funcs.js";
+import { crash, sort2 } from "./util/funcs.js";
 import { Game } from "./vars.js";
 export class TechTreeNode {
     constructor(level, id, cost, prerequisites = []) {
@@ -66,7 +66,7 @@ export class TechTree {
         this.menuVisible = false;
         builder(this);
         this.root = this.nodes.find(n => n.prerequisites.length == 0) ?? crash(`No root node`);
-        this.nodes.forEach(n => n.children.sort2(n => n.children.length));
+        this.nodes.forEach(n => sort2(n.children, n => n.children.length));
     }
     node(id, cost, prerequisites, unlocked = false) {
         const node = new TechTreeNode(this.level, id, cost, prerequisites);

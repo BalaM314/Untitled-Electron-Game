@@ -51,7 +51,6 @@ import { Direction } from "../util/direction.js";
 import { Abstract, stringifyMeta, tooltip, constrain, crash } from "../util/funcs.js";
 import { Pos } from "../util/geom.js";
 import { settings, consts } from "../vars.js";
-import { Conveyor, Pipe } from "./building-types.js";
 import { Item } from "./world.js";
 let Building = (() => {
     let _classDecorators = [Abstract];
@@ -93,10 +92,10 @@ let Building = (() => {
             return [[1, 1], [0, 0]];
         }
         static canOutputTo(building) {
-            return building instanceof Conveyor;
+            return Boolean(building?.block.acceptsItemsFromAll);
         }
         static canOutputFluidTo(building) {
-            return building instanceof Pipe;
+            return Boolean(building?.block.acceptsFluidsFromAll);
         }
         break() {
             this.level.buildings.delete(this);
@@ -287,6 +286,8 @@ let Building = (() => {
     })();
     _classThis.outputsItems = false;
     _classThis.acceptsItems = false;
+    _classThis.acceptsItemsFromAll = false;
+    _classThis.acceptsFluidsFromAll = false;
     _classThis.outputsFluids = false;
     _classThis.acceptsFluids = false;
     _classThis.fluidCapacity = 100;

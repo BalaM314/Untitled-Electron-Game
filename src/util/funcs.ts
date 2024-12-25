@@ -20,12 +20,9 @@ import { Intersector } from "./geom.js";
 
 //#region general utils
 
-Object.defineProperty(Array.prototype, "sort2", {
-	enumerable: false,
-	value: function(this:unknown[], func){
-		this.sort((a, b) => func(a) - func(b));
-	} satisfies typeof Array.prototype.sort2,
-});
+export function sort2<T>(array:T[], func:(item:T) => number){
+	array.sort((a, b) => func(a) - func(b));
+}
 if(!Array.prototype.at){
 	Array.prototype.at = function(index){
 		return this[index < 0 ? index + this.length : index];

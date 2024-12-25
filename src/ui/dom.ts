@@ -16,7 +16,6 @@ import { Game } from "../vars.js";
 import { Camera } from "./graphics.js";
 import { GUI } from "./gui.js";
 import { Input, keybinds } from "./input.js";
-import { scenes } from "./scenes.js";
 
 
 export const CTX = (d => Object.fromEntries(Object.entries(d).map(([k, id]) =>
@@ -64,7 +63,9 @@ export const DOM = {
 };
 
 /**Registers event handlers, called once on page load. */
-export function registerEventHandlers(){
+export async function registerEventHandlers(){
+	const { scenes } = await import("./scenes.js");
+
 	const { clickcapture } = DOM;
 
 	//Update mouse position

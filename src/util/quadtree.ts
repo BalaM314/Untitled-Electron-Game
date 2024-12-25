@@ -7,10 +7,6 @@ You should have received a copy of the GNU General Public License along with Unt
 */
 /* Contains the quad tree data structures. */
 
-import { Gfx } from "../ui/graphics.js";
-import { Input } from "../ui/input.js";
-import { scenes } from "../ui/scenes.js";
-import { Game } from "../vars.js";
 import { Pos, Rect, Intersector } from "./geom.js";
 
 
@@ -95,39 +91,44 @@ export class QuadTree<T extends {pos: Pos}> {
 	contains(el:T){
 		return Intersector.pointInRect(el.pos.pixel, this.span);
 	}
-	static displayScale = 4;
-	display(){
-		Gfx.fillColor(`hsl(${(this.depth - 1) * 35}, 100%, 50%)`);
-		Gfx.rect(...this.span.map(a => a * QuadTree.displayScale));
-		Gfx.strokeColor("white");
-		Gfx.lineRect(...this.span.map(a => a * QuadTree.displayScale));
-		if(this.nodes){
-			for(const node of this.nodes) node.display();
-		} else {
-			Gfx.fillColor("blue");
-			for(const el of this.elements){
-				Gfx.ellipse(...el.pos.pixel.map(a => a * QuadTree.displayScale), 2.5, 2.5);
+	static async setShowcaseMode(){
+		const [
+			{ scenes }, { Game }, { Gfx }, { Input }
+		] = await Promise.all([
+			import("../ui/scenes.js"), import("../vars.js"), import("../ui/graphics.js"), import("../ui/input.js")
+		]);
+		const displayScale = 4;
+		function display(node:QuadTree<{pos: Pos}>){
+			Gfx.fillColor(`hsl(${(node.depth - 1) * 35}, 100%, 50%)`);
+			Gfx.rect(...node.span.map(a => a * displayScale));
+			Gfx.strokeColor("white");
+			Gfx.lineRect(...node.span.map(a => a * displayScale));
+			if(node.nodes){
+				for(const n of node.nodes) display(n);
+			} else {
+				Gfx.fillColor("blue");
+				for(const el of node.elements){
+					Gfx.ellipse(...el.pos.pixel.map(a => a * displayScale), 2.5, 2.5);
+				}
 			}
 		}
-	}
-	static setShowcaseMode(){
 		let tree = new QuadTree([0, 0, 300, 180]);
 		cancelAnimationFrame(Game.animationFrame);
 		Gfx.layer("overlay");
 		Gfx.fillColor("black");
 		Gfx.rect(0, 0, innerWidth, innerHeight);
-		tree.display();
+		display(tree);
 		scenes[Game.sceneName].onmousedown = () => {
 			tree.add({
-				pos: Pos.fromPixelCoords(...Input.mouse.map(a => a / QuadTree.displayScale))
+				pos: Pos.fromPixelCoords(...Input.mouse.map(a => a / displayScale))
 			});
-			tree.display();
+			display(tree);
 		}
 	}
 }
 
 /** Quad tree infinite */
-class QuadTreeI<T extends {pos: Pos}> extends QuadTree<T> {
+export class QuadTreeI<T extends {pos: Pos}> extends QuadTree<T> {
 	static regionSize = [3840, 3840] as const; //8x8 chunks
 	nodes: QuadTree<T>[] = []; //Note: all nodes are stored in an array, so this will cause slowness if there are a large number of nodes
 	constructor(){

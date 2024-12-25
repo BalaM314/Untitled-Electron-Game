@@ -631,6 +631,7 @@ export class Conveyor extends Building {
         }
     }
 }
+Conveyor.acceptsItemsFromAll = true;
 Conveyor.displaysItem = true;
 Conveyor.acceptsItems = true;
 Conveyor.outputsItems = true;
@@ -1154,6 +1155,7 @@ export class Pipe extends Building {
         };
     }
 }
+Pipe.acceptsFluidsFromAll = true;
 Pipe.fluidCapacity = 5;
 Pipe.outputsFluids = true;
 Pipe.acceptsFluids = true;

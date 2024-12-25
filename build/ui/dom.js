@@ -14,7 +14,6 @@ import { Game } from "../vars.js";
 import { Camera } from "./graphics.js";
 import { GUI } from "./gui.js";
 import { Input, keybinds } from "./input.js";
-import { scenes } from "./scenes.js";
 export const CTX = (d => Object.fromEntries(Object.entries(d).map(([k, id]) => [k, getElement(id, HTMLCanvasElement).getContext("2d")])))({
     tiles: "canvas0",
     tilesOver: "canvas1",
@@ -55,7 +54,8 @@ export const DOM = {
     screenOverlay: getElement("screen-overlay", HTMLDivElement),
     creditsEl: getElement("credits-container", HTMLDivElement),
 };
-export function registerEventHandlers() {
+export async function registerEventHandlers() {
+    const { scenes } = await import("./scenes.js");
     const { clickcapture } = DOM;
     window.onmousemove = (e) => {
         Input.mouseX = e.x;

@@ -7,6 +7,10 @@ You should have received a copy of the GNU General Public License along with Unt
 */
 /* Contains the game's main code. */
 
+//Import order
+import "./ui/gui.js";
+import "./ui/scenes.js";
+
 import { splashes } from "./content/splashes.js";
 import { manualLocalSave } from "./game-funcs.js";
 import type { CurrentFrame } from "./types.js";
@@ -19,6 +23,7 @@ import { assert, parseError, crash } from "./util/funcs.js";
 import { Rand } from "./util/random.js";
 import { Log } from "./util/log.js";
 import { Game, settings } from "./vars.js";
+import { textureIDs } from "./texturedata.js";
 
 
 export function returnToTitle(){
@@ -76,7 +81,7 @@ function main_loop(){
 }
 
 /**Called once on page load. */
-function init(){
+async function init(){
 	Log.showBanner();
 	Log.info("Starting...");
 	Log.raw`${Log.style({color: "blue", "font-size": "150%"})}\
@@ -106,7 +111,7 @@ This game is open source! https://github.com/BalaM314/Untitled-Electron-Game`;
 		.catch(() => {});
 	
 	
-	registerEventHandlers();
+	await registerEventHandlers();
 	
 	if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){
 		alert("It looks like you're trying to play on a phone. Unfortunately, mobile devices are not currently supported.");
