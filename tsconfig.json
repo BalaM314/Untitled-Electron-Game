@@ -1,11 +1,11 @@
 {
 	"compilerOptions": {
 		"lib": [
-			"ES2021",
+			"ES2022",
 			"DOM.Iterable",
 			"DOM"
 		],
-		"target": "ES2020",
+		"target": "ES2021",
 		"alwaysStrict": true,
 		"removeComments": true,
 		"strict": true,

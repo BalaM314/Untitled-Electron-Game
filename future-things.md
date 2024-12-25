@@ -19,3 +19,5 @@ fix performance, don't redraw the tiles on every frame when moving (probably nee
 make buildings with recipes keep their items on save
 
 fix the text of the alert box overflowing
+
+re-add amogus()

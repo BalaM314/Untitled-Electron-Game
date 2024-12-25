@@ -1,6 +1,18 @@
-"use strict";
+/*!license
+Copyright © <BalaM314>, 2024.
+This file is part of Untitled Electron Game.
+Untitled Electron Game is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+Untitled Electron Game is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+You should have received a copy of the GNU General Public License along with Untitled Electron Game. If not, see <https://www.gnu.org/licenses/>.
+*/
 var _a;
-function getAnimationData(fin) {
+import { constrain, crash } from "../util/funcs.js";
+import { PseudoRandom } from "../util/random.js";
+import { Intersector, add, mul } from "../util/geom.js";
+import { Log } from "../util/log.js";
+import { Game, consts } from "../vars.js";
+import { CTX } from "./dom.js";
+export function getAnimationData(fin) {
     return {
         linc: (from = 0, to = 1) => from + fin * (to - from),
         ldec: (from = 1, to = 0) => from + fin * (to - from),
@@ -10,7 +22,7 @@ function getAnimationData(fin) {
         cos: (b = 1, a = 1, c = 0) => a * Math.cos(Math.PI * 2 * b * fin) + c,
     };
 }
-function loadTexture(t, texturesDiv) {
+export function loadTexture(t, texturesDiv) {
     return new Promise((resolve, reject) => {
         let img = document.createElement("img");
         img.setAttribute("src", `assets/textures/${t.id}.png`.replace(":", "!"));
@@ -34,11 +46,11 @@ function loadTexture(t, texturesDiv) {
         texturesDiv.appendChild(img);
     });
 }
-async function loadTextures(textures, texturesDiv) {
+export async function loadTextures(textures, texturesDiv) {
     return Object.fromEntries((await Promise.all(textures.map(t => loadTexture(t, texturesDiv))))
         .map(t => [t.id, t]));
 }
-class Camera {
+export class Camera {
     static update() {
         this.width = window.innerWidth;
         this.height = window.innerHeight;
@@ -129,7 +141,12 @@ Camera.maxDistanceSquared = _a.maxDistance ** 2;
 (() => {
     _a.update();
 })();
-class Gfx {
+export var RectMode;
+(function (RectMode) {
+    RectMode[RectMode["CENTER"] = 0] = "CENTER";
+    RectMode[RectMode["CORNER"] = 1] = "CORNER";
+})(RectMode || (RectMode = {}));
+export class Gfx {
     static addDrawer(drawer) {
         this.drawers.push(drawer);
     }
@@ -138,15 +155,15 @@ class Gfx {
     }
     static init() {
         this.layers = {
-            tile: ctxTiles,
-            tileOver: ctxTilesOver,
-            buildingsUnder: ctxBuildsUnder,
-            buildings: ctxBuilds,
-            overlayBuilds: ctxOBuilds,
-            ghostBuilds: ctxGBuilds,
-            items: ctxItems,
-            effects: ctxEffects,
-            overlay: ctxOverlays,
+            tile: CTX.tiles,
+            tileOver: CTX.tilesOver,
+            buildingsUnder: CTX.buildsUnder,
+            buildings: CTX.builds,
+            overlayBuilds: CTX.oBuilds,
+            ghostBuilds: CTX.gBuilds,
+            items: CTX.items,
+            effects: CTX.effects,
+            overlay: CTX.overlays,
         };
         this.ctx = this.layers.overlay;
     }
@@ -275,7 +292,7 @@ Gfx.textures = {};
 Gfx.rectMode = RectMode.CORNER;
 Gfx.ctx = null;
 Gfx.drawers = [];
-class ParticleEffect {
+export class ParticleEffect {
     constructor(args) {
         this.lifetime = 1000;
         this.color = "white";
@@ -313,7 +330,7 @@ class ParticleEffect {
 }
 ParticleEffect.effects = new Set();
 ParticleEffect.id = 0;
-const Fx = {
+export const Fx = {
     smoke: new ParticleEffect({
         lifetime: 1500,
         color: "#555",

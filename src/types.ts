@@ -1,6 +1,17 @@
-/* Copyright © BalaM314, 2024. MIT License. */
+/*!license
+Copyright © <BalaM314>, 2024.
+This file is part of Untitled Electron Game.
+Untitled Electron Game is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+Untitled Electron Game is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+You should have received a copy of the GNU General Public License along with Untitled Electron Game. If not, see <https://www.gnu.org/licenses/>.
+*/
+/* Contains game-specific types. */
 
-type TileID = 
+import type { ItemStack } from "./content/registry.js";
+import type { Keybind } from "./ui/input.js";
+
+
+export type TileID = 
 "base_grass" |  //Grass
 "base_stone" |  //stone
 "base_water" |	//water
@@ -10,7 +21,7 @@ type TileID =
 "base_ore_copper" |	//copper ore
 "base_null" ;  //Unset
 
-type LegacyBuildingID = 
+export type LegacyBuildingID = 
 //0x0000 is invalid
 "0x0001" |	//Conveyor Belt Facing Right
 "0x0101" |	//Conveyor Belt Facing Down
@@ -65,13 +76,37 @@ type LegacyBuildingID =
 "0x0011" |	//Assembler
 "0xFFFF" ;	//Null
 
-type LegacyRawBuildingID = "0x01" | "0x02" | "0x03" | "0x04" | "0x05" | "0x06" | "0x07" | "0x08" | "0x09" | "0x0A" | "0x0B" | "0x10" | "0x11" | "0xFF";
-type RawBuildingID = "base_conveyor" | "base_miner" | "base_trash_can" | "base_furnace" | "base_extractor" | "base_chest" | "base_alloy_smelter" | "base_resource_acceptor" | "base_stirling_generator" | "base_wiremill" | "base_compressor" | "base_lathe" | "base_multiblock_secondary" | "base_assembler" | "base_null" | "base_arc_tower" | "base_power_source" | "base_pipe" | "base_pump" | "base_tank" | "base_boiler" | "base_steam_generator";
-type BuildingIDWithMeta = [buildingID:RawBuildingID, meta:BuildingMeta];
-type BuildingMeta = number;
-type StringBuildingID = `${RawBuildingID}:${BuildingMeta}`;
+export type LegacyRawBuildingID = "0x01" | "0x02" | "0x03" | "0x04" | "0x05" | "0x06" | "0x07" | "0x08" | "0x09" | "0x0A" | "0x0B" | "0x10" | "0x11" | "0xFF";
+export type RawBuildingID = "base_conveyor" | "base_miner" | "base_trash_can" | "base_furnace" | "base_extractor" | "base_chest" | "base_alloy_smelter" | "base_resource_acceptor" | "base_stirling_generator" | "base_wiremill" | "base_compressor" | "base_lathe" | "base_multiblock_secondary" | "base_assembler" | "base_null" | "base_arc_tower" | "base_power_source" | "base_pipe" | "base_pump" | "base_tank" | "base_boiler" | "base_steam_generator";
+export type BuildingIDWithMeta = [buildingID:RawBuildingID, meta:BuildingMeta];
+export type BuildingMeta = number;
+export type StringBuildingID = `${RawBuildingID}:${BuildingMeta}`;
 
-interface Recipe {
+export type ItemID =
+| "base_null"
+| "base_coalOre"
+| "base_coal" //fuel
+| "base_sand"
+| "base_ironOre"
+| "base_ironIngot" //dog bowl
+| "base_stone"
+| "base_stoneBrick"
+| "base_ironPlate"
+| "base_ironRod"
+| "base_copperOre"
+| "base_copperIngot" //molten
+| "base_copperWire"
+| "base_steelIngot" //cast iron
+| "base_steelPlate"
+| "base_steelRod"
+| "base_stator"
+| "base_rotor"
+| "base_motor"
+| "base_siliconCrude"
+;
+export type FluidID = "base_water" | "base_steam";
+
+export interface Recipe {
 	inputs?: ItemStack[];
 	fluidInputs?: [fluid:FluidID, totalAmount:number][];
 	outputs?: ItemStack[];
@@ -82,21 +117,15 @@ interface Recipe {
 	powerProduction?: number;
 }
 
-interface Recipes {
+export interface Recipes {
 	[index: `${string}_${string}`]: {
 		recipes: Recipe[];
 	};
 }
 
-type Keybinds = Record<string, Record<string, Keybind>>;
+export type Keybinds = Record<string, Record<string, Keybind>>;
 
-type Rect = [x:number, y:number, width:number, height:number];
-
-interface TagFunction<Tin = string, Tout = string> {
-	(stringChunks: readonly string[], ...varChunks: readonly Tin[]):Tout;
-}
-
-interface SaveData {
+export interface SaveData {
 	UntitledElectronGame: {
 		metadata: {
 			validationCode: "esrdtfgvczdsret56u7yhgvfcesrythgvfd!";
@@ -110,7 +139,7 @@ interface SaveData {
 	}
 }
 
-interface LevelData {
+export interface LevelData {
 	chunks: Record<string, ChunkData>;
 	resources: ItemStack[];
 	seed: number;
@@ -118,13 +147,13 @@ interface LevelData {
 	version: string;
 }
 
-interface ChunkData {
+export interface ChunkData {
 	layers: [(BuildingData | null)[][], (BuildingData | null)[][]];
 	version: string;
 }
-	
 
-interface LegacyBuildingData {
+
+export interface LegacyBuildingData {
 	x: number;
 	y: number;
 	id: LegacyBuildingID;
@@ -132,7 +161,7 @@ interface LegacyBuildingData {
 	inv: ItemData[];
 }
 
-interface BuildingData {
+export interface BuildingData {
 	x: number;
 	y: number;
 	id: RawBuildingID;
@@ -143,21 +172,14 @@ interface BuildingData {
 	inv?: ItemData[];
 }
 
-interface ItemData {
+export interface ItemData {
 	x: number;
 	y: number;
 	id: ItemID;
 }
-type FluidData = [fluidID:FluidID | null, amount:number];
-declare let noise: {
-	seed: (seed:number) => void;
-	perlin2: (x:number, y:number) => number;
-	simplex2: (x:number, y:number) => number;
-	perlin3: (x:number, y:number, z:number) => number;
-	simplex3: (x:number, y:number, z:number) => number;
-};
+export type FluidData = [fluidID:FluidID | null, amount:number];
 
-interface CurrentFrame {
+export interface CurrentFrame {
 	tooltip: boolean;
 	debug: boolean;
 	cps: number;//Chunks per frame
@@ -167,15 +189,5 @@ interface CurrentFrame {
 	frame: number;
 }
 
-interface Array<T> {
-	/**
-	 * Sorts an array into ascending order, with a callback that ranks elements with a number.
-	 */
-	sort2: (callback: (value:T) => number) => void;
-	at(index:number):T | null;
-	map<TThis extends Array<T>, U>(this: TThis, fn: (v: T) => U): { [K in keyof TThis]: U }
-}
 
-
-type PosT = [x:number, y:number];
-type TextureInfo = [size:[width:number, height:number], offset:[x:number, height:number]];
+export type TextureInfo = [size:[width:number, height:number], offset:[x:number, height:number]];

@@ -1,10 +1,25 @@
-/* Copyright © BalaM314, 2024. MIT License. */
+/*!license
+Copyright © <BalaM314>, 2024.
+This file is part of Untitled Electron Game.
+Untitled Electron Game is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+Untitled Electron Game is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+You should have received a copy of the GNU General Public License along with Untitled Electron Game. If not, see <https://www.gnu.org/licenses/>.
+*/
+/* Contains graphics handling. */
 
-interface UnloadedTexture {
+import { constrain, crash } from "../util/funcs.js";
+import { PseudoRandom } from "../util/random.js";
+import { Rect, Intersector, PosT, Pos, add, mul } from "../util/geom.js";
+import { Log } from "../util/log.js";
+import { Game, consts } from "../vars.js";
+import { CTX } from "./dom.js";
+
+
+export interface UnloadedTexture {
 	id: string;
 }
 
-interface Texture extends UnloadedTexture {
+export interface Texture extends UnloadedTexture {
 	image: CanvasImageSource;
 	width: number;
 	height: number;
@@ -12,7 +27,7 @@ interface Texture extends UnloadedTexture {
 	heightByTwo: number;
 }
 
-interface AnimationData {
+export interface AnimationData {
 	/** linear from `from` to `to` */
 	linc(from?:number, to?:number):number;
 	/** linear from `from` to `to` */
@@ -37,7 +52,7 @@ interface AnimationData {
 	cos(b?:number, a?:number, c?:number):number;
 }
 
-function getAnimationData(fin:number):AnimationData {
+export function getAnimationData(fin:number):AnimationData {
 	return {
 		linc:(from = 0, to = 1) => from + fin * (to - from),
 		ldec:(from = 1, to = 0) => from + fin * (to - from), //same function with different defaults lol
@@ -48,7 +63,7 @@ function getAnimationData(fin:number):AnimationData {
 	};
 }
 
-function loadTexture(t:UnloadedTexture, texturesDiv:HTMLDivElement){
+export function loadTexture(t:UnloadedTexture, texturesDiv:HTMLDivElement){
 	return new Promise<Texture>((resolve, reject) => {
 		let img = document.createElement("img");
 		img.setAttribute("src", `assets/textures/${t.id}.png`.replace(":", "!"));
@@ -73,14 +88,14 @@ function loadTexture(t:UnloadedTexture, texturesDiv:HTMLDivElement){
 	});
 }
 
-async function loadTextures(textures:UnloadedTexture[], texturesDiv:HTMLDivElement):Promise<Record<string, Texture>> {
+export async function loadTextures(textures:UnloadedTexture[], texturesDiv:HTMLDivElement):Promise<Record<string, Texture>> {
 	return Object.fromEntries(
 		(await Promise.all(textures.map(t => loadTexture(t, texturesDiv))))
 		.map(t => [t.id, t])
 	);
 }
 
-class Camera {
+export class Camera {
 	//Configuration
 	static readonly maxDistance = 170 * consts.TILE_SIZE;
 	static readonly minZoom = 1;
@@ -187,7 +202,12 @@ class Camera {
 	}
 }
 
-class Gfx {
+export enum RectMode {
+	CENTER,
+	CORNER
+}
+
+export class Gfx {
 
 	static layers:Record<
 		"tile" | "tileOver" | "buildingsUnder" | "buildings" | "overlayBuilds" | "ghostBuilds" | "items" | "effects" | "overlay",
@@ -204,15 +224,15 @@ class Gfx {
 	}
 	static init(){
 		this.layers = {
-			tile: ctxTiles,
-			tileOver: ctxTilesOver,
-			buildingsUnder: ctxBuildsUnder,
-			buildings: ctxBuilds,
-			overlayBuilds: ctxOBuilds,
-			ghostBuilds: ctxGBuilds,
-			items: ctxItems,
-			effects: ctxEffects,
-			overlay: ctxOverlays,
+			tile: CTX.tiles,
+			tileOver: CTX.tilesOver,
+			buildingsUnder: CTX.buildsUnder,
+			buildings: CTX.builds,
+			overlayBuilds: CTX.oBuilds,
+			ghostBuilds: CTX.gBuilds,
+			items: CTX.items,
+			effects: CTX.effects,
+			overlay: CTX.overlays,
 		};
 		this.ctx = this.layers.overlay;
 	}
@@ -423,14 +443,14 @@ class Gfx {
 	}
 }
 
-interface EffectParams extends AnimationData {
+export interface EffectParams extends AnimationData {
 	pos: Pos;
 	prand: PseudoRandom;
 	createdAt: number;
 	color: string;
 }
 
-class ParticleEffect {
+export class ParticleEffect {
 	lifetime = 1000;
 	/** default color */
 	color = "white";
@@ -470,7 +490,7 @@ class ParticleEffect {
 	}
 }
 
-const Fx = {
+export const Fx = {
 	smoke: new ParticleEffect({
 		lifetime: 1500,
 		color: "#555",
@@ -497,7 +517,7 @@ const Fx = {
 	}),
 }
 
-interface EffectData {
+export interface EffectData {
 	type: ParticleEffect;
 	createdAt: number;
 	pos: Pos;

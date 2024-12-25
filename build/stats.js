@@ -5,4 +5,23 @@ Untitled Electron Game is free software: you can redistribute it and/or modify i
 Untitled Electron Game is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 You should have received a copy of the GNU General Public License along with Untitled Electron Game. If not, see <https://www.gnu.org/licenses/>.
 */
-export {};
+import { Buildings, ItemIDs, FluidIDs } from "./content/content.js";
+export const persistentStats = {
+    buildings: {
+        builtByType: Object.fromEntries(Buildings.keys().map(k => [k, 0])),
+        totalBuilt: 0,
+        totalRemoved: 0,
+    },
+    items: {
+        totalInHub: 0,
+        inHub: Object.fromEntries(ItemIDs.map(k => [k, 0])),
+    },
+    fluids: {
+        totalProduced: 0,
+        produced: Object.fromEntries(FluidIDs.map(k => [k, 0])),
+    },
+    power: {
+        totalProduced: 0,
+        producedByType: Object.fromEntries(Buildings.keys().map(k => [k, 0])),
+    }
+};

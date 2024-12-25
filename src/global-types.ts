@@ -1,3 +1,12 @@
+/*!license
+Copyright © <BalaM314>, 2024.
+This file is part of Untitled Electron Game.
+Untitled Electron Game is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+Untitled Electron Game is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+You should have received a copy of the GNU General Public License along with Untitled Electron Game. If not, see <https://www.gnu.org/licenses/>.
+*/
+/* Contains global override type definitions. */
+
 /* eslint-disable @typescript-eslint/consistent-type-definitions */
 
 interface JSON {
@@ -63,4 +72,11 @@ interface Function {
 }
 interface SymbolConstructor {
 	readonly metadata: unique symbol;
+}
+interface Array<T> {
+	/**
+	 * Sorts an array into ascending order, with a callback that ranks elements with a number.
+	 */
+	sort2: (callback: (value:T) => number) => void;
+	//TODO remove monkey patch
 }

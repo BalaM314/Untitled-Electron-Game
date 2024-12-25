@@ -1,15 +1,34 @@
-/*
-Copyright © BalaM314, 2024. MIT License.
-Contains the tech tree and the objective system.
+/*!license
+Copyright © <BalaM314>, 2024.
+This file is part of Untitled Electron Game.
+Untitled Electron Game is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+Untitled Electron Game is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+You should have received a copy of the GNU General Public License along with Untitled Electron Game. If not, see <https://www.gnu.org/licenses/>.
 */
+/* Contains the tech tree and the objective system. */
+
+import { Buildings } from "./content/content.js";
+import { bundle } from "./content/i18n.js";
+import type { ItemStack } from "./content/registry.js";
+import type { ItemID } from "./types.js";
+import { showCredits } from "./ui/cutscenes.js";
+import { DOM } from "./ui/dom.js";
+import { Camera } from "./ui/graphics.js";
+import { Input } from "./ui/input.js";
+import { crash } from "./util/funcs.js";
+import { Game } from "./vars.js";
+import type { BuildingWithRecipe } from "./world/building-types.js";
+import type { Level } from "./world/world.js";
 
 
-class TechTreeNode {
+
+export class TechTreeNode {
 	unlocked = false;
 	children:TechTreeNode[] = [];
 	/** Zero-based index */
 	depth:number;
 	constructor(
+		public level:Level,
 		public id:string,
 		public cost:ItemStack[],
 		public prerequisites:TechTreeNode[] = [],
@@ -19,19 +38,19 @@ class TechTreeNode {
 	tryUnlock():boolean {
 		if(this.unlocked) return true;
 		if(!this.prerequisites.every(p => p.unlocked)) return false;
-		if(!level1.hasResources(this.cost, 2000)) return false;
-		level1.drainResources(this.cost);
+		if(!this.level.hasResources(this.cost, 2000)) return false;
+		this.level.drainResources(this.cost);
 		this.unlocked = true;
 		return true;
 	}
 	showCost(){
-		level1.hasResources(this.cost, 100);
+		this.level.hasResources(this.cost, 100);
 	}
 	hasCost(){
-		return level1.hasResources(this.cost);
+		return this.level.hasResources(this.cost);
 	}
 	missingItem():ItemID | null {
-		return level1.missingItemForResources(this.cost);
+		return this.level.missingItemForResources(this.cost);
 	}
 	imageURL(){
 		//TODO not generic
@@ -47,19 +66,22 @@ class TechTreeNode {
 	}
 }
 
-class TechTree {
+export class TechTree {
 	nodes:TechTreeNode[] = [];
 	nodesByID:Record<string, TechTreeNode> = {}
 	root:TechTreeNode;
 	menuVisible = false;
-	constructor(builder:(tree:TechTree) => unknown){
+	constructor(
+		public level:Level,
+		builder:(tree:TechTree) => unknown
+	){
 		builder(this);
 		this.root = this.nodes.find(n => n.prerequisites.length == 0) ?? crash(`No root node`);
 		this.nodes.forEach(n => n.children.sort2(n => n.children.length))
 	}
 	
 	node(id:string, cost:ItemStack[], prerequisites:TechTreeNode[], unlocked = false):TechTreeNode {
-		const node = new TechTreeNode(id, cost, prerequisites);
+		const node = new TechTreeNode(this.level, id, cost, prerequisites);
 		node.unlocked = unlocked;
 		this.nodes.push(node);
 		this.nodesByID[id] = node;
@@ -87,32 +109,32 @@ class TechTree {
 		else return `<div class="research-tree-inner">${this.displayNode(node)}${node.children.map(c => this.displayTree(c)).join("\n")}</div>`;
 	}
 	display(){
-		if(researchTree.children.length == 0){
+		if(DOM.researchTree.children.length == 0){
 			this.resetTree();
 		}
 		if(this.menuVisible){
-			placedBuilding.type = "base_null";
+			Input.placedBuilding.type = "base_null";
 		}
 	}
 	showMenu(){
 		if(!this.menuVisible){
 			this.resetTree();
 			this.menuVisible = true;
-			researchMenu.classList.remove("hidden");
+			DOM.researchMenu.classList.remove("hidden");
 			//TODO bad
-			resourcesEl.style.backgroundColor = "#111";
+			DOM.resourcesEl.style.backgroundColor = "#111";
 		}
 	}
 	hideMenu(){
 		if(this.menuVisible){
 			this.menuVisible = false;
-			researchMenu.classList.add("hidden");
-			resourcesEl.style.removeProperty("background-color");
+			DOM.researchMenu.classList.add("hidden");
+			DOM.resourcesEl.style.removeProperty("background-color");
 		}
 	}
 	resetTree(){
-		researchTree.innerHTML = this.displayTree(this.root);
-		researchTree.style.setProperty("--nodes", this.nodes.length.toString());
+		DOM.researchTree.innerHTML = this.displayTree(this.root);
+		DOM.researchTree.style.setProperty("--nodes", this.nodes.length.toString());
 	}
 	read(data:string){
 		let numRead = 0;
@@ -129,7 +151,7 @@ class TechTree {
 	}
 }
 
-const tech = new TechTree(tree => {
+export const tech = new TechTree(Game.level1, tree => {
 	//TODO tune research costs and building costs
 	const conveyor = tree.node("building_base_conveyor", [], [], true);
 	const miner = tree.node("building_base_miner", [], [conveyor], true);
@@ -152,7 +174,7 @@ const tech = new TechTree(tree => {
 });
 
 
-class Objective {
+export class Objective {
 	completed = false;
 	satisfied = false;
 	static tree:ObjectiveList | null = null;
@@ -194,30 +216,30 @@ class Objective {
 	}
 }
 
-class ResearchObjective extends Objective {
+export class ResearchObjective extends Objective {
 	constructor(id:string, prerequisites:Objective[], nodeID:string, onComplete?:() => unknown){
 		const node = tech.get(nodeID);
 		super(id, prerequisites, () => node.unlocked, onComplete);
 	}
 }
 
-class ResearchBuildingObjective extends Objective {
+export class ResearchBuildingObjective extends Objective {
 	constructor(id:string, prerequisites:Objective[], nodeID:string, onComplete?:() => unknown){
 		const node = tech.get("building_base_" + nodeID);
 		super(id, prerequisites, () => node.unlocked, onComplete);
 	}
 }
 
-class GatherObjective extends Objective {
+export class GatherObjective extends Objective {
 	constructor(id:string, prerequisites:Objective[], public items:ItemStack[], onComplete?:() => unknown){
-		super(id, prerequisites, () => level1.hasResources(items), onComplete);
+		super(id, prerequisites, () => Game.level1.hasResources(items), onComplete);
 	}
 	name(){
-		return super.name() + ` (${level1.resources[this.items[0][0]]}/${this.items[0][1]})`;
+		return super.name() + ` (${Game.level1.resources[this.items[0][0]]}/${this.items[0][1]})`;
 	}
 }
 
-class ObjectiveList {
+export class ObjectiveList {
 	objectives:Objective[] = [];
 	objectivesByID:Record<string, Objective> = {};
 	constructor(builder:() => unknown){
@@ -252,7 +274,7 @@ class ObjectiveList {
 	}
 }
 
-class ChangingObjective extends Objective {
+export class ChangingObjective extends Objective {
 	name(){
 		return bundle.get(`objective.${this.id}${this.satisfied ? "_satisfied" : ""}.name`);
 	}
@@ -261,7 +283,7 @@ class ChangingObjective extends Objective {
 	}
 }
 
-const objectives = new ObjectiveList(() => {
+export const objectives = new ObjectiveList(() => {
 	const leave = new ChangingObjective("base_leave", [], () => Camera.scrollLimited, () => Camera.scrollTo(0, 0));
 	const tooltips = new Objective("base_tooltips", [], () => Game.transientStats.objectiveHovered);
 	const produceStone = new Objective("base_produceStone");
@@ -275,7 +297,7 @@ const objectives = new ObjectiveList(() => {
 	const gatherSteelIngot = new GatherObjective("base_gatherSteelIngot", [researchAlloySmelter], [["base_steelIngot", 25]]);
 	// const gatherCopperIngot = new GatherObjective("base_gatherCopperIngot", [researchStoneFurnace], [["base_copperIngot", 25]]);
 	const researchStirlingGenerator = new ResearchBuildingObjective("base_researchStirlingGenerator", [gatherSteelIngot], "stirling_generator");
-	const producePower = new Objective("base_producePower", [researchStirlingGenerator], () => level1.grid.maxProduction > 0);
+	const producePower = new Objective("base_producePower", [researchStirlingGenerator], () => Game.level1.grid.maxProduction > 0);
 	const researchCompressor = new ResearchBuildingObjective("base_researchCompressor", [producePower], "compressor");
 	const gatherIronPlate = new GatherObjective("base_gatherIronPlate", [researchCompressor], [["base_ironPlate", 25]]);
 	const researchPipe = new ResearchBuildingObjective("base_researchPipe", [gatherIronPlate], "pipe");
@@ -283,7 +305,7 @@ const objectives = new ObjectiveList(() => {
 	const researchBoiler = new ResearchBuildingObjective("base_researchBoiler", [researchPump], "boiler");
 	const researchWiremill = new ResearchBuildingObjective("base_researchWiremill", [producePower], "wiremill");
 	const researchSteamGenerator = new ResearchBuildingObjective("base_researchSteamGenerator", [researchBoiler], "steam_generator");
-	const activateSteamGenerator = new Objective("base_activateSteamGenerator", [researchSteamGenerator], () => level1.grid.producers.some(p => p.block === Buildings.get("base_steam_generator") && (p as BuildingWithRecipe).efficiencyp > 0));
+	const activateSteamGenerator = new Objective("base_activateSteamGenerator", [researchSteamGenerator], () => Game.level1.grid.producers.some(p => p.block === Buildings.get("base_steam_generator") && (p as BuildingWithRecipe).efficiencyp > 0));
 	const researchLathe = new ResearchBuildingObjective("base_researchLathe", [producePower], "lathe");
 	const researchAssembler = new ResearchBuildingObjective("base_researchAssembler", [researchLathe], "assembler");
 	const produceStators = new Objective("base_produceStators", [researchAssembler]);

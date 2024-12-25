@@ -1,50 +1,17 @@
-"use strict";
-class ContentRegistryC {
-    constructor() {
-        this.contentMap = new Map();
-    }
-    register(id, ctor, props = {}) {
-        let clazz = Object.assign(class extends ctor {
-        }, {
-            ...props, id
-        });
-        if ("node" in clazz)
-            clazz.node = tech.getOpt(`building_${id}`);
-        this.contentMap.set(id, clazz);
-        return clazz;
-    }
-    get(id) {
-        return this.contentMap.get(id) ?? crash(`Object with id ${id} does not exist.`);
-    }
-    getOpt(id) {
-        return this.contentMap.get(id) ?? null;
-    }
-    [Symbol.iterator]() {
-        return this.contentMap.values();
-    }
-    keys() {
-        return Array.from(this.contentMap.keys());
-    }
-}
-class ContentRegistryI {
-    constructor() {
-        this.stringContentMap = new Map();
-        this.numberContentMap = [];
-    }
-    register(content) {
-        this.stringContentMap.set(content.id, content);
-        this.numberContentMap[content.nid] = content;
-    }
-    get(id) {
-        if (typeof id == "number")
-            return this.numberContentMap[id] ?? crash(`No content with id ${id} exists.`);
-        else if (id == null)
-            return null;
-        else
-            return this.stringContentMap.get(id) ?? crash(`No content with id ${id} exists.`);
-    }
-}
-const recipes = {
+/*!license
+Copyright © <BalaM314>, 2024.
+This file is part of Untitled Electron Game.
+Untitled Electron Game is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+Untitled Electron Game is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+You should have received a copy of the GNU General Public License along with Untitled Electron Game. If not, see <https://www.gnu.org/licenses/>.
+*/
+import { Gfx, RectMode, Fx, Camera } from "../ui/graphics.js";
+import { linear_map } from "../util/funcs.js";
+import { add, mul } from "../util/geom.js";
+import { Mathf } from "../vars.js";
+import { Conveyor, Miner, TrashCan, BuildingWithRecipe, Extractor, StorageBuilding, ResourceAcceptor, MultiBlockSecondary, MultiBlockController, ArcTower, PowerSource, Pipe, Pump, Tank } from "../world/building-types.js";
+import { ContentRegistryI, Fluid, ContentRegistryC } from "./registry.js";
+export const recipes = {
     base_mining: {
         recipes: [
             {
@@ -189,7 +156,7 @@ const recipes = {
         ]
     },
 };
-const ItemIDs = [
+export const ItemIDs = [
     "base_null",
     "base_coalOre",
     "base_coal",
@@ -210,14 +177,14 @@ const ItemIDs = [
     "base_rotor",
     "base_motor",
 ];
-const FluidIDs = [
+export const FluidIDs = [
     "base_water",
     "base_steam",
 ];
-const Fluids = new ContentRegistryI();
+export const Fluids = new ContentRegistryI();
 Fluids.register(new Fluid("base_water", "blue"));
 Fluids.register(new Fluid("base_steam", "white"));
-const Buildings = new ContentRegistryC();
+export const Buildings = new ContentRegistryC();
 Buildings.register("base_conveyor", Conveyor, {
     buildCost: [["base_stone", 1]],
 });

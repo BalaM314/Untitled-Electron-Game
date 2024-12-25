@@ -1,51 +1,23 @@
-/* Copyright © BalaM314, 2024. MIT License. */
-/** Content registry where the content is a class. */
-class ContentRegistryC<K, T extends new (...args:any[]) => {}> implements Iterable<T> {
-	private contentMap = new Map<K, T>();
-	constructor(){}
-	register<B extends T>(id:K, ctor:B, props:Partial<Exclude<B, "prototype">> = {}) {
-		let clazz = Object.assign(class extends ctor {}, {
-			...props, id
-		});
-		if("node" in clazz)
-			(clazz as UnlockableContent).node = tech.getOpt(`building_${id}`); //TODO nongeneric: uses "building" but might be something else
-		this.contentMap.set(id, clazz);
-		return clazz;
-	}
-	get(id:K):T {
-		return this.contentMap.get(id) ?? crash(`Object with id ${id} does not exist.`);
-	}
-	getOpt(id:K | undefined):T | null {
-		return (this.contentMap.get as (key: K | undefined) => T | undefined)(id) ?? null;
-	}
-	[Symbol.iterator]():Iterator<T> {
-		return this.contentMap.values();
-	}
-	keys():K[] {
-		return Array.from(this.contentMap.keys());
-	}
-}
+/*!license
+Copyright © <BalaM314>, 2024.
+This file is part of Untitled Electron Game.
+Untitled Electron Game is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+Untitled Electron Game is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+You should have received a copy of the GNU General Public License along with Untitled Electron Game. If not, see <https://www.gnu.org/licenses/>.
+*/
+/* Contains content, such as items, fluids, buildings, and recipes. */
 
-/** Content registry for when the content is a class instance. */
-class ContentRegistryI<K extends string, T extends Content<string>> {
-	private stringContentMap = new Map<K, T>();
-	private numberContentMap = [] as T[];
-	register(content:T){
-		this.stringContentMap.set(content.id as K, content);
-		this.numberContentMap[content.nid] = content;
-	}
-	get(id:K):T;
-	get(id:number):T;
-	get(id:null):null;
-	get(id:K | number | null):T | null;
-	get(id:K | number | null):T | null {
-		if(typeof id == "number") return this.numberContentMap[id] ?? crash(`No content with id ${id} exists.`);
-		else if(id == null) return null;
-		else return this.stringContentMap.get(id) ?? crash(`No content with id ${id} exists.`);
-	}
-}
+import type { Recipes, ItemID, FluidID, RawBuildingID } from "../types.js";
+import { Gfx, RectMode, Fx, Camera } from "../ui/graphics.js";
+import { linear_map } from "../util/funcs.js";
+import { PosT, add, mul } from "../util/geom.js";
+import { Mathf } from "../vars.js";
+import type { Building } from "../world/building.js";
+import { Conveyor, Miner, TrashCan, BuildingWithRecipe, Extractor, StorageBuilding, ResourceAcceptor, MultiBlockSecondary, MultiBlockController, ArcTower, PowerSource, Pipe, Pump, Tank } from "../world/building-types.js";
+import { ContentRegistryI, Fluid, ContentRegistryC } from "./registry.js";
 
-const recipes = {
+
+export const recipes = {
 	base_mining: {
 		recipes: [
 			{
@@ -190,7 +162,7 @@ const recipes = {
 		]
 	},
 } satisfies Recipes;
-const ItemIDs:ItemID[] = [
+export const ItemIDs:ItemID[] = [
 	"base_null",
 	"base_coalOre",
 	"base_coal",
@@ -211,16 +183,16 @@ const ItemIDs:ItemID[] = [
 	"base_rotor",
 	"base_motor",
 ];
-const FluidIDs:FluidID[] = [
+export const FluidIDs:FluidID[] = [
 	"base_water",
 	"base_steam",
 ];
 
-const Fluids = new ContentRegistryI<FluidID, Fluid>();
+export const Fluids = new ContentRegistryI<FluidID, Fluid>();
 Fluids.register(new Fluid("base_water", "blue"));
 Fluids.register(new Fluid("base_steam", "white"));
 
-const Buildings = new ContentRegistryC<RawBuildingID, typeof Building>();
+export const Buildings = new ContentRegistryC<RawBuildingID, typeof Building>();
 Buildings.register("base_conveyor", Conveyor, {
 	buildCost: [["base_stone", 1]],
 });
