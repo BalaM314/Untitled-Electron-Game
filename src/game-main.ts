@@ -24,6 +24,7 @@ import { Rand } from "./util/random.js";
 import { Log } from "./util/log.js";
 import { Game, settings } from "./vars.js";
 import { textureIDs } from "./texturedata.js";
+import * as noise from "./util/perlin.js";
 
 
 export function returnToTitle(){

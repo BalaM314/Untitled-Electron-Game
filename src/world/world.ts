@@ -19,6 +19,7 @@ import { Pos, PosT, add } from "../util/geom.js";
 import { consts, Game, settings } from "../vars.js";
 import { Building, PowerGrid } from "./building.js";
 import { MultiBlockController, OverlayBuild } from "./building-types.js";
+import { perlin2 } from "../util/perlin.js";
 
 
 export class Level {
@@ -675,7 +676,7 @@ export class Chunk {
 					} else {
 						//Choose the tile to be placed:
 						const noiseHeight = 
-						Math.abs(noise.perlin2(
+						Math.abs(perlin2(
 							((this.x * consts.CHUNK_SIZE) + x + this.parent.seed) / generation_consts.perlin_scale,
 							((this.y * consts.CHUNK_SIZE) + y + (this.parent.seed + generation_consts.y_offset))
 								/ generation_consts.perlin_scale

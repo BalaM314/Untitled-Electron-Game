@@ -15,6 +15,7 @@ import { Pos, add } from "../util/geom.js";
 import { consts, Game, settings } from "../vars.js";
 import { Building, PowerGrid } from "./building.js";
 import { MultiBlockController, OverlayBuild } from "./building-types.js";
+import { perlin2 } from "../util/perlin.js";
 export class Level {
     constructor(seed, applyStartResources) {
         this.seed = seed;
@@ -545,7 +546,7 @@ export class Chunk {
                         this.layers[0][y][x] = "base_water";
                     }
                     else {
-                        const noiseHeight = Math.abs(noise.perlin2(((this.x * consts.CHUNK_SIZE) + x + this.parent.seed) / generation_consts.perlin_scale, ((this.y * consts.CHUNK_SIZE) + y + (this.parent.seed + generation_consts.y_offset))
+                        const noiseHeight = Math.abs(perlin2(((this.x * consts.CHUNK_SIZE) + x + this.parent.seed) / generation_consts.perlin_scale, ((this.y * consts.CHUNK_SIZE) + y + (this.parent.seed + generation_consts.y_offset))
                             / generation_consts.perlin_scale));
                         if ((noiseHeight + distanceBoost / 2) > generation_consts.hilly.ore_threshold) {
                             this.layers[0][y][x] = oreToGenerate;
