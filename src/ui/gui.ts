@@ -7,16 +7,16 @@ You should have received a copy of the GNU General Public License along with Unt
 */
 /* Contains code for the game's graphical user interface (the HUD, and other dialogs). */
 
+import type { RawBuildingID, ItemID, CurrentFrame } from "../types.js";
+import { tooltip, round, bindFunctionProperties } from "../util/funcs.js";
+import { Game, consts, settings } from "../vars.js";
+import { Pos } from "../util/geom.js";
+import { Camera } from "./camera.js";
 import { Buildings } from "../content/content.js";
 import { bundle } from "../content/i18n.js";
 import { tech, objectives } from "../objectives.js";
-import type { RawBuildingID, ItemID, CurrentFrame } from "../types.js";
-import { tooltip, round, bindFunctionProperties } from "../util/funcs.js";
-import { Pos } from "../util/geom.js";
-import { Game, consts, settings } from "../vars.js";
 import { Item } from "../world/world.js";
 import { DOM } from "./dom.js";
-import { Camera } from "./graphics.js";
 import { Input, keybinds } from "./input.js";
 
 

@@ -72,7 +72,7 @@ export class Building {
 	static unlocked(){
 		return this.node?.unlocked ?? this.hidden;
 	}
-	static changeMeta(meta:BuildingMeta, tileX:number, tileY:number, level:Level):BuildingMeta {
+	static changeMeta(meta:BuildingMeta, tileX:number, tileY:number, level:Level, force_straight_conveyor:boolean):BuildingMeta {
 		return meta;
 	}
 	static getID(type:RawBuildingID, direction:Direction, modifier:number):BuildingIDWithMeta {

@@ -7,14 +7,15 @@ You should have received a copy of the GNU General Public License along with Unt
 */
 /* Contains cutscene code. */
 
-import { returnToTitle } from "../game-main.js";
 import { delay, until } from "../util/funcs.js";
 import { Pos } from "../util/geom.js";
 import { consts, settings, Game } from "../vars.js";
 import { DOM } from "./dom.js";
-import { Camera, Gfx, Fx } from "./graphics.js";
+import { Gfx, Fx } from "./graphics.js";
+import { Camera } from "./camera.js";
 import { HUD } from "./gui.js";
 import { Input } from "./input.js";
+import { returnToTitle } from "../game-main.js";
 
 export async function showCredits(){
 	

@@ -5,14 +5,15 @@ Untitled Electron Game is free software: you can redistribute it and/or modify i
 Untitled Electron Game is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 You should have received a copy of the GNU General Public License along with Untitled Electron Game. If not, see <https://www.gnu.org/licenses/>.
 */
-import { returnToTitle } from "../game-main.js";
 import { delay, until } from "../util/funcs.js";
 import { Pos } from "../util/geom.js";
 import { consts, settings, Game } from "../vars.js";
 import { DOM } from "./dom.js";
-import { Camera, Gfx, Fx } from "./graphics.js";
+import { Gfx, Fx } from "./graphics.js";
+import { Camera } from "./camera.js";
 import { HUD } from "./gui.js";
 import { Input } from "./input.js";
+import { returnToTitle } from "../game-main.js";
 export async function showCredits() {
     HUD.hide();
     Input.active = false;

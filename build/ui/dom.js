@@ -5,15 +5,10 @@ Untitled Electron Game is free software: you can redistribute it and/or modify i
 Untitled Electron Game is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 You should have received a copy of the GNU General Public License along with Untitled Electron Game. If not, see <https://www.gnu.org/licenses/>.
 */
-import { Buildings } from "../content/content.js";
-import { bundle } from "../content/i18n.js";
-import { SaveIO } from "../game-funcs.js";
-import { objectives } from "../objectives.js";
-import { getElement, safeToSave, saveToLocalStorage, selectID } from "../util/funcs.js";
+import { getElement } from "../util/funcs.js";
 import { Game } from "../vars.js";
-import { Camera } from "./graphics.js";
-import { GUI } from "./gui.js";
-import { Input, keybinds } from "./input.js";
+import { Camera } from "./camera.js";
+import { bundle } from "../content/i18n.js";
 export const CTX = (d => Object.fromEntries(Object.entries(d).map(([k, id]) => [k, getElement(id, HTMLCanvasElement).getContext("2d")])))({
     tiles: "canvas0",
     tilesOver: "canvas1",
@@ -56,7 +51,12 @@ export const DOM = {
 };
 export async function registerEventHandlers() {
     const { scenes } = await import("./scenes.js");
+    const { GUI } = await import("./gui.js");
+    const { Buildings } = await import("../content/content.js");
+    const { objectives } = await import("../objectives.js");
+    const { safeToSave, SaveIO, saveToLocalStorage, selectID } = await import("../game-funcs.js");
     const { clickcapture } = DOM;
+    const { Input, keybinds } = await import("./input.js");
     const onmousemove = (e) => {
         Input.mouseX = e.x;
         Input.mouseY = e.y;

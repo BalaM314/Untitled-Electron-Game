@@ -5,15 +5,15 @@ Untitled Electron Game is free software: you can redistribute it and/or modify i
 Untitled Electron Game is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 You should have received a copy of the GNU General Public License along with Untitled Electron Game. If not, see <https://www.gnu.org/licenses/>.
 */
+import { tooltip, round, bindFunctionProperties } from "../util/funcs.js";
+import { Game, consts, settings } from "../vars.js";
+import { Pos } from "../util/geom.js";
+import { Camera } from "./camera.js";
 import { Buildings } from "../content/content.js";
 import { bundle } from "../content/i18n.js";
 import { tech, objectives } from "../objectives.js";
-import { tooltip, round, bindFunctionProperties } from "../util/funcs.js";
-import { Pos } from "../util/geom.js";
-import { Game, consts, settings } from "../vars.js";
 import { Item } from "../world/world.js";
 import { DOM } from "./dom.js";
-import { Camera } from "./graphics.js";
 import { Input, keybinds } from "./input.js";
 export const HUD = bindFunctionProperties({
     elements: [DOM.hudtextEl, DOM.resourcesEl, DOM.objectiveEl, DOM.toolbarEl, DOM.buttonsPane],

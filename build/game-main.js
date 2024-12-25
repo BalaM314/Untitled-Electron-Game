@@ -5,21 +5,22 @@ Untitled Electron Game is free software: you can redistribute it and/or modify i
 Untitled Electron Game is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 You should have received a copy of the GNU General Public License along with Untitled Electron Game. If not, see <https://www.gnu.org/licenses/>.
 */
-import "./ui/gui.js";
-import "./ui/scenes.js";
 import { splashes } from "./content/splashes.js";
+import { textureIDs } from "./texturedata.js";
+import * as noise from "./util/perlin.js";
+import { assert, parseError, crash } from "./util/funcs.js";
+import { Game, settings } from "./vars.js";
+import { Rand } from "./util/random.js";
+import { Log } from "./util/log.js";
+import { Camera } from "./ui/camera.js";
+import { Gfx, loadTextures } from "./ui/graphics.js";
 import { dumpObjectsToGlobalScope, manualLocalSave } from "./game-funcs.js";
 import { setCanvasSizes, registerEventHandlers, DOM, CTX } from "./ui/dom.js";
-import { Camera, Gfx, loadTextures } from "./ui/graphics.js";
 import { HUD, GUI } from "./ui/gui.js";
 import { Input } from "./ui/input.js";
 import { scenes } from "./ui/scenes.js";
-import { assert, parseError, crash } from "./util/funcs.js";
-import { Rand } from "./util/random.js";
-import { Log } from "./util/log.js";
-import { Game, settings } from "./vars.js";
-import { textureIDs } from "./texturedata.js";
-import * as noise from "./util/perlin.js";
+import { Buildings } from "./content/content.js";
+import { tech } from "./objectives.js";
 export function returnToTitle() {
     HUD.hide();
     manualLocalSave(false, false);
@@ -94,6 +95,7 @@ This game is open source! https://github.com/BalaM314/Untitled-Electron-Game`;
         Log.info(`Successfully loaded ${Object.keys(loadedTextures).length} textures.`);
     })
         .catch(() => { });
+    Buildings.setNodes(tech);
     await registerEventHandlers();
     if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
         alert("It looks like you're trying to play on a phone. Unfortunately, mobile devices are not currently supported.");
@@ -107,7 +109,7 @@ This game is open source! https://github.com/BalaM314/Untitled-Electron-Game`;
     DOM.errorBackground.classList.remove("hidden");
     DOM.loadingBackground.classList.add("hidden");
     DOM.gameBackground.classList.remove("hidden");
-    void dumpObjectsToGlobalScope();
+    dumpObjectsToGlobalScope();
     main_loop();
 }
 queueMicrotask(() => void init());

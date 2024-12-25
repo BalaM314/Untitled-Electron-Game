@@ -8,7 +8,8 @@ You should have received a copy of the GNU General Public License along with Unt
 import { Buildings } from "../content/content.js";
 import { SaveIO, manualLocalSave } from "../game-funcs.js";
 import { Direction } from "../util/direction.js";
-import { download, firstUsePopup, selectID } from "../util/funcs.js";
+import { download, firstUsePopup } from "../util/funcs.js";
+import { selectID } from "../game-funcs.js";
 import { Game } from "../vars.js";
 import { DOM } from "./dom.js";
 import { GUI, HUD } from "./gui.js";

@@ -7,15 +7,7 @@ You should have received a copy of the GNU General Public License along with Unt
 */
 /* Contains generic utility functions, as well as game related functions. */
 
-import { Buildings } from "../content/content.js";
-import { SaveIO } from "../game-funcs.js";
-import { tech, objectives } from "../objectives.js";
-import type { SaveData, RawBuildingID, BuildingMeta, StringBuildingID, LegacyRawBuildingID, LegacyBuildingID } from "../types.js";
-import { DOM } from "../ui/dom.js";
-import type { Texture } from "../ui/graphics.js";
-import { Input, Keybind, PartialMouseEvent } from "../ui/input.js";
-import { Game } from "../vars.js";
-import { Intersector } from "./geom.js";
+import type { RawBuildingID, BuildingMeta, StringBuildingID, LegacyRawBuildingID, LegacyBuildingID } from "../types.js";
 
 
 //#region general utils
@@ -30,26 +22,6 @@ if(!Array.prototype.at){
 	Object.defineProperty(Array.prototype, "at", {
 		enumerable: false
 	});
-}
-
-/**Returns the time passed since program start in milliseconds. */
-export function millis():number{
-	return (new Date()).valueOf() - Game.startTime.valueOf();
-}
-
-/**Finds the greatest common divisor of two numbers */
-export function gcd(x:number, y:number){
-	if((typeof x !== 'number') || (typeof y !== 'number')){
-		return 1;
-	}
-	x = Math.abs(x);
-	y = Math.abs(y);
-	while(y) {
-		const t = y;
-		y = x % y;
-		x = t;
-	}
-	return x;
 }
 
 export function delay(time:number):Promise<void> {
@@ -134,96 +106,6 @@ export function importObject(base:{}, ext:{}){
 			if(typeof v === "object" && v != null){
 				importObject(v, ext[k]);
 			} else base[k] = ext[k];
-		}
-	}
-}
-
-export class Button {
-	declare x: number;
-	declare y: number;
-	declare width: number;
-	declare height: number;
-	declare label: string | Texture;
-	//is this really the best way to solve this?
-	color: string;
-	font: string;
-	onClick: (event:PartialMouseEvent) => void;
-	constructor(config:{
-		x: number | (() => number);
-		y: number | (() => number);
-		width: number | (() => number);
-		height: number | (() => number);
-		label: string | (() => string | Texture) | Texture;
-		color: string;
-		font: string;
-		onClick: (event:PartialMouseEvent) => void;
-	}){
-		if(config.x instanceof Function)
-			Object.defineProperty(this, "x", {get: config.x});
-		else
-			this.x = config.x ?? 300;
-		
-		if(config.y instanceof Function)
-			Object.defineProperty(this, "y", {get: config.y});
-		else
-			this.y = config.y ?? 300;
-		
-		if(config.width instanceof Function)
-			Object.defineProperty(this, "width", {get: config.width});
-		else
-			this.width = config.width ?? 300;
-		
-		if(config.height instanceof Function)
-			Object.defineProperty(this, "height", {get: config.height});
-		else
-			this.height = config.height ?? 300;
-		
-		if(config.label instanceof Function)
-			Object.defineProperty(this, "label", {get: config.label});
-		else
-			this.label = config.label ?? "Button";
-		
-		this.color = config.color ?? "#0000FF";
-		this.font = config.font ?? "20px sans-serif";
-		this.onClick = config.onClick ?? (()=>{});
-	}
-	display(_ctx:CanvasRenderingContext2D){
-		_ctx.fillStyle = this.color;
-		_ctx.strokeStyle = "#000000";
-		_ctx.lineWidth = 2;
-		_ctx.globalAlpha = 1.0;
-		_ctx.fillRect(this.x, this.y, this.width, this.height);
-		_ctx.strokeRect(this.x, this.y, this.width, this.height);
-		if(this.isMouseInside()){
-			_ctx.fillStyle = "#FFFFFF";
-			if(Input.mouseDown){
-				_ctx.globalAlpha = 0.4;
-			} else {
-				_ctx.globalAlpha = 0.2;
-			}
-			_ctx.lineWidth = 0;
-			_ctx.fillRect(this.x, this.y, this.width, this.height);
-		}
-		_ctx.lineWidth = 1;
-		_ctx.globalAlpha = 1.0;
-		_ctx.font = this.font;
-		_ctx.textAlign = "center";
-		const tempBaseline = _ctx.textBaseline;
-		_ctx.textBaseline = "middle";
-		_ctx.fillStyle = "#FFFFFF";
-		if(typeof this.label == "string"){
-			_ctx.fillText(this.label,this.x + this.width/2,this.y + this.height/2);
-		} else {
-			_ctx.drawImage(this.label.image, this.x, this.y, this.width, this.height);
-		}
-		_ctx.textBaseline = tempBaseline;
-	}
-	isMouseInside(){
-		return Intersector.pointInRect([Input.mouseX, Input.mouseY], [this.x, this.y, this.width, this.height]);
-	}
-	handleMouseClick(e:PartialMouseEvent){
-		if(this.isMouseInside() && e.button == 0){
-			this.onClick(e);
 		}
 	}
 }
@@ -315,31 +197,6 @@ export function firstUsePopup(key:string, message:string, callback?:() => unknow
 	}
 }
 
-//#endregion
-//#region Game-related functions
-
-export function saveExists(){
-	return localStorage.getItem("save1") != null;
-}
-
-export function safeToSave():boolean {
-	if(!saveExists()) return true;
-	try {
-		const data = JSON.parse(localStorage.getItem("save1")!) as SaveData;
-		assert(data.UntitledElectronGame.metadata.validationCode === "esrdtfgvczdsret56u7yhgvfcesrythgvfd!");
-		return data.UntitledElectronGame.metadata.uuid == Game.level1.uuid || (data.UntitledElectronGame.metadata as {id?: unknown;}).id == Game.level1.uuid;
-	} catch(err){
-		return true;
-	}
-}
-
-export function saveToLocalStorage(){
-	localStorage.setItem("save1", JSON.stringify(SaveIO.export()));
-	localStorage.setItem("untitled-electron-game:tech-tree", tech.write());
-	localStorage.setItem("untitled-electron-game:objectives", objectives.write());
-	Game.lastSaved = Date.now();
-}
-
 export function hex(num:number, length:number){
 	return `0x${(Array(length).fill("0").join("") + num.toString(16)).toUpperCase().slice(-length)}`;
 	//it just works
@@ -371,43 +228,4 @@ export function getLegacyRawBuildingID(buildingID:LegacyBuildingID):LegacyRawBui
 	return hex(+buildingID, 2) as LegacyRawBuildingID;
 }
 
-export function makeRebindButton(
-	y: number,
-	keybind: Keybind,
-	buttonName: string,
-	defaultKey: string
-){
-	return new Button({
-		x: () => innerWidth * 0.3,
-		y: () => innerHeight * y,
-		width: () => innerWidth * 0.4,
-		height: () => innerHeight * 0.05,
-		label: () => 
-			`${buttonName}: ${
-				keybind.modifiers
-					.filter(key => !key.startsWith("!"))
-					.map(el => el + " + ")
-					.join("")
-				//Get the list of modifiers, remove the ones that start with !, then add " + " to each one.
-			}${keybind.mainKey}`,
-		color: "#08F",
-		font: "15px sans-serif",
-		onClick: () => {
-			keybind.mainKey =
-				(prompt(`Rebind ${buttonName.toLowerCase()} to:`) ?? defaultKey).toLowerCase().substring(0,1);
-		}
-	});
-}
 
-export function selectID(id:RawBuildingID){
-	const block = Buildings.getOpt(id);
-	if(block && !block.unlocked()) id = "base_null";
-	Input.placedBuilding.type = id;
-	const image = document.querySelector(`img#toolbar_${id}`);
-	for(const icon of DOM.toolbarEl.children){
-		icon.classList.remove("selected");
-	}
-	if(image) image.classList.add("selected");
-}
-
-//#endregion

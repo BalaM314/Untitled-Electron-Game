@@ -8,7 +8,8 @@ You should have received a copy of the GNU General Public License along with Unt
 /* Contains content, such as items, fluids, buildings, and recipes. */
 
 import type { Recipes, ItemID, FluidID, RawBuildingID } from "../types.js";
-import { Gfx, RectMode, Fx, Camera } from "../ui/graphics.js";
+import { Gfx, RectMode, Fx } from "../ui/graphics.js";
+import { Camera } from "../ui/camera.js";
 import { linear_map } from "../util/funcs.js";
 import { PosT, add, mul } from "../util/geom.js";
 import { Mathf } from "../vars.js";

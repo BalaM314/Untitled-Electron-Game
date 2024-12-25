@@ -5,7 +5,6 @@ Untitled Electron Game is free software: you can redistribute it and/or modify i
 Untitled Electron Game is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 You should have received a copy of the GNU General Public License along with Untitled Electron Game. If not, see <https://www.gnu.org/licenses/>.
 */
-import { tech } from "../objectives.js";
 import { crash } from "../util/funcs.js";
 export class Content {
     constructor(id) {
@@ -23,10 +22,14 @@ export class ContentRegistryC {
         }, {
             ...props, id
         });
-        if ("node" in clazz)
-            clazz.node = tech.getOpt(`building_${id}`);
         this.contentMap.set(id, clazz);
         return clazz;
+    }
+    setNodes(tree) {
+        for (const [id, clazz] of this.contentMap.entries()) {
+            if ("node" in clazz)
+                clazz.node = tree.getOpt(`building_${id}`);
+        }
     }
     get(id) {
         return this.contentMap.get(id) ?? crash(`Object with id ${id} does not exist.`);

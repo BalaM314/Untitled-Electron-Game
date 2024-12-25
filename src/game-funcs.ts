@@ -7,18 +7,20 @@ You should have received a copy of the GNU General Public License along with Unt
 */
 /* Contains game-specific functions. */
 
-import { tech, objectives } from "./objectives.js";
-import type { SaveData } from "./types.js";
-import { Camera } from "./ui/graphics.js";
-import { GUI, HUD } from "./ui/gui.js";
-import { Input } from "./ui/input.js";
-import { safeToSave, saveToLocalStorage, parseError, assert, saveExists } from "./util/funcs.js";
+import type { RawBuildingID, SaveData } from "./types.js";
+import { parseError, assert } from "./util/funcs.js";
 import { Rand } from "./util/random.js";
 import { Log } from "./util/log.js";
 import { Game, consts, settings } from "./vars.js";
+import { Camera } from "./ui/camera.js";
+import { tech, objectives } from "./objectives.js";
+import { GUI, HUD } from "./ui/gui.js";
+import { Input } from "./ui/input.js";
 import { Level } from "./world/world.js";
-// import { PersistentStats } from "./stats.js";
-
+import { Buildings } from "./content/content.js";
+import { DOM } from "./ui/dom.js";
+import { PersistentStats } from "./stats.js";
+import * as everything from "./index.js";
 
 
 export function manualLocalSave(allowConfirmDialog: boolean, showSuccessMessage: boolean) {
@@ -129,8 +131,41 @@ This is a game about building a factory. To get started, follow the objectives i
 	HUD.show();
 }
 
-export async function dumpObjectsToGlobalScope(){
-	const everything = await import("./index.js");
+export function dumpObjectsToGlobalScope(){
 	Object.assign(window, everything);
+}
+export function selectID(id: RawBuildingID) {
+	const block = Buildings.getOpt(id);
+	if (block && !block.unlocked()) id = "base_null";
+	Input.placedBuilding.type = id;
+	const image = document.querySelector(`img#toolbar_${id}`);
+	for (const icon of DOM.toolbarEl.children) {
+		icon.classList.remove("selected");
+	}
+	if (image) image.classList.add("selected");
+}
+//#endregion
+//#region Game-related functions
+
+export function saveExists() {
+	return localStorage.getItem("save1") != null;
+}
+
+export function safeToSave(): boolean {
+	if (!saveExists()) return true;
+	try {
+		const data = JSON.parse(localStorage.getItem("save1")!) as SaveData;
+		assert(data.UntitledElectronGame.metadata.validationCode === "esrdtfgvczdsret56u7yhgvfcesrythgvfd!");
+		return data.UntitledElectronGame.metadata.uuid == Game.level1.uuid || (data.UntitledElectronGame.metadata as { id?: unknown; }).id == Game.level1.uuid;
+	} catch (err) {
+		return true;
+	}
+}
+
+export function saveToLocalStorage() {
+	localStorage.setItem("save1", JSON.stringify(SaveIO.export()));
+	localStorage.setItem("untitled-electron-game:tech-tree", tech.write());
+	localStorage.setItem("untitled-electron-game:objectives", objectives.write());
+	Game.lastSaved = Date.now();
 }
 

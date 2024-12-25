@@ -79,7 +79,7 @@ let Building = (() => {
         static unlocked() {
             return this.node?.unlocked ?? this.hidden;
         }
-        static changeMeta(meta, tileX, tileY, level) {
+        static changeMeta(meta, tileX, tileY, level, force_straight_conveyor) {
             return meta;
         }
         static getID(type, direction, modifier) {

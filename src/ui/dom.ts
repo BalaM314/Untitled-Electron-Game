@@ -7,15 +7,11 @@ You should have received a copy of the GNU General Public License along with Unt
 */
 /* Contains code that interacts with the DOM, such as fetching elements and adding event listeners. */
 
-import { Buildings } from "../content/content.js";
-import { bundle } from "../content/i18n.js";
-import { SaveIO } from "../game-funcs.js";
-import { objectives } from "../objectives.js";
-import { getElement, safeToSave, saveToLocalStorage, selectID } from "../util/funcs.js";
+import { getElement } from "../util/funcs.js";
 import { Game } from "../vars.js";
-import { Camera } from "./graphics.js";
-import { GUI } from "./gui.js";
-import { Input, keybinds, PartialMouseEvent } from "./input.js";
+import { Camera } from "./camera.js";
+import { bundle } from "../content/i18n.js";
+import type { PartialMouseEvent } from "./input.js";
 
 
 export const CTX = (d => Object.fromEntries(Object.entries(d).map(([k, id]) =>
@@ -64,8 +60,14 @@ export const DOM = {
 
 /**Registers event handlers, called once on page load. */
 export async function registerEventHandlers(){
+	//Dynamic import is necessary, without this, the import graph is hopeless
 	const { scenes } = await import("./scenes.js");
+	const { GUI } = await import("./gui.js");
+	const { Buildings } = await import("../content/content.js");
+	const { objectives } = await import("../objectives.js");
+	const { safeToSave, SaveIO, saveToLocalStorage, selectID } = await import("../game-funcs.js");
 	const { clickcapture } = DOM;
+	const { Input, keybinds } = await import("./input.js");
 
 	const onmousemove = (e: PartialMouseEvent) => {
 		//Update mouse position

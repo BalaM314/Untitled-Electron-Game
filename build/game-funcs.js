@@ -5,16 +5,19 @@ Untitled Electron Game is free software: you can redistribute it and/or modify i
 Untitled Electron Game is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 You should have received a copy of the GNU General Public License along with Untitled Electron Game. If not, see <https://www.gnu.org/licenses/>.
 */
-import { tech, objectives } from "./objectives.js";
-import { Camera } from "./ui/graphics.js";
-import { GUI, HUD } from "./ui/gui.js";
-import { Input } from "./ui/input.js";
-import { safeToSave, saveToLocalStorage, parseError, assert, saveExists } from "./util/funcs.js";
+import { parseError, assert } from "./util/funcs.js";
 import { Rand } from "./util/random.js";
 import { Log } from "./util/log.js";
 import { Game, consts, settings } from "./vars.js";
+import { Camera } from "./ui/camera.js";
+import { tech, objectives } from "./objectives.js";
+import { GUI, HUD } from "./ui/gui.js";
+import { Input } from "./ui/input.js";
 import { Level } from "./world/world.js";
+import { Buildings } from "./content/content.js";
+import { DOM } from "./ui/dom.js";
 import { PersistentStats } from "./stats.js";
+import * as everything from "./index.js";
 export function manualLocalSave(allowConfirmDialog, showSuccessMessage) {
     if (safeToSave() || allowConfirmDialog &&
         confirm("Are you sure you want to save? This will overwrite your current saved world which seems to be different!")) {
@@ -110,7 +113,39 @@ This is a game about building a factory. To get started, follow the objectives i
     Game.forceRedraw = true;
     HUD.show();
 }
-export async function dumpObjectsToGlobalScope() {
-    const everything = await import("./index.js");
+export function dumpObjectsToGlobalScope() {
     Object.assign(window, everything);
+}
+export function selectID(id) {
+    const block = Buildings.getOpt(id);
+    if (block && !block.unlocked())
+        id = "base_null";
+    Input.placedBuilding.type = id;
+    const image = document.querySelector(`img#toolbar_${id}`);
+    for (const icon of DOM.toolbarEl.children) {
+        icon.classList.remove("selected");
+    }
+    if (image)
+        image.classList.add("selected");
+}
+export function saveExists() {
+    return localStorage.getItem("save1") != null;
+}
+export function safeToSave() {
+    if (!saveExists())
+        return true;
+    try {
+        const data = JSON.parse(localStorage.getItem("save1"));
+        assert(data.UntitledElectronGame.metadata.validationCode === "esrdtfgvczdsret56u7yhgvfcesrythgvfd!");
+        return data.UntitledElectronGame.metadata.uuid == Game.level1.uuid || data.UntitledElectronGame.metadata.id == Game.level1.uuid;
+    }
+    catch (err) {
+        return true;
+    }
+}
+export function saveToLocalStorage() {
+    localStorage.setItem("save1", JSON.stringify(SaveIO.export()));
+    localStorage.setItem("untitled-electron-game:tech-tree", tech.write());
+    localStorage.setItem("untitled-electron-game:objectives", objectives.write());
+    Game.lastSaved = Date.now();
 }

@@ -6,14 +6,17 @@ Untitled Electron Game is distributed in the hope that it will be useful, but WI
 You should have received a copy of the GNU General Public License along with Untitled Electron Game. If not, see <https://www.gnu.org/licenses/>.
 */
 import { load } from "../game-funcs.js";
-import { objectives, tech } from "../objectives.js";
+import { tech, objectives } from "../objectives.js";
 import { textureIDs } from "../texturedata.js";
-import { Button, millis, makeRebindButton, crash, parseError } from "../util/funcs.js";
+import { crash, parseError } from "../util/funcs.js";
+import { makeRebindButton } from "../util/button.js";
+import { Button } from "../util/button.js";
 import { Intersector, Pos } from "../util/geom.js";
 import { Game, settings, consts } from "../vars.js";
 import { Item } from "../world/world.js";
 import { CTX } from "./dom.js";
-import { Camera, Gfx, ParticleEffect } from "./graphics.js";
+import { Gfx, ParticleEffect } from "./graphics.js";
+import { Camera } from "./camera.js";
 import { HUD } from "./gui.js";
 import { Input, keybinds } from "./input.js";
 export const scenes = {
@@ -81,7 +84,7 @@ export const scenes = {
             Gfx.font("20px sans-serif");
             Gfx.text("Version Alpha 4.0.0", innerWidth / 2, innerHeight * 0.25);
             Gfx.fillColor("#cccc00");
-            Gfx.font(`${20 + 5 * Game.splash.bounceFunc(millis() / 400)}px sans-serif`);
+            Gfx.font(`${20 + 5 * Game.splash.bounceFunc((Date.now() - Game.startTime) / 400)}px sans-serif`);
             Gfx.text(Game.splash.text ?? "splash not found! this is actually an error pls report", innerWidth / 2, innerHeight * 0.35);
             scenes.title.buttons.forEach(button => button.display(Gfx.ctx));
         },

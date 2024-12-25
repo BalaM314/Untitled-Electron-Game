@@ -10,8 +10,9 @@ You should have received a copy of the GNU General Public License along with Unt
 import { ItemIDs, Buildings, Fluids } from "../content/content.js";
 import { bundle } from "../content/i18n.js";
 import { ItemStack } from "../content/registry.js";
-import type { ItemID, LevelData, TileID, BuildingIDWithMeta, CurrentFrame, ChunkData, BuildingData, LegacyBuildingData, LegacyBuildingID, ItemData, TextureInfo, RawBuildingID } from "../types.js";
-import { Camera, Gfx, RectMode } from "../ui/graphics.js";
+import type { ItemID, LevelData, TileID, BuildingIDWithMeta, CurrentFrame, ChunkData, BuildingData, LegacyBuildingData, LegacyBuildingID, ItemData, TextureInfo } from "../types.js";
+import { Gfx, RectMode } from "../ui/graphics.js";
+import { Camera } from "../ui/camera.js";
 import { GUI } from "../ui/gui.js";
 import { keybinds, Input } from "../ui/input.js";
 import { crash, parseError, forceType, tooltip, pseudoRandom, hex, mapLegacyRawBuildingID, getLegacyRawBuildingID, stringifyMeta, constrain } from "../util/funcs.js";
@@ -192,7 +193,7 @@ export class Level {
 		const block = Buildings.get(buildingID[0]);
 
 		const changedID:BuildingIDWithMeta = [buildingID[0], buildingID[1]];
-		changedID[1] = block.changeMeta(changedID[1], tileX, tileY, this);
+		changedID[1] = block.changeMeta(changedID[1], tileX, tileY, this, keybinds.placement.force_straight_conveyor.isHeld());
 		const textureSize = block.textureSize(buildingID[1]);
 
 
@@ -239,7 +240,7 @@ export class Level {
 		if(buildingID[0] == "base_null") return true;
 		const block = Buildings.get(buildingID[0]);
 		if(!this.canBuildBuilding([tileX, tileY], block)) return false;
-		buildingID = [buildingID[0], block.changeMeta(buildingID[1], tileX, tileY, this)];
+		buildingID = [buildingID[0], block.changeMeta(buildingID[1], tileX, tileY, this, keybinds.placement.force_straight_conveyor.isHeld())];
 
 		//Only overwrite the same building once per build attempt.
 		//Otherwise, you could constantly overwrite a building on every frame you tried to build, which is not good.
@@ -370,7 +371,7 @@ export class Level {
 	/* returns raw html, make sure to escape! */
 	getTooltip(x:number, y:number):string {
 		const building = this.buildingAtPixel(x, y);
-		if(building instanceof Building){
+		if(building){
 			if(
 				//If there's an item
 				building.block.displaysItem && building.item &&
@@ -573,13 +574,13 @@ export class Chunk {
 	setBuilding(tileX:number, tileY:number, value:Building | null):boolean {
 		if(tileX < 0 || tileX >= consts.CHUNK_SIZE || tileY < 0 || tileY >= consts.CHUNK_SIZE) return false;
 		this.layers[1][tileY]![tileX] = value;
-		if(value instanceof Building) this.hasBuildings = true;
+		if(value) this.hasBuildings = true;
 		return true;
 	}
 	setOverlayBuild(tileX:number, tileY:number, value:OverlayBuild | null):boolean {
 		if(tileX < 0 || tileX >= consts.CHUNK_SIZE || tileY < 0 || tileY >= consts.CHUNK_SIZE) return false;
 		this.layers[2][tileY]![tileX] = value;
-		if(value instanceof Building) this.hasBuildings = true;
+		if(value) this.hasBuildings = true;
 		return true;
 	}
 	/**
@@ -777,9 +778,7 @@ export class Chunk {
 		for(const row of this.layers[1]){
 			const tempRow:Array<BuildingData | null> = [];
 			for(const building of row){
-				if(building instanceof Building){
-					hasBuildings = true;
-				}
+				if(building) hasBuildings = true;
 				tempRow.push(building?.export() ?? null);
 			}
 			exportDataL1.push(tempRow);
@@ -789,9 +788,7 @@ export class Chunk {
 		for(const row of this.layers[2]){
 			const tempRow:Array<BuildingData | null> = [];
 			for(const overlayBuild of row){
-				if(overlayBuild instanceof Building){
-					hasBuildings = true;
-				}
+				if(overlayBuild) hasBuildings = true;
 				tempRow.push(overlayBuild?.export() ?? null);
 			}
 			exportDataL2.push(tempRow);

@@ -49,7 +49,6 @@ import { bundle } from "../content/i18n.js";
 import { Fluid } from "../content/registry.js";
 import { objectives } from "../objectives.js";
 import { Gfx, getAnimationData, RectMode } from "../ui/graphics.js";
-import { keybinds } from "../ui/input.js";
 import { Direction } from "../util/direction.js";
 import { Abstract, crash, round, constrain, linear_map } from "../util/funcs.js";
 import { Rand } from "../util/random.js";
@@ -361,8 +360,8 @@ export class Conveyor extends Building {
     static getID(type, direction, modifier) {
         return [type, direction.num];
     }
-    static changeMeta(meta, tileX, tileY, level) {
-        if (keybinds.placement.force_straight_conveyor.isHeld()) {
+    static changeMeta(meta, tileX, tileY, level, force_straight_conveyor) {
+        if (force_straight_conveyor) {
             return meta;
         }
         const hasLeft = level.buildingAtTile(tileX - 1, tileY)?.outputsItemToSide(Direction.right) ?? false;
@@ -458,7 +457,7 @@ export class Conveyor extends Building {
         }
     }
     update() {
-        if (this.item instanceof Item) {
+        if (this.item) {
             if (this.item.pos.tileX != this.pos.tileX || this.item.pos.tileY != this.pos.tileY) {
                 if (this.buildAt(this.outputSide)?.acceptItem(this.item, this.outputSide.opposite))
                     this.item = null;
@@ -742,7 +741,7 @@ export class Extractor extends OverlayBuild {
             default: crash(`Invalid meta ${meta}`);
         }
     }
-    grabItemFromTile(filter = item => item instanceof Item) {
+    grabItemFromTile(filter = () => true) {
         if (this.buildingUnder() instanceof Building &&
             this.buildingUnder().hasItem() &&
             filter(this.buildingUnder().hasItem())) {
@@ -772,7 +771,7 @@ export class Extractor extends OverlayBuild {
         }
     }
     dropItem() {
-        if (this.item instanceof Item) {
+        if (this.item) {
             if (this.buildAtOffset(this.outputOffset)?.acceptItem(this.item, null)) {
                 this.item = null;
             }
@@ -783,7 +782,7 @@ export class Extractor extends OverlayBuild {
         }
     }
     update() {
-        if (this.item instanceof Item) {
+        if (this.item) {
             switch (this.meta) {
                 case 0x00:
                     if (this.item.pos.tileXExact >= this.pos.tileX + 1.5)

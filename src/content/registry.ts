@@ -7,10 +7,10 @@ You should have received a copy of the GNU General Public License along with Unt
 */
 /* Contains content registry related code. */
 
-import { tech, TechTreeNode } from "../objectives.js";
-import type { ItemID, FluidID } from "../types.js";
+import type { TechTree, TechTreeNode } from "../objectives.js";
+import type { FluidID, ItemID } from "../types.js";
 import { crash } from "../util/funcs.js";
-import { Templatable } from "../util/types.js";
+import type { Templatable } from "../util/types.js";
 
 
 export class Content<K extends string> {
@@ -28,10 +28,14 @@ export class ContentRegistryC<K extends Templatable, T extends new (...args:any[
 		const clazz = Object.assign(class extends ctor {}, {
 			...props, id
 		});
-		if("node" in clazz)
-			(clazz as UnlockableContent).node = tech.getOpt(`building_${id}`); //TODO nongeneric: uses "building" but might be something else
 		this.contentMap.set(id, clazz);
 		return clazz;
+	}
+	setNodes(tree:TechTree){
+		for(const [id, clazz] of this.contentMap.entries()){
+			if("node" in clazz)
+				(clazz as UnlockableContent).node = tree.getOpt(`building_${id}`); //TODO nongeneric: uses "building" but might be something else
+		}
 	}
 	get(id:K):T {
 		return this.contentMap.get(id) ?? crash(`Object with id ${id} does not exist.`);

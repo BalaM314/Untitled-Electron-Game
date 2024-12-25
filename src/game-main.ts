@@ -8,23 +8,24 @@ You should have received a copy of the GNU General Public License along with Unt
 /* Contains the game's main code. */
 
 //Import order
-import "./ui/gui.js";
-import "./ui/scenes.js";
 
-import { splashes } from "./content/splashes.js";
-import { dumpObjectsToGlobalScope, manualLocalSave } from "./game-funcs.js";
 import type { CurrentFrame } from "./types.js";
+import { splashes } from "./content/splashes.js";
+import { textureIDs } from "./texturedata.js";
+import * as noise from "./util/perlin.js";
+import { assert, parseError, crash } from "./util/funcs.js";
+import { Game, settings } from "./vars.js";
+import { Rand } from "./util/random.js";
+import { Log } from "./util/log.js";
+import { Camera } from "./ui/camera.js";
+import { Gfx, loadTextures } from "./ui/graphics.js";
+import { dumpObjectsToGlobalScope, manualLocalSave } from "./game-funcs.js";
 import { setCanvasSizes, registerEventHandlers, DOM, CTX } from "./ui/dom.js";
-import { Camera, Gfx, loadTextures } from "./ui/graphics.js";
 import { HUD, GUI } from "./ui/gui.js";
 import { Input } from "./ui/input.js";
 import { scenes } from "./ui/scenes.js";
-import { assert, parseError, crash } from "./util/funcs.js";
-import { Rand } from "./util/random.js";
-import { Log } from "./util/log.js";
-import { Game, settings } from "./vars.js";
-import { textureIDs } from "./texturedata.js";
-import * as noise from "./util/perlin.js";
+import { Buildings } from "./content/content.js";
+import { tech } from "./objectives.js";
 
 
 export function returnToTitle(){
@@ -112,6 +113,7 @@ This game is open source! https://github.com/BalaM314/Untitled-Electron-Game`;
 		})
 		.catch(() => {});
 	
+	Buildings.setNodes(tech);
 	
 	await registerEventHandlers();
 	
@@ -130,7 +132,7 @@ This game is open source! https://github.com/BalaM314/Untitled-Electron-Game`;
 	DOM.loadingBackground.classList.add("hidden");
 	DOM.gameBackground.classList.remove("hidden");
 	
-	void dumpObjectsToGlobalScope();
+	dumpObjectsToGlobalScope();
 
 	main_loop();
 }

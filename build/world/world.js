@@ -7,7 +7,8 @@ You should have received a copy of the GNU General Public License along with Unt
 */
 import { ItemIDs, Buildings, Fluids } from "../content/content.js";
 import { bundle } from "../content/i18n.js";
-import { Camera, Gfx, RectMode } from "../ui/graphics.js";
+import { Gfx, RectMode } from "../ui/graphics.js";
+import { Camera } from "../ui/camera.js";
 import { GUI } from "../ui/gui.js";
 import { keybinds, Input } from "../ui/input.js";
 import { crash, parseError, forceType, tooltip, pseudoRandom, hex, mapLegacyRawBuildingID, getLegacyRawBuildingID, stringifyMeta, constrain } from "../util/funcs.js";
@@ -144,7 +145,7 @@ export class Level {
             return;
         const block = Buildings.get(buildingID[0]);
         const changedID = [buildingID[0], buildingID[1]];
-        changedID[1] = block.changeMeta(changedID[1], tileX, tileY, this);
+        changedID[1] = block.changeMeta(changedID[1], tileX, tileY, this, keybinds.placement.force_straight_conveyor.isHeld());
         const textureSize = block.textureSize(buildingID[1]);
         const isError = !this.hasResources(block.buildCost, 100) ||
             !block.canBuildAt(tileX, tileY, this) ||
@@ -180,7 +181,7 @@ export class Level {
         const block = Buildings.get(buildingID[0]);
         if (!this.canBuildBuilding([tileX, tileY], block))
             return false;
-        buildingID = [buildingID[0], block.changeMeta(buildingID[1], tileX, tileY, this)];
+        buildingID = [buildingID[0], block.changeMeta(buildingID[1], tileX, tileY, this, keybinds.placement.force_straight_conveyor.isHeld())];
         if (block.isOverlay) {
             if (this.overlayBuildAtTile(tileX, tileY)?.block.id == buildingID[0] &&
                 this.overlayBuildAtTile(tileX, tileY)?.meta == buildingID[1] &&
@@ -298,7 +299,7 @@ export class Level {
     }
     getTooltip(x, y) {
         const building = this.buildingAtPixel(x, y);
-        if (building instanceof Building) {
+        if (building) {
             if (building.block.displaysItem && building.item &&
                 (Math.abs(building.item.pos.pixelX - x) < consts.ITEM_SIZE / 2) &&
                 Math.abs(building.item.pos.pixelY - y) < consts.ITEM_SIZE / 2) {
@@ -454,7 +455,7 @@ export class Chunk {
         if (tileX < 0 || tileX >= consts.CHUNK_SIZE || tileY < 0 || tileY >= consts.CHUNK_SIZE)
             return false;
         this.layers[1][tileY][tileX] = value;
-        if (value instanceof Building)
+        if (value)
             this.hasBuildings = true;
         return true;
     }
@@ -462,7 +463,7 @@ export class Chunk {
         if (tileX < 0 || tileX >= consts.CHUNK_SIZE || tileY < 0 || tileY >= consts.CHUNK_SIZE)
             return false;
         this.layers[2][tileY][tileX] = value;
-        if (value instanceof Building)
+        if (value)
             this.hasBuildings = true;
         return true;
     }
@@ -630,9 +631,8 @@ export class Chunk {
         for (const row of this.layers[1]) {
             const tempRow = [];
             for (const building of row) {
-                if (building instanceof Building) {
+                if (building)
                     hasBuildings = true;
-                }
                 tempRow.push(building?.export() ?? null);
             }
             exportDataL1.push(tempRow);
@@ -641,9 +641,8 @@ export class Chunk {
         for (const row of this.layers[2]) {
             const tempRow = [];
             for (const overlayBuild of row) {
-                if (overlayBuild instanceof Building) {
+                if (overlayBuild)
                     hasBuildings = true;
-                }
                 tempRow.push(overlayBuild?.export() ?? null);
             }
             exportDataL2.push(tempRow);

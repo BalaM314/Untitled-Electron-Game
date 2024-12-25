@@ -13,7 +13,6 @@ import { ItemStack, FluidStack, Fluid } from "../content/registry.js";
 import { objectives } from "../objectives.js";
 import type { Recipe, BuildingMeta, CurrentFrame, BuildingData, ItemID, RawBuildingID, BuildingIDWithMeta, TextureInfo, ItemData } from "../types.js";
 import { ParticleEffect, Gfx, AnimationData, getAnimationData, RectMode } from "../ui/graphics.js";
-import { keybinds } from "../ui/input.js";
 import { Direction } from "../util/direction.js";
 import { Abstract, crash, round, constrain, linear_map } from "../util/funcs.js";
 import { Rand } from "../util/random.js";
@@ -21,7 +20,7 @@ import { PosT, add, Pos } from "../util/geom.js";
 import { Log } from "../util/log.js";
 import { settings, consts, Mathf } from "../vars.js";
 import { Building, BlockDrawer } from "./building.js";
-import { Level, Item } from "./world.js";
+import { type Level, Item } from "./world.js";
 
 
 @Abstract
@@ -393,8 +392,8 @@ export class Conveyor extends Building {
 	static getID(type: RawBuildingID, direction: Direction, modifier: number): BuildingIDWithMeta {
 		return [type, direction.num] as BuildingIDWithMeta;
 	}
-	static changeMeta(meta: BuildingMeta, tileX: number, tileY: number, level: Level): BuildingMeta {
-		if (keybinds.placement.force_straight_conveyor.isHeld()) {
+	static changeMeta(meta: BuildingMeta, tileX: number, tileY: number, level: Level, force_straight_conveyor:boolean): BuildingMeta {
+		if (force_straight_conveyor) {
 			return meta;
 			//If holding shift, just return a straight conveyor.
 		}
@@ -457,7 +456,7 @@ export class Conveyor extends Building {
 		}
 	}
 	update() {
-		if (this.item instanceof Item) {
+		if (this.item) {
 			if (this.item.pos.tileX != this.pos.tileX || this.item.pos.tileY != this.pos.tileY) {
 				//Item moved outside of this building, transfer it
 				if (this.buildAt(this.outputSide)?.acceptItem(this.item, this.outputSide.opposite))
@@ -680,7 +679,7 @@ export class Extractor extends OverlayBuild {
 		}
 	}
 
-	grabItemFromTile(filter: (item: Item) => boolean = item => item instanceof Item) {
+	grabItemFromTile(filter: (item: Item) => boolean = () => true) {
 		if (this.buildingUnder() instanceof Building &&
 			this.buildingUnder()!.hasItem() &&
 			filter(this.buildingUnder()!.hasItem()!)) {
@@ -703,7 +702,7 @@ export class Extractor extends OverlayBuild {
 	}
 
 	dropItem() {
-		if (this.item instanceof Item) {
+		if (this.item) {
 			if (this.buildAtOffset(this.outputOffset)?.acceptItem(this.item, null)) {
 				this.item = null;
 			}
@@ -714,7 +713,7 @@ export class Extractor extends OverlayBuild {
 	}
 
 	update() {
-		if (this.item instanceof Item) {
+		if (this.item) {
 			switch (this.meta) {
 				case 0x00:
 					if (this.item.pos.tileXExact >= this.pos.tileX + 1.5) return this.dropItem();
