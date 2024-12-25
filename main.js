@@ -1,17 +1,15 @@
-const electron = require('electron');
-const {app, BrowserWindow} = electron;
-const path = require('path');
+import { app, BrowserWindow } from 'electron';
+import { join } from 'path';
 
 function createWindow(){
   const mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js')
+      preload: join(import.meta.dirname, 'preload.js')
     }
   });
   mainWindow.loadFile('index.html');
-  mainWindow.webContents.openDevTools();
 }
 
 // This method will be called when Electron has finished

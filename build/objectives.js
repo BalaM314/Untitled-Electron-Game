@@ -28,20 +28,20 @@ export class TechTreeNode {
             return true;
         if (!this.prerequisites.every(p => p.unlocked))
             return false;
-        if (!this.level.hasResources(this.cost, 2000))
+        if (!this.level().hasResources(this.cost, 2000))
             return false;
-        this.level.drainResources(this.cost);
+        this.level().drainResources(this.cost);
         this.unlocked = true;
         return true;
     }
     showCost() {
-        this.level.hasResources(this.cost, 100);
+        this.level().hasResources(this.cost, 100);
     }
     hasCost() {
-        return this.level.hasResources(this.cost);
+        return this.level().hasResources(this.cost);
     }
     missingItem() {
-        return this.level.missingItemForResources(this.cost);
+        return this.level().missingItemForResources(this.cost);
     }
     imageURL() {
         if (this.id.startsWith("building_"))
@@ -138,7 +138,7 @@ export class TechTree {
         return this.nodes.filter(n => n.unlocked).map(n => n.id).join(",");
     }
 }
-export const tech = new TechTree(Game.level1, tree => {
+export const tech = new TechTree(() => Game.level1, tree => {
     const conveyor = tree.node("building_base_conveyor", [], [], true);
     const miner = tree.node("building_base_miner", [], [conveyor], true);
     const trash_can = tree.node("building_base_trash_can", [["base_ironIngot", 20], ["base_stone", 20]], [conveyor]);

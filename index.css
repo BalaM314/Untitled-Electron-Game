@@ -438,7 +438,7 @@ canvas {
 	font-family: sans-serif;
 	color: white;
 	text-align: center;
-	white-space: pre;
+	white-space: pre-wrap;
 	overflow-wrap: break-word;
 }
 #alertexit {

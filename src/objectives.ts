@@ -29,7 +29,7 @@ export class TechTreeNode {
 	/** Zero-based index */
 	depth:number;
 	constructor(
-		public level:Level,
+		public level:() => Level,
 		public id:string,
 		public cost:ItemStack[],
 		public prerequisites:TechTreeNode[] = [],
@@ -39,19 +39,19 @@ export class TechTreeNode {
 	tryUnlock():boolean {
 		if(this.unlocked) return true;
 		if(!this.prerequisites.every(p => p.unlocked)) return false;
-		if(!this.level.hasResources(this.cost, 2000)) return false;
-		this.level.drainResources(this.cost);
+		if(!this.level().hasResources(this.cost, 2000)) return false;
+		this.level().drainResources(this.cost);
 		this.unlocked = true;
 		return true;
 	}
 	showCost(){
-		this.level.hasResources(this.cost, 100);
+		this.level().hasResources(this.cost, 100);
 	}
 	hasCost(){
-		return this.level.hasResources(this.cost);
+		return this.level().hasResources(this.cost);
 	}
 	missingItem():ItemID | null {
-		return this.level.missingItemForResources(this.cost);
+		return this.level().missingItemForResources(this.cost);
 	}
 	imageURL(){
 		//TODO not generic
@@ -73,7 +73,7 @@ export class TechTree {
 	root:TechTreeNode;
 	menuVisible = false;
 	constructor(
-		public level:Level,
+		public level:() => Level,
 		builder:(tree:TechTree) => unknown
 	){
 		builder(this);
@@ -152,7 +152,7 @@ export class TechTree {
 	}
 }
 
-export const tech = new TechTree(Game.level1, tree => {
+export const tech = new TechTree(() => Game.level1, tree => {
 	//TODO tune research costs and building costs
 	const conveyor = tree.node("building_base_conveyor", [], [], true);
 	const miner = tree.node("building_base_miner", [], [conveyor], true);
