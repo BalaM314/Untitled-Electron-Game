@@ -862,11 +862,8 @@ export class MultiBlockSecondary extends Building {
 	display(currentFrame: CurrentFrame) {
 		//Do nothing, the controller is responsible for displaying
 	}
-	displayName() {
-		return bundle.get(`building.${this.controller?.block.id ?? this.block.id}.name`);
-	}
-	tooltipProperties() {
-		return this.controller?.tooltipProperties() ?? {};
+	override effectiveID(){
+		return this.controller?.block.id ?? this.block.id;
 	}
 	update() {
 		if (!(this.controller instanceof MultiBlockController)) {

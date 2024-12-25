@@ -271,7 +271,7 @@ export const scenes = {
             else if (e.button === 1) {
                 const buildUnder = Game.level1.buildingAtPixel(...Camera.unproject(...Input.mouse));
                 if (buildUnder) {
-                    Input.placedBuilding.type = buildUnder.block.id;
+                    Input.placedBuilding.type = buildUnder.effectiveID();
                 }
             }
         },

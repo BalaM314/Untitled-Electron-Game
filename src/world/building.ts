@@ -113,6 +113,9 @@ export class Building {
 	stringID(){
 		return stringifyMeta(this.block.id, this.meta);
 	}
+	effectiveID(){
+		return this.block.id;
+	}
 	centeredPos(){
 		return Pos.fromTileCoords(this.pos.tileX, this.pos.tileY, true);
 	}
@@ -134,7 +137,7 @@ export class Building {
 		);
 	}
 	displayName(){
-		return bundle.get(`building.${this.block.id}.name`);
+		return bundle.get(`building.${this.effectiveID()}.name`);
 	}
 	getTooltip(){
 		//returns raw html, make sure to escape!
@@ -142,8 +145,8 @@ export class Building {
 	}
 	tooltipProperties():Partial<Record<string, string>> {
 		return {
-			_description: bundle.get(`building.${this.block.id}.description`, ""),
-			id: settings.showIDsInTooltips ? this.block.id : ""
+			_description: bundle.get(`building.${this.effectiveID()}.description`, ""),
+			id: settings.showIDsInTooltips ? this.effectiveID() : ""
 		};
 	}
 	display(currentFrame:CurrentFrame, layer:(keyof typeof Gfx.layers) = this.block.isOverlay ? "overlayBuilds" : "buildings"){

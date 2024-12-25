@@ -306,7 +306,7 @@ export const scenes: Record<typeof Game.sceneName, {
 			} else if (e.button === 1) {
 				const buildUnder = Game.level1.buildingAtPixel(...Camera.unproject(...Input.mouse));
 				if (buildUnder) {
-					Input.placedBuilding.type = buildUnder.block.id;
+					Input.placedBuilding.type = buildUnder.effectiveID();
 				}
 			}
 		},

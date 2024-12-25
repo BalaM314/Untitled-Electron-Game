@@ -229,6 +229,7 @@ Buildings.register("base_stirling_generator", BuildingWithRecipe, {
 	buildCost: [["base_stoneBrick", 20], ["base_ironIngot", 35], ["base_copperIngot", 15]],
 	recipeType: recipes.base_stirling_generating,
 	producesPower: true,
+	outputsItems: false,
 	drawer: BuildingWithRecipe.drawLayer<BuildingWithRecipe>(
 		"building/base_boiler_fire", 1, 1,
 		b => b.timer >= 0 ? linear_map(b.timer, b.recipe?.duration ?? -1, 0, 1, 0.7) : 0
@@ -282,6 +283,7 @@ Buildings.register("base_boiler", BuildingWithRecipe, {
 	fluidCapacity: 10,
 	acceptsFluids: true,
 	outputsFluids: true,
+	outputsItems: false,
 	fluidExtraPressure: 1,
 	runEffect: [Fx.smoke, "#222", 30, 1],
 	drawer: BuildingWithRecipe.combineDrawers(
@@ -299,6 +301,9 @@ Buildings.register("base_steam_generator", MultiBlockController, {
 	multiblockSize: [2, 2],
 	fluidCapacity: 30,
 	acceptsFluids: true,
+	outputsFluids: false,
+	acceptsItems: false,
+	outputsItems: false,
 	producesPower: true,
 	runEffect: [Fx.smoke, "#FFF", 30, 1],
 	drawer: BuildingWithRecipe.makeDrawer((build, e) => {

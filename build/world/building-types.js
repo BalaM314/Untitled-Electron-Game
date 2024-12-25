@@ -961,11 +961,8 @@ export class MultiBlockSecondary extends Building {
     }
     display(currentFrame) {
     }
-    displayName() {
-        return bundle.get(`building.${this.controller?.block.id ?? this.block.id}.name`);
-    }
-    tooltipProperties() {
-        return this.controller?.tooltipProperties() ?? {};
+    effectiveID() {
+        return this.controller?.block.id ?? this.block.id;
     }
     update() {
         if (!(this.controller instanceof MultiBlockController)) {

@@ -121,6 +121,9 @@ let Building = (() => {
         stringID() {
             return stringifyMeta(this.block.id, this.meta);
         }
+        effectiveID() {
+            return this.block.id;
+        }
         centeredPos() {
             return Pos.fromTileCoords(this.pos.tileX, this.pos.tileY, true);
         }
@@ -137,15 +140,15 @@ let Building = (() => {
             Gfx.tImage(Gfx.texture(`building/${stringifyMeta(...id)}`), pos.tileX + textureSize[1][0], pos.tileY + textureSize[1][1], ...textureSize[0], Gfx.layers[layer]);
         }
         displayName() {
-            return bundle.get(`building.${this.block.id}.name`);
+            return bundle.get(`building.${this.effectiveID()}.name`);
         }
         getTooltip() {
             return tooltip(this.displayName(), this.tooltipProperties());
         }
         tooltipProperties() {
             return {
-                _description: bundle.get(`building.${this.block.id}.description`, ""),
-                id: settings.showIDsInTooltips ? this.block.id : ""
+                _description: bundle.get(`building.${this.effectiveID()}.description`, ""),
+                id: settings.showIDsInTooltips ? this.effectiveID() : ""
             };
         }
         display(currentFrame, layer = this.block.isOverlay ? "overlayBuilds" : "buildings") {

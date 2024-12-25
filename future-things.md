@@ -21,8 +21,3 @@ make buildings with recipes keep their items on save
 fix the text of the alert box overflowing
 
 re-add amogus()
-
-### bugfixes
-
-* some buildings shouldn't redirect conveyors
-* middle clicking doesnt work on multiblocks
