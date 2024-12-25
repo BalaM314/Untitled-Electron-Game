@@ -12,7 +12,7 @@ import "./ui/gui.js";
 import "./ui/scenes.js";
 
 import { splashes } from "./content/splashes.js";
-import { manualLocalSave } from "./game-funcs.js";
+import { dumpObjectsToGlobalScope, manualLocalSave } from "./game-funcs.js";
 import type { CurrentFrame } from "./types.js";
 import { setCanvasSizes, registerEventHandlers, DOM, CTX } from "./ui/dom.js";
 import { Camera, Gfx, loadTextures } from "./ui/graphics.js";
@@ -129,6 +129,8 @@ This game is open source! https://github.com/BalaM314/Untitled-Electron-Game`;
 	DOM.loadingBackground.classList.add("hidden");
 	DOM.gameBackground.classList.remove("hidden");
 	
+	void dumpObjectsToGlobalScope();
+
 	main_loop();
 }
 

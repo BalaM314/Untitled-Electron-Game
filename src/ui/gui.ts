@@ -219,8 +219,7 @@ export const GUI = {
 	updateAlertDialog(){
 		if(GUI.alerts.list.length && !GUI.alerts.active){
 			Input.mouseDown = false;
-			//TODO safety issue
-			DOM.alertmessage.innerHTML = GUI.alerts.list[0].replaceAll("\n", "<br>");
+			DOM.alertmessage.innerText = GUI.alerts.list[0];
 			DOM.alertmessage.style.setProperty("--text-length", DOM.alertmessage.innerText.length.toString());
 			DOM.alertbox.classList.add("active");
 			GUI.alerts.active = true;

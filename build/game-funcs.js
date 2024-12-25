@@ -104,3 +104,7 @@ This is a game about building a factory. To get started, follow the objectives i
     Game.forceRedraw = true;
     HUD.show();
 }
+export async function dumpObjectsToGlobalScope() {
+    const everything = await import("./index.js");
+    Object.assign(window, everything);
+}
