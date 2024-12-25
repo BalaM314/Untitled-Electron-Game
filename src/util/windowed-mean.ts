@@ -38,8 +38,8 @@ export class WindowedMean {
 		let total = 0;
 		let wrappedQueueI = this.queuei % this.maxWindowSize;
 		for (let i = wrappedQueueI - windowSize; i < wrappedQueueI; i++) {
-			if (i >= 0) total += this.data[i];
-			else total += this.data[this.maxWindowSize + i];
+			if (i >= 0) total += this.data[i]!;
+			else total += this.data[this.maxWindowSize + i]!;
 		}
 		return total / windowSize;
 	}
@@ -52,9 +52,9 @@ export class WindowedMean {
 		let sumXMinusMeanSquared = 0;
 		let wrappedQueueI = this.queuei % this.maxWindowSize;
 		for (let i = wrappedQueueI - windowSize; i < wrappedQueueI; i++) {
-			sumXMinusMeanSquared += (((i >= 0)
-				? this.data[i]
-				: this.data[this.maxWindowSize + i]) - mean) ** 2;
+			sumXMinusMeanSquared += ((i >= 0 ?
+				this.data[i]!
+			: this.data[this.maxWindowSize + i]!) - mean) ** 2;
 		}
 		return sumXMinusMeanSquared / windowSize;
 	}

@@ -10,4 +10,5 @@ You should have received a copy of the GNU General Public License along with Unt
 export interface TagFunction<Tin = string, Tout = string> {
 	(stringChunks: readonly string[], ...varChunks: readonly Tin[]): Tout;
 }
+export type NonEmptyArray<T> = [T, ...T[]];
 

@@ -182,7 +182,7 @@ export class Gfx {
         this.ctx.globalAlpha = a;
     }
     static texture(id) {
-        return this.textures[id] ?? this.textures["error"];
+        return this.textures[id] ?? this.textures["error"] ?? crash("Missing error texture");
     }
     static tLine(x1, y1, x2, y2, _ctx = this.ctx) {
         _ctx.beginPath();

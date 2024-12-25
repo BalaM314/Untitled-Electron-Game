@@ -41,8 +41,8 @@ export class WindowedMean {
         let sumXMinusMeanSquared = 0;
         let wrappedQueueI = this.queuei % this.maxWindowSize;
         for (let i = wrappedQueueI - windowSize; i < wrappedQueueI; i++) {
-            sumXMinusMeanSquared += (((i >= 0)
-                ? this.data[i]
+            sumXMinusMeanSquared += ((i >= 0 ?
+                this.data[i]
                 : this.data[this.maxWindowSize + i]) - mean) ** 2;
         }
         return sumXMinusMeanSquared / windowSize;

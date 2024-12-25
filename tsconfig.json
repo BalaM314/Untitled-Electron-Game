@@ -1,17 +1,26 @@
 {
 	"compilerOptions": {
+		"target": "ES2021",
+		"module": "ES2020",
 		"lib": [
 			"ES2022",
 			"DOM.Iterable",
 			"DOM"
 		],
-		"target": "ES2021",
-		"module": "ES2020",
-		"alwaysStrict": true,
+		//general
+    "esModuleInterop": true,
+    "noEmitOnError": true,
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "node",
 		"removeComments": true,
-		"strict": true,
 		"outDir": "build/",
 		"rootDir": "src",
+    //strictness
+		"isolatedModules": true,
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noPropertyAccessFromIndexSignature": true,
+		"types": [],
 	},
 	"include": [
 		"src/**/*.ts"

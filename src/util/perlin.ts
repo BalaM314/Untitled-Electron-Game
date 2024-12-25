@@ -59,9 +59,9 @@ export function seed(seed:number) {
 	for(let i = 0; i < 256; i++) {
 		let v;
 		if (i & 1) {
-			v = p[i] ^ (seed & 255);
+			v = p[i]! ^ (seed & 255);
 		} else {
-			v = p[i] ^ ((seed >> 8) & 255);
+			v = p[i]! ^ ((seed >> 8) & 255);
 		}
 
 		perm[i] = perm[i + 256] = v;

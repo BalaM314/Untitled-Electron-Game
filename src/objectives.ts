@@ -16,6 +16,7 @@ import { DOM } from "./ui/dom.js";
 import { Camera } from "./ui/graphics.js";
 import { Input } from "./ui/input.js";
 import { crash, sort2 } from "./util/funcs.js";
+import { NonEmptyArray } from "./util/types.js";
 import { Game } from "./vars.js";
 import type { BuildingWithRecipe } from "./world/building-types.js";
 import type { Level } from "./world/world.js";
@@ -231,7 +232,7 @@ export class ResearchBuildingObjective extends Objective {
 }
 
 export class GatherObjective extends Objective {
-	constructor(id:string, prerequisites:Objective[], public items:ItemStack[], onComplete?:() => unknown){
+	constructor(id:string, prerequisites:Objective[], public items:NonEmptyArray<ItemStack>, onComplete?:() => unknown){
 		super(id, prerequisites, () => Game.level1.hasResources(items), onComplete);
 	}
 	name(){

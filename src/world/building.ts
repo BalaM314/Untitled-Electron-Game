@@ -257,7 +257,7 @@ export class Building {
 		if(!fluid || fluid[0] == null || fluid[1] == 0) return;
 		for(let i = 0; i < Direction.number; i ++){
 			if(++this.cFluidOut > 3) this.cFluidOut = 0;
-			const direction = Direction.all[this.cFluidOut];
+			const direction = Direction.all[this.cFluidOut]!;
 			const build = this.buildAt(direction);
 			if(
 				build && this.block.canOutputFluidTo(build) &&

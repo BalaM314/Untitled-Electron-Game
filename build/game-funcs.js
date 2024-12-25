@@ -77,8 +77,8 @@ export function load() {
     Camera.scrollTo(0, 0);
     Camera.zoomTo(1);
     Input.placedBuilding.type = "base_null";
-    if (!localStorage.firstload) {
-        localStorage.firstload = true;
+    if (!localStorage.getItem("firstload")) {
+        localStorage.setItem("firstload", "true");
         GUI.alert(`Welcome to Untitled Electron Game!
 This is a game about building a factory. To get started, follow the objectives in the top right.`);
     }

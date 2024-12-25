@@ -160,7 +160,7 @@ export const HUD = {
 				})();
 				resourcesItems[id].innerText = data.amountRequired ? `${amount.toString()}/${data.amountRequired}` : amount.toString();
 				if(data.flashEffect && data.flashExpireTime > Date.now()) resourcesItems[id].classList.add(data.flashEffect);
-				else resourcesItems[id].classList.forEach(c => resourcesItems[id].classList.remove(c));
+				else resourcesItems[id].classList.forEach(c => resourcesItems[id]!.classList.remove(c));
 			} else {
 				resourcesItems[id]?.style.setProperty("display", "none");
 			}
@@ -219,7 +219,7 @@ export const GUI = {
 	updateAlertDialog(){
 		if(GUI.alerts.list.length && !GUI.alerts.active){
 			Input.mouseDown = false;
-			DOM.alertmessage.innerText = GUI.alerts.list[0];
+			DOM.alertmessage.innerText = GUI.alerts.list[0]!;
 			DOM.alertmessage.style.setProperty("--text-length", DOM.alertmessage.innerText.length.toString());
 			DOM.alertbox.classList.add("active");
 			GUI.alerts.active = true;

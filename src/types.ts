@@ -9,6 +9,7 @@ You should have received a copy of the GNU General Public License along with Unt
 
 import type { ItemStack } from "./content/registry.js";
 import type { Keybind } from "./ui/input.js";
+import { NonEmptyArray } from "./util/types.js";
 
 
 export type TileID = 
@@ -107,9 +108,9 @@ export type ItemID =
 export type FluidID = "base_water" | "base_steam";
 
 export interface Recipe {
-	inputs?: ItemStack[];
+	inputs?: NonEmptyArray<ItemStack>;
 	fluidInputs?: [fluid:FluidID, totalAmount:number][];
-	outputs?: ItemStack[];
+	outputs?: NonEmptyArray<ItemStack>;
 	fluidOutputs?: [fluid:FluidID, totalAmount:number][];
 	duration: number;
 	tile?: TileID;

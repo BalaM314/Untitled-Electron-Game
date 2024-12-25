@@ -10,7 +10,7 @@ You should have received a copy of the GNU General Public License along with Unt
 import { ItemIDs, Buildings, Fluids } from "../content/content.js";
 import { bundle } from "../content/i18n.js";
 import { ItemStack } from "../content/registry.js";
-import type { ItemID, LevelData, TileID, BuildingIDWithMeta, CurrentFrame, ChunkData, BuildingData, LegacyBuildingData, LegacyBuildingID, ItemData } from "../types.js";
+import type { ItemID, LevelData, TileID, BuildingIDWithMeta, CurrentFrame, ChunkData, BuildingData, LegacyBuildingData, LegacyBuildingID, ItemData, TextureInfo } from "../types.js";
 import { Camera, Gfx, RectMode } from "../ui/graphics.js";
 import { GUI } from "../ui/gui.js";
 import { keybinds, Input } from "../ui/input.js";
@@ -68,7 +68,7 @@ export class Level {
 			for([position, chunkData] of Object.entries(chunks)){
 				chunkData.version = version;
 				level.storage.set(position,
-					Chunk.read(parseInt(position.split(",")[0]), parseInt(position.split(",")[1]), level, chunkData)
+					Chunk.read(parseInt(position.split(",")[0]!), parseInt(position.split(",")[1]!), level, chunkData)
 				);
 				//Generate a chunk with that data
 			}
@@ -203,7 +203,7 @@ export class Level {
 			!this.canBuildBuilding([tileX, tileY], block);
 		//Make the gray/red border 1x1 if the block is rectangular, but NxN if it's square
 		//because making the border rectangular looks weird
-		const underlayTextureSize = textureSize[0][0] == textureSize[0][1] ? textureSize : [[1, 1], [0, 0]];
+		const underlayTextureSize:TextureInfo = textureSize[0][0] == textureSize[0][1] ? textureSize : [[1, 1], [0, 0]];
 		
 		Gfx.tImage(
 			Gfx.texture(isError ? "misc/invalidunderlay" : "misc/ghostunderlay"),
@@ -462,13 +462,13 @@ export class Chunk {
 		const chunk = new Chunk(chunkX, chunkY, level);
 		//Import a chunk from JSON data.
 		//TODO 🚮
-		const numericVersion = +data.version.split(" ")[1].replaceAll(".", "");
+		const numericVersion = +data.version.split(" ")[1]!.replaceAll(".", "");
 		if(numericVersion < 200){
 			(data as any).layers = data;
 		}
 		for(let y in data.layers[0]){
 			for(let x in data.layers[0][y]){
-				let _buildingData = data.layers[0][y][x] as BuildingData | LegacyBuildingData | null;
+				let _buildingData = data.layers[0][y][x as any] as BuildingData | LegacyBuildingData | null;
 				if(!_buildingData) continue;
 				chunk.hasBuildings = true;
 				let buildingData:BuildingData;
@@ -497,14 +497,14 @@ export class Chunk {
 					crash(`Failed to import building id ${stringifyMeta(buildingData.id, buildingData.meta)} at position ${x},${y} in chunk ${chunkX},${chunkY}. See console for more details.`);
 				}
 				level.buildings.add(tempBuilding);
-				chunk.layers[1][y][x] = tempBuilding;
+				chunk.layers[1][y]![x as any] = tempBuilding;
 			}
 		}
 
 		//Same as above but for overlay builds.
 		for(let y in data.layers[1]){
 			for(let x in data.layers[1][y]){
-				let _buildingData = data.layers[1][y][x] as BuildingData | LegacyBuildingData | null;
+				let _buildingData = data.layers[1][y][x as any] as BuildingData | LegacyBuildingData | null;
 				if(!_buildingData) continue;
 				chunk.hasBuildings = true;
 				let buildingData:BuildingData;
@@ -529,7 +529,7 @@ export class Chunk {
 					tempBuilding.item = new Item(buildingData.item.x, buildingData.item.y, buildingData.item.id);
 				}
 				level.buildings.add(tempBuilding);
-				chunk.layers[2][y][x] = tempBuilding;
+				chunk.layers[2][y]![x as any] = tempBuilding;
 			}
 		}
 		chunk.generate();
@@ -564,18 +564,18 @@ export class Chunk {
 	}
 	setTile(tileX:number, tileY:number, value:TileID):boolean {
 		if(tileX < 0 || tileX >= consts.CHUNK_SIZE || tileY < 0 || tileY >= consts.CHUNK_SIZE) return false;
-		this.layers[0][tileY][tileX] = value;
+		this.layers[0][tileY]![tileX] = value;
 		return true;
 	}
 	setBuilding(tileX:number, tileY:number, value:Building | null):boolean {
 		if(tileX < 0 || tileX >= consts.CHUNK_SIZE || tileY < 0 || tileY >= consts.CHUNK_SIZE) return false;
-		this.layers[1][tileY][tileX] = value;
+		this.layers[1][tileY]![tileX] = value;
 		if(value instanceof Building) this.hasBuildings = true;
 		return true;
 	}
 	setOverlayBuild(tileX:number, tileY:number, value:OverlayBuild | null):boolean {
 		if(tileX < 0 || tileX >= consts.CHUNK_SIZE || tileY < 0 || tileY >= consts.CHUNK_SIZE) return false;
-		this.layers[2][tileY][tileX] = value;
+		this.layers[2][tileY]![tileX] = value;
 		if(value instanceof Building) this.hasBuildings = true;
 		return true;
 	}
@@ -636,11 +636,11 @@ export class Chunk {
 				for(let x = 0; x < consts.CHUNK_SIZE; x ++){
 					//Choose the tile to be placed:
 					if(y == 0 || y == 15 || x == 0 || x == 15){
-						this.layers[0][y][x] = "base_water";//If on edge, place water
+						this.layers[0][y]![x] = "base_water";//If on edge, place water
 					} else if(y == 1 || y == 14 || x == 1 || x == 14){
-						this.layers[0][y][x] = this.generator().chance(0.5) ? "base_water" : "base_stone";//If near edge, place 50-50 stone or water		
+						this.layers[0][y]![x] = this.generator().chance(0.5) ? "base_water" : "base_stone";//If near edge, place 50-50 stone or water		
 					} else {
-						this.layers[0][y][x] = 
+						this.layers[0][y]![x] = 
 						this.generator().chance(0.1) ?
 						(this.generator().chance(0.3) ? "base_ore_iron" : "base_ore_coal")
 						: "base_stone";
@@ -672,7 +672,7 @@ export class Chunk {
 				for(let x = 0; x < consts.CHUNK_SIZE; x ++){
 					const dist = Math.sqrt(((this.x * consts.CHUNK_SIZE) + x) ** 2 + ((this.y * consts.CHUNK_SIZE) + y) ** 2);
 					if(dist > generation_consts.ocean_distance){
-						this.layers[0][y][x] = "base_water";
+						this.layers[0][y]![x] = "base_water";
 					} else {
 						//Choose the tile to be placed:
 						const noiseHeight = 
@@ -684,13 +684,13 @@ export class Chunk {
 						//This formula just finds the perlin noise value at a tile, but tweaked so it's different per seed and not mirrored diagonally.
 	
 						if((noiseHeight + distanceBoost / 2) > generation_consts.hilly.ore_threshold){
-							this.layers[0][y][x] = oreToGenerate;
+							this.layers[0][y]![x] = oreToGenerate;
 						} else if((noiseHeight + distanceBoost) > generation_consts.hilly.stone_threshold){
-							this.layers[0][y][x] = dist > generation_consts.sand_distance ? "base_sand" : "base_stone";
+							this.layers[0][y]![x] = dist > generation_consts.sand_distance ? "base_sand" : "base_stone";
 						} else if(dist > generation_consts.river_distance && noiseHeight - (distanceBoost / 5) < generation_consts.hilly.water_threshold){
-							this.layers[0][y][x] = "base_water";
+							this.layers[0][y]![x] = "base_water";
 						} else {
-							this.layers[0][y][x] = "base_grass";
+							this.layers[0][y]![x] = "base_grass";
 						}
 					}
 				}
@@ -699,7 +699,7 @@ export class Chunk {
 			//Old terrain generation. I kept it, just only close to spawn.
 			for(let y = 0; y < consts.CHUNK_SIZE; y ++){
 				for(let x = 0; x < consts.CHUNK_SIZE; x ++){
-					this.layers[0][y][x] = "base_grass";
+					this.layers[0][y]![x] = "base_grass";
 				}
 			}
 			
@@ -740,7 +740,7 @@ export class Chunk {
 				for(let x = 0; x < consts.CHUNK_SIZE; x ++){
 					//WARNING: 300k runs per second! Very hot!
 					tileX = this.tileX + x;
-					const tile = this.layers[0][y][x];
+					const tile = this.layers[0][y]![x];
 					Gfx.tImageOneByOne(Gfx.texture(`tile/${tile}`), tileX, tileY);
 				}
 			}
@@ -753,9 +753,9 @@ export class Chunk {
 			}
 		}
 		for(let y = 0; y < this.layers[1].length; y ++){
-			for(let x = 0; x < this.layers[1][y].length; x ++){
-				this.layers[1][y][x]?.display(currentframe);
-				this.layers[2][y][x]?.display(currentframe);
+			for(let x = 0; x < this.layers[1][y]!.length; x ++){
+				this.layers[1][y]![x]?.display(currentframe);
+				this.layers[2][y]![x]?.display(currentframe);
 			}
 		}
 		if(settings.showChunkBorders){

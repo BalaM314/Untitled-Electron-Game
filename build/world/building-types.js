@@ -352,7 +352,7 @@ export class Conveyor extends Building {
         this.outputSide = Conveyor.outputSide(this.meta);
     }
     acceptsItemFromSide(side) {
-        return Boolean(this.block.inputMapping[this.meta] & side.bitmask);
+        return Boolean((this.block.inputMapping[this.meta] ?? crash(`Invalid meta ${this.meta}`)) & side.bitmask);
     }
     outputsItemToSide(side) {
         return this.block.outputMapping[this.meta] == side;

@@ -26,7 +26,7 @@ export class Keybind {
             .length == 0;
         let disallowedModifiersNotHeld = this.modifiers
             .filter(key => key.startsWith("!"))
-            .map(key => key.split("!")[1])
+            .map(key => key.slice(1))
             .filter(key => Input.keysHeld.has(key))
             .length == 0;
         return Input.keysHeld.has(this.mainKey) && modifiersHeld && disallowedModifiersNotHeld;
@@ -38,7 +38,7 @@ export class Keybind {
             .length == 0;
         let disallowedModifiersNotHeld = this.modifiers
             .filter(key => key.startsWith("!"))
-            .map(key => key.split("!")[1])
+            .map(key => key.slice(1))
             .filter(key => Input.keysHeld.has(key))
             .length == 0;
         if (this.mainKey == e.key.toLowerCase() && modifiersHeld && disallowedModifiersNotHeld) {

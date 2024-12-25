@@ -66,25 +66,25 @@ export class QuadTree<T extends {pos: Pos}> {
 	}
 	forEach(cons:(element:T) => unknown, thisArg?:any){
 		if(this.nodes){
-			this.nodes[0].forEach(cons, thisArg);
-			this.nodes[1].forEach(cons, thisArg);
-			this.nodes[2].forEach(cons, thisArg);
-			this.nodes[3].forEach(cons, thisArg);
+			this.nodes[0]!.forEach(cons, thisArg);
+			this.nodes[1]!.forEach(cons, thisArg);
+			this.nodes[2]!.forEach(cons, thisArg);
+			this.nodes[3]!.forEach(cons, thisArg);
 		} else {
 			for(let i = 0; i < this.elements.length; i ++){
-				cons.call(thisArg, this.elements[i]);
+				cons.call(thisArg, this.elements[i]!);
 			}
 		}
 	}
 	intersect(rect:Rect, cons:(element:T) => unknown){
 		if(this.nodes){
-			if(Intersector.rectsIntersect(this.nodes[0].span, rect)) this.nodes[0].intersect(rect, cons);
-			if(Intersector.rectsIntersect(this.nodes[1].span, rect)) this.nodes[1].intersect(rect, cons);
-			if(Intersector.rectsIntersect(this.nodes[2].span, rect)) this.nodes[2].intersect(rect, cons);
-			if(Intersector.rectsIntersect(this.nodes[3].span, rect)) this.nodes[3].intersect(rect, cons);
+			if(Intersector.rectsIntersect(this.nodes[0]!.span, rect)) this.nodes[0]!.intersect(rect, cons);
+			if(Intersector.rectsIntersect(this.nodes[1]!.span, rect)) this.nodes[1]!.intersect(rect, cons);
+			if(Intersector.rectsIntersect(this.nodes[2]!.span, rect)) this.nodes[2]!.intersect(rect, cons);
+			if(Intersector.rectsIntersect(this.nodes[3]!.span, rect)) this.nodes[3]!.intersect(rect, cons);
 		} else {
 			for(let i = 0; i < this.elements.length; i ++){
-				if(Intersector.pointInRect(this.elements[i].pos.pixel, rect)) cons(this.elements[i]);
+				if(Intersector.pointInRect(this.elements[i]!.pos.pixel, rect)) cons(this.elements[i]!);
 			}
 		}
 	}
@@ -152,13 +152,13 @@ export class QuadTreeI<T extends {pos: Pos}> extends QuadTree<T> {
 	}
 	forEach(cons:(element:T) => unknown, thisArg?:any){
 		for(let i = 0; i < this.nodes.length; i ++){
-			this.nodes[i].forEach(cons, thisArg);
+			this.nodes[i]!.forEach(cons, thisArg);
 		}
 	}
 	intersect(rect:Rect, cons:(element:T) => unknown){
 		for(let i = 0; i < this.nodes.length; i ++){
-			if(Intersector.rectsIntersect(this.nodes[i].span, rect))
-				this.nodes[i].intersect(rect, cons);
+			if(Intersector.rectsIntersect(this.nodes[i]!.span, rect))
+				this.nodes[i]!.intersect(rect, cons);
 		}
 	}
 }

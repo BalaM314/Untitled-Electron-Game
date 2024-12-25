@@ -152,8 +152,8 @@ export class BuildingWithRecipe extends Building {
 				}
 			}
 		}
-		if (this.recipe == null && this.block.recipeType.recipes.length == 1 && (this.block.recipeType.recipes[0].inputs?.length ?? 0) == 0) {
-			this.setRecipe(this.block.recipeType.recipes[0]);
+		if (this.recipe == null && this.block.recipeType.recipes.length == 1 && (this.block.recipeType.recipes[0]!.inputs?.length ?? 0) == 0) {
+			this.setRecipe(this.block.recipeType.recipes[0]!);
 		}
 		super.update(currentFrame);
 	}
@@ -384,7 +384,7 @@ export class Conveyor extends Building {
 	block!: typeof Conveyor;
 	outputSide: Direction = Conveyor.outputSide(this.meta);
 	acceptsItemFromSide(side: Direction): boolean {
-		return Boolean(this.block.inputMapping[this.meta] & side.bitmask);
+		return Boolean((this.block.inputMapping[this.meta] ?? crash(`Invalid meta ${this.meta}`)) & side.bitmask);
 	}
 	outputsItemToSide(side: Direction): boolean {
 		return this.block.outputMapping[this.meta] == side;
@@ -781,7 +781,7 @@ export class StorageBuilding extends Building {
 	static acceptsItems = true;
 	block!: typeof StorageBuilding;
 	hasItem() {
-		if (this.inventory.length != 0) return this.inventory[0];
+		if (this.inventory.length != 0) return this.inventory[0]!;
 		return super.hasItem();
 	}
 	removeItem() {
@@ -980,7 +980,7 @@ export class MultiBlockController extends BuildingWithRecipe {
 		if (!fluid || fluid[0] == null || fluid[1] == 0) return;
 		const numDirections = 2 * (this.block.multiblockSize[0] + this.block.multiblockSize[1]);
 		for (let i = 0; i < numDirections; i++) {
-			this.dumpFluidAt(fluid, ...this.block.outputPositions[this.cFluidOut]);
+			this.dumpFluidAt(fluid, ...this.block.outputPositions[this.cFluidOut]!);
 			if (++this.cFluidOut >= numDirections) this.cFluidOut = 0;
 		}
 	}

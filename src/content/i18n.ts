@@ -24,8 +24,8 @@ class I18NBundle {
 				continue;
 			} else if(l.length == 0) continue;
 			const line = l.split(/ ?= ?/);
-			if(line.length == 2 && line[0].length > 0 && line[1].length > 0){
-				const [key, value] = line;
+			if(line.length == 2 && line[0]!.length > 0 && line[1]!.length > 0){
+				const [key, value] = line as [string, string];
 				const parts = key.split(".");
 				if(parts.length == 3 && parts.every(p => p.length > 0)){
 					const [type, name, prop] = parts;

@@ -16,7 +16,7 @@ export class Random {
 	/** Returns a random integer between 0 and `max` inclusive. */
 	int(max: number): number;
 	/** Returns a random integer between `min` and `max` inclusive. */
-	int(min: number, max: number): number;
+	int(min: number, max: number):number;
 	int(arg0: number, arg1?: number) {
 		if (arg1)
 			return Math.floor(this._rand() * (arg1 + 1 - arg0) + arg0);
@@ -25,9 +25,9 @@ export class Random {
 			return Math.floor(this._rand() * (arg0 + 1));
 	}
 	/** Returns a random number between 0 and `max` inclusive. */
-	num(max: number): number;
+	num(max: number):number;
 	/** Returns a random number between `min` and `max` inclusive. */
-	num(min: number, max: number): number;
+	num(min: number, max: number):number;
 	num(arg0: number, arg1?: number) {
 		if (arg1)
 			return this._rand() * (arg1 - arg0) + arg0;
@@ -38,12 +38,12 @@ export class Random {
 	chance(probability: number) {
 		return this._rand() < probability;
 	}
-	vec(length: number): PosT {
+	vec(length: number):PosT {
 		const theta = this.num(Mathf.TWO_PI);
 		return [length * Math.cos(theta), length * Math.sin(theta)];
 	}
-	item<T>(input: T[]) {
-		return input[Math.floor(this._rand() * input.length)];
+	item<T>(input: T[]):T {
+		return input[Math.floor(this._rand() * input.length)]!;
 	}
 }
 export class PseudoRandom extends Random {
