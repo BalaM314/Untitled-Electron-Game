@@ -13,7 +13,7 @@ import { Keybinds, RawBuildingID, BuildingIDWithMeta } from "../types.js";
 import { Direction } from "../util/direction.js";
 import { download, firstUsePopup } from "../util/funcs.js";
 import { selectID } from "../game-funcs.js";
-import { Game } from "../vars.js";
+import { Game, consts } from "../vars.js";
 import type { Building } from "../world/building.js";
 import { DOM } from "./dom.js";
 import { GUI, HUD } from "./gui.js";
@@ -150,7 +150,7 @@ export const Input = {
 	lastBuilding: null as Building | null,
 	latestMouseEvent: null as PartialMouseEvent | null,
 	keysHeld: new Set<string>(),
-	lastKeysPressed: new Array<string>(11).fill(""),
+	lastKeysPressed: new Array<string>(consts.konamiCode.length).fill(""),
 	shift: () => Input.keysHeld.has("shift"),
 	alt: () => Input.keysHeld.has("alt"),
 	ctrl: () => Input.keysHeld.has("ctrl"),

@@ -333,8 +333,10 @@ export const scenes: Record<typeof Game.sceneName, {
 			}
 		},
 		//Unlike the onkeydown function, this one needs to run based on keys being held.
-		onkeyheld(currentframe: CurrentFrame) {
+		onkeyheld() {
 			if (Game.paused) return;
+			if (Input.lastKeysPressed.slice(1).join(",") == consts.konamiCode.slice(0, -1).join(","))
+				return; //last n-1 keys pressed are the same as the first n-1 keys of the konami code, ignore the "a"
 			const scrollSpeed = keybinds.move.scroll_faster.isHeld() ? consts.fastScrollSpeed : consts.scrollSpeed;
 			if (keybinds.move.up.isHeld()) Camera.scroll(0, -scrollSpeed);
 			if (keybinds.move.left.isHeld()) Camera.scroll(-scrollSpeed, 0);
@@ -348,9 +350,9 @@ export const scenes: Record<typeof Game.sceneName, {
 		},
 		onkeydown(e) {
 			//Easter egg
-			if (e.key == "Enter" && Input.lastKeysPressed.join(", ") ==
-				["ArrowUp", "ArrowUp", "ArrowDown", "ArrowDown", "ArrowLeft", "ArrowRight", "ArrowLeft", "ArrowRight", "b", "a", "Enter"].join(", ")) {
-				window.open("https://www.youtube.com/watch?v=dQw4w9WgXcQ"); //this is fine
+			if (e.key == "Enter" && Input.lastKeysPressed.join(",") ==
+				consts.konamiCode.join(",")) {
+				window.open("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
 				for (const [key] of Object.entries(Game.level1.resources)) {
 					Game.level1.resources[key] = 999999;
 				}
