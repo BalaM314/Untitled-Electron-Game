@@ -332,10 +332,17 @@ canvas {
 	background-image: linear-gradient(to bottom right, #888, #CCC, #888, #CCC);
 }
 
+#credits-inner h2 {
+	text-align: center;
+	margin-bottom: 3vh;
+	font-size: 5vh;
+	color: #33F;
+}
+
 #credits-inner p {
 	text-align: center;
-	margin: 10vh 0;
-	font-size: 4vh;
+	margin: 8vh 0;
+	font-size: 3.5vh;
 }
 
 #credits-title {

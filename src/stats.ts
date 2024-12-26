@@ -34,6 +34,7 @@ const persistentStats = () => ({
 	},
 	misc: {
 		timeStarted: 0,
+		timeWon: 0,
 	},
 });
 

@@ -70,6 +70,23 @@ export function linear_map(value:number, from1:number, from2:number, to1:number,
 	return ((value - from1) / (from2 - from1)) * (to2 - to1) + to1;
 }
 
+export function formatTime(time:number){
+	const months = Math.floor(time / (30 * 24 * 60 * 60 * 1000));
+	const days = Math.floor((time % (30 * 24 * 60 * 60 * 1000)) / (24 * 60 * 60 * 1000));
+	const hours = Math.floor((time % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
+	const minutes = Math.floor((time % (60 * 60 * 1000)) / (60 * 1000));
+	const seconds = Math.floor((time % (60 * 1000)) / (1000));
+
+	const lines = [
+		months && `${months} month${months == 1 ? "" : "s"}`,
+		days && `${days} day${days == 1 ? "" : "s"}`,
+		hours && `${hours} hour${hours == 1 ? "" : "s"}`,
+		minutes && `${minutes} minute${minutes == 1 ? "" : "s"}`,
+		seconds && `${seconds} second${seconds == 1 ? "" : "s"}`,
+	].filter(Boolean);
+	if(lines.length < 3) return lines.join(", ");
+	else return lines.slice(0, -1).join(", ") + ", and " + lines.at(-1);
+}
 
 export function assert(x:unknown, message?:string){
 	if(!x) crash(message ? `Assertion failed: ${message}` : message);

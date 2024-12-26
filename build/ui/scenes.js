@@ -299,7 +299,7 @@ export const scenes = {
             if (!Input.latestMouseEvent)
                 return;
             if (!Input.ctrl() && !keybinds.placement.break_building.isHeld()) {
-                Game.level1.breakBuilding(...Camera.unproject(...Input.mouse).map(Pos.pixelToTile));
+                PersistentStats.value.buildings.totalRemoved += (Game.level1.breakBuilding(...Camera.unproject(...Input.mouse).map(Pos.pixelToTile)));
             }
         },
         onkeyheld(currentframe) {
@@ -315,7 +315,7 @@ export const scenes = {
             if (keybinds.move.right.isHeld())
                 Camera.scroll(scrollSpeed, 0);
             if (keybinds.placement.break_building.isHeld()) {
-                Game.level1.breakBuilding(...Camera.unproject(...Input.mouse).map(Pos.pixelToTile));
+                PersistentStats.value.buildings.totalRemoved += (Game.level1.breakBuilding(...Camera.unproject(...Input.mouse).map(Pos.pixelToTile)));
             }
         },
         onkeydown(e) {

@@ -158,11 +158,15 @@ export class Level {
     }
     breakBuilding(tileX, tileY) {
         function safeBreak(build) {
-            if (build && !build.block.immutable)
+            if (build && !build.block.immutable) {
                 build.break();
+                return 1;
+            }
+            else
+                return 0;
         }
-        safeBreak(this.buildingAtTile(tileX, tileY));
-        safeBreak(this.overlayBuildAtTile(tileX, tileY));
+        return safeBreak(this.buildingAtTile(tileX, tileY))
+            + safeBreak(this.overlayBuildAtTile(tileX, tileY));
     }
     canBuildBuilding(tile, block) {
         const size = block.prototype instanceof MultiBlockController ? block.multiblockSize : [1, 1];
@@ -288,7 +292,7 @@ export class Level {
         for (const [item, amount] of items) {
             this.resources[item] ??= 0;
             this.resources[item] -= amount;
-            this.onResourcesChange?.(item, amount);
+            this.onResourcesChange?.(item, -amount);
         }
     }
     addResources(items) {

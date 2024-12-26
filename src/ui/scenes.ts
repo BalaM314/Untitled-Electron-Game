@@ -333,8 +333,10 @@ export const scenes: Record<typeof Game.sceneName, {
 			if (Game.paused) return;
 			if (!Input.latestMouseEvent) return;
 			if (!Input.ctrl() && !keybinds.placement.break_building.isHeld()) {
-				Game.level1.breakBuilding(
-					...Camera.unproject(...Input.mouse).map(Pos.pixelToTile)
+				PersistentStats.value.buildings.totalRemoved += (
+					Game.level1.breakBuilding(
+						...Camera.unproject(...Input.mouse).map(Pos.pixelToTile)
+					)
 				);
 			}
 		},
@@ -349,8 +351,10 @@ export const scenes: Record<typeof Game.sceneName, {
 			if (keybinds.move.down.isHeld()) Camera.scroll(0, scrollSpeed);
 			if (keybinds.move.right.isHeld()) Camera.scroll(scrollSpeed, 0);
 			if (keybinds.placement.break_building.isHeld()) {
-				Game.level1.breakBuilding(
-					...Camera.unproject(...Input.mouse).map(Pos.pixelToTile)
+				PersistentStats.value.buildings.totalRemoved += (
+					Game.level1.breakBuilding(
+						...Camera.unproject(...Input.mouse).map(Pos.pixelToTile)
+					)
 				);
 			}
 		},

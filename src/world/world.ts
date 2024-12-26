@@ -221,10 +221,13 @@ export class Level {
 
 	breakBuilding(tileX:number, tileY:number){
 		function safeBreak(build:Building | null){
-			if(build && !build.block.immutable) build.break();
+			if(build && !build.block.immutable){
+				build.break();
+				return 1;
+			} else return 0;
 		}
-		safeBreak(this.buildingAtTile(tileX, tileY));
-		safeBreak(this.overlayBuildAtTile(tileX, tileY));
+		return safeBreak(this.buildingAtTile(tileX, tileY))
+		+ safeBreak(this.overlayBuildAtTile(tileX, tileY));
 	}
 	canBuildBuilding(tile:PosT, block:typeof Building){
 		const size:PosT = block.prototype instanceof MultiBlockController ? (block as typeof MultiBlockController).multiblockSize : [1, 1];
@@ -362,7 +365,7 @@ export class Level {
 		for(const [item, amount] of items){
 			this.resources[item] ??= 0;
 			this.resources[item] -= amount;
-			this.onResourcesChange?.(item, amount);
+			this.onResourcesChange?.(item, -amount);
 		}
 	}
 	addResources(items:ItemStack[]){
