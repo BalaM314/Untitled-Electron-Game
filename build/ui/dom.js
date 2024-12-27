@@ -57,6 +57,7 @@ export async function registerEventHandlers() {
     const { safeToSave, SaveIO, saveToLocalStorage, selectID } = await import("../game-funcs.js");
     const { clickcapture } = DOM;
     const { Input, keybinds } = await import("./input.js");
+    const { completeObjective } = await import("../game-funcs.js");
     const onmousemove = (e) => {
         Input.mouseX = e.x;
         Input.mouseY = e.y;
@@ -202,10 +203,7 @@ export async function registerEventHandlers() {
         });
         DOM.toolbarEl.appendChild(img);
     }
-    DOM.objectiveTitle.addEventListener("click", () => {
-        const objective = objectives.objectives.find(o => o.satisfied && !o.completed);
-        objective?.tryComplete();
-    });
+    DOM.objectiveTitle.addEventListener("click", () => completeObjective());
     DOM.alertexit.onclick = GUI.closeAlert;
 }
 export function setCanvasSizes() {

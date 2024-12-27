@@ -169,3 +169,7 @@ export function saveToLocalStorage() {
     localStorage.setItem("untitled-electron-game:objectives", objectives.write());
     Game.lastSaved = Date.now();
 }
+export function completeObjective() {
+    const objective = objectives.objectives.find(o => o.satisfied && !o.completed);
+    objective?.tryComplete();
+}

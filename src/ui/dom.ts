@@ -68,6 +68,7 @@ export async function registerEventHandlers(){
 	const { safeToSave, SaveIO, saveToLocalStorage, selectID } = await import("../game-funcs.js");
 	const { clickcapture } = DOM;
 	const { Input, keybinds } = await import("./input.js");
+	const { completeObjective } = await import("../game-funcs.js");
 
 	const onmousemove = (e: PartialMouseEvent) => {
 		//Update mouse position
@@ -250,10 +251,7 @@ export async function registerEventHandlers(){
 	}
 
 
-	DOM.objectiveTitle.addEventListener("click", () => {
-		const objective = objectives.objectives.find(o => o.satisfied && !o.completed);
-		objective?.tryComplete();
-	});
+	DOM.objectiveTitle.addEventListener("click", () => completeObjective());
 
 	DOM.alertexit.onclick = GUI.closeAlert;
 }

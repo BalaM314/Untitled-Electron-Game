@@ -6,7 +6,7 @@ Untitled Electron Game is distributed in the hope that it will be useful, but WI
 You should have received a copy of the GNU General Public License along with Untitled Electron Game. If not, see <https://www.gnu.org/licenses/>.
 */
 import { Buildings } from "../content/content.js";
-import { SaveIO, manualLocalSave } from "../game-funcs.js";
+import { SaveIO, completeObjective, manualLocalSave } from "../game-funcs.js";
 import { Direction } from "../util/direction.js";
 import { download, firstUsePopup } from "../util/funcs.js";
 import { selectID } from "../game-funcs.js";
@@ -112,6 +112,7 @@ export const keybinds = {
         pause: new Keybind(" ", [], () => { Game.paused = !Game.paused; }),
         close_dialog: new Keybind("escape", [], () => GUI.closeDialog()),
         close_alert: new Keybind("enter", [], () => GUI.closeAlert()),
+        complete_objective: new Keybind("enter", [], completeObjective),
         undo: new Keybind("z", ["control"], () => {
             Input.lastBuilding?.break();
             Input.lastBuilding = null;

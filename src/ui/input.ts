@@ -8,7 +8,7 @@ You should have received a copy of the GNU General Public License along with Unt
 /* Contains code that handles getting input from the player. */
 
 import { Buildings } from "../content/content.js";
-import { SaveIO, manualLocalSave } from "../game-funcs.js";
+import { SaveIO, completeObjective, manualLocalSave } from "../game-funcs.js";
 import { Keybinds, RawBuildingID, BuildingIDWithMeta } from "../types.js";
 import { Direction } from "../util/direction.js";
 import { download, firstUsePopup } from "../util/funcs.js";
@@ -126,6 +126,7 @@ export const keybinds = {
 		pause: new Keybind(" ", [], () => {Game.paused = !Game.paused;}),
 		close_dialog: new Keybind("escape", [], () => GUI.closeDialog()),
 		close_alert: new Keybind("enter", [], () => GUI.closeAlert()),
+		complete_objective: new Keybind("enter", [], completeObjective),
 		undo: new Keybind("z", ["control"], () => {
 			Input.lastBuilding?.break();
 			Input.lastBuilding = null;
