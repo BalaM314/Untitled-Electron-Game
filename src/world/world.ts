@@ -201,7 +201,7 @@ export class Level {
 
 		//Draw underlay
 		const isError =
-			!this.hasResources(block.buildCost, 100) ||
+			!this.hasResources(block.buildCost(changedID[1]), 100) ||
 			!block.canBuildAt(tileX, tileY, this) ||
 			!this.canBuildBuilding([tileX, tileY], block);
 		//Make the gray/red border 1x1 if the block is rectangular, but NxN if it's square
@@ -256,7 +256,8 @@ export class Level {
 		buildingID = [buildingID[0], block.changeMeta(buildingID[1], tileX, tileY, this, keybinds.placement.force_straight_conveyor.isHeld())];
 		
 		if(!block.canBuildAt(tileX, tileY, this)) return "blocked";
-		if(!this.hasResources(block.buildCost, 1500)) return "missing resources";
+		const buildCost = block.buildCost(buildingID[1]);
+		if(!this.hasResources(buildCost, 1500)) return "missing resources";
 
 		let buildingsBroken = 0;
 		//Only overwrite the same building once per build attempt.
@@ -298,7 +299,7 @@ export class Level {
 				buildUnder?.break();
 			}
 
-			this.drainResources(block.buildCost);
+			this.drainResources(buildCost);
 			
 			//Create buildings
 			const controller = new block(tileX, tileY, buildingID[1], this);
@@ -316,7 +317,7 @@ export class Level {
 			Input.lastBuilding = controller;
 			return { placed: true, buildingsBroken };
 		} else {
-			this.drainResources(block.buildCost);
+			this.drainResources(buildCost);
 			const building = new block(tileX, tileY, buildingID[1], this);
 			this.buildings.add(building);
 			this.grid.addBuilding(building);

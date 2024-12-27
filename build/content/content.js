@@ -187,17 +187,17 @@ Fluids.register(new Fluid("base_water", "blue"));
 Fluids.register(new Fluid("base_steam", "white"));
 export const Buildings = new ContentRegistryC();
 Buildings.register("base_conveyor", Conveyor, {
-    buildCost: [["base_stone", 1]],
+    buildCost: m => [["base_stone", m >= 12 ? 2 : 1]],
 });
 Buildings.register("base_miner", Miner, {
-    buildCost: [["base_stone", 10]],
+    buildCost: () => [["base_stone", 10]],
 });
 Buildings.register("base_trash_can", TrashCan, {
-    buildCost: [["base_stone", 12]],
+    buildCost: () => [["base_stone", 12]],
 });
 Buildings.register("base_furnace", BuildingWithRecipe, {
     recipeType: recipes.base_smelting,
-    buildCost: [["base_stone", 15]],
+    buildCost: () => [["base_stone", 15]],
     drawer: BuildingWithRecipe.makeDrawer((build, e) => {
         Gfx.fillColor(...Gfx.lerp([255, 127, 39], [255, 95, 29], e.sin()));
         Gfx.tRect(...build.centeredPos().tile, 0.5, 0.5, RectMode.CENTER);
@@ -205,38 +205,41 @@ Buildings.register("base_furnace", BuildingWithRecipe, {
     craftEffect: [Fx.smoke, "#555"]
 });
 Buildings.register("base_extractor", Extractor, {
-    buildCost: [["base_stone", 2], ["base_ironIngot", 2]]
+    buildCost: m => {
+        const mul = Math.floor(m / 4) + 1;
+        return [["base_stone", 2 * mul], ["base_ironIngot", 2 * mul]];
+    },
 });
 Buildings.register("base_chest", StorageBuilding, {
-    buildCost: [["base_ironIngot", 15], ["base_stoneBrick", 10]],
+    buildCost: () => [["base_ironIngot", 15], ["base_stoneBrick", 10]],
     capacity: 64
 });
 Buildings.register("base_resource_acceptor", ResourceAcceptor, {
     hidden: true,
 });
 Buildings.register("base_alloy_smelter", BuildingWithRecipe, {
-    buildCost: [["base_stoneBrick", 30], ["base_ironIngot", 15]],
+    buildCost: () => [["base_stoneBrick", 30], ["base_ironIngot", 15]],
     recipeType: recipes.base_alloying, drawer: BuildingWithRecipe.progressDrawer(), craftEffect: [Fx.smoke, "#222"]
 });
 Buildings.register("base_stirling_generator", BuildingWithRecipe, {
-    buildCost: [["base_stoneBrick", 20], ["base_ironIngot", 35], ["base_copperIngot", 15]],
+    buildCost: () => [["base_stoneBrick", 20], ["base_ironIngot", 35], ["base_copperIngot", 15]],
     recipeType: recipes.base_stirling_generating,
     producesPower: true,
     outputsItems: false,
     drawer: BuildingWithRecipe.drawLayer("building/base_boiler_fire", 1, 1, b => b.timer >= 0 ? linear_map(b.timer, b.recipe?.duration ?? -1, 0, 1, 0.7) : 0)
 });
 Buildings.register("base_compressor", BuildingWithRecipe, {
-    buildCost: [["base_stoneBrick", 25], ["base_ironIngot", 35], ["base_copperIngot", 10]],
+    buildCost: () => [["base_stoneBrick", 25], ["base_ironIngot", 35], ["base_copperIngot", 10]],
     consumesPower: true,
     recipeType: recipes.base_compressing, drawer: BuildingWithRecipe.progressDrawer()
 });
 Buildings.register("base_wiremill", BuildingWithRecipe, {
-    buildCost: [["base_stoneBrick", 20], ["base_ironIngot", 35], ["base_copperIngot", 15]],
+    buildCost: () => [["base_stoneBrick", 20], ["base_ironIngot", 35], ["base_copperIngot", 15]],
     consumesPower: true,
     recipeType: recipes.base_wiremilling, drawer: BuildingWithRecipe.progressDrawer()
 });
 Buildings.register("base_lathe", BuildingWithRecipe, {
-    buildCost: [["base_stoneBrick", 20], ["base_ironIngot", 35], ["base_copperIngot", 10]],
+    buildCost: () => [["base_stoneBrick", 20], ["base_ironIngot", 35], ["base_copperIngot", 10], ["base_steelIngot", 10]],
     consumesPower: true,
     recipeType: recipes.base_lathing, drawer: BuildingWithRecipe.progressDrawer(), runEffect: [Fx.spark, "#FFC", 20, 0.8]
 });
@@ -244,7 +247,7 @@ Buildings.register("base_multiblock_secondary", MultiBlockSecondary, {
     hidden: true,
 });
 Buildings.register("base_assembler", MultiBlockController, {
-    buildCost: [["base_stoneBrick", 50], ["base_ironIngot", 100], ["base_copperIngot", 25], ["base_ironPlate", 25], ["base_ironRod", 10], ["base_copperWire", 10]],
+    buildCost: () => [["base_stoneBrick", 50], ["base_ironIngot", 100], ["base_copperIngot", 25], ["base_ironPlate", 25], ["base_ironRod", 10], ["base_copperWire", 10]],
     recipeType: recipes.base_assembling,
     consumesPower: true,
     multiblockSize: [2, 2],
@@ -258,17 +261,17 @@ Buildings.register("base_power_source", PowerSource, {
     hidden: true,
 });
 Buildings.register("base_pipe", Pipe, {
-    buildCost: [["base_ironPlate", 1]],
+    buildCost: () => [["base_ironPlate", 1]],
 });
 Buildings.register("base_pump", Pump, {
-    buildCost: [["base_ironPlate", 20], ["base_ironIngot", 15], ["base_stoneBrick", 25]],
+    buildCost: () => [["base_ironPlate", 20], ["base_ironIngot", 15], ["base_stoneBrick", 25]],
     outputFluid: Fluids.get("base_water")
 });
 Buildings.register("base_tank", Tank, {
-    buildCost: [["base_ironPlate", 15], ["base_stoneBrick", 15]]
+    buildCost: () => [["base_ironPlate", 15], ["base_stoneBrick", 15]]
 });
 Buildings.register("base_boiler", BuildingWithRecipe, {
-    buildCost: [["base_ironPlate", 20], ["base_ironIngot", 30], ["base_stoneBrick", 50]],
+    buildCost: () => [["base_ironPlate", 20], ["base_ironIngot", 30], ["base_stoneBrick", 50]],
     recipeType: recipes.base_boiling,
     fluidCapacity: 10,
     acceptsFluids: true,
@@ -279,7 +282,7 @@ Buildings.register("base_boiler", BuildingWithRecipe, {
     drawer: BuildingWithRecipe.combineDrawers(BuildingWithRecipe.drawFluid([0, -0.2], 0.8, 0.4), BuildingWithRecipe.drawLayer("building/base_boiler_fire", 1, 1, b => b.timer >= 0 ? linear_map(b.timer, b.recipe?.duration ?? -1, 0, 1, 0.7) : 0))
 });
 Buildings.register("base_steam_generator", MultiBlockController, {
-    buildCost: [["base_ironPlate", 45], ["base_ironIngot", 90], ["base_stoneBrick", 55], ["base_copperIngot", 10], ["base_copperWire", 40]],
+    buildCost: () => [["base_ironPlate", 45], ["base_ironIngot", 90], ["base_stoneBrick", 55], ["base_copperIngot", 10], ["base_copperWire", 40]],
     recipeType: recipes.base_steam_generating,
     secondary: Buildings.get("base_multiblock_secondary"),
     multiblockSize: [2, 2],

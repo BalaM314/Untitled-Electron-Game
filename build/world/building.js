@@ -109,7 +109,7 @@ let Building = (() => {
                 this.level.writeOverlayBuild(this.pos.tileX, this.pos.tileY, null);
             else
                 this.level.writeBuilding(this.pos.tileX, this.pos.tileY, null);
-            this.level.addResources(this.block.buildCost);
+            this.level.addResources(this.block.buildCost(this.meta));
         }
         preUpdate(currentFrame) {
         }
@@ -301,7 +301,7 @@ let Building = (() => {
     _classThis.immutable = false;
     _classThis.isOverlay = false;
     _classThis.displaysItem = false;
-    _classThis.buildCost = [];
+    _classThis.buildCost = () => [];
     _classThis.drawer = null;
     _classThis.node = null;
     _classThis.producesPower = false;

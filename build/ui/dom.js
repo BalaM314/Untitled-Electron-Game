@@ -53,7 +53,6 @@ export async function registerEventHandlers() {
     const { scenes } = await import("./scenes.js");
     const { GUI } = await import("./gui.js");
     const { Buildings } = await import("../content/content.js");
-    const { objectives } = await import("../objectives.js");
     const { safeToSave, SaveIO, saveToLocalStorage, selectID } = await import("../game-funcs.js");
     const { clickcapture } = DOM;
     const { Input, keybinds } = await import("./input.js");

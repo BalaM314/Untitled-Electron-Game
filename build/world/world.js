@@ -147,7 +147,7 @@ export class Level {
         const changedID = [buildingID[0], buildingID[1]];
         changedID[1] = block.changeMeta(changedID[1], tileX, tileY, this, keybinds.placement.force_straight_conveyor.isHeld());
         const textureSize = block.textureSize(buildingID[1]);
-        const isError = !this.hasResources(block.buildCost, 100) ||
+        const isError = !this.hasResources(block.buildCost(changedID[1]), 100) ||
             !block.canBuildAt(tileX, tileY, this) ||
             !this.canBuildBuilding([tileX, tileY], block);
         const underlayTextureSize = textureSize[0][0] == textureSize[0][1] ? textureSize : [[1, 1], [0, 0]];
@@ -188,7 +188,8 @@ export class Level {
         buildingID = [buildingID[0], block.changeMeta(buildingID[1], tileX, tileY, this, keybinds.placement.force_straight_conveyor.isHeld())];
         if (!block.canBuildAt(tileX, tileY, this))
             return "blocked";
-        if (!this.hasResources(block.buildCost, 1500))
+        const buildCost = block.buildCost(buildingID[1]);
+        if (!this.hasResources(buildCost, 1500))
             return "missing resources";
         let buildingsBroken = 0;
         if (block.isOverlay) {
@@ -223,7 +224,7 @@ export class Level {
                     return "blocked";
                 buildUnder?.break();
             }
-            this.drainResources(block.buildCost);
+            this.drainResources(buildCost);
             const controller = new block(tileX, tileY, buildingID[1], this);
             controller.secondaries = offsets.map(([x, y]) => new block.secondary(tileX + x, tileY + y, 0, this));
             controller.secondaries.forEach(secondary => secondary.controller = controller);
@@ -238,7 +239,7 @@ export class Level {
             return { placed: true, buildingsBroken };
         }
         else {
-            this.drainResources(block.buildCost);
+            this.drainResources(buildCost);
             const building = new block(tileX, tileY, buildingID[1], this);
             this.buildings.add(building);
             this.grid.addBuilding(building);

@@ -38,7 +38,7 @@ export class Building {
 	static immutable = false;
 	static isOverlay = false;
 	static displaysItem = false;
-	static buildCost:ItemStack[] = [];
+	static buildCost:(meta:number) => ItemStack[] = () => [];
 	static drawer:BlockDrawer<Building> | null = null;
 	static node:TechTreeNode | null = null;
 	static producesPower = false;
@@ -101,7 +101,7 @@ export class Building {
 		}
 		if(this.block.isOverlay) this.level.writeOverlayBuild(this.pos.tileX, this.pos.tileY, null);
 		else this.level.writeBuilding(this.pos.tileX, this.pos.tileY, null);
-		this.level.addResources(this.block.buildCost);
+		this.level.addResources(this.block.buildCost(this.meta));
 	}
 	preUpdate(currentFrame:CurrentFrame){
 		//empty
