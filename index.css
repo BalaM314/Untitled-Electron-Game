@@ -432,6 +432,7 @@ canvas {
 	border-color: black;
 	border-radius: 2px;
 	border-width: 5px;
+	container-type: size;
 }
 #alertbox.active {
 	border-style: solid;
@@ -447,6 +448,11 @@ canvas {
 	text-align: center;
 	white-space: pre-wrap;
 	overflow-wrap: break-word;
+}
+@container ( width > 0 ) {
+	#alertmessage {
+		font-size: min(200%, calc(85cqw / sqrt(var(--text-length))));
+	}
 }
 #alertexit {
 	position: absolute;
