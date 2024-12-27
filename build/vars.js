@@ -16,6 +16,7 @@ export const consts = {
     ups: 60,
     scrollSpeed: 5,
     fastScrollSpeed: 20,
+    konamiCode: ["ArrowUp", "ArrowUp", "ArrowDown", "ArrowDown", "ArrowLeft", "ArrowRight", "ArrowLeft", "ArrowRight", "b", "a", "Enter"],
 };
 export const Mathf = {
     TWO_PI: Math.PI * 2,

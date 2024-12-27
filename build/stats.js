@@ -26,6 +26,7 @@ const persistentStats = () => ({
     misc: {
         timeStarted: 0,
         timeWon: 0,
+        konamiCodeUsed: false,
     },
 });
 export const PersistentStats = {

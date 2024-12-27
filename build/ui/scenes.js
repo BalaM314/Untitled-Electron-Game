@@ -302,8 +302,10 @@ export const scenes = {
                 PersistentStats.value.buildings.totalRemoved += (Game.level1.breakBuilding(...Camera.unproject(...Input.mouse).map(Pos.pixelToTile)));
             }
         },
-        onkeyheld(currentframe) {
+        onkeyheld() {
             if (Game.paused)
+                return;
+            if (Input.lastKeysPressed.slice(1).join(",") == consts.konamiCode.slice(0, -1).join(","))
                 return;
             const scrollSpeed = keybinds.move.scroll_faster.isHeld() ? consts.fastScrollSpeed : consts.scrollSpeed;
             if (keybinds.move.up.isHeld())
@@ -319,13 +321,14 @@ export const scenes = {
             }
         },
         onkeydown(e) {
-            if (e.key == "Enter" && Input.lastKeysPressed.join(", ") ==
-                ["ArrowUp", "ArrowUp", "ArrowDown", "ArrowDown", "ArrowLeft", "ArrowRight", "ArrowLeft", "ArrowRight", "b", "a", "Enter"].join(", ")) {
+            if (e.key == "Enter" && Input.lastKeysPressed.join(",") ==
+                consts.konamiCode.join(",")) {
                 window.open("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
                 for (const [key] of Object.entries(Game.level1.resources)) {
                     Game.level1.resources[key] = 999999;
                 }
                 tech.nodes.forEach(n => n.unlocked = true);
+                PersistentStats.value.misc.konamiCodeUsed = true;
             }
         }
     }

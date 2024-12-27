@@ -10,7 +10,7 @@ import { SaveIO, manualLocalSave } from "../game-funcs.js";
 import { Direction } from "../util/direction.js";
 import { download, firstUsePopup } from "../util/funcs.js";
 import { selectID } from "../game-funcs.js";
-import { Game } from "../vars.js";
+import { Game, consts } from "../vars.js";
 import { DOM } from "./dom.js";
 import { GUI, HUD } from "./gui.js";
 export class Keybind {
@@ -135,7 +135,7 @@ export const Input = {
     lastBuilding: null,
     latestMouseEvent: null,
     keysHeld: new Set(),
-    lastKeysPressed: new Array(11).fill(""),
+    lastKeysPressed: new Array(consts.konamiCode.length).fill(""),
     shift: () => Input.keysHeld.has("shift"),
     alt: () => Input.keysHeld.has("alt"),
     ctrl: () => Input.keysHeld.has("ctrl"),

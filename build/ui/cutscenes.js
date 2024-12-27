@@ -65,7 +65,7 @@ export async function showCredits() {
     const timeToBeat = stats.misc.timeWon - stats.misc.timeStarted;
     Log.info(`Time to beat: ${timeToBeat} (${stats.misc.timeWon} - ${stats.misc.timeStarted})`);
     DOM.creditsEl.querySelector("#credits-statistics").innerHTML =
-        `<p>Final time: ${formatTime(timeToBeat)}</p>
+        `<p>Final time: ${stats.misc.konamiCodeUsed ? "N/A" : formatTime(timeToBeat)}</p>
 <p>Buildings built: ${stats.buildings.totalBuilt}<br>Buildings removed: ${stats.buildings.totalRemoved}</p>
 <p>Items produced: ${stats.items.totalReachedHub}<br>Items used: ${stats.items.totalUsed}</p>
 <p>Total power produced: ${stats.power.totalProduced} (averaging ${round(stats.power.totalProduced / (timeToBeat / 1000), 1)}/s)</p>`;

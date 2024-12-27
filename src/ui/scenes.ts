@@ -367,6 +367,7 @@ export const scenes: Record<typeof Game.sceneName, {
 					Game.level1.resources[key] = 999999;
 				}
 				tech.nodes.forEach(n => n.unlocked = true);
+				PersistentStats.value.misc.konamiCodeUsed = true;
 			}
 		}
 	}
