@@ -167,7 +167,6 @@ export const ItemIDs:ItemID[] = [
 	"base_null",
 	"base_coalOre",
 	"base_coal",
-	"base_sand",
 	"base_ironOre",
 	"base_ironIngot",
 	"base_stone",
@@ -183,6 +182,8 @@ export const ItemIDs:ItemID[] = [
 	"base_stator",
 	"base_rotor",
 	"base_motor",
+	"base_sand",
+	"base_siliconCrude",
 ];
 export const FluidIDs:FluidID[] = [
 	"base_water",

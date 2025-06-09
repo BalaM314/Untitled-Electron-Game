@@ -13,11 +13,12 @@ import { showCredits } from "./ui/cutscenes.js";
 import { DOM } from "./ui/dom.js";
 import { Input } from "./ui/input.js";
 export class TechTreeNode {
-    constructor(level, id, cost, prerequisites = []) {
+    constructor(level, id, cost, prerequisites = [], onComplete) {
         this.level = level;
         this.id = id;
         this.cost = cost;
         this.prerequisites = prerequisites;
+        this.onComplete = onComplete;
         this.unlocked = false;
         this.children = [];
         this.depth = Math.max(-1, ...this.prerequisites.map(p => p.depth)) + 1;
@@ -31,6 +32,7 @@ export class TechTreeNode {
             return false;
         this.level().drainResources(this.cost);
         this.unlocked = true;
+        this.onComplete?.();
         return true;
     }
     showCost() {
@@ -67,8 +69,8 @@ export class TechTree {
         this.root = this.nodes.find(n => n.prerequisites.length == 0) ?? crash(`No root node`);
         this.nodes.forEach(n => sort2(n.children, n => n.children.length));
     }
-    node(id, cost, prerequisites, unlocked = false) {
-        const node = new TechTreeNode(this.level, id, cost, prerequisites);
+    node(id, cost, prerequisites, unlocked = false, onComplete) {
+        const node = new TechTreeNode(this.level, id, cost, prerequisites, onComplete);
         node.unlocked = unlocked;
         this.nodes.push(node);
         this.nodesByID[id] = node;
@@ -125,6 +127,7 @@ export class TechTree {
     }
     read(data) {
         let numRead = 0;
+        this.nodes.forEach(n => n.unlocked = false);
         for (const node of data.split(",")) {
             if (this.getOpt(node)) {
                 this.get(node).unlocked = true;
@@ -156,6 +159,15 @@ export const tech = new TechTree(() => Game.level1, tree => {
     const steam_generator = tree.node("building_base_steam_generator", [["base_ironIngot", 120], ["base_steelIngot", 50], ["base_ironPlate", 50], ["base_copperIngot", 40], ["base_copperWire", 35]], [boiler]);
     const assembler = tree.node("building_base_assembler", [["base_ironIngot", 200], ["base_steelIngot", 50], ["base_ironPlate", 50], ["base_copperIngot", 200], ["base_copperWire", 100]], [steam_generator]);
     const boat = tree.node("base_boat", [["base_steelPlate", 500], ["base_steelIngot", 100], ["base_steelRod", 100], ["base_ironIngot", 300], ["base_ironPlate", 100], ["base_ironRod", 100], ["base_copperWire", 300], ["base_copperIngot", 15], ["base_motor", 50]], [assembler]);
+    const hubSize = tree.node("base_hub_size", [["base_motor", 500], ["base_steelIngot", 1000], ["base_copperIngot", 500], ["base_stoneBrick", 1200], ["base_ironPlate", 500], ["base_siliconCrude", 100]], [boat], false, async () => {
+        const { MultiBlockController } = await import("./world/building-types.js");
+        Game.level1.breakBuilding(-3, -3);
+        Game.level1.setBlockUnchecked(-3, -3, ["base_resource_acceptor", 2]);
+        for (const [x, y] of MultiBlockController.getOffsetsForSize(6, 6)) {
+            Game.level1.breakBuilding(-3 + x, -3 + y);
+            Game.level1.setBlockUnchecked(-3 + x, -3 + y, ["base_resource_acceptor", 0]);
+        }
+    });
 });
 export class Objective {
     constructor(id, prerequisites = [], condition, onComplete) {

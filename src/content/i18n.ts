@@ -195,5 +195,7 @@ researchBoat.description = It will take a lot of items to build a boat.
 [research]
 boat.name = Boat
 boat.description = The final task.
+hub_size.name = 6x6 Hub
+hub_size.description = Increases your Hub's size to 6x6 tiles.
 `, "base_");
 

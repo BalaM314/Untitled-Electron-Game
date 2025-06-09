@@ -830,7 +830,11 @@ export class ResourceAcceptor extends Building {
 	static immutable = true;
 	static acceptsItems = true;
 	static textureSize(meta: number): TextureInfo {
-		return [[4, 4], [0, 0]];
+		switch(meta){
+			case 1: return [[4, 4], [0, 0]];
+			case 2: return [[6, 6], [0, 0]];
+			default: return [[0, 0], [0, 0]];
+		}
 	}
 	acceptItem(item: Item) {
 		this.level.addResources([[item.id, 1]]);
