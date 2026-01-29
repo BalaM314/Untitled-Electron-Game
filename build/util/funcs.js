@@ -16,12 +16,8 @@ if (!Array.prototype.at) {
         enumerable: false
     });
 }
-export function delay(time) {
-    return new Promise((resolve, reject) => {
-        setTimeout(() => {
-            resolve();
-        }, time);
-    });
+export function delay(millis) {
+    return new Promise(res => setTimeout(res, millis));
 }
 export function until(predicate, checkInterval = 100) {
     return new Promise((resolve, reject) => {

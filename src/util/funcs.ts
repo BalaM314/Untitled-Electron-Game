@@ -24,12 +24,8 @@ if(!Array.prototype.at){
 	});
 }
 
-export function delay(time:number):Promise<void> {
-	return new Promise((resolve, reject) => {
-		setTimeout(() => {
-			resolve();
-		}, time);
-	});
+export function delay(millis:number):Promise<void> {
+	return new Promise(res => setTimeout(res, millis));
 }
 
 export function until(predicate:() => boolean, checkInterval = 100):Promise<void> {
